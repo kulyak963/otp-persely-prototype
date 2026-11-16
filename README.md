@@ -4,6 +4,8 @@ Concept prototype for the OTP Bank × Corvinus service design seminar. It copies
 
 > Prototype with demo data only. Not a real banking app, not affiliated with or published by OTP Bank. No real accounts, logins or payments.
 
+**Live app:** https://otp-persely-prototype.onrender.com (free plan: the first visit after 15 idle minutes takes about 30–50 seconds). Every push to `main` deploys it again.
+
 **Full guide to every screen and rule:** open [`prototype-guide.html`](prototype-guide.html) (or `/guide.html` on the running app).
 **Step-by-step presentation:** [`demo-script.html`](demo-script.html) (or `/demo-script.html`).
 

@@ -55,7 +55,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
   <section class="box">
     <h2>Before you start</h2>
     <ol>
-      <li>Laptop: run the server and open <b>localhost:8090</b> on the projector. The demo panel sits to the left of the phone; <kbd>H</kbd> hides it.</li>
+      <li>A minute before: open <b>otp-persely-prototype.onrender.com</b> so the free server wakes up. On the laptop open it once as <b>…/?key=ADMIN_KEY</b> so real pushes work. The demo panel sits to the left of the phone; <kbd>H</kbd> hides it. (Backup: run the server locally and use localhost:8090.)</li>
       <li>iPhone: open the app from the Home Screen icon. Turn on <b>Also send to iPhone</b> in the panel if pushes should reach the phone too.</li>
       <li>Press <kbd>U</kbd> to start from the update day. If something goes wrong, <b>Reset app</b> in the panel jumps to the state "8 weeks later".</li>
       <li>Presenting from the iPhone only: long-press Anna's picture on Home to open the same demo controls.</li>
@@ -132,7 +132,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
   <section class="box warn">
     <h2>If something breaks</h2>
     <ul>
-      <li>The iPhone link stops working: the free tunnel address changes when it restarts. Run <kbd>cloudflared tunnel --url http://localhost:8090</kbd> again and reinstall the app from the new link, or present from the laptop only.</li>
+      <li>The online link is slow or down: wait 50 seconds (it was asleep), or run the server on the laptop and present from localhost:8090.</li>
       <li>Wrong state on screen: <b>Reset app</b> in the panel, or <kbd>U</kbd> to restart from the update day.</li>
       <li>No projector cable: the laptop panel and the phone frame work on any screen share.</li>
     </ul>
