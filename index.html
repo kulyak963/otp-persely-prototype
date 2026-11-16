@@ -664,7 +664,7 @@ const KEY='otp-clone-en-v5';
 const fresh = () => ({
   name:'Kiss Anna', ini:'KA',
   updateSeen:false, onboarded:false,   // pop-up after the update, then onboarding
-  verified:false, bridge:false,        // student status (3.0%) and the graduation bridge (3.0% for 12 more months)
+  verified:true, bridge:false,         // Junior customers get 3.0% automatically; bridge = 3.0% for 12 more months after Junior ends
   income:{amount:75000, day:5},        // money the bank sees coming in around the 5th (salary, scholarship, family)
   // money in: payday rule (share of each payment of 10 000 Ft or more, asks first), weekly transfer, round-ups
   payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday',
@@ -839,7 +839,7 @@ function pigSvg(mood='happy', size=120){
     ${eyes}${brows}${mouth}${extra}</svg>`;
 }
 /* Persely tab: the economics come from the team handoff (Levente), the experience from the research.
-   - 3.0% a year for verified students (18–30) on the first 500 000 Ft, 28% tax on interest → about 2.2% net. Otherwise 0.01%.
+   - 3.0% a year for every Junior customer, automatically (no extra check), on the first 500 000 Ft, 28% tax on interest → about 2.2% net. Otherwise 0.01%.
    - money in: payday rule (asks first), weekly transfer, round-ups (next 100 Ft, ×2)
    - shared Persely (2–5 people), euro Persely (no student rate), graduation bridge (3.0% for 12 months if the salary comes to OTP)
    - weekly streak is for motivation only and never changes the rate */
@@ -879,7 +879,7 @@ const plural = (n, w) => `${n} ${w}${n===1?'':'s'}`;
 const flame = (s=22, lit=true) => `<svg class="flame" width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true" style="flex:none"><path fill="${lit?'#FF7A1A':'#D5D9DF'}" d="M12 2c1 4 5.2 5.6 5.2 11.2a5.2 5.2 0 0 1-10.4 0c0-2.1 1-3.6 2-4.6 0 2 1 3 2.1 3 0-3-1-5.2 1.1-9.6z"/><path fill="${lit?'#FFC23A':'#EEF0F3'}" d="M12 12.5c.6 1.6 2.4 2.2 2.4 4.3a2.4 2.4 0 0 1-4.8 0c0-1.2.8-2 1.5-2.4 0 .8.4 1.2.9 1.2 0-1.2-.4-2 0-3.1z"/></svg>`;
 const fromName = id => acc(id).n;
 const avatar = (m, s=26) => `<span class="fav" style="background:${m.c};width:${s}px;height:${s}px;font-size:${Math.round(s*.42)}px">${m.me ? 'KA' : m.n[0]}</span>`;
-const forecast = g => { if(isEur(g)) return 'Euro · no student rate'; if(g.shared) return `With ${g.members.filter(m=>!m.me).map(m=>m.n).join(', ') || 'nobody yet'} · you put in ${ft(mine(g))}`;
+const forecast = g => { if(isEur(g)) return 'Euro · no 3.0% rate'; if(g.shared) return `With ${g.members.filter(m=>!m.me).map(m=>m.n).join(', ') || 'nobody yet'} · you put in ${ft(mine(g))}`;
   const m = gMonths(g); return m === 0 ? 'Goal reached' : m < 0 ? 'Add a rule to see the date' : isLate(g) ? `<span class="late">${inMonths(m)} · late</span>` : inMonths(m); };
 
 // the week counts for the streak (once per week)
@@ -901,7 +901,6 @@ function depositTo(g, v, fromId='junior', how='Between my accounts'){
 function persiSays(){
   const g = ruleGoal(), pct = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100));
   if(!S.onboarded) return {mood:'happy', text:"Hi, I'm Persi. Let's pick a goal."};
-  if(!S.verified && !S.bridge) return {mood:'concerned', text:'Verify your student status to earn 3.0%.'};
   if(!S.savedWeek && S.streak > 0) return {mood:'concerned', text:'Any amount by Sunday keeps your streak.'};
   if(!S.savedWeek) return {mood:'happy', text:'Any amount this week starts your streak.'};
   return {mood:'proud', text:`Week done. ${g.name}: ${pct}%.`};
@@ -917,15 +916,14 @@ function vHub(){
   <div class="persi" data-tour="persi">${pig(ps.mood, 84)}<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>
     <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
 
-  ${st ? '' : `<div class="card verifyc"><div style="display:flex;gap:12px;align-items:center"><span class="gic">${I('shield',22)}</span><span style="flex:1"><b style="display:block;font-size:15px">Get the student rate: 3.0%</b><span class="k">Today your Persely earns 0.01%</span></span></div><button class="btn" style="margin-top:12px" data-sheet="verify">Verify student status</button></div>`}
 
   <div class="card hero" data-tour="total">
-    <div class="hrow"><span class="k">Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Student 3.0%' : 'Not verified'}</span></div>
+    <div class="hrow"><span class="k">Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Junior 3.0%' : 'Standard rate'}</span></div>
     <div class="hero-v num">${ft(tot)}${et ? ` <small class="k" style="font-size:15px;font-weight:600">+ ${eur(et)}</small>` : ''}</div>
     <div class="hero-r">${st ? `<b>${rateLabel()}</b> a year · about <b>${ft(yearNet())}</b> a year after tax` : `0.01% a year · about ${ft(yearNet())} a year`}</div>
     <div class="hero-btns"><button class="btn" data-sheet="hubsave">Add money</button><button class="btn w" data-sheet="hubout">Withdraw</button></div>
     <div class="trust"><span>${I('check',15)} Withdraw any time</span><span>${I('check',15)} No fees</span><span>${I('shield',15)} Insured</span></div>
-    ${st ? `<div class="fine" style="margin-top:8px">${S.bridge ? 'Graduate: 3.0% for 12 months while your salary comes to OTP' : 'Verified student · checked again each semester'}</div>` : ''}
+    ${st ? `<div class="fine" style="margin-top:8px">${S.bridge ? 'Graduate: 3.0% for 12 months while your salary comes to OTP' : 'Included in your Junior package. Nothing to sign up for'}</div>` : ''}
   </div>
 
   ${S.onboarded ? '' : `<button class="setup" data-onbstart><span style="color:var(--green);display:flex">${I('star',24)}</span><span style="flex:1"><b>Set a goal and a saving rule</b><small>Takes 1 minute</small></span><span style="color:var(--green);display:flex">${I('chev',20)}</span></button>`}
@@ -1026,10 +1024,10 @@ const PAGES = {
       <div class="hero-btns" style="margin:14px 0 0"><button class="btn" data-pickgoal="${g.id}">Add money</button><button class="btn w" data-outgoal="${g.id}">Take out</button></div></div>`;
     if(g.shared){
       html += `<div class="sec"><span>Who put in what</span></div><div class="card lst">${g.members.map(mb=>`<div class="li">${avatar(mb,32)}<span class="t"><b>${mb.me ? 'Anna (you)' : esc(mb.n)}</b><div class="prog" style="margin:6px 0 0;height:6px"><i style="width:${Math.round(mb.amt / Math.max(1,s) * 100)}%"></i></div></span><b class="num">${ft(mb.amt)}</b></div>`).join('')}</div>
-        <div class="card" style="padding:4px 16px 10px"><ul class="bul sm"><li><b>You can always take out what you put in.</b></li><li>Paying out the whole pot needs everyone to agree.</li><li>Each share earns the student rate and counts toward that member's own 500 000 Ft limit.</li></ul>
+        <div class="card" style="padding:4px 16px 10px"><ul class="bul sm"><li><b>You can always take out what you put in.</b></li><li>Paying out the whole pot needs everyone to agree.</li><li>Each share earns 3.0% and counts toward that member's own 500 000 Ft limit.</li></ul>
         ${g.members.length < 5 ? `<button class="btn w" style="margin:6px 0 4px" data-invite>Invite a friend</button>` : ''}</div>`;
     } else if(!isEur(g)){
-      html += `<div class="card lst"><div class="li"><span class="ic">${I('rate')}</span><span class="t"><b>${(S.verified||S.bridge) ? 'Student rate 3.0%' : 'Standard rate 0.01%'}</b><small>About ${ft(yearNet(s))} a year after tax on ${ft(s)}</small></span></div></div>
+      html += `<div class="card lst"><div class="li"><span class="ic">${I('rate')}</span><span class="t"><b>${(S.verified||S.bridge) ? 'Junior rate 3.0%' : 'Standard rate 0.01%'}</b><small>About ${ft(yearNet(s))} a year after tax on ${ft(s)}</small></span></div></div>
         <div class="sec"><span>Money in</span></div>
         <div class="card lst">
           <button class="li" data-gpay="${g.id}"><span class="ic">${I('money')}</span><span class="t"><b>Payday rule</b><small>${S.payday.pct}% of each salary${S.payday.on && S.ruleGoal !== g.id ? ` · now goes to ${esc(ruleGoal().name)}` : ''}</small></span>${sw(S.payday.on && S.ruleGoal === g.id)}</button>
@@ -1057,12 +1055,12 @@ const PAGES = {
       <div class="card"><b style="font-size:15px;line-height:1.4;display:block">${monthly ? `With these rules: about ${ft(Math.round(proj/1000)*1000)} by ${fDate(d.date)}` : 'No rules yet. Add a weekly transfer or round-ups to see a forecast.'}</b>
         ${monthly ? `<div class="prog" style="margin:10px 0 6px;height:10px"><i style="width:${pc}%"></i></div><div class="k">${pc}% of your goal · ${short > 0 ? `about ${ft(Math.round(short/1000)*1000)} short` : 'on time'}</div>` : ''}
         ${extra ? `<button class="btn w" style="margin-top:12px" data-cgboost="${d.weekly + extra}">Make it ${ft(d.weekly + extra)} a week</button>` : ''}</div>
-      <p class="fine" style="margin:0 2px">Earns ${(S.verified||S.bridge) ? 'the student rate of 3.0%' : '0.01% until you verify your student status'}.</p>`; },
+      <p class="fine" style="margin:0 2px">Earns ${(S.verified||S.bridge) ? '3.0% with your Junior account' : '0.01% (standard rate)'}.</p>`; },
     foot:()=>{ const d = S._draft; if(!d) return '';
       return d.step < 3 ? `<div class="hero-btns" style="margin:0">${d.step > 1 ? '<button class="btn w" data-cgstep="-1">Back</button>' : ''}<button class="btn" data-cgstep="1">Next</button></div>`
         : `<div class="hero-btns" style="margin:0"><button class="btn w" data-cgstep="-1">Back</button><button class="btn" data-cgcreate>Create Persely</button></div>`; }},
-  // graduation bridge: the retention moment, the student rate continues if the salary comes to OTP
-  grad:{title:'Your student rate', html:()=>{ const pr = S.payday;
+  // graduation bridge: the retention moment, the 3.0% rate continues if the salary comes to OTP
+  grad:{title:'Your 3.0% rate', html:()=>{ const pr = S.payday;
     return `<div style="display:flex;justify-content:center;margin-top:6px">${pig('proud',110)}</div>
     <div class="card" style="padding:20px 18px"><h2 style="margin:0 0 8px;font-size:22px;line-height:1.25">${S.bridge ? 'Your 3.0% continues' : S.juniorDays ? 'Your Junior package ends soon' : 'Congratulations, Anna'}</h2>
       <div style="font-size:15px;line-height:1.5;color:var(--ink2)">${S.bridge ? 'For 12 months after graduation, on your first 500 000 Ft, while your salary comes to OTP.' : `${S.juniorDays ? `In ${S.juniorDays} days, or when you graduate.` : 'This month.'} Have your first salary paid into OTP and <b>keep 3.0% for 12 more months.</b>`}</div></div>
@@ -1206,7 +1204,7 @@ const SHEETS = {
     <div class="chips" style="margin-top:0">${(e ? [10,20,50,100] : [500,1000,2000,5000]).map(x=>`<button class="chip" style="font-size:14px;padding:8px 12px" data-setv="${x}">${e ? eur(x) : ft(x)}</button>`).join('')}</div>
     <div class="flabel">From</div>
     ${S.accounts.filter(a=>a.id!=='persely').map(a=>`<button class="opt slim ${S._from===a.id?'on':''}" data-hubfrom="${a.id}"><span class="ic">${I('wallet',22)}</span><span class="t"><b>${a.n}</b><small class="num">${ft(a.v)} available</small></span>${S._from===a.id?`<span style="color:var(--green);display:flex">${I('check',22)}</span>`:''}</button>`).join('')}
-    <div class="fine" style="margin:6px 2px 14px">${e ? `Demo rate 1 € = ${EUR_RATE} Ft. Euro Perselys don't get the student rate.` : S.savedWeek ? 'This week already counts for your streak.' : `Counts for this week: your streak goes to ${S.streak+1}.`}</div>
+    <div class="fine" style="margin:6px 2px 14px">${e ? `Demo rate 1 € = ${EUR_RATE} Ft. Euro Perselys don't get the 3.0% rate.` : S.savedWeek ? 'This week already counts for your streak.' : `Counts for this week: your streak goes to ${S.streak+1}.`}</div>
     <button class="btn" data-hubsave>Add money</button>`; },
   // withdraw: the fear "my money is locked" is answered right here
   hubout:()=>{ if(!S.goals.some(g=>g.id===S._out)) S._out = S.goals[0].id; const g = goalById(S._out), max = mine(g);
@@ -1244,21 +1242,13 @@ const SHEETS = {
     <div class="chips" style="margin:0 0 8px">${S.goals.filter(g=>!g.shared && !isEur(g)).map(g=>`<button class="chip ${r.goal===g.id?'on':''}" style="font-size:13.5px;padding:7px 11px" data-rrgoal="${g.id}">${esc(g.name)}</button>`).join('')}</div>
     <div class="fine" style="margin:6px 2px 14px">About ${ft(ROUND_EST)} a month from your usual card spending.</div>
     <button class="btn" data-rron>${r.on ? 'Save' : 'Turn on'}</button>${r.on ? '<button class="btn ghost" data-rroff>Turn off</button>' : ''}`; },
-  verify:()=>`<div style="text-align:center"><span class="gic" style="margin:4px auto 10px;width:56px;height:56px">${I('shield',28)}</span></div>
-    <h2>Get the student rate</h2>
-    <div class="rev">
-      <div><span>Today</span><b>0.01% · about ${ft(r10(Math.min(total(),CAP)*LOW_RATE/100*(1-TAX)))} a year</b></div>
-      <div><span>As a student</span><b style="color:var(--green-t)">3.0% · about ${ft(r10(Math.min(total(),CAP)*RATE/100*(1-TAX)))} a year</b></div>
-    </div>
-    <div class="fine" style="margin:0 2px 14px">For students aged 18–30, on your first 500 000 Ft, after 28% tax. We check your enrolment with your university (Neptun) once a semester.</div>
-    <button class="btn" data-verify>Verify with Neptun</button>`,
   sharedgoal:()=>{ const g = goalById(S._shared); if(!g) return '';
     const s = gSaved(g), p = Math.min(100, Math.round(s / g.target * 100));
     return `<h2>${esc(g.name)}</h2><div style="text-align:center;margin:-8px 0 12px"><span class="pill ok">Shared Persely · ${plural(g.members.length,'member')}</span></div>
     <div class="card"><div class="hero-v num" style="font-size:26px">${ft(s)} <small class="k" style="font-size:14px;font-weight:600">of ${ft(g.target)}</small></div><div class="prog" style="margin:8px 0 6px"><i style="width:${p}%"></i></div><div class="k">By ${fDate(g.date)}</div></div>
     <div class="flabel">Who put in what</div>
     <div class="card lst">${g.members.map(m=>`<div class="li">${avatar(m,30)}<span class="t"><b>${m.me ? 'Anna (you)' : esc(m.n)}</b><small class="num">${ft(m.amt)}</small></span></div>`).join('')}</div>
-    <div class="fine" style="margin:0 2px 12px">You can always take out what you put in. Paying out the whole pot needs everyone to agree. Each share earns the student rate.</div>
+    <div class="fine" style="margin:0 2px 12px">You can always take out what you put in. Paying out the whole pot needs everyone to agree. Each share earns 3.0%.</div>
     <div class="hero-btns" style="margin:0 0 6px"><button class="btn" data-pickgoal="${g.id}">Add money</button><button class="btn w" data-outgoal="${g.id}">Take out</button></div>
     ${g.members.length < 5 ? '<button class="btn ghost" data-invite>Invite a friend</button>' : ''}`; },
   newshared:()=>`<h2>New shared Persely</h2><div class="fine" style="text-align:center;margin:-8px 0 12px">Save with friends or flatmates who are also students. 2–5 people.</div>
@@ -1287,12 +1277,12 @@ const SHEETS = {
   newgoal:()=>{ const hasShared = S.goals.some(g=>g.shared), hasEur = S.goals.some(isEur);
     return `<h2>New goal</h2><div style="text-align:center;color:var(--muted);font-size:13px;margin:-8px 0 14px">Up to 5 Perselys.</div>
     ${hasShared ? '' : `<button class="row" data-sheet="newshared"><span class="ic">${I('user')}</span><span class="t">Shared Persely<small>Save together with friends or flatmates</small></span><span class="chev">${I('chev',20)}</span></button>`}
-    ${hasEur ? '' : `<button class="row" data-neweur><span class="ic">${I('euro')}</span><span class="t">Euro Persely<small>For Erasmus and travel. No student rate</small></span><span class="chev">${I('plus',20)}</span></button>`}
+    ${hasEur ? '' : `<button class="row" data-neweur><span class="ic">${I('euro')}</span><span class="t">Euro Persely<small>For Erasmus and travel. No 3.0% rate</small></span><span class="chev">${I('plus',20)}</span></button>`}
     <button class="row" data-cgnew><span class="ic">${I('plus')}</span><span class="t">Your own goal<small>Name, amount, date and a forecast</small></span><span class="chev">${I('chev',20)}</span></button>
     ${[['PS5 + GTA 6','game',230000],['Erasmus in Lisbon','plane',150000],['Driving licence','car',350000],['Emergency fund','lock',200000]].filter(([n])=>!S.goals.some(g=>g.name===n)).map(([n,ic,t])=>`<button class="row" data-cgpreset="${n}|${ic}|${t}"><span class="ic">${I(ic)}</span><span class="t">${n}<small>Target: ${ft(t)}</small></span><span class="chev">${I('chev',20)}</span></button>`).join('')}`; },
   how:()=>`<h2>How Persely works</h2>
-    <div class="flabel">Student rate</div>
-    <div class="card" style="padding:4px 16px 10px"><ul class="bul sm"><li>3.0% a year for verified students aged 18–30, on the first 500 000 Ft</li><li>Interest is paid monthly, 28% tax deducted: about 2.2% net</li><li>After graduation: 12 more months at 3.0% if your salary comes to OTP</li></ul></div>
+    <div class="flabel">Junior rate</div>
+    <div class="card" style="padding:4px 16px 10px"><ul class="bul sm"><li>3.0% a year for every Junior customer, automatically, on the first 500 000 Ft</li><li>Interest is paid monthly, 28% tax deducted: about 2.2% net</li><li>When Junior ends: 12 more months at 3.0% if your salary comes to OTP</li></ul></div>
     <div class="flabel">Money in</div>
     <div class="card" style="padding:4px 16px 10px"><ul class="bul sm"><li>Payday rule: a share of each salary, the app asks first</li><li>Weekly transfer, round-ups, or add money yourself</li><li>Withdraw any time, free of charge</li></ul></div>
     <div class="flabel">Streak</div>
@@ -1450,7 +1440,6 @@ document.addEventListener('click', e=>{
   if(d.rrgoal){ S.roundup.goal = d.rrgoal; sheet(SHEETS.roundrule()); return; }
   if('rron' in d){ S.roundup.on = true; closeSheet(); renderAll(); toast(`Round-ups on: they go to ${(goalById(S.roundup.goal)||ruleGoal()).name}`); return; }
   if('rroff' in d){ S.roundup.on = false; closeSheet(); renderAll(); toast('Round-ups off'); return; }
-  if('verify' in d){ S.verified = true; closeSheet(); renderAll(); toast('Verified. Your Perselys now earn 3.0%'); return; }
   if('keeprate' in d){ S.bridge = true; renderAll(); popPage(); tab('hub'); toast('Done. Your 3.0% continues for 12 months once your salary arrives at OTP'); return; }
   if('raise' in d){ S.payday.pct = Math.min(20, S.payday.pct + 5); renderAll(); toast(`Payday rule is now ${S.payday.pct}%`); return; }
   if('insyes' in d){ const g = ruleGoal(); g.pace = (g.pace || 0) + (+d.insyes); S.insightUsed = true; renderAll(); toast(`Done: ${ft(+d.insyes)} more a month goes to ${g.name}`); return; }
@@ -1476,7 +1465,6 @@ document.addEventListener('click', e=>{
   if(d.wnpick){ S.updateSeen = true; save(); closeWhatsNew(); startOnb(d.wnpick); return; }
   if('wnlater' in d){ S.updateSeen = true; save(); closeWhatsNew(); toast('You can set it up any time in the Persely tab'); return; }
   if('onbstart' in d){ startOnb('travel'); return; }
-  if('onbverify' in d){ S.verified = true; O.verified = true; O.i++; renderOnb(); toast('Verified. 3.0% is yours'); return; }
   if('onbnext' in d){
     if(STEPS[O.i] === 'goal'){ keepOnbName(); if(!O.name.trim()){ toast('Give your goal a name'); return; } }
     O.i = Math.min(STEPS.length - 1, O.i + 1); renderOnb(); return;
@@ -1821,7 +1809,7 @@ const pig3d = (() => {
 function mountPig(){ if(pig3d) pig3d.mount(); }
 
 /* ================= update pop-up + onboarding =================
-   Pop-up: one question ("What are you saving for?"). Then: student rate → goal with a date → how money gets in
+   Pop-up: one question ("What are you saving for?"). Then: goal with a date → how money gets in
    (with a live projection) → first deposit (optional, choose the account) → summary → short tour. */
 const GOAL_PRESETS = {
   ps5:{label:'PS5 + GTA 6', ic:'game', name:'PS5 + GTA 6', target:230000, date:'2027-12-01', hot:true},
@@ -1833,17 +1821,17 @@ const GOAL_PRESETS = {
 };
 const DATES = [['2027-06-01','June 2027'],['2027-09-01','Sept 2027'],['2027-12-01','Dec 2027'],['2028-06-01','June 2028']];
 const O = { i:0 };
-const STEPS = ['verify','goal','how','first','done'];
+const STEPS = ['goal','how','first','done'];
 const onbMonthly = () => (O.payOn ? incomeShare(O.pct) : 0) + (O.weeklyOn ? Math.round(O.weekly * 52 / 12) : 0) + (O.roundOn ? ROUND_EST : 0);
 const shortFt = v => v >= 1000000 ? `${v/1000000} M Ft` : `${v/1000}k Ft`;
 // the day the update arrives: nothing set up yet
 function updateDayState(){
   Object.assign(S, {streak:0, best:0, history:[], skipped:[], savedWeek:false, skips:0, challenges:{}, friends:[], toured:false, monthSaved:4000,
-    verified:false, bridge:false, payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday',
+    verified:true, bridge:false, payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday',
     insight:false, insightUsed:false});
   S.goals = S.goals.filter(g => g.id === 'holiday');
 }
-// 8 weeks later: verified student, payday rule on, habit formed (the state used for the main demo)
+// 8 weeks later: Junior customer, payday rule on, habit formed (the state used for the main demo)
 function week8State(){
   const f = fresh();
   Object.assign(S, {streak:8, best:8, savedWeek:false, skips:1, updateSeen:true, onboarded:true, verified:true,
@@ -1858,7 +1846,7 @@ function showWhatsNew(){
   const w = $('#wn');
   w.innerHTML = `<div class="wn-card">${pig('happy',112)}<span class="newpill">New in Persely</span>
     <h2>What are you saving for?</h2>
-    <ul class="bul left"><li>3.0% a year for students</li><li>See the month you reach your goal</li><li>Save a little from every salary</li></ul>
+    <ul class="bul left"><li>3.0% a year with your Junior account</li><li>See the month you reach your goal</li><li>Save a little from every salary</li></ul>
     <div class="wn-grid three">${Object.entries(GOAL_PRESETS).map(([k,g])=>`<button class="${g.hot?'hot':''}" data-wnpick="${k}">${g.hot ? '<span class="hotb">Trending</span>' : ''}${I(g.ic,24)}${g.label}</button>`).join('')}</div>
     <button class="later" data-wnlater>Not now</button></div>`;
   w.classList.add('on'); mountPig();
@@ -1870,7 +1858,7 @@ function launchFlow(delay=1500){
 }
 function startOnb(key){
   const g = GOAL_PRESETS[key] || GOAL_PRESETS.travel;
-  Object.assign(O, {i: (S.verified || S.bridge) ? 1 : 0, key, name:g.name, target:g.target, date:g.date,
+  Object.assign(O, {i: 0, key, name:g.name, target:g.target, date:g.date,
     payOn:true, pct:10, weeklyOn:false, weekly:2000, roundOn:true, first:1000, from:'junior', deposited:0, remind:true, coinShown:false});
   tab('hub'); $('#onb').classList.add('on'); renderOnb();
 }
@@ -1880,15 +1868,8 @@ function renderOnb(){
   const bars = STEPS.slice(0, n).map((_,k) => `<i class="${k<=i?'on':''}"></i>`).join('');
   const tg = (on, attr, title, sub, extra='') => `<button class="opt slim ${on?'on':''}" ${attr}><span class="t"><b>${title}</b><small>${sub}</small></span><span class="tg ${on?'on':''}"></span></button>${on && extra ? `<div class="subopts">${extra}</div>` : ''}`;
   let body = '', foot = `<button class="btn" data-onbnext>Next</button>`;
-  if(step === 'verify'){
-    const base = total();
-    body = `<div style="display:flex;justify-content:center">${pig('happy',120)}</div>
-      <div class="onb-step">Step 1 of ${n}</div><h2>Get 3.0% as a student</h2><p class="lead">Your Persely earns 0.01% today. Students aged 18–30 get 3.0% on their first 500 000 Ft.</p>
-      <div class="rev"><div><span>On ${ft(base)} today</span><b>about ${ft(r10(Math.min(base,CAP)*LOW_RATE/100*(1-TAX)))} a year</b></div><div><span>With the student rate</span><b style="color:var(--green-t)">about ${ft(r10(Math.min(base,CAP)*RATE/100*(1-TAX)))} a year</b></div></div>
-      <p class="fine">After 28% tax. We check your enrolment with your university (Neptun) once a semester.</p>`;
-    foot = `<button class="btn" data-onbverify>Verify with Neptun</button><button class="btn ghost" data-onbnext>Later</button>`;
-  } else if(step === 'goal'){
-    body = `<div class="onb-step">Step 2 of ${n}</div><h2>Your goal</h2><p class="lead">You can change it later.</p>
+  if(step === 'goal'){
+    body = `<div class="onb-step">Step 1 of ${n}</div><h2>Your goal</h2><p class="lead">It earns 3.0% a year with your Junior account. You can change it later.</p>
       <div class="flabel">Name</div>
       <div class="fld"><span class="t"><input id="onbName" maxlength="30" value="${esc(O.name)}" aria-label="Goal name"></span></div>
       <div class="flabel">Amount</div>
@@ -1900,7 +1881,7 @@ function renderOnb(){
   } else if(step === 'how'){
     const m = monthsTo(O.date), proj = Math.round(onbMonthly() * m), p = Math.min(100, Math.round(proj / O.target * 100)), short = O.target - proj;
     const weeks = Math.max(1, m * 4.345), extra = short > 0 ? Math.ceil(short / weeks / 500) * 500 : 0;
-    body = `<div class="onb-step">Step 3 of ${n}</div><h2>How should money get in?</h2><p class="lead">Switch on what suits you. Change it any time.</p>
+    body = `<div class="onb-step">Step 2 of ${n}</div><h2>How should money get in?</h2><p class="lead">Switch on what suits you. Change it any time.</p>
       ${tg(O.payOn, 'data-onbpay', 'Payday rule <span class="rec">Recommended</span>', 'A share of each salary or scholarship. We ask first.',
         `<div class="chips" style="margin:0">${[5,10,15,20].map(x=>`<button class="chip ${O.pct===x?'on':''}" style="font-size:14px;padding:7px 13px" data-onbpct="${x}">${x}%</button>`).join('')}</div>`)}
       ${tg(O.weeklyOn, 'data-onbwk', 'Weekly transfer', 'The same amount every Monday.',
@@ -1912,14 +1893,14 @@ function renderOnb(){
         ${short > 0 && onbMonthly() ? `<button class="btn w" style="margin-top:12px" data-onbboost="${(O.weeklyOn ? O.weekly : 0) + extra}">Add ${ft(extra)} a week to make it</button>` : ''}
       </div>`;
   } else if(step === 'first'){
-    body = `<div class="onb-step">Step 4 of ${n}</div><h2>First deposit</h2><p class="lead">Optional. It starts your streak this week.</p>
+    body = `<div class="onb-step">Step 3 of ${n}</div><h2>First deposit</h2><p class="lead">Optional. It starts your streak this week.</p>
       <div class="amt num" style="text-align:center;font-size:40px;margin:22px 0 8px">${ft(O.first)}</div>
       <div class="chips" style="justify-content:center">${[500,1000,2000,5000].map(v=>`<button class="chip ${O.first===v?'on':''}" style="font-size:15px;padding:9px 14px" data-onbfirst="${v}">${ft(v)}</button>`).join('')}</div>
       <p class="fine" style="text-align:center">You choose the account on the next screen. Free, and you can withdraw it any time.</p>`;
     foot = `<button class="btn" data-onbdeposit>Continue</button><button class="btn ghost" data-onbskipfirst>Skip for now</button>`;
   } else {
     const rules = [O.payOn && `${O.pct}% of each salary`, O.weeklyOn && `${ft(O.weekly)} weekly`, O.roundOn && 'round-ups'].filter(Boolean).join(', ') || 'You add money yourself';
-    const rows = [['Goal', `${esc(O.name)}, ${ft(O.target)}`], ['By', fDate(O.date)], ['Rate', (S.verified || S.bridge) ? '3.0% student rate' : '0.01% until you verify'], ['Money in', rules], ['First deposit', O.deposited ? `${ft(O.deposited)} from ${fromName(O.from)}` : 'Not yet']];
+    const rows = [['Goal', `${esc(O.name)}, ${ft(O.target)}`], ['By', fDate(O.date)], ['Rate', (S.verified || S.bridge) ? '3.0% with your Junior account' : '0.01% standard rate'], ['Money in', rules], ['First deposit', O.deposited ? `${ft(O.deposited)} from ${fromName(O.from)}` : 'Not yet']];
     body = `<div style="display:flex;justify-content:center;margin-top:6px">${pig('proud',120)}</div><h2 style="text-align:center;margin-top:0">You're all set</h2>
       <p class="lead" style="text-align:center;margin-bottom:12px">${O.deposited ? 'First coin is in. Your streak has started.' : "I'll remind you on Sunday if the week is still open."}</p>
       <div class="card sumcard">${rows.map(([k,v])=>`<div class="sr"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
@@ -1951,7 +1932,7 @@ function applyOnb(){
 /* ================= short tour ================= */
 const TOUR = [
   ['persi', 'This is Persi', 'One short update here, and at most one reminder a week.'],
-  ['total', 'Your savings', 'Student rate 3.0%. Add or withdraw any time, no fees.'],
+  ['total', 'Your savings', '3.0% a year with your Junior account. Add or withdraw any time, no fees.'],
   ['week',  'Your streak', 'Save any amount once a week to keep it going. Automatic savings count too.'],
   ['goals', 'Your goals', 'Each goal shows the month you get there.'],
   ['auto',  'Money in', 'Payday rule, weekly transfer and round-ups. Change them here.']
@@ -2036,7 +2017,7 @@ function storySlides(){
     {bg:'linear-gradient(160deg,#9A3412,#FB923C)', k:'Your streak', big:`${Math.max(S.streak,1)} weeks`, sub:'You saved every single week. That is how habits are made.'},
     {bg:'linear-gradient(160deg,#1E3A8A,#3B82F6)', k:esc(g.name), big:`${pct}%`, sub:`At this pace you get there in ${inMonths(gMonths(g))}.`},
     {bg:'linear-gradient(160deg,#7C2D12,#D97706)', k:'Among your friends', big:`#${rank}`, sub: !S.friends.length ? 'Add friends and compare next month.' : ahead ? `${ahead.n} is ${plural(ahead.s - S.streak,'week')} ahead. Catch up in December?` : 'You lead your crew. Keep it up.'},
-    {bg:'linear-gradient(160deg,#14532D,#16A34A)', k: S.interest ? 'Interest earned' : 'Your student rate', big: S.interest ? ft(S.interest) : rateLabel(), sub: S.interest ? `Your ${rateLabel()} student rate at work, after tax. At 0.01% it would be a few forints.` : `On ${ft(total())} that is about ${ft(yearNet())} a year after tax.`},
+    {bg:'linear-gradient(160deg,#14532D,#16A34A)', k: S.interest ? 'Interest earned' : 'Your Junior rate', big: S.interest ? ft(S.interest) : rateLabel(), sub: S.interest ? `Your ${rateLabel()} Junior rate at work, after tax. At 0.01% it would be a few forints.` : `On ${ft(total())} that is about ${ft(yearNet())} a year after tax.`},
     {bg:'linear-gradient(160deg,#1F6B2A,#52AE30)', k:'Your tip for next month', big:'2 deliveries less a week', sub:`About 9 000 Ft more saved. ${esc(g.name)} arrives a month sooner.`, pig:'happy'},
     {bg:'linear-gradient(160deg,#1F6B2A,#52AE30)', share:true, end:true}
   ];
@@ -2080,7 +2061,7 @@ const DEMO = [
   {e:'💳', label:'Card payment',      title:'Card payment',            body:'-5 240 Ft · LIDL MAGYARORSZÁG. Balance: 82 210 Ft', url:'tranzakciok'},
   {e:'💸', label:'Money received',    title:'Money received',          body:'+20 000 Ft from NAGY PÉTER – instant transfer',     url:'tranzakciok'},
   {e:'🐷', label:'Week still open',   title:'Persi · Persely', persi:true, body:()=>`🔥 Your ${S.streak}-week streak ends Sunday. Drop in any amount and it keeps going.`, url:'hub'},
-  {e:'💚', label:'Interest paid',     title:'Persi · Persely', persi:true, body:()=>`Your 3.0% student rate paid ${ft(Math.max(130, Math.round(Math.min(total(),CAP)*RATE/100/12*(1-TAX))))} this month, after tax.`, url:'hub'},
+  {e:'💚', label:'Interest paid',     title:'Persi · Persely', persi:true, body:()=>`Your 3.0% Junior rate paid ${ft(Math.max(130, Math.round(Math.min(total(),CAP)*RATE/100/12*(1-TAX))))} this month, after tax.`, url:'hub'},
   {e:'👯', label:'Friend saved too',  title:'Persi · Persely', persi:true, body:'Dóri added 5 000 Ft to Balaton in July. Your turn?', url:'hub'},
   {e:'🎓', label:'Junior ends',       title:'Persi · Persely', persi:true, body:'Your Junior package ends in 30 days. Get your salary paid to OTP and keep 3.0% for 12 more months.', url:'grad'},
   {e:'📊', label:'Monthly story',     title:'Persi · Persely', persi:true, body:()=>`Your ${S.period} story is ready. Take a look.`, url:'story'},

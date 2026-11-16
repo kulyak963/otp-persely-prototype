@@ -11,7 +11,7 @@ Concept prototype for the OTP Bank × Corvinus service design seminar. It copies
 
 ## What is inside
 
-- 3.0% student rate for verified students (first 500,000 Ft, 28% tax), 0.01% otherwise
+- 3.0% a year for every Junior customer, automatically, no sign-up (first 500,000 Ft, 28% tax); 0.01% otherwise
 - Payday rule that asks first ("Move 10%?"), weekly transfers, round-ups ×2
 - Goals with a date and an honest forecast, shared Persely (2–5 friends), euro Persely
 - Weekly streak with a flame and skip weeks; it never changes the rate
