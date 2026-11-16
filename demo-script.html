@@ -1,0 +1,140 @@
+<title>Persely Demo Script</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: one readable column, a run sheet of scenes, each with what to press, what the jury sees and what to say */
+:root{
+  --bg:#F3F5F1; --surface:#FFFFFF; --ink:#1F2A1C; --muted:#5E6A5A; --line:#DCE3D7;
+  --green:#3E8E22; --green-soft:#E6F2DF; --key:#EEF1EA; --flame:#E8701A;
+  --font:"Open Sans",-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#141912; --surface:#1C2319; --ink:#E7EEE3; --muted:#9DAA97; --line:#2E3A2A;
+  --green:#7CCB5A; --green-soft:#24331E; --key:#26301F; --flame:#FF9A4A; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#141912; --surface:#1C2319; --ink:#E7EEE3; --muted:#9DAA97; --line:#2E3A2A;
+  --green:#7CCB5A; --green-soft:#24331E; --key:#26301F; --flame:#FF9A4A; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:32px 56px}
+.wrap{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font-size:30px;line-height:1.15;margin:0;font-weight:800;text-wrap:balance}
+h2{font-size:18px;margin:0 0 10px;font-weight:700}
+p{margin:0}
+.lead{color:var(--muted);max-width:62ch;margin-top:8px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tag{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--green-soft);color:var(--green)}
+kbd{font-family:var(--font);font-size:12px;font-weight:700;padding:1px 7px;border-radius:6px;background:var(--key);border:1px solid var(--line);white-space:nowrap}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.box ul,.box ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.scenes{display:flex;flex-direction:column;gap:10px}
+.scene{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;grid-template-columns:42px 1fr;gap:4px 14px}
+.n{grid-row:span 3;width:34px;height:34px;border-radius:50%;background:var(--green-soft);color:var(--green);font-weight:800;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.scene h3{margin:0;font-size:16px;font-weight:700;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.do{color:var(--muted);font-size:14px;min-width:0}
+.say{font-size:14.5px;border-left:3px solid var(--green);padding-left:10px;margin-top:4px;min-width:0}
+.say b{color:var(--green)}
+.time{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700}
+td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.close{background:var(--green-soft);border-radius:14px;padding:18px 20px;font-size:16px;font-weight:600}
+.warn{border-left:3px solid var(--flame);padding-left:12px}
+@media (max-width:520px){ h1{font-size:25px} .scene{grid-template-columns:1fr} .n{grid-row:auto} .time{margin-left:0} }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Persely demo script</h1>
+    <p class="lead">Team 3, OTP × Corvinus seminar. One student, Kiss Anna, from the update pop-up to the end of her Junior package. About 6 minutes. Everything runs in our app on the iPhone and on the laptop next to it.</p>
+    <div class="meta"><span class="tag">3.0% student rate</span><span class="tag">Weekly streak</span><span class="tag">Persi, the Persely piggy</span><span class="tag">Shared Persely</span><span class="tag">Graduation bridge</span></div>
+  </header>
+
+  <section class="box">
+    <h2>Before you start</h2>
+    <ol>
+      <li>Laptop: run the server and open <b>localhost:8090</b> on the projector. The demo panel sits to the left of the phone; <kbd>H</kbd> hides it.</li>
+      <li>iPhone: open the app from the Home Screen icon. Turn on <b>Also send to iPhone</b> in the panel if pushes should reach the phone too.</li>
+      <li>Press <kbd>U</kbd> to start from the update day. If something goes wrong, <b>Reset app</b> in the panel jumps to the state "8 weeks later".</li>
+      <li>Presenting from the iPhone only: long-press Anna's picture on Home to open the same demo controls.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Run sheet</h2>
+    <div class="scenes">
+      <div class="scene"><span class="n">1</span><h3>The update <span class="time">0:00</span></h3>
+        <p class="do">Press <kbd>U</kbd>. The pop-up with Persi asks "What are you saving for?". Tap the first tile, <b>PS5 + GTA 6</b> (marked Trending). Give the room a second to react.</p>
+        <p class="say">"Persely already has more than 340,000 users, but it pays 0.01%. Students want to save: 85% say it matters, only 27% use a savings product."</p></div>
+
+      <div class="scene"><span class="n">2</span><h3>Student rate <span class="time">0:40</span></h3>
+        <p class="do">Onboarding step 1. Point at the two lines: today about 5 Ft a year, with the student rate about 1,380 Ft. Tap <b>Verify with Neptun</b>.</p>
+        <p class="say">"<b>3.0%</b> on the first 500,000 Ft for verified students, about 2.2% after tax. Revolut pays 1.8% after tax."</p></div>
+
+      <div class="scene"><span class="n">3</span><h3>Goal and forecast <span class="time">1:10</span></h3>
+        <p class="do">PS5 + GTA 6, 230,000 Ft, Dec 2027 → Next. Payday rule 10% and round-ups are on. The card says about 131,000 Ft by 1 December 2027, 99,000 short. Tap <b>Add 2,000 Ft a week to make it</b>.</p>
+        <p class="say">"Real goals, in students' own words. Every goal has a date, and the app tells you honestly whether you will make it. Late goals are marked in orange."</p></div>
+
+      <div class="scene"><span class="n">4</span><h3>First deposit <span class="time">1:50</span></h3>
+        <p class="do">Pick 1,000 Ft → Continue → choose the account in <b>Pay from</b> → Confirm. A coin drops into Persi. Skip the short tour or tap through it.</p>
+        <p class="say">"The streak starts with any amount. It is weekly, because student income is irregular."</p></div>
+
+      <div class="scene"><span class="n">5</span><h3>Payday <kbd>P</kbd> <span class="time">2:20</span></h3>
+        <p class="do">Persi's push: "Salary's in: +75,000 Ft. Move 7,500 Ft to PS5 + GTA 6?" The sheet shows the goal before and after. Tap <b>Move 7,500 Ft</b>.</p>
+        <p class="say">"The app asks first. The student keeps control, and the share is gone before it can be spent."</p></div>
+
+      <div class="scene"><span class="n">6</span><h3>Round-up <kbd>C</kbd> <span class="time">2:50</span></h3>
+        <p class="do">A 1,190 Ft coffee. The toast shows a 20 Ft round-up going to the goal.</p>
+        <p class="say">"Small change, doubled. Persely already rounds up today; we connect it to the goal."</p></div>
+
+      <div class="scene"><span class="n">7</span><h3>Shared Persely <kbd>D</kbd> <span class="time">3:10</span></h3>
+        <p class="do">Persely tab → <b>Shared Persely</b> button under the goals → Create and invite. Press <kbd>D</kbd>: Dóri joins with 15,000 Ft and the Persely screen shows who put in what.</p>
+        <p class="say">"Flatmates save for Balaton together. Everyone can always take back what they put in; paying out the whole pot needs everyone."</p></div>
+
+      <div class="scene"><span class="n">8</span><h3>A month later <kbd>O</kbd> <span class="time">3:40</span></h3>
+        <p class="do">Salary, rules, card payments and interest run. Open <b>Home</b>: Persi's tip says food was the biggest category and 10% of it brings the goal weeks closer. Tap <b>Move 10% a month</b>.</p>
+        <p class="say">"Insight with one action, not a report to read."</p></div>
+
+      <div class="scene"><span class="n">9</span><h3>Streak reminder <kbd>L</kbd> then <kbd>3</kbd> <span class="time">4:10</span></h3>
+        <p class="do">Lock the phone, send push 3. It lands on the lock screen: "Your 8-week streak ends Sunday." Tap it to open the app.</p>
+        <p class="say">"One reminder a week at most, from Persi, not from 'OTP Bank'."</p></div>
+
+      <div class="scene"><span class="n">10</span><h3>End of semester <kbd>E</kbd> <span class="time">4:30</span></h3>
+        <p class="do">The semester story opens: colourful slides, interest earned, and a share card that shows the streak and goal progress without amounts.</p>
+        <p class="say">"Something students want to post, and it says Saving with OTP Persely."</p></div>
+
+      <div class="scene"><span class="n">11</span><h3>Junior ends <kbd>G</kbd> <span class="time">5:10</span></h3>
+        <p class="do">"Congratulations, Anna." Three steps. Tap <b>Keep my 3.0%</b>; the badge turns into Graduate 3.0%.</p>
+        <p class="say">"This is the moment the bank loses students today. The rate continues for 12 months if the first salary comes to OTP."</p></div>
+    </div>
+  </section>
+
+  <p class="close">Closing line: students choose it because it pays, it builds on Persely, and it keeps them with OTP after the Junior package ends.</p>
+
+  <section class="box">
+    <h2>Numbers to quote</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Fact</th><th>Figure</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td>Persely today</td><td class="num">340,000+ users, 0.01%</td><td>OTP news (March 2025), OTP rate notice</td></tr>
+        <tr><td>Say saving early is important</td><td class="num">85%</td><td>OTP youth tracking, ages 16–30</td></tr>
+        <tr><td>Use a savings product</td><td class="num">27% (2025), 32% (2024)</td><td>OTP youth tracking</td></tr>
+        <tr><td>Bank consideration, ages 16–23</td><td class="num">OTP 64%, Revolut 61%</td><td>OTP communication tracking 2025</td></tr>
+        <tr><td>Revolut Standard savings rate</td><td class="num">2.5% gross, 1.8% net</td><td>Bank360</td></tr>
+        <tr><td>Higher-education students under 30</td><td class="num">about 265,000</td><td>KSH via Eduline</td></tr>
+      </tbody>
+    </table></div>
+    <p class="lead" style="margin-top:12px">Quote the OTP research figures as OTP's own data; the jury will recognise them. Rates in the app are the team's proposal, not current OTP terms.</p>
+  </section>
+
+  <section class="box warn">
+    <h2>If something breaks</h2>
+    <ul>
+      <li>The iPhone link stops working: the free tunnel address changes when it restarts. Run <kbd>cloudflared tunnel --url http://localhost:8090</kbd> again and reinstall the app from the new link, or present from the laptop only.</li>
+      <li>Wrong state on screen: <b>Reset app</b> in the panel, or <kbd>U</kbd> to restart from the update day.</li>
+      <li>No projector cable: the laptop panel and the phone frame work on any screen share.</li>
+    </ul>
+  </section>
+</div>

@@ -1,0 +1,278 @@
+<title>Persely Prototype Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a reference handbook. Sticky table of contents on wide screens, one readable column, tables for rules and controls */
+:root{
+  --bg:#F3F5F1; --surface:#FFFFFF; --ink:#1F2A1C; --muted:#5E6A5A; --line:#DCE3D7;
+  --green:#3E8E22; --green-soft:#E6F2DF; --key:#EEF1EA; --flame:#D9650F; --flame-soft:#FDEEDF;
+  --font:"Open Sans",-apple-system,"Segoe UI",Roboto,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#141912; --surface:#1C2319; --ink:#E7EEE3; --muted:#9DAA97; --line:#2E3A2A;
+  --green:#7CCB5A; --green-soft:#24331E; --key:#26301F; --flame:#FF9A4A; --flame-soft:#3A2817; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#141912; --surface:#1C2319; --ink:#E7EEE3; --muted:#9DAA97; --line:#2E3A2A;
+  --green:#7CCB5A; --green-soft:#24331E; --key:#26301F; --flame:#FF9A4A; --flame-soft:#3A2817; color-scheme:dark }
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:32px 64px}
+.shell{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px;align-items:start}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 20px);display:flex;flex-direction:column;gap:2px;font-size:13.5px}
+nav.toc b{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+nav.toc a{color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:8px}
+nav.toc a:hover,nav.toc a:focus-visible{background:var(--green-soft);outline:none}
+main{display:flex;flex-direction:column;gap:40px;min-width:0}
+header h1{font-size:32px;line-height:1.15;margin:0;font-weight:800;text-wrap:balance}
+.lead{color:var(--muted);max-width:68ch;margin:10px 0 0}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tag{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--green-soft);color:var(--green)}
+section{display:flex;flex-direction:column;gap:14px;scroll-margin-top:20px}
+h2{font-size:22px;margin:0;font-weight:800;text-wrap:balance}
+h3{font-size:16px;margin:0;font-weight:700}
+p{margin:0;max-width:72ch}
+a{color:var(--green)}
+kbd,code{font-family:var(--mono);font-size:12.5px;padding:1px 6px;border-radius:6px;background:var(--key);border:1px solid var(--line);white-space:nowrap}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+ul,ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+li{max-width:70ch}
+.muted{color:var(--muted)}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;background:var(--bg)}
+td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px}
+.flow span{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:5px 10px}
+.flow i{font-style:normal;color:var(--muted)}
+.note{background:var(--flame-soft);border-radius:12px;padding:12px 14px;font-size:14px}
+.note b{color:var(--flame)}
+.who{font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.05em}
+@media (max-width:860px){ .shell{grid-template-columns:1fr} nav.toc{position:static;flex-direction:row;flex-wrap:wrap;gap:4px} nav.toc b{width:100%} header h1{font-size:26px} }
+</style>
+
+<div class="shell">
+<nav class="toc" aria-label="Contents">
+  <b>Contents</b>
+  <a href="#idea">The idea</a>
+  <a href="#open">Open the prototype</a>
+  <a href="#journey">User journey</a>
+  <a href="#tab">Persely tab</a>
+  <a href="#screens">Other screens</a>
+  <a href="#rules">Rules and numbers</a>
+  <a href="#persi">Persi and pushes</a>
+  <a href="#demo">Demo controls</a>
+  <a href="#build">How it is built</a>
+  <a href="#change">How to change things</a>
+  <a href="#limits">Limits</a>
+  <a href="#next">Ideas and open questions</a>
+</nav>
+
+<main>
+  <header>
+    <h1>Persely prototype guide</h1>
+    <p class="lead">Everything that is in the Team 3 prototype for OTP Bank: what each screen does, the rules behind the numbers, how to run the demo, and where to change things in the code. Read this to review the prototype and to propose what to add before Friday.</p>
+    <div class="meta"><span class="tag">OTP × Corvinus seminar · Team 3</span><span class="tag">Demo data only</span><span class="tag">English UI</span></div>
+  </header>
+
+  <section id="idea">
+    <h2>The idea</h2>
+    <p><b>Problem from OTP:</b> students leave when they turn 24 and the OTP Junior package ends. Revolut is close behind OTP among young people (consideration 64% vs 61%).</p>
+    <p><b>Our answer:</b> a new Persely tab inside the real OTP app. Persely already exists (340,000+ users, 0.01% interest). We give students a reason to save with OTP (3.0% student rate), a habit (weekly streak), a face (Persi, the green Persely piggy from OTP's own ads) and a reason to stay after 24 (the graduation bridge).</p>
+    <div class="grid">
+      <div class="box"><span class="who">From the OTP research</span><ul><li>85% say saving early matters, only 27% use a savings product</li><li>Young people are cautious: show "withdraw any time, no fees, insured" everywhere</li><li>Income is irregular until about 25: weekly streak, any amount counts</li><li>Short, clear texts; no forced jokes</li></ul></div>
+      <div class="box"><span class="who">From Levente's handoff</span><ul><li>3.0% student rate, 28% tax, first 500,000 Ft</li><li>Payday rule that asks first, round-ups, weekly transfers</li><li>Shared Persely, euro Persely, graduation bridge</li><li>Monthly insight on Home, semester recap, goal forecast</li></ul></div>
+      <div class="box"><span class="who">From the team</span><ul><li>1:1 copy of the OTP app, the new tab in their style</li><li>Persi in the tab and in notifications</li><li>Snapchat-style streak with a flame</li><li>Colourful monthly stories, "PS5 + GTA 6" goal</li></ul></div>
+    </div>
+  </section>
+
+  <section id="open">
+    <h2>Open the prototype</h2>
+    <div class="grid">
+      <div class="box"><h3>On the laptop</h3><ol><li>Start the server: <code>node server.js</code> in the project folder (port 8090).</li><li>Open <code>http://localhost:8090</code>. On a wide screen the app sits in an iPhone frame, and the demo panel is on the left.</li><li>Presenter panel for real pushes: <code>http://localhost:8090/push.html</code> (only works on this laptop).</li></ol></div>
+      <div class="box"><h3>On an iPhone</h3><ol><li>Run the tunnel: <code>cloudflared tunnel --url http://localhost:8090</code>. It prints an https address like <code>…trycloudflare.com</code>.</li><li>Open that address in Safari → Share → Add to Home Screen.</li><li>Open the app from the icon → More → Notifications → Turn on notifications.</li></ol><p class="muted">The free tunnel gets a new address every time it restarts. Then the app has to be added to the Home Screen again.</p></div>
+    </div>
+  </section>
+
+  <section id="journey">
+    <h2>User journey</h2>
+    <div class="flow"><span>Update pop-up</span><i>→</i><span>Verify student (3.0%)</span><i>→</i><span>Goal + date</span><i>→</i><span>Money in + forecast</span><i>→</i><span>First deposit</span><i>→</i><span>Summary</span><i>→</i><span>Tour</span><i>→</i><span>Weekly life</span><i>→</i><span>Monthly story</span><i>→</i><span>Junior ends: keep 3.0%</span></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Step</th><th>What the user sees</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Update pop-up</td><td>Persi and "What are you saving for?" with 6 tiles. First tile: <b>PS5 + GTA 6</b> (Trending), then Travel, Car, Own home, Safety net, Studies. "Not now" closes it.</td><td>One tap to start; goals are the main savings goals from the research.</td></tr>
+        <tr><td>1. Student rate</td><td>"Get 3.0% as a student": today about 5 Ft a year, with the student rate about 1,380 Ft. <b>Verify with Neptun</b> or Later.</td><td>The money reason to choose OTP, shown in forints.</td></tr>
+        <tr><td>2. Goal</td><td>Name, amount (slider and chips), "By when?" (June 2027 to June 2028).</td><td>Every goal has a date, so we can forecast.</td></tr>
+        <tr><td>3. Money in</td><td>Switches: payday rule (5–20%, recommended), weekly transfer, round-ups. Live card: "About 131,000 Ft by 1 December 2027, 99,000 short" and <b>Add 2,000 Ft a week to make it</b>.</td><td>Honest forecast with a one-tap fix.</td></tr>
+        <tr><td>4. First deposit</td><td>Amount chips → Continue → <b>Pay from</b> sheet: choose Junior or Savings account, see To, Amount, Fee 0 Ft, what is left → Confirm. Or Skip.</td><td>No surprises about where money comes from.</td></tr>
+        <tr><td>Summary</td><td>Persi with a coin dropping in, a summary table, weekly reminder switch (Sunday 18:00), Go to Persely.</td><td>Confirms what was set up.</td></tr>
+        <tr><td>Tour</td><td>5 highlighted spots: Persi, savings card, streak, goals, money in. Skip any time.</td><td>Shows what is where, once.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="tab">
+    <h2>The Persely tab, top to bottom</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Block</th><th>What it shows and does</th></tr></thead>
+      <tbody>
+        <tr><td>Persi + story ring</td><td>3D piggy (drag to turn, tap to jump) with one short line, e.g. "Any amount by Sunday keeps your streak." On the right an Instagram-style ring "NOV": orange = new story, grey = watched. Tap opens the monthly story.</td></tr>
+        <tr><td>Get the student rate</td><td>Only when not verified: green card "Get the student rate: 3.0%, today 0.01%" and <b>Verify student status</b>.</td></tr>
+        <tr><td>Savings card</td><td>Total in Persely (forints, plus euros if any), badge Student 3.0% / Not verified / Graduate 3.0%, yearly interest after tax in Ft, <b>Add money</b> and <b>Withdraw</b>, trust line "Withdraw any time · No fees · Insured", "checked again each semester".</td></tr>
+        <tr><td>Streak</td><td>Flame, "8-week streak", best and skip weeks left, 8 orange check circles (one per week, current one ringed "Now"). Pill "Ends Sunday" with orange outline while the week is open, "Saved" when done.</td></tr>
+        <tr><td>Goals</td><td>One card per Persely: name, saved of target, forecast month (orange "late" if after the goal date), progress bar. Shared goals show member avatars. Buttons <b>Shared Persely</b> and <b>Euro Persely</b> under the list; <b>New</b> opens all goal options. Up to 5.</td></tr>
+        <tr><td>Money in</td><td>Payday rule, weekly transfer, round-ups with On/Off. Each opens a sheet to change it.</td></tr>
+        <tr><td>Junior ends soon</td><td>Days left and "Keep 3.0% for 12 more months". Opens the graduation screen.</td></tr>
+        <tr><td>Friends</td><td>Ranking by streak or goal progress, never by money. "Remind" button, Add friends (invite link, people you may know).</td></tr>
+        <tr><td>How Persely works</td><td>Short explanation of rate, money in and streak, with "Show me around" (tour).</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="grid">
+      <div class="box"><h3>One Persely screen</h3><p class="muted">Tap any goal.</p><ul><li>Balance, progress, goal date</li><li>"At your pace you get there in April 2027" or "after your goal date"</li><li>Add money / Take out</li><li>Rate on this goal in Ft per year</li><li>Switches: payday rule, round-ups, weekly transfer go to this goal</li><li>Shared: who put in what, rules, Invite a friend</li><li>Euro: "buy euros bit by bit"</li><li>Last 5 activity lines</li></ul></div>
+      <div class="box"><h3>Create a goal (3 steps)</h3><p class="muted">New → Your own goal, or a preset.</p><ol><li>Name, amount, date</li><li>Weekly transfer and round-ups</li><li>Check: "With these rules: about 111,000 Ft by 1 September", short by X, <b>Make it 3,000 Ft a week</b>, Create</li></ol></div>
+      <div class="box"><h3>Sheets</h3><ul><li><b>Add money</b>: goal chips, amount, from Junior or Savings account, streak hint</li><li><b>Withdraw</b>: instant, no fee, streak not affected; shared = only your part</li><li><b>Payday</b>: "+75,000 Ft arrived. Move 10% (7,500 Ft)?" with before → after</li><li><b>Payday rule / Weekly / Round-ups</b> settings</li><li><b>Verify</b>: 0.01% vs 3.0% in Ft, Verify with Neptun</li></ul></div>
+      <div class="box"><h3>Graduation screen</h3><p>"Congratulations, Anna" (or "Your Junior package ends soon"). Three steps: give employer your OTP account number, first salary arrives at OTP within 6 months, Perselys keep 3.0% for 12 months. Tip to raise the payday rule. <b>Keep my 3.0%</b> turns the badge into Graduate 3.0%.</p></div>
+    </div>
+  </section>
+
+  <section id="screens">
+    <h2>Other screens</h2>
+    <div class="grid">
+      <div class="box"><h3>Home</h3><ul><li>Accounts carousel (Junior, Persely, Savings)</li><li>Persely card: streak or "set up in 1 minute"</li><li>Monthly spending gauge and categories</li><li><b>Persi's tip</b>: "Food was your biggest category: 38,200 Ft. Move 10% … and get there 6 weeks sooner", Move 10% a month / Not now</li><li>Long-press Anna's avatar: demo controls on the phone</li></ul></div>
+      <div class="box"><h3>Monthly story</h3><p>Colourful full-screen slides, auto-advance every 5 seconds, tap left to go back. Month title with Persi, spent (−13%), food 43% ("6 Wolt orders = GTA 6 on release day"), 14 coffees = 3 cinema tickets, saved, round-ups, streak, goal %, rank among friends, interest earned, tip for next month, and a <b>share card without amounts</b>. After "End of semester" it becomes the semester story.</p></div>
+      <div class="box"><h3>Copied OTP screens</h3><ul><li>Transfer (new transfer works with demo money)</li><li>Transactions, completed and pending</li><li>More: My cards (moved from the tab bar), Notifications, My accounts, Persely details, Savings options, Spending, Discounts, For you</li><li>My cards: temporary block, limits, discounts</li></ul></div>
+    </div>
+  </section>
+
+  <section id="rules">
+    <h2>Rules and numbers</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Rule</th><th>Value in the prototype</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Student rate</td><td class="num">3.0% a year</td><td>Verified students 18–30, first 500,000 Ft across all forint Perselys. Others 0.01%.</td></tr>
+        <tr><td>Tax on interest</td><td class="num">28%</td><td>About 2.2% net. Interest is credited monthly (demo: "+1 month").</td></tr>
+        <tr><td>Payday rule</td><td class="num">5 / 10 / 15 / 20%</td><td>Of each incoming payment of 10,000 Ft or more. Asks first by default. Optional floor: always keep 20,000 Ft.</td></tr>
+        <tr><td>Weekly transfer</td><td class="num">1,000–5,000 Ft</td><td>Every Monday. Can be global or per goal.</td></tr>
+        <tr><td>Round-ups</td><td class="num">next 100 Ft × 2</td><td>1,190 Ft coffee → 20 Ft. Estimated 3,000 Ft a month. Goes to one chosen goal.</td></tr>
+        <tr><td>Streak</td><td class="num">1 per week</td><td>Any deposit Monday–Sunday counts, automatic ones too. Never changes the rate.</td></tr>
+        <tr><td>Skip weeks</td><td class="num">1 per 4 weeks</td><td>Max 2. A missed week uses one; without one the streak restarts.</td></tr>
+        <tr><td>Shared Persely</td><td class="num">2–5 people</td><td>Each can take out what they put in; paying out the whole pot needs everyone. Each share has its own 500,000 Ft limit.</td></tr>
+        <tr><td>Euro Persely</td><td class="num">1 € = 390 Ft (demo)</td><td>No student rate.</td></tr>
+        <tr><td>Graduation bridge</td><td class="num">12 months at 3.0%</td><td>If the first salary is paid into OTP within 6 months.</td></tr>
+        <tr><td>Goals</td><td class="num">max 5</td><td>Forecast = remaining ÷ monthly pace from the goal's rules.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box"><h3>Persona and demo data</h3><p>Kiss Anna. Junior account 87,450 Ft, Savings account 120,000 Ft, salary 75,000 Ft around the 5th. Goals: Summer holiday 64,000 of 134,000 Ft, PS5 + GTA 6 46,000 of 230,000 Ft (late), Festival ticket 30,000 of 45,000 Ft. Friends: Bence, Lili, Márk; suggestions Dóra, Ádám, Zsófi, Gergő. Shared Persely example: Balaton in July with Dóri.</p></div>
+    <p class="note"><b>Important:</b> the rates are the team's proposal, not current OTP terms. Quote the research numbers as OTP's own data.</p>
+  </section>
+
+  <section id="persi">
+    <h2>Persi and notifications</h2>
+    <p>Persi is our own 3D version of the green Persely piggy (three.js). It appears in the tab header, the update pop-up, the onboarding summary (a coin drops in), the graduation screen, the story and the Home card. It speaks in one short, friendly line, without slang. Persely notifications are signed "Persi · Persely". On the laptop the banner shows Persi's portrait; a real iPhone always shows the app icon.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Key</th><th>Notification</th><th>Opens</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>1</kbd></td><td>Card payment −5,240 Ft LIDL</td><td>Transactions</td></tr>
+        <tr><td><kbd>2</kbd></td><td>Money received +20,000 Ft</td><td>Transactions</td></tr>
+        <tr><td><kbd>3</kbd></td><td>🔥 Your 8-week streak ends Sunday…</td><td>Persely</td></tr>
+        <tr><td><kbd>4</kbd></td><td>Your 3.0% student rate paid X Ft this month</td><td>Persely</td></tr>
+        <tr><td><kbd>5</kbd></td><td>Dóri added 5,000 Ft to Balaton in July. Your turn?</td><td>Persely</td></tr>
+        <tr><td><kbd>6</kbd></td><td>Junior package ends in 30 days… keep 3.0%</td><td>Graduation screen</td></tr>
+        <tr><td><kbd>7</kbd></td><td>Your story is ready</td><td>Story</td></tr>
+        <tr><td><kbd>8</kbd></td><td>New discount at Pizzeria Roma</td><td>Discounts</td></tr>
+        <tr><td><kbd>P</kbd></td><td>Salary's in: +75,000 Ft. Move 7,500 Ft to …?</td><td>Payday sheet</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="demo">
+    <h2>Demo controls</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Key</th><th>Action</th><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>U</kbd></td><td>Update day: pop-up and onboarding from zero</td><td><kbd>J</kbd></td><td>8 weeks later: verified, streak 8, friends</td></tr>
+        <tr><td><kbd>P</kbd></td><td>Payday with the 10% question</td><td><kbd>C</kbd></td><td>Card purchase: coffee with round-up</td></tr>
+        <tr><td><kbd>D</kbd></td><td>Dóri joins the shared Persely</td><td><kbd>N</kbd></td><td>Next week (uses a skip if the week was open)</td></tr>
+        <tr><td><kbd>O</kbd></td><td>+1 month: salary, rules, round-ups, interest, Home tip</td><td><kbd>E</kbd></td><td>End of semester: 2 months, semester story</td></tr>
+        <tr><td><kbd>G</kbd></td><td>Junior ends / graduation screen</td><td><kbd>M</kbd></td><td>Open the story</td></tr>
+        <tr><td><kbd>T</kbd></td><td>Tab tour</td><td><kbd>L</kbd></td><td>Lock / unlock phone (pushes land on the lock screen)</td></tr>
+        <tr><td><kbd>H</kbd></td><td>Hide the panel</td><td><kbd>1–8</kbd></td><td>Notifications (see above)</td></tr>
+      </tbody>
+    </table></div>
+    <p>The panel also has Delay (0/3/10 s), <b>Also send to iPhone</b> (real push), Sound and <b>Reset app</b> (back to "8 weeks later"). On the phone: long-press Anna's picture on Home for the same controls. The step-by-step presentation is in the <a href="https://claude.ai/artifact/WnAXG26ZGs2F1NbKHHckYc">Persely demo script</a>.</p>
+  </section>
+
+  <section id="build">
+    <h2>How it is built</h2>
+    <p>No framework, no database. The whole app is one HTML file that runs in the browser; a tiny Node server serves it and sends push notifications. State lives in the browser (localStorage key <code>otp-clone-en-v5</code>), so every phone has its own demo.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>File</th><th>What it is</th></tr></thead>
+      <tbody>
+        <tr><td><code>index.html</code></td><td>The whole app: styles, screens, rules, onboarding, story, 3D piggy, demo panel.</td></tr>
+        <tr><td><code>server.js</code></td><td>Node server on port 8090. Serves only listed files. Push API: <code>/api/vapid</code>, <code>/api/subscribe</code>, <code>/api/test</code>; laptop-only <code>/api/push</code>, <code>/api/subs</code>, <code>/api/clear</code>.</td></tr>
+        <tr><td><code>sw.js</code></td><td>Service worker: offline cache and showing push notifications. Bump the cache name after changes.</td></tr>
+        <tr><td><code>push.html</code></td><td>Presenter panel for real pushes to all connected phones (laptop only).</td></tr>
+        <tr><td><code>manifest.webmanifest</code>, icons, splash</td><td>Install on the Home Screen with the OTP icon and loading screen.</td></tr>
+        <tr><td><code>three.min.js</code></td><td>3D library for Persi.</td></tr>
+        <tr><td><code>data/</code></td><td>Push keys and subscribed phones. Never served.</td></tr>
+        <tr><td><code>demo-script.html</code>, <code>prototype-guide.html</code></td><td>The demo script and this guide.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box"><h3>Map of index.html (search for these headings)</h3><ul>
+      <li><code>demo data</code>: <code>fresh()</code>, the starting state (accounts, goals, friends, rules)</li>
+      <li><code>Persely tab</code>: constants (rate, tax, cap), <code>vHub()</code>, <code>nextWeek()</code>, <code>monthStep()</code></li>
+      <li><code>sub pages</code>: <code>PAGES</code> (goal, create, grad, my cards and the copied OTP pages)</li>
+      <li><code>sheets &amp; toast</code>: <code>SHEETS</code> (add money, withdraw, payday, rules, verify, new goal…)</li>
+      <li><code>events</code>: what every button does</li>
+      <li><code>3D piggy</code>: Persi</li>
+      <li><code>update pop-up + onboarding</code>: <code>GOAL_PRESETS</code>, <code>renderOnb()</code>, <code>week8State()</code></li>
+      <li><code>friends</code>, <code>monthly story</code>: <code>storySlides()</code></li>
+      <li><code>laptop demo</code>: <code>DEMO</code> pushes, payday, coffee, Dóri, semester, graduation, panel keys</li>
+    </ul></div>
+  </section>
+
+  <section id="change">
+    <h2>How to change things</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>I want to change…</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td>Rates, tax, cap, euro rate</td><td><code>const RATE = 3.0, LOW_RATE, TAX, CAP, EUR_RATE</code></td></tr>
+        <tr><td>Goal tiles in the pop-up (PS5 + GTA 6 etc.)</td><td><code>GOAL_PRESETS</code></td></tr>
+        <tr><td>Anna's money, goals, friends</td><td><code>fresh()</code>; the 8-weeks state in <code>week8State()</code></td></tr>
+        <tr><td>Story texts and facts</td><td><code>storySlides()</code></td></tr>
+        <tr><td>Persi's line in the tab</td><td><code>persiSays()</code></td></tr>
+        <tr><td>Demo notifications</td><td><code>DEMO</code> list; real pushes in <code>push.html</code></td></tr>
+        <tr><td>Graduation screen texts</td><td><code>PAGES.grad</code></td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted">After any change: reload the laptop page; on the iPhone swipe the app away and open it again. Changing the localStorage key resets everyone's demo.</p>
+  </section>
+
+  <section id="limits">
+    <h2>Limits to know</h2>
+    <ul>
+      <li>Demo only: no real accounts, money, Neptun check or bank backend.</li>
+      <li>The free tunnel can stop and changes its address; the laptop alone always works.</li>
+      <li>iPhone notifications need the app on the Home Screen and notifications turned on inside the app.</li>
+      <li>Interest is credited monthly in the demo; in the proposal it accrues daily.</li>
+      <li>Weekly challenges exist in the code but are hidden from the tab to keep it short.</li>
+      <li>Persi is our own model; for the real app OTP's official artwork should replace it.</li>
+      <li>English UI; the real app is Hungarian.</li>
+    </ul>
+  </section>
+
+  <section id="next">
+    <h2>Ideas and open questions</h2>
+    <div class="grid">
+      <div class="box"><h3>Decide as a team</h3><ul><li>Final name for the service (now "Persely" tab)</li><li>Is 3.0% realistic for OTP? Who pays for it?</li><li>Legal side of shared Perselys (who owns the pot)</li><li>Bring back weekly challenges or not</li><li>Push frequency limits</li></ul></div>
+      <div class="box"><h3>Could add</h3><ul><li>Hungarian version of the UI</li><li>Goal photos or icons chosen by the user</li><li>Parents' top-ups into a student's Persely</li><li>Badge or reward for finishing a goal</li><li>Cashback from card payments into Persely</li></ul></div>
+      <div class="box"><h3>How to propose a change</h3><p>Write which screen, what should change and why (ideally with the research reason). Small text or number changes take minutes; new screens take longer.</p></div>
+    </div>
+  </section>
+</main>
+</div>

@@ -1,0 +1,17 @@
+# Render Blueprint: Render reads this file and creates the web service.
+# Secrets are not stored here; Render asks for VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY when the Blueprint is created.
+services:
+  - type: web
+    name: otp-persely-prototype
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    autoDeploy: true
+    envVars:
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: ADMIN_KEY
+        generateValue: true

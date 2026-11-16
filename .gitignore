@@ -1,0 +1,20 @@
+# installed packages (npm install recreates them)
+node_modules/
+
+# secrets and phone subscriptions: push keys, subscribed phones. Never commit.
+data/
+.env
+
+# images cut out of OTP's own advertising: not ours to publish
+pig-happy.png
+pig-worried.png
+
+# old files the app no longer uses
+concept.html
+splash-1320x2868.png
+splash-logo.png
+
+# system files
+.DS_Store
+Thumbs.db
+*.log

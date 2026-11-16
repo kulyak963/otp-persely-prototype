@@ -1,0 +1,16 @@
+{
+  "name": "otp-persely-prototype",
+  "version": "1.0.0",
+  "description": "OTP Bank seminar prototype (Team 3): a Persely savings tab for students, with a 3.0% student rate, weekly streak and Persi the piggy. Demo data only.",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "commonjs",
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}

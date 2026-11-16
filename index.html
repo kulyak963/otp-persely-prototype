@@ -1,0 +1,2319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>OTP MobilBank demo</title>
+<meta name="description" content="Seminar prototype: copy of the OTP mobile bank layout with demo data">
+<meta name="color-scheme" content="light only">
+<!-- normal mode: iOS draws a light bar behind the clock in the app's own background colour -->
+<meta name="theme-color" content="#EEF0F5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="OTP demo">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash-light-1320x2868.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF0F5; --card:#FFFFFF; --ink:#2B3038; --ink2:#4A505A; --muted:#8C919B; --line:#E2E5EB;
+  --green:#52AE30; --green-d:#469A27; --green-t:#4AA329; --green-l:#EAF5E4;
+  --orange:#F07D19; --orange-l:#FDEDE0; --blue:#4D9BD6; --blue-l:#E6F1FA; --yellow-l:#FBF1D2; --yellow:#C9971B;
+  --sh:0 4px 16px rgba(48,60,90,.08); --sh-up:0 -2px 16px rgba(48,60,90,.06);
+  --font:"Open Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:#EEF0F5;color-scheme:light}
+html,body{margin:0;height:100%;font-family:var(--font);color:var(--ink);font-size:15px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg)}
+/* app feel: the page itself never moves or bounces; only the lists inside scroll */
+html,body{overflow:hidden;overscroll-behavior:none}
+body{position:fixed;inset:0;bottom:auto;height:var(--app-h,100%);width:100%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input{-webkit-user-select:text;user-select:text}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+input{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* stage */
+.stage{min-height:var(--app-h,100%);display:flex;align-items:center;justify-content:center}
+/* --app-h = real screen height (set by JS; iPhone full-screen mode reports a too-small 100dvh) */
+.phone{position:relative;width:100%;height:var(--app-h,100dvh);overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+.sbar,.hw,.homebar,.caption{display:none}
+.device,.bezel{display:contents}
+.safe-top{padding-top:env(safe-area-inset-top)}
+
+/* ---------- desktop: realistic iPhone body ---------- */
+@media (min-width:760px){
+  body{background:radial-gradient(ellipse at 50% 35%,#F7F8FA 0%,#E2E5EB 55%,#C9CED7 100%)}
+  .stage{height:100vh;flex-direction:column}
+  .device{display:block;position:relative;flex:none;width:450px;height:952px;padding:4px;border-radius:78px;
+    background:linear-gradient(135deg,#C9C6C0 0%,#8F8C86 18%,#6B6863 45%,#9D9A94 70%,#5E5B57 100%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),inset 0 0 6px rgba(0,0,0,.35),0 50px 90px -20px rgba(25,30,45,.45),0 18px 36px -12px rgba(25,30,45,.35);
+    transform-origin:center center}
+  .bezel{display:block;height:100%;border-radius:74px;background:#050506;padding:11px;box-shadow:inset 0 0 0 1.5px #1C1C1E}
+  .phone{width:100%;height:100%;border-radius:63px;isolation:isolate}
+  .hw{display:block;position:absolute;width:5px;border-radius:3px;background:linear-gradient(90deg,#55524E,#A5A29C 60%,#77746F)}
+  .hw.l{left:-4px}.hw.r{right:-4px;background:linear-gradient(270deg,#55524E,#A5A29C 60%,#77746F)}
+  .hw.act{top:196px;height:36px}.hw.vu{top:262px;height:70px}.hw.vd{top:346px;height:70px}
+  .hw.pw{top:300px;height:108px}.hw.cam{top:610px;height:64px;width:4px;right:-3px}
+  .sbar{display:flex;justify-content:space-between;align-items:center;height:56px;padding:6px 34px 0 46px;font-weight:600;font-size:16px;flex:none;color:#111;position:relative;z-index:80;letter-spacing:-.2px}
+  .sbar .ics{display:flex;align-items:center;gap:6px}
+  .sbar svg{fill:#111;display:block}
+  .isl{position:absolute;left:50%;top:12px;width:124px;height:36px;margin-left:-62px;border-radius:20px;background:#000;z-index:90}
+  .isl::after{content:"";position:absolute;right:24px;top:12px;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#2A3A55,#0A0F1A 60%)}
+  .homebar{display:block;position:absolute;bottom:9px;left:50%;width:150px;margin-left:-75px;height:5px;border-radius:3px;background:#111;z-index:95;pointer-events:none}
+  .phone .stack{top:56px}
+  .phone .tabbar{padding-bottom:26px}
+  .page .foot{padding-bottom:34px}
+  .sheet{padding-bottom:34px}
+  .toast{bottom:110px}
+  .caption{display:block;margin-top:22px;font-size:13px;color:#7A808B;text-align:center}
+  .phone, .phone *{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='34'%3E%3Ccircle cx='17' cy='17' r='14' fill='rgba(60,60,70,.22)' stroke='rgba(255,255,255,.9)' stroke-width='2'/%3E%3C/svg%3E") 17 17, pointer}
+  .phone.drag, .phone.drag *{user-select:none}
+}
+/* --top = height of the iPhone status bar area; set by JS below (fallback: safe area) */
+:root{--top:env(safe-area-inset-top,0px)}
+.safe-top{padding-top:var(--top)}
+.page{padding-top:var(--top)}
+@media (min-width:760px){.safe-top,.page{padding-top:0}}
+
+/* layers */
+.body{flex:1;position:relative;min-height:0}
+.view{position:absolute;inset:0;top:var(--top);overflow-y:auto;padding:0 16px 24px;display:none;scrollbar-width:none;overscroll-behavior:contain;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 16px);mask-image:linear-gradient(to bottom,transparent 0,#000 16px)}
+.view::-webkit-scrollbar{display:none}
+.view.on{display:block}
+.stack{position:absolute;inset:0;pointer-events:none;z-index:20}
+.page{position:absolute;inset:0;isolation:isolate;background:var(--bg);display:flex;flex-direction:column;pointer-events:auto;animation:slideIn .26s ease-out}
+.page.out{animation:slideOut .22s ease-in forwards}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:none}}
+@keyframes slideOut{to{transform:translateX(100%)}}
+.page .scroll{flex:1;overflow-y:auto;padding:4px 16px 24px;scrollbar-width:none;overscroll-behavior:contain;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14px);mask-image:linear-gradient(to bottom,transparent 0,#000 14px)}
+.page .scroll::-webkit-scrollbar{display:none}
+.page .foot{padding:12px 16px calc(env(safe-area-inset-bottom) + 14px);background:linear-gradient(transparent,var(--bg) 30%)}
+
+/* headers */
+.ph{display:flex;align-items:center;justify-content:center;position:relative;height:56px;flex:none;touch-action:none}
+.ph h1{margin:0;font-size:17px;font-weight:600;color:var(--ink)}
+.ph .l,.ph .r{position:absolute;top:50%;transform:translateY(-50%);color:var(--green);display:flex}
+.ph .l{left:6px;width:48px;height:48px;align-items:center;justify-content:center;border-radius:50%}
+.ph .l:active{background:rgba(82,174,48,.12)}
+.ph .r{right:16px}
+.round{width:38px;height:38px;border-radius:50%;background:var(--card);box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;color:var(--green)}
+.tabtitle{text-align:center;font-size:17px;font-weight:600;padding:16px 0 18px}
+
+/* section header "— Balance" */
+.sec{display:flex;align-items:center;justify-content:space-between;margin:22px 0 10px;color:var(--muted);font-size:14px}
+.sec span{display:flex;align-items:center;gap:8px}
+.sec span::before{content:"";width:14px;height:1.5px;background:#B9BEC7;margin-left:-16px}
+.sec a,.link{color:var(--green-t);font-weight:600;font-size:13.5px;display:inline-flex;align-items:center;gap:2px;cursor:pointer}
+.sec .sub{display:block;font-size:12.5px;color:var(--muted);margin-top:-6px}
+
+/* cards & rows */
+.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:16px;margin-bottom:12px}
+.row{display:flex;align-items:center;gap:14px;width:100%;background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:16px;margin-bottom:12px;text-align:left}
+.row .ic{color:var(--green);display:flex}
+.row .t{flex:1;min-width:0;font-size:15px;color:var(--ink2)}
+.row .t small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.row .t small.g{color:var(--green-t)}
+.row .chev{color:var(--green);display:flex}
+.badge{font-size:12px;padding:2px 7px;border-radius:6px;background:var(--orange-l);color:var(--orange);font-weight:600}
+
+/* buttons */
+.btn{display:block;width:100%;height:48px;border-radius:24px;background:var(--green);color:#fff;font-weight:700;font-size:15px;text-align:center;box-shadow:0 4px 12px rgba(82,174,48,.3)}
+.btn:active{background:var(--green-d)}
+.btn.w{background:var(--card);color:var(--green-t);box-shadow:var(--sh)}
+.btn.sm{display:inline-block;width:auto;height:38px;padding:0 22px;font-size:13.5px;border-radius:19px;line-height:38px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}
+.chip{background:#E9ECF1;color:var(--muted);font-size:13px;padding:4px 9px;border-radius:6px}
+
+/* toggle */
+.tg{width:50px;height:30px;border-radius:15px;background:#D3D7DE;position:relative;flex:none;transition:background .2s}
+.tg::after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .2s}
+.tg.on{background:var(--green)}.tg.on::after{left:23px}
+
+/* segmented */
+.seg{display:flex;background:#E4E7EC;border-radius:10px;padding:0;margin-bottom:14px;box-shadow:var(--sh)}
+.seg button{flex:1;height:36px;border-radius:10px;font-size:13.5px;color:var(--ink2);text-align:center}
+.seg button.on{background:var(--green);color:#fff;font-weight:700}
+.utabs{display:flex;gap:22px;margin:4px 0 14px;font-size:14.5px;color:var(--muted);overflow-x:auto;scrollbar-width:none}
+.utabs button{padding:6px 0;position:relative;white-space:nowrap}
+.utabs button.on{color:var(--green-t);font-weight:600}
+.utabs button.on::after{content:"";position:absolute;left:0;bottom:-2px;width:22px;height:3px;border-radius:3px;background:var(--green)}
+
+/* home */
+.hhead{display:flex;align-items:center;gap:12px;padding:14px 0 4px}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px}
+.hhead b{flex:1;font-size:15px}
+.hhead .mail{color:var(--green)}
+.accs{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:4px 16px 14px;scrollbar-width:none;overscroll-behavior:contain}
+.accs::-webkit-scrollbar{display:none}
+.acc{flex:none;width:186px;scroll-snap-align:center;background:var(--card);border-radius:24px;box-shadow:var(--sh);padding:14px 18px;text-align:left}
+.acc .n{font-size:13px;color:var(--ink2)}
+.acc .v{font-size:21px;font-weight:700;margin:2px 0}
+.acc .h{font-size:11.5px;color:var(--muted)}
+.dots{display:flex;justify-content:center;gap:6px}
+.dots i{width:6px;height:6px;border-radius:50%;background:#C9CED6}
+.dots i.on{background:var(--green)}
+.gauge{position:relative;width:250px;height:250px;margin:6px auto 0}
+.gauge .core{position:absolute;inset:42px;border-radius:50%;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge .core small{font-size:13.5px;color:var(--ink2)}
+.gauge .core b{font-size:25px;color:var(--green-t);font-weight:700}
+.avg{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13.5px;color:var(--ink2);margin:6px 0 4px}
+.avg::before{content:"";border-left:11px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent}
+.cats{display:flex;justify-content:space-between;padding:6px 4px 0;text-align:center}
+.cat{width:19%;display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--ink2);cursor:pointer}
+.cat .ic{color:var(--ink2);height:28px}
+.cat.on .ic{color:var(--green)}
+.cat .col{width:2px;height:96px;background:#DDE1E7;border-radius:2px;position:relative;margin:8px 0 6px}
+.cat .col i{position:absolute;bottom:0;left:-4px;width:10px;border-radius:5px;background:var(--green)}
+
+/* tx list */
+.dh{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12.5px;margin:16px 0 8px}
+.dh::before{content:"";width:14px;height:1.5px;background:#B9BEC7;margin-left:-16px}
+.tx{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:14px 16px;margin-bottom:10px;width:100%;text-align:left}
+.tx .ic{color:var(--green);display:flex}
+.tx .t{flex:1;min-width:0}
+.tx .t b{display:block;font-size:13px;font-weight:700;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx .t span{font-size:13px;color:var(--ink2)}
+.tx .t em{display:flex;align-items:center;gap:4px;font-style:normal;font-size:12.5px;color:var(--green-t);margin-top:2px}
+.tx .a{font-weight:700;font-size:14px;white-space:nowrap}
+.tx .a.p{color:var(--green-t)}
+.filter{display:inline-flex;align-items:center;gap:6px;background:var(--card);box-shadow:var(--sh);border-radius:18px;padding:7px 14px;color:var(--green-t);font-size:13px;font-weight:600}
+.filter svg{width:16px;height:16px}
+
+/* transfer */
+.qa{display:flex;justify-content:space-between;margin:6px 0 18px}
+.qa button{width:24%;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:13px;color:var(--ink2);text-align:center;line-height:1.3}
+.qa .c{width:62px;height:62px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(82,174,48,.3)}
+.qa .c svg{stroke-width:2;width:28px;height:28px}
+
+/* cards tab */
+.bigcard{text-align:center;padding:22px 16px 24px;border-radius:26px}
+.ccard{width:250px;height:156px;margin:14px auto 16px;border-radius:14px;background:linear-gradient(135deg,#7ACB5B 0%,#3E9A2A 55%,#2C7A21 100%);position:relative;overflow:hidden;color:#fff;text-align:left;padding:16px;box-shadow:0 10px 24px rgba(40,110,30,.35)}
+.ccard::before{content:"";position:absolute;right:-40px;top:-50px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.12)}
+.ccard::after{content:"";position:absolute;left:-30px;bottom:-70px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08)}
+.ccard .bn{font-weight:700;font-size:14px;letter-spacing:.2px}
+.ccard .chip2{width:34px;height:26px;border-radius:5px;background:linear-gradient(135deg,#F1D58A,#C9A64A);margin:18px 0 12px}
+.ccard .no{font-size:15px;letter-spacing:1.6px}
+.ccard .nm{font-size:11px;opacity:.9;margin-top:6px}
+.ccard .mc{position:absolute;right:16px;bottom:14px;display:flex}
+.ccard .mc i{width:24px;height:24px;border-radius:50%;background:#EB001B;opacity:.95}
+.ccard .mc i+i{background:#F79E1B;margin-left:-10px;opacity:.9}
+.ok{display:inline-flex;align-items:center;gap:8px;color:var(--green-t);font-weight:600;font-size:13.5px;background:var(--green-l);padding:6px 14px;border-radius:16px}
+
+/* menu */
+.menu{padding-top:6px}
+.mi{display:flex;align-items:center;gap:16px;width:100%;padding:13px 0;font-size:15px;color:var(--ink2)}
+.mi svg{color:var(--ink2)}
+.mdiv{height:1px;background:var(--line);margin:10px 0}
+
+/* for you */
+.hcar{display:flex;gap:12px;overflow-x:auto;margin:0 -16px;padding:4px 16px 12px;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior:contain}
+.hcar::-webkit-scrollbar{display:none}
+.nk{flex:none;width:240px;scroll-snap-align:start;background:var(--card);border-radius:16px;box-shadow:var(--sh);overflow:hidden;text-align:left}
+.nk .im{height:118px;display:flex;align-items:center;justify-content:center}
+.nk .tx2{padding:12px 14px 14px}
+.nk b{display:block;font-size:15px;line-height:1.3}
+.nk p{margin:4px 0 12px;font-size:13px;color:var(--muted)}
+.tag{display:inline-flex;align-items:center;gap:8px;font-size:12.5px}
+.tag::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--orange)}
+.tag span{padding:2px 8px;border-radius:6px}
+.tag.new span{background:var(--green-l);color:var(--green-t)}
+.tag.tip span{background:var(--blue-l);color:var(--blue)}
+.tag.off::before{display:none}
+.tag.off span{background:var(--yellow-l);color:var(--yellow)}
+.offer{display:flex;gap:12px;align-items:stretch;padding:0;overflow:hidden}
+.offer .tx2{flex:1;padding:16px}
+.offer .im{width:120px;border-radius:14px;margin:8px;display:flex;align-items:center;justify-content:center}
+
+/* discounts */
+.disc{display:flex;gap:12px;align-items:center;width:100%;text-align:left}
+.disc .lg{width:44px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:none}
+.disc .t{flex:1;min-width:0}
+.disc .t b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.disc .t p{margin:8px 0 2px;font-size:13.5px;color:var(--ink2)}
+.disc .t small{font-size:13px;color:var(--muted)}
+
+/* persely */
+.pico{width:62px;height:62px;border-radius:50%;background:var(--green-l);border:3px solid #fff;box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;margin:0 auto -31px;position:relative;z-index:1;color:var(--green)}
+.prog{height:8px;border-radius:4px;background:#E4E7EC;overflow:hidden;margin:8px 0 18px}
+.prog i{display:block;height:100%;background:var(--green);border-radius:4px;transition:width .5s}
+
+/* forms */
+.fld{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;width:100%;text-align:left}
+.fld .t{flex:1}
+.fld label{display:block;font-size:12.5px;color:var(--muted)}
+.fld b{font-size:15px;font-weight:600}
+.fld input{border:0;outline:0;background:none;font-size:16px;font-weight:600;width:100%;padding:2px 0}
+.note{background:var(--green-l);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--ink2);margin-bottom:12px}
+
+/* tab bar: fixed at the very bottom, full width, white down to the screen edge, never moves */
+.tabbar{flex:none;position:relative;z-index:15;background:#fff;box-shadow:0 -1px 0 #E4E7EC,0 -6px 18px rgba(48,60,90,.05);display:flex;padding:6px 8px calc(env(safe-area-inset-bottom) + 4px);touch-action:none}
+.tb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--ink2);padding:6px 0 5px;border-radius:20px}
+.tb svg{width:25px;height:25px;stroke-width:1.5}
+.tb.on{color:var(--green-t);background:#EEF1F4}
+
+/* sheet & toast */
+.back{position:absolute;inset:0;z-index:74;background:rgba(30,35,45,.4);display:none;align-items:flex-end}
+.back.on{display:flex}
+.sheet{width:100%;max-height:88%;overflow-y:auto;background:var(--bg);border-radius:24px 24px 0 0;padding:10px 16px calc(env(safe-area-inset-bottom) + 18px);animation:up .22s ease-out}
+.sheet::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:#C7CCD4;margin:0 auto 12px}
+.sheet h2{font-size:17px;font-weight:600;text-align:center;margin:0 0 14px}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+.toast{position:absolute;left:16px;right:16px;bottom:96px;z-index:80;background:#2B3038;color:#fff;border-radius:14px;padding:12px 16px;font-size:14px;font-weight:600;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+/* loading screen (like the original app) */
+/* light version: green logo on the app background, so the light iOS status bar has no seam */
+.splash{position:absolute;inset:0;z-index:75;background:#EEF0F5;display:flex;align-items:center;justify-content:center;transition:opacity .35s ease}
+.splash img{width:43%;max-width:200px;height:auto}
+.splash.hide{opacity:0;pointer-events:none}
+/* ---------- Persely tab (mascot, streak, goals, rewards) ---------- */
+.hub-hero{display:flex;align-items:flex-end;gap:8px;margin:0 0 12px}
+.hub-hero .pig{flex:none}
+.bubble{flex:1;background:#fff;border-radius:18px 18px 18px 6px;padding:12px 14px;font-size:14px;line-height:1.45;color:var(--ink);box-shadow:var(--sh);margin-bottom:34px}
+.wk{display:flex;justify-content:space-between;margin:14px 0}
+.wk div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.wk i{width:32px;height:32px;border-radius:50%;background:#E9ECF1;display:flex;align-items:center;justify-content:center;font-style:normal;color:#fff;font-weight:700;font-size:14px}
+.wk .on i{background:#FF7A1A}
+.wk .today i{box-shadow:0 0 0 2px #fff,0 0 0 4px #FF7A1A}
+.wk .sk i{background:#FFD3B0;color:#C25A10}
+.wk span{min-height:13px}
+.lvlb{font-size:12.5px;font-weight:600;color:var(--green-t);background:var(--green-l);padding:4px 10px;border-radius:12px;white-space:nowrap}
+.goal{display:block;width:100%;text-align:left}
+.gic{width:42px;height:42px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center;flex:none}
+.fr{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.fr.me b{color:var(--green-t)}
+.fr .rk{width:16px;color:var(--muted);font-weight:700;font-size:13px}
+.fav{width:30px;height:30px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none}
+.fr .fs{margin-left:auto;display:flex;align-items:center;gap:4px;font-weight:700}
+.t24{display:block;width:100%;text-align:left;background:#FFF6E5}
+.t24d{width:54px;text-align:center;line-height:1;flex:none}
+.t24d b{font-size:24px;display:block}.t24d small{font-size:10.5px;color:var(--muted)}
+.hubteaser{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin:14px 0 0;padding:12px 16px}
+.hubteaser span{flex:1;min-width:0}.hubteaser b{display:block;font-size:15px}.hubteaser small{font-size:12.5px;color:var(--muted)}
+.hubteaser>svg.i{color:var(--green)}
+.chip.on{background:var(--green-l);color:var(--green-t);box-shadow:inset 0 0 0 1.5px var(--green)}
+.tb{position:relative;font-size:10px}
+.tb .nd{position:absolute;top:5px;left:calc(50% + 7px);width:9px;height:9px;border-radius:50%;background:#FF7A1A;border:2px solid #fff}
+
+/* ---------- "what's new" pop-up after the update ---------- */
+.wn{position:absolute;inset:0;z-index:72;background:rgba(20,28,22,.45);display:none;align-items:center;justify-content:center;padding:22px}
+.wn.on{display:flex}
+.wn-card{width:100%;background:#fff;border-radius:26px;padding:6px 20px 14px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:pop .4s cubic-bezier(.2,.9,.25,1.15)}
+.wn-card .pig3d{margin:0 auto -4px}
+.newpill{display:inline-block;background:var(--green-l);color:var(--green-t);font-size:12px;font-weight:700;padding:4px 10px;border-radius:12px}
+.wn-card h2{font-size:21px;margin:10px 0 6px;letter-spacing:-.2px;line-height:1.25}
+.wn-card p{font-size:14px;color:var(--ink2);margin:0 0 14px;line-height:1.45}
+.wn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.wn-grid button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;border-radius:16px;background:var(--bg);font-weight:600;font-size:14px;color:var(--ink)}
+.wn-grid button svg{color:var(--green)}
+.wn-grid button:active{background:var(--green-l)}
+.wn .later{font-size:14px;color:var(--muted);padding:10px;font-weight:600}
+/* ---------- onboarding in the Persely tab ---------- */
+.onb{position:absolute;inset:0;z-index:72;background:var(--bg);display:none;flex-direction:column;padding-top:var(--top)}
+.onb.on{display:flex}
+@media (min-width:760px){.phone .onb{top:56px;padding-top:0}}
+.onb-top{display:flex;align-items:center;gap:12px;padding:14px 18px 6px;flex:none}
+.onb-bars{flex:1;display:flex;gap:5px}
+.onb-bars i{flex:1;height:4px;border-radius:3px;background:#D9DDE4}
+.onb-bars i.on{background:var(--green)}
+.onb-skip{font-size:14px;color:var(--muted);font-weight:600}
+.onb-body{flex:1;overflow-y:auto;padding:8px 20px 16px;overscroll-behavior:contain;scrollbar-width:none}
+.onb-body::-webkit-scrollbar{display:none}
+.onb-body h2{font-size:24px;margin:6px 0 8px;letter-spacing:-.3px;line-height:1.2}
+.onb-body .lead{font-size:15px;color:var(--ink2);line-height:1.5;margin:0 0 16px}
+.onb-foot{padding:10px 20px calc(env(safe-area-inset-bottom) + 16px);flex:none}
+@media (min-width:760px){.onb-foot{padding-bottom:34px}}
+.onb .pig3d{margin:0 auto}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh);border:2px solid transparent}
+.opt.on{border-color:var(--green);background:#F7FCF4}
+.opt .t{flex:1;min-width:0}.opt b{display:block;font-size:15px}.opt small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.opt .ic{color:var(--green);display:flex}
+.opt .sample{display:block;margin-top:8px;font-size:13px;color:var(--ink2);background:var(--bg);border-radius:12px 12px 12px 4px;padding:8px 10px}
+.amt{font-size:30px;font-weight:700;margin:2px 0 4px}
+input[type=range].rng{width:100%;accent-color:var(--green);height:30px}
+.onb-li{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:14.5px;color:var(--ink2);text-align:left}
+.onb-li span{width:38px;height:38px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center;flex:none}
+.persi-says{display:flex;gap:10px;align-items:flex-end;margin-top:14px;animation:pop .35s cubic-bezier(.2,.9,.25,1.15)}
+.persi-says>span{flex:none}
+.persi-says>div{background:#fff;border-radius:16px 16px 16px 4px;padding:10px 12px;font-size:14px;line-height:1.4;box-shadow:var(--sh)}
+.setup{display:flex;align-items:center;gap:12px;background:var(--green-l);border-radius:16px;padding:14px 16px;margin-bottom:14px;width:100%;text-align:left}
+.setup b{display:block;font-size:15px}.setup small{font-size:12.5px;color:var(--ink2)}
+
+/* ---------- guided tour of the Persely tab ---------- */
+.tour{position:absolute;inset:0;z-index:73;display:none}
+.tour.on{display:block}
+.tour-hole{position:absolute;border-radius:18px;box-shadow:0 0 0 2000px rgba(12,22,15,.62);pointer-events:none;transition:all .3s ease}
+.tour-tip{position:absolute;left:14px;right:14px;background:#fff;border-radius:18px;padding:14px 14px 10px;box-shadow:0 12px 40px rgba(0,0,0,.25);animation:pop .35s cubic-bezier(.2,.9,.25,1.15)}
+.tour-row{display:flex;gap:10px;align-items:center;font-size:14.5px;line-height:1.4;color:var(--ink)}
+.tour-row>span{flex:none}
+.tour-act{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+/* ---------- friends, challenges, monthly story ---------- */
+.nudge{margin-left:8px;width:32px;height:32px;border-radius:50%;background:var(--bg);font-size:15px;display:flex;align-items:center;justify-content:center}
+.storycard{display:flex;align-items:center;gap:12px;width:100%;text-align:left}
+.stc-thumb{width:46px;height:60px;border-radius:12px;background:linear-gradient(160deg,#1F6B2A,#52AE30);color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 0 0 2px #fff,0 0 0 4px #FF7A1A}
+.storycard b{display:block;font-size:15px}.storycard small{font-size:12.5px;color:var(--muted)}
+.story{position:absolute;inset:0;z-index:77;display:none;flex-direction:column;color:#fff;padding:calc(var(--top) + 40px) 26px 30px}
+.story.on{display:flex}
+.st-bars{position:absolute;left:12px;right:12px;top:calc(var(--top) + 10px);display:flex;gap:4px}
+.st-bars i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.35);overflow:hidden}
+.st-bars b{display:block;height:100%;width:0;background:#fff}
+.st-bars b.done{width:100%}
+.st-bars b.run{animation:stbar 5s linear forwards}
+@keyframes stbar{from{width:0}to{width:100%}}
+.st-x{position:absolute;right:14px;top:calc(var(--top) + 22px);font-size:30px;line-height:1;color:#fff;width:40px;height:40px}
+.st-body{flex:1;display:flex;flex-direction:column;justify-content:center}
+.st-k{font-size:19px;font-weight:600;opacity:.92}
+.st-big{font-size:54px;font-weight:800;line-height:1.05;letter-spacing:-1.5px;margin:8px 0 14px}
+.st-sub{font-size:18px;line-height:1.42;opacity:.95;max-width:330px}
+.st-body .pig3d{margin:18px 0 0}
+.st-foot .btn+.btn{margin-top:6px}
+@media (min-width:760px){.phone .story{padding-top:70px}.phone .st-bars{top:66px}.phone .st-x{top:78px}}
+
+/* ---------- fake iOS notification (for the laptop demo) ---------- */
+.nbanner{position:absolute;left:8px;right:8px;top:calc(var(--top) + 6px);z-index:85;display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:22px;
+  background:rgba(246,246,248,.88);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);
+  box-shadow:0 10px 34px rgba(0,0,0,.2);transform:translateY(-150%);transition:transform .5s cubic-bezier(.2,.9,.25,1.12);text-align:left;color:#111;width:auto}
+.nbanner.in{transform:none}
+.nbanner img,.lcard img{width:38px;height:38px;border-radius:9px;flex:none}
+.nbanner .nb,.lcard .nb{flex:1;min-width:0}
+.nbanner .nh,.lcard .nh{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.nbanner b,.lcard b{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nbanner small,.lcard small{font-size:13px;color:#77777c;flex:none}
+.nbanner p,.lcard p{margin:1px 0 0;font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+/* lock screen */
+.lock{position:absolute;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;color:#fff;transition:transform .35s ease,opacity .35s ease;
+  background:radial-gradient(120% 70% at 15% 5%,#4F63C9 0%,transparent 60%),radial-gradient(110% 80% at 95% 95%,#2E9E77 0%,transparent 55%),linear-gradient(165deg,#1C2340,#0D1222);
+  padding-top:calc(var(--top) + 46px)}
+.lock.on{display:flex}
+.lock.out{transform:translateY(-100%);opacity:.6}
+.lock .ld{font-size:19px;font-weight:600;opacity:.92}
+.lock .lt{font-size:92px;font-weight:700;line-height:1;letter-spacing:-3px;margin-top:2px}
+.lock .lnotes{width:100%;padding:0 10px;margin-top:auto;margin-bottom:130px;display:flex;flex-direction:column;gap:8px}
+.lcard{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:22px;background:rgba(246,246,248,.82);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);color:#111;text-align:left;width:100%;animation:pop .45s cubic-bezier(.2,.9,.25,1.15)}
+@keyframes pop{from{transform:translateY(24px) scale(.96);opacity:0}}
+.lock .lbot{position:absolute;bottom:46px;left:0;right:0;display:flex;justify-content:space-between;padding:0 44px}
+.lock .lbot i{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.18);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center}
+.lock .lbot svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.lock .lhint{position:absolute;bottom:24px;left:0;right:0;text-align:center;font-size:12px;opacity:.7}
+.phone.locked .sbar{color:#fff}
+.phone.locked .sbar svg{fill:#fff}
+.phone.locked .sbar svg rect[stroke]{stroke:#fff}
+.phone.locked .homebar{background:#fff}
+@media (min-width:760px){.nbanner{top:54px}.lock{padding-top:84px}.lock .lhint{bottom:22px}}
+
+/* ---------- small demo panel next to the phone (laptop only) ---------- */
+.demo-panel,.demo-show{display:none}
+@media (min-width:760px){
+  .demo-panel{display:flex;flex-direction:column;gap:5px;position:fixed;left:18px;top:50%;transform:translateY(-50%);width:186px;padding:10px;border-radius:16px;
+    background:rgba(255,255,255,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 6px 24px rgba(30,40,60,.12);z-index:200}
+  .demo-panel.hidden{display:none}
+  .demo-panel h4{margin:2px 4px 3px;font-size:11px;font-weight:700;color:#7A808B;display:flex;justify-content:space-between}
+  .demo-panel button{display:flex;align-items:center;gap:7px;width:100%;padding:6px 8px;border-radius:9px;background:#fff;box-shadow:0 1px 0 #E2E5EB;font-size:12px;color:#2B3038;text-align:left;line-height:1.25}
+  .demo-panel button:hover{background:#EAF5E4}
+  .demo-panel button.on{background:#2B3038;color:#fff}
+  .demo-panel kbd{margin-left:auto;font:inherit;font-size:10.5px;color:#9AA0AA}
+  .demo-panel button.on kbd{color:#c7cbd2}
+  .demo-panel .sep{height:1px;background:rgba(0,0,0,.08);margin:3px 0}
+  .demo-show{position:fixed;left:0;top:50%;width:12px;height:54px;margin-top:-27px;border-radius:0 8px 8px 0;background:rgba(43,48,56,.18);z-index:200}
+  .demo-show.on{display:block}
+}
+/* ---------- Persely tab v2: calm, factual, bank-grade ---------- */
+.k{font-size:13px;color:var(--muted)}
+.hero{padding:18px 18px 14px}
+.hero-v{font-size:32px;font-weight:700;letter-spacing:-.6px;margin:2px 0 4px}
+.hero-r{font-size:13px;color:var(--ink2)}
+.hero-r b{color:var(--green-t);font-weight:700}
+.hero-btns{display:flex;gap:10px;margin:16px 0 12px}
+.hero-btns .btn{flex:1;height:44px}
+.trust{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.trust span{display:inline-flex;align-items:center;gap:4px}
+.trust svg{color:var(--green)}
+.setupc{border:1.5px solid var(--green);box-shadow:none;background:#F7FCF4}
+.hrow{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.big{display:block;font-size:20px;font-weight:700;margin-top:2px}
+.pill{font-size:12px;font-weight:700;padding:5px 10px;border-radius:12px;white-space:nowrap;background:#E9ECF1;color:var(--muted);flex:none}
+.pill.ok{background:var(--green-l);color:var(--green-t)}
+.pill.open{background:var(--orange-l);color:var(--orange)}
+.wkrow{display:flex;gap:6px;margin:16px 0 6px}
+.wkrow i{flex:1;height:10px;border-radius:5px;background:#E4E7EC}
+.wkrow i.on{background:var(--green)}
+.wkrow i.sk{background:repeating-linear-gradient(45deg,#BFD9B2 0 3px,#E4E7EC 3px 6px)}
+.wkrow i.cur:not(.on){background:#fff;box-shadow:inset 0 0 0 2px var(--orange)}
+.wklab{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+.bul{margin:12px 0 0;padding:0;list-style:none}
+.bul li{position:relative;padding-left:16px;font-size:14px;line-height:1.45;color:var(--ink2);margin:6px 0}
+.bul li::before{content:"";position:absolute;left:3px;top:.6em;width:5px;height:5px;border-radius:50%;background:var(--green)}
+.bul.sm li{font-size:13px;margin:5px 0}
+.bul b{color:var(--ink)}
+.bul.left{text-align:left;margin:4px 6px 16px}
+.tiers{display:flex;gap:8px}
+.tier{flex:1;border-radius:12px;background:var(--bg);padding:10px 6px;text-align:center;border:1.5px solid transparent}
+.tier b{display:block;font-size:16px;color:var(--ink2)}
+.tier small{font-size:11.5px;color:var(--muted)}
+.tier.on{background:var(--green-l)}
+.tier.on b{color:var(--green-t)}
+.tier.next{border:1.5px dashed var(--green)}
+.bmsg{font-size:13.5px;color:var(--ink2);margin:12px 0 6px;line-height:1.45}
+.bmsg b{color:var(--ink)}
+.fine{font-size:12px;color:var(--muted);line-height:1.45}
+.flabel{font-size:12.5px;color:var(--muted);margin:14px 2px 6px;font-weight:600}
+.sheet .flabel:first-of-type{margin-top:0}
+.msum{display:block;width:100%;text-align:left}
+.row .t24d{width:46px}
+.opt.slim{padding:11px 14px;margin-bottom:8px}
+.opt.radio{align-items:flex-start}
+.opt .rd{width:20px;height:20px;border-radius:50%;border:2px solid #C3C8D0;flex:none;margin-top:1px;transition:border .15s}
+.opt.on .rd{border:6px solid var(--green)}
+.rec{display:inline-block;font-size:11px;font-weight:700;color:var(--green-t);background:var(--green-l);padding:2px 7px;border-radius:8px;margin-left:6px;vertical-align:1px}
+.subopts{margin:-2px 0 12px 48px}
+.rev{background:#fff;border-radius:16px;box-shadow:var(--sh);padding:2px 16px;margin:6px 0 12px}
+.rev div,.sr{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.rev div:last-child,.sr:last-child{border-bottom:0}
+.rev span,.sr span{color:var(--muted);flex:none}
+.sr b{text-align:right;font-weight:600}
+.warn{background:#FDECEC;color:#B42318;border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn.ghost{background:none;box-shadow:none;color:var(--green-t);margin-top:6px}
+.onb-step{font-size:12.5px;font-weight:700;color:var(--green-t);margin-top:6px}
+.done-ic{width:72px;height:72px;border-radius:50%;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center;margin:22px auto 6px}
+.sumcard{padding:2px 16px}
+.wn-ic{width:56px;height:56px;border-radius:50%;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center;margin:16px auto 10px}
+.wn-grid.three{grid-template-columns:repeat(3,1fr);gap:8px}
+.wn-grid.three button{padding:12px 4px;font-size:12.5px}
+.tour-t b{display:block;font-size:15px;margin-bottom:3px}
+.tour-t p{margin:0;font-size:14px;color:var(--ink2);line-height:1.4}
+.fr .nudge{width:auto;height:30px;padding:0 12px;border-radius:15px;font-size:12.5px;font-weight:600;color:var(--green-t);background:var(--green-l)}
+/* merged savings features: money-in list, verification, shared goals, share card */
+.late{color:#C25A10;font-weight:600}
+/* story ring at the top of the Persely tab (Instagram-style: bright ring = not watched yet) */
+.sring{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px}
+.sring-in{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;letter-spacing:.3px;
+  background:linear-gradient(160deg,#1F6B2A,#52AE30);box-shadow:0 0 0 2.5px var(--bg),0 0 0 5px #FF7A1A}
+.sring.seen .sring-in{box-shadow:0 0 0 2.5px var(--bg),0 0 0 4px #C9CED6}
+.sring small{font-size:11px;font-weight:600;color:var(--orange)}
+.sring.seen small{color:var(--muted);font-weight:500}
+.wn-grid button.hot{position:relative;background:var(--green-l);box-shadow:inset 0 0 0 1.5px var(--green);color:var(--green-t)}
+.hotb{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;letter-spacing:.3px;background:#FF7A1A;color:#fff;padding:2px 7px;border-radius:8px;white-space:nowrap}
+.addbtn{height:44px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:inset 0 0 0 1.5px var(--green-l),var(--sh)}
+.lst .li b.num{font-size:14px;white-space:nowrap}
+.lst .li b.pos{color:var(--green-t)}
+.lst .li .tg{flex:none}
+.dsheet button{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;border-radius:12px;background:var(--card);box-shadow:var(--sh);margin-bottom:8px;font-size:14.5px;text-align:left}
+.dsheet small{margin-left:auto;color:var(--muted);font-size:12px}
+.lst{padding:2px 0}
+.lst .li{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;text-align:left;border-bottom:1px solid var(--line)}
+.lst .li:last-child{border-bottom:0}
+.lst .li .ic{color:var(--green);display:flex}
+.lst .li .t{flex:1;min-width:0}
+.lst .li .t b{display:block;font-size:14.5px;font-weight:600;color:var(--ink)}
+.lst .li .t small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+.verifyc{border:1.5px solid var(--green);box-shadow:none;background:#F7FCF4}
+.avs{display:flex}
+.avs .fav+.fav{margin-left:-8px;box-shadow:0 0 0 2px #fff}
+.stepn{width:26px;height:26px;border-radius:50%;background:var(--green-l);color:var(--green-t);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
+.sharec{width:100%;max-width:310px;background:#fff;color:var(--ink);border-radius:24px;padding:22px 20px;box-shadow:0 12px 30px rgba(0,0,0,.25);text-align:left}
+.insight{border:1.5px solid var(--green);box-shadow:none;margin-top:14px}
+.gic{margin:0}
+/* streak card: big flame + number, one flame per week */
+.streak.risk{box-shadow:inset 0 0 0 1.5px #FFB27A,var(--sh)}
+.stk{display:flex;align-items:center;gap:8px}
+.stk span{display:flex;flex-direction:column;line-height:1}
+.stk b{font-size:40px;font-weight:800;letter-spacing:-1px;color:var(--ink)}
+.stk small{font-size:12.5px;color:var(--muted);margin-top:3px;font-weight:600}
+.stk-msg{font-size:13.5px;color:var(--ink2);margin:10px 0 2px}
+.streak.risk .stk-msg{color:#C25A10;font-weight:600}
+.flrow{display:flex;justify-content:space-between;align-items:flex-end;margin:14px 2px 4px}
+.fw{position:relative;display:flex;flex-direction:column;align-items:center;width:30px}
+.fw i{position:absolute;bottom:-12px;font-style:normal;font-size:9px;color:var(--muted)}
+.fw.cur{border-radius:10px;padding:2px}
+.fw.open svg{animation:flick 1.6s ease-in-out infinite}
+@keyframes flick{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+.fs .flame{margin-right:2px}
+/* Persi: small, one line, no cartoon speech bubble */
+.persi{display:flex;align-items:center;gap:10px;margin:-6px 0 10px}
+.persi .pig{flex:none}
+.persi-t{flex:1;min-width:0;font-size:14px;line-height:1.4;color:var(--ink2)}
+.persi-t b{display:block;font-size:12.5px;color:var(--green-t);margin-bottom:1px}
+.wn-card .pig3d{margin:4px auto -2px}
+.nbanner img.persi-av,.lcard img.persi-av{background:#EAF5E4;object-fit:contain}
+.hubteaser .pig{flex:none;margin:-6px 0}
+@media (prefers-reduced-motion:reduce){.page,.page.out,.sheet{animation:none}.splash{transition:none}.nbanner,.lock{transition:none}.lcard{animation:none}}
+</style>
+</head>
+<body>
+<div class="stage">
+<div class="device" id="device">
+<span class="hw l act"></span><span class="hw l vu"></span><span class="hw l vd"></span><span class="hw r pw"></span><span class="hw r cam"></span>
+<div class="bezel">
+<div class="phone" id="phone">
+  <div class="sbar"><span id="clock">9:41</span><span class="isl"></span>
+    <span class="ics">
+      <svg width="19" height="12" viewBox="0 0 19 12"><rect x="0" y="8" width="3.2" height="4" rx="1"/><rect x="5.2" y="5.5" width="3.2" height="6.5" rx="1"/><rect x="10.4" y="3" width="3.2" height="9" rx="1"/><rect x="15.6" y="0" width="3.2" height="12" rx="1"/></svg>
+      <svg width="17" height="12" viewBox="0 0 16 12"><path d="M8 11.6 5.6 9.1a3.4 3.4 0 0 1 4.8 0z"/><path d="M3.3 6.9a6.6 6.6 0 0 1 9.4 0l-1.25 1.25a4.8 4.8 0 0 0-6.9 0z"/><path d="M1 4.6a9.9 9.9 0 0 1 14 0l-1.25 1.25a8.1 8.1 0 0 0-11.5 0z"/></svg>
+      <svg width="28" height="13" viewBox="0 0 28 13"><rect x=".5" y=".5" width="24" height="12" rx="3.8" fill="none" stroke="#111" stroke-opacity=".38"/><rect x="2" y="2" width="17" height="9" rx="2.2"/><path d="M26 4.4v4.2c.9-.3 1.5-1.1 1.5-2.1s-.6-1.8-1.5-2.1z" fill-opacity=".4"/></svg>
+    </span>
+  </div>
+  <span class="homebar"></span>
+  <div class="body safe-top" id="body">
+    <section class="view on" id="v-fooldal"></section>
+    <section class="view" id="v-utalas"></section>
+    <section class="view" id="v-hub"></section>
+    <section class="view" id="v-tranzakciok"></section>
+    <section class="view" id="v-kartyaim"></section>
+    <section class="view" id="v-tovabbiak"></section>
+  </div>
+  <nav class="tabbar" id="tabbar"></nav>
+  <div class="stack" id="stack"></div>
+  <div class="back" id="back"><div class="sheet" id="sheet"></div></div>
+  <div class="toast" id="toast"></div>
+  <div class="wn" id="wn"></div>
+  <div class="onb" id="onb"></div>
+  <div class="tour" id="tour"></div>
+  <div class="story" id="story"></div>
+  <div class="splash" id="splash"><img src="splash-logo-green.png" alt="otpbank"></div>
+  <div class="lock" id="lock">
+    <div class="ld" id="lockDate"></div>
+    <div class="lt num" id="lockTime"></div>
+    <div class="lnotes" id="lockNotes"></div>
+    <div class="lbot">
+      <i><svg viewBox="0 0 24 24"><path d="M8 3h8l-1 5H9zM9 8h6v13H9zM12 12v3"/></svg></i>
+      <i><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></i>
+    </div>
+    <div class="lhint">Tap to open</div>
+  </div>
+</div>
+</div>
+</div>
+<div class="caption">Prototype · demo data</div>
+<script src="three.min.js"></script>
+<aside class="demo-panel" id="demoPanel"></aside>
+<button class="demo-show" id="demoShow" aria-label="Show demo panel"></button>
+</div>
+
+<script>
+/* ================= icons (simple line icons) ================= */
+const P = {
+  home:'<path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h4.5v-5.5h4V20h4.5V9.5"/>',
+  money:'<rect x="2.5" y="6" width="17" height="11" rx="1.5"/><circle cx="11" cy="11.5" r="2.6"/><path d="M5.5 9v.01M16.5 14v.01M21.5 9v10.5H6"/>',
+  list:'<circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/><rect x="8" y="4" width="13" height="4" rx="2"/><rect x="8" y="10" width="13" height="4" rx="2"/><rect x="8" y="16" width="13" height="4" rx="2"/>',
+  cards:'<rect x="3" y="8" width="16" height="11" rx="1.5"/><path d="M3 12h16M6 5h15v10M7 16h3"/>',
+  menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
+  mail:'<rect x="3" y="5.5" width="18" height="13" rx="1.5"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',
+  chev:'<path d="m9 5.5 6.5 6.5L9 18.5"/>',
+  back:'<path d="M20 12H4.5M10.5 5.5 4 12l6.5 6.5"/>',
+  backc:'<path d="M14.5 5.5 8 12l6.5 6.5"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  swap:'<path d="M5 9h14l-3.5-3.5M19 15H5l3.5 3.5"/>',
+  euro:'<path d="M17.5 6.5A6.5 6.5 0 1 0 17.5 17.5M5 10.5h9M5 13.5h9"/>',
+  plane:'<path d="M20.5 3.5 3.5 11l6.5 2.5 2.5 6.5z"/><path d="M10 13.5 15 9"/>',
+  req:'<rect x="3" y="5" width="14" height="10" rx="1.5"/><circle cx="10" cy="10" r="2"/><path d="M3 18h9M17 13.5l4 2.5-4 2.5"/>',
+  sched:'<rect x="3" y="5" width="15" height="14" rx="1.5"/><path d="M3 9.5h15M7 3v3.5M14 3v3.5"/><circle cx="17.5" cy="17" r="4" fill="#fff"/><path d="M17.5 15v2.2l1.4 1"/>',
+  hist:'<rect x="3" y="7" width="14" height="12" rx="1.5"/><path d="M7 11h6M7 15h4M15 3.5l3 2.5-3 2.5M18 6h-6"/>',
+  filter:'<path d="M4 5h16l-6 7.5V19l-4-2v-4.5z"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.01"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M4.2 7.5l2.1 1.2M17.7 15.3l2.1 1.2M4.2 16.5l2.1-1.2M17.7 8.7l2.1-1.2"/><circle cx="12" cy="12" r="6.6"/>',
+  user:'<circle cx="10" cy="8" r="3.5"/><path d="M3.5 19c.8-3.3 3.4-5 6.5-5"/><path d="M14 15h7M14 18h7"/>',
+  phone:'<rect x="6.5" y="2.5" width="11" height="19" rx="2"/><path d="M10.5 18.5h3"/>',
+  ctp:'<path d="M3 7h12l3 5-3 5H3z"/><path d="m14 7 3 5-3 5M18 7l3 5-3 5"/>',
+  road:'<path d="M9 3 5 21M15 3l4 18M12 5v2.5M12 11v2.5M12 17v2.5"/>',
+  doc:'<path d="M5 3.5h14v11l-5 5H5z"/><path d="M14 19.5v-5h5M8 8h8M8 11.5h5"/>',
+  invite:'<path d="M16 3.5c-1.5 0-2.5 1.2-2.5 1.2S12.5 3.5 11 3.5 8.5 5 8.5 6.3c0 2.7 5 5.7 5 5.7s5-3 5-5.7C18.5 5 17.5 3.5 16 3.5z"/><path d="M3 21v-4.5h3.5c1.5 0 2 1 3.5 1h3.5M6.5 21H17l4-4"/>',
+  mapq:'<path d="M3 6.5 8 4l5 2.5L18 4v6M3 6.5V20l5-2.5 4 2M8 4v13.5"/><circle cx="16.5" cy="15.5" r="3"/><path d="m18.7 17.7 2.3 2.3"/>',
+  mapp:'<path d="M3 6.5 8 4l5 2.5L18 4v6M3 6.5V20l5-2.5 4 2M8 4v13.5"/><path d="M17 21s-3.5-3.2-3.5-5.8a3.5 3.5 0 0 1 7 0C20.5 17.8 17 21 17 21z"/><circle cx="17" cy="15.2" r="1"/>',
+  rate:'<path d="m3 17 5-5 3.5 3.5L20 7M14.5 7H20v5.5"/><path d="m3 11 4-4 3 3"/>',
+  qr:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v2M14 20h2M18 18h3v3"/>',
+  cal:'<rect x="3" y="5" width="18" height="15" rx="1.5"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  help:'<path d="M4 15.5A6.5 6.5 0 1 1 9.5 18H4z"/><path d="M14.5 9.5A5.5 5.5 0 0 1 20 15v5h-5a5.5 5.5 0 0 1-4.6-2.5"/>',
+  lock:'<rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5"/>',
+  logout:'<circle cx="12" cy="12" r="9"/><path d="M8 12h9M13.5 8.5 17 12l-3.5 3.5"/>',
+  wallet:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 14.5h2"/>',
+  piggy:'<path d="M5 11.5c0-3.3 3.1-5.5 7-5.5 3.5 0 6.5 1.7 7.2 4.5H21v3.5h-1.8c-.5 1.3-1.4 2.3-2.7 3V20h-3v-1.5h-3V20h-3v-3.3C6 15.6 5 13.8 5 11.5z"/><path d="M5 11.5H3.5M10 6.5 9 3.5l3 2.2M16 10.5v.01"/>',
+  tag:'<path d="M3.5 12.5V4.5h8l9 9-8 8z"/><circle cx="8" cy="8.5" r="1.4"/>',
+  chart:'<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5V12l6 6"/>',
+  star:'<path d="m12 3.5 2.6 5.5 6 .8-4.4 4.1 1.1 6-5.3-3-5.3 3 1.1-6L3.4 9.8l6-.8z"/>',
+  food:'<path d="M5 3v6a2.5 2.5 0 0 0 5 0V3M7.5 11.5V21M17 3c-2 1.5-3 4-3 7h3v11"/>',
+  cart:'<path d="M2.5 4H5l2.3 10.5h10.2L20 7H6.2"/><circle cx="9" cy="19" r="1.5"/><circle cx="16.5" cy="19" r="1.5"/>',
+  bus:'<rect x="4" y="3.5" width="16" height="14" rx="2.5"/><path d="M4 11h16M7 17.5V20M17 17.5V20M7.5 14.5h.01M16.5 14.5h.01"/>',
+  fun:'<path d="M4 7.5 20 4l-1 5.5H5zM5 9.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V9.5"/><path d="M9 4.5l1.5 4.5M14 3.6 15.5 8.6"/>',
+  edu:'<path d="M2.5 9 12 4.5 21.5 9 12 13.5z"/><path d="M6.5 11v5c0 1.5 2.5 3 5.5 3s5.5-1.5 5.5-3v-5M21.5 9v5"/>',
+  eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+  snow:'<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/>',
+  limit:'<path d="M4 17a8 8 0 1 1 16 0"/><path d="m12 17 4-5"/>',
+  check:'<circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.7L16 9.5"/>',
+  bell:'<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/>',
+  game:'<path d="M7.5 8.5h9a4.5 4.5 0 0 1 4.4 5.5l-.6 2.6a2.1 2.1 0 0 1-3.7.9l-1.9-2.5H9.3l-1.9 2.5a2.1 2.1 0 0 1-3.7-.9L3.1 14a4.5 4.5 0 0 1 4.4-5.5z"/><path d="M8 11v3M6.5 12.5h3M15.5 11.6h.01M17.5 13.4h.01"/>',
+  car:'<path d="M4 16.5V12l2.2-5h11.6l2.2 5v4.5z"/><path d="M4 12h16"/><circle cx="7.8" cy="16.5" r="1.8"/><circle cx="16.2" cy="16.5" r="1.8"/>',
+  shield:'<path d="M12 3.5 19 6v5.5c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6z"/><path d="m9 12 2.2 2.2L15.5 10"/>'
+};
+const I = (n,s) => `<svg class="i" viewBox="0 0 24 24"${s?` style="width:${s}px;height:${s}px"`:''}>${P[n]}</svg>`;
+const ft = n => (n<0?'-':'') + Math.abs(Math.round(n)).toLocaleString('en-US').replace(/,/g,' ') + ' Ft';
+const sft = n => (n>0?'+ ':'') + ft(n).replace('-','- ');
+const $ = s => document.querySelector(s);
+const NA = 'not available in the demo';
+
+/* ================= demo data ================= */
+const KEY='otp-clone-en-v5';
+const fresh = () => ({
+  name:'Kiss Anna', ini:'KA',
+  updateSeen:false, onboarded:false,   // pop-up after the update, then onboarding
+  verified:false, bridge:false,        // student status (3.0%) and the graduation bridge (3.0% for 12 more months)
+  income:{amount:75000, day:5},        // money the bank sees coming in around the 5th (salary, scholarship, family)
+  // money in: payday rule (share of each payment of 10 000 Ft or more, asks first), weekly transfer, round-ups
+  payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday',
+  // weekly streak: any amount once a week keeps it (automatic savings count too); it never changes the rate
+  week:40, streak:8, best:8, savedWeek:false, skips:1, juniorDays:41, remind:true,
+  history:[32,33,34,35,36,37,38,39], skipped:[],
+  challenges:{},
+  friends:[{n:'Bence',c:'#3B82C4',s:11,g:62},{n:'Lili',c:'#B45FB0',s:6,g:35},{n:'Márk',c:'#D98A1F',s:3,g:71}],
+  rankBy:'streak', toured:true, monthSaved:23500, months:0, period:'November', interest:0, roundCount:0, roundSum:0, insight:false, insightUsed:false,
+  goals:[
+    {id:'holiday', name:'Summer holiday', ic:'plane', pace:6000, date:'2027-06-01'},
+    {id:'ps5', name:'PS5 + GTA 6', ic:'game', saved:46000, target:230000, pace:12000, date:'2027-12-01'},
+    {id:'fest', name:'Festival ticket', ic:'fun', saved:30000, target:45000, pace:5000, date:'2027-07-01'}
+  ],
+  accounts:[
+    {id:'junior', n:'Junior account', no:'11773119 - 10066592', v:87450, h:'Credit limit: 0 Ft'},
+    {id:'persely', n:'Persely – Summer holiday', no:'11770116 - 10066592', v:64000, h:'Goal: 134 000 Ft'},
+    {id:'megt', n:'Savings account', no:'11770116 - 10066601', v:120000, h:'Interest: 3.5%'}
+  ],
+  persely:{name:'Summer holiday', target:134000, auto:false, freq:'Monthly', day:'On the 1st of the month', amt:4000},
+  disc:{activated:[]},
+  tx:[
+    {d:'13 November', n:'LIDL MAGYARORSZÁG', s:'Card payment', a:-5240, ic:'cart'},
+    {d:'12 November', n:'NAGY PÉTER', s:'Instant transfer', a:20000, ic:'money'},
+    {d:'12 November', n:'BKK BUDAPEST', s:'Card payment', a:-1350, ic:'bus'},
+    {d:'10 November', n:'PERSELY DEPOSIT', s:'Between my accounts', a:-4000, ic:'piggy', note:'Summer holiday'},
+    {d:'8 November', n:'WOLT HUNGARY', s:'Card payment', a:-4690, ic:'food'},
+    {d:'5 November', n:'SALARY', s:'Incoming transfer', a:75000, ic:'money'},
+    {d:'3 November', n:'CINEMA CITY', s:'Card payment', a:-3200, ic:'fun'}
+  ]
+});
+let S; try{ S = JSON.parse(localStorage.getItem(KEY)) || fresh(); }catch(e){ S = fresh(); }
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
+const CATS = [['food','Food',38200],['cart','Shopping',21400],['bus','Transport',9500],['fun','Fun',14300],['edu','Education',6000]];
+const acc = id => S.accounts.find(a=>a.id===id);
+
+/* ================= tab screens ================= */
+function vFooldal(){
+  const spent = CATS.reduce((a,c)=>a+c[2],0), avg = 102400, max = Math.max(...CATS.map(c=>c[2]));
+  // gauge: 270° arc, gap at the bottom
+  const R=104, C=2*Math.PI*R, arc=C*.75, p=Math.min(1,spent/ (avg*1.15));
+  return `
+  <div class="hhead"><div class="avatar">${S.ini}</div><b>${S.name}</b><button class="mail" data-go="neked" aria-label="Messages">${I('mail',26)}</button></div>
+  <div class="sec"><span>Balance</span><a data-go="szamlaim">All accounts ${I('chev',16)}</a></div>
+  <div class="accs" id="accs">${S.accounts.map(a=>`<button class="acc" data-go="${a.id==='persely'?'persely':'szamlaim'}"><div class="n">${a.n}</div><div class="v num">${ft(a.v)}</div><div class="h">${a.h}</div></button>`).join('')}</div>
+  <div class="dots">${S.accounts.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>
+  <button class="card hubteaser" data-tab="hub">${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.onboarded && S.streak === 0
+    ? `<b>New in Persely: goals with bonus interest</b><small>Set up in 1 minute</small>`
+    : `<b style="display:flex;align-items:center;gap:4px">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Safe this week' : 'Ends Sunday. Any amount keeps it going'}</small>`}</span>${I('chev',20)}</button>
+  <div class="sec"><span>My monthly spending</span><a data-go="kiadas">Details ${I('chev',16)}</a></div>
+  <div style="margin:-6px 0 0 6px;font-size:12.5px;color:var(--muted)">1 November – 30 November</div>
+  <div class="gauge">
+    <svg width="250" height="250" viewBox="0 0 250 250" style="transform:rotate(135deg)">
+      <circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>
+      <circle cx="125" cy="125" r="${R}" fill="none" stroke="#52AE30" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc*p} ${C}"/>
+    </svg>
+    <div class="core"><small>Spent so far</small><b class="num">${ft(spent)}</b></div>
+  </div>
+  <div class="avg">Average monthly spending: <span class="num">${ft(avg)}</span></div>
+  <div class="sec"><span>What did I spend on this month?</span></div>
+  <div class="cats">${CATS.map((c,i)=>`<div class="cat ${i===0?'on':''}"><span class="ic">${I(c[0],26)}</span><span class="col"><i style="height:${c[2]/max*100}%"></i></span><span class="num">${ft(c[2])}</span></div>`).join('')}</div>
+  ${insightCard()}
+  <div class="sec"><span>For you</span><a data-go="neked">All ${I('chev',16)}</a></div>
+  ${nekedCards(true)}`;
+}
+// monthly insight on Home: the biggest category and what 10% of it does to the goal date
+function insightCard(){
+  if(!S.insight || S.insightUsed) return '';
+  const g = ruleGoal(), food = CATS[0][2], ten = Math.round(food / 10 / 100) * 100, rem = gTarget(g) - gSaved(g), p = paceOf(g);
+  if(rem <= 0) return '';
+  const wk = p ? Math.round((rem / p - rem / (p + ten)) * 4.345) : 0;
+  return `<div class="card insight"><div class="hrow"><span class="pill ok">Persi's tip</span><span class="k">This month</span></div>
+    <div style="font-size:14.5px;line-height:1.45;margin:10px 0 12px">Food was your biggest category: <b>${ft(food)}</b>. Move 10% (${ft(ten)}) to ${esc(g.name)} each month${wk >= 1 ? ` and get there <b>${plural(wk,'week')} sooner</b>` : ''}.</div>
+    <div class="hero-btns" style="margin:0"><button class="btn" data-insyes="${ten}">Move 10% a month</button><button class="btn w" data-insno>Not now</button></div></div>`;
+}
+
+function vUtalas(){
+  return `<div class="tabtitle">Transfer</div>
+  <div class="qa">
+    <button data-sheet="uj"><span class="c">${I('plus')}</span>New transfer</button>
+    <button data-sheet="sajat"><span class="c">${I('swap')}</span>Between my accounts</button>
+    <button data-toast="Foreign currency transfer – ${NA}"><span class="c">${I('euro')}</span>Currency transfer</button>
+    <button data-toast="qvik request – ${NA}"><span class="c">${I('plane')}</span>New qvik request</button>
+  </div>
+  <button class="row" data-toast="Request money – ${NA}"><span class="ic">${I('req')}</span><span class="t">Request money easily<small>free | NFC | QR code</small></span><span class="badge">New</span><span class="chev">${I('chev',20)}</span></button>
+  <button class="row" data-go="rendszeres"><span class="ic">${I('sched')}</span><span class="t">Scheduled and recurring transfers</span><span class="chev">${I('chev',20)}</span></button>
+  <button class="row" data-tab="tranzakciok"><span class="ic">${I('hist')}</span><span class="t">Previous transfers</span><span class="chev">${I('chev',20)}</span></button>
+  <button class="row" data-toast="No active qvik requests"><span class="ic">${I('plane')}</span><span class="t">qvik requests</span><span class="chev">${I('chev',20)}</span></button>`;
+}
+
+let txMode = 0;
+function vTranz(){
+  let last='', html='';
+  if(txMode===0){
+    S.tx.forEach(t=>{
+      if(t.d!==last){ html+=`<div class="dh">${t.d}</div>`; last=t.d; }
+      html+=`<div class="tx"><span class="ic">${I(t.ic)}</span><span class="t"><b>${t.n}</b><span>${t.s}</span>${t.note?`<em>${I('piggy',15)} ${t.note}</em>`:''}</span><span class="a num ${t.a>0?'p':''}">${sft(t.a)}</span></div>`;
+    });
+  } else html = `<div class="card" style="text-align:center;color:var(--muted);padding:28px 16px">No pending transactions.</div>`;
+  return `<div class="tabtitle">Transactions</div>
+  <div class="seg"><button class="${txMode===0?'on':''}" data-txmode="0">Completed</button><button class="${txMode===1?'on':''}" data-txmode="1">Pending</button></div>
+  <button class="filter" data-toast="Filter – ${NA}">${I('filter')} Filter</button>
+  ${html}`;
+}
+
+function vKartyaim(){
+  const frozen = S.frozen;
+  return `<div class="tabtitle">My cards</div>
+  <div class="card bigcard">
+    <div style="font-weight:600">Main card</div>
+    <div class="ccard" style="${frozen?'filter:grayscale(.85)':''}"><div class="bn">otpbank</div><div class="chip2"></div><div class="no">•••• •••• •••• 4821</div><div class="nm">KISS ANNA · JUNIOR</div><div class="mc"><i></i><i></i></div></div>
+    ${frozen?'<span class="ok" style="background:#FDEDE0;color:var(--orange)">Temporarily blocked</span>':`<span class="ok">${I('check',18)} Your card is active</span>`}
+  </div>
+  <button class="row" data-freeze><span class="ic">${I('snow')}</span><span class="t">Temporary block<small>You can turn it back on anytime</small></span><span class="tg ${frozen?'on':''}"></span></button>
+  <button class="row" data-toast="Daily limit: 300 000 Ft"><span class="ic">${I('limit')}</span><span class="t">Change daily limit</span><span class="chev">${I('chev',20)}</span></button>
+  <button class="row" data-toast="Card details are hidden in the demo"><span class="ic">${I('eye')}</span><span class="t">View card details</span><span class="chev">${I('chev',20)}</span></button>
+  <button class="row" data-go="kedvezmenyek"><span class="ic">${I('tag')}</span><span class="t">Discounts<small class="g">${5-S.disc.activated.length} offers waiting for activation</small></span><span class="chev">${I('chev',20)}</span></button>
+  <button class="row" data-toast="Click to Pay – ${NA}"><span class="ic">${I('ctp')}</span><span class="t">Click to Pay</span><span class="chev">${I('chev',20)}</span></button>`;
+}
+
+function vTovabbiak(){
+  const it = (ic,t,attr='') => `<button class="mi" ${attr||`data-toast="${t} – ${NA}"`}>${I(ic)}<span>${t}</span></button>`;
+  return `<div class="menu">
+  <div class="sec"><span>My finances</span></div>
+  ${it('cards','My cards','data-go="kartyaim"')}
+  ${it('bell','Notifications','data-go="ertesitesek"')}
+  ${it('wallet','My accounts','data-go="szamlaim"')}
+  ${it('piggy','Persely','data-go="persely"')}
+  ${it('chart','Savings options','data-go="megtakaritas"')}
+  ${it('limit','Spending tracker','data-go="kiadas"')}
+  ${it('tag','Discounts','data-go="kedvezmenyek"')}
+  ${it('star','For you','data-go="neked"')}
+  <div class="sec"><span>Other</span></div>
+  ${it('cal','Demo: 8 weeks later','data-jump8')}
+  ${it('gear','Settings')}${it('user','My partners')}${it('phone','Mobile top-up')}${it('ctp','Click to Pay')}
+  ${it('road','Motorway vignette')}${it('doc','Documents')}${it('invite','Invite a friend!')}
+  ${it('mapq','OTP branches and ATMs in Hungary')}${it('mapp','ATMs abroad')}${it('rate','Exchange rates')}
+  ${it('qr','QR reader')}${it('cal','Book a branch appointment')}${it('help','Can we help?')}${it('lock','Block internet and mobile bank access')}
+  <div class="mdiv"></div>
+  ${it('logout','Log out','data-reset')}
+  </div>`;
+}
+
+/* ================= Persely tab: mascot, streak, level, goals, challenge, friends ================= */
+// Our own 3D piggy (see "3D piggy" below). Here only a placeholder; the single 3D canvas is moved into it.
+// Without the 3D library the flat drawing is shown instead.
+function pig(mood='happy', size=120){
+  if(!window.THREE) return pigSvg(mood, size);
+  return `<div class="pig pig3d" data-mood="${mood}" style="width:${size}px;height:${size}px" aria-label="Persely piggy, drag to turn"></div>`;
+}
+// Flat fallback drawing.
+function pigSvg(mood='happy', size=120){
+  const look = mood==='concerned' ? 49 : 47;
+  const eyes = mood==='proud' ? '<path d="M39 49q6-7 12 0M69 49q6-7 12 0" stroke="#1F3A14" stroke-width="3.2" fill="none" stroke-linecap="round"/>'
+    : mood==='sleepy' ? '<path d="M39 50h12M69 50h12" stroke="#1F3A14" stroke-width="3.2" stroke-linecap="round"/>'
+    : `<circle cx="45" cy="48" r="7.5" fill="#fff"/><circle cx="75" cy="48" r="7.5" fill="#fff"/><circle cx="46" cy="${look}" r="3.8" fill="#1F3A14"/><circle cx="76" cy="${look}" r="3.8" fill="#1F3A14"/><circle cx="47.3" cy="45.6" r="1.3" fill="#fff"/><circle cx="77.3" cy="45.6" r="1.3" fill="#fff"/>`;
+  const brows = mood==='concerned' ? '<path d="M38 39l12-4M82 39l-12-4" stroke="#1F3A14" stroke-width="2.6" stroke-linecap="round"/>' : '';
+  const mouth = mood==='concerned' ? '<path d="M54 82q6-4 12 0" stroke="#1F3A14" stroke-width="2.6" fill="none" stroke-linecap="round"/>'
+    : '<path d="M53 80q7 6 14 0" stroke="#1F3A14" stroke-width="2.6" fill="none" stroke-linecap="round"/>';
+  const extra = mood==='proud' ? '<path d="M100 16l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" fill="#F4B73A"/><path d="M15 28l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#F4B73A"/>'
+    : mood==='sleepy' ? '<text x="92" y="26" font-size="14" font-weight="700" fill="#8C919B" font-family="sans-serif">z</text><text x="101" y="16" font-size="10" font-weight="700" fill="#8C919B" font-family="sans-serif">z</text>' : '';
+  return `<svg class="pig" width="${size}" height="${Math.round(size*110/120)}" viewBox="0 0 120 110" role="img" aria-label="Persely piggy">
+    <ellipse cx="60" cy="104" rx="34" ry="4" fill="rgba(0,0,0,.08)"/>
+    <rect x="37" y="80" width="13" height="21" rx="6.5" fill="#3F9A27"/><rect x="70" y="80" width="13" height="21" rx="6.5" fill="#3F9A27"/>
+    <path d="M33 36 28 11l24 15z" fill="#3F9A27"/><path d="M87 36l5-25-24 15z" fill="#3F9A27"/>
+    <ellipse cx="60" cy="60" rx="45" ry="39" fill="#52AE30"/>
+    <ellipse cx="60" cy="74" rx="30" ry="19" fill="#62BC40"/>
+    <rect x="47" y="23" width="26" height="5" rx="2.5" fill="#2F7D1D"/>
+    <circle cx="35" cy="64" r="5.5" fill="#F29C9C" opacity=".45"/><circle cx="85" cy="64" r="5.5" fill="#F29C9C" opacity=".45"/>
+    <ellipse cx="60" cy="65" rx="15" ry="11" fill="#8FD46E"/>
+    <ellipse cx="55" cy="65" rx="2.3" ry="3" fill="#2F5E1F"/><ellipse cx="65" cy="65" rx="2.3" ry="3" fill="#2F5E1F"/>
+    ${eyes}${brows}${mouth}${extra}</svg>`;
+}
+/* Persely tab: the economics come from the team handoff (Levente), the experience from the research.
+   - 3.0% a year for verified students (18–30) on the first 500 000 Ft, 28% tax on interest → about 2.2% net. Otherwise 0.01%.
+   - money in: payday rule (asks first), weekly transfer, round-ups (next 100 Ft, ×2)
+   - shared Persely (2–5 people), euro Persely (no student rate), graduation bridge (3.0% for 12 months if the salary comes to OTP)
+   - weekly streak is for motivation only and never changes the rate */
+const RATE = 3.0, LOW_RATE = 0.01, TAX = 0.28, CAP = 500000, EUR_RATE = 390, ROUND_EST = 3000;
+const rate = () => (S.verified || S.bridge) ? RATE : LOW_RATE;
+const rateLabel = () => (S.verified || S.bridge) ? '3.0%' : '0.01%';
+const isEur = g => g.cur === 'EUR';
+const eur = v => '€' + (Math.round(v*100)/100).toLocaleString('en-US');
+const money = (g, v) => isEur(g) ? eur(v) : ft(v);
+const goalById = id => S.goals.find(g => g.id === id);
+const ruleGoal = () => goalById(S.ruleGoal) || S.goals.find(g => !g.shared && !isEur(g)) || S.goals[0];
+const gSaved = g => g.id==='holiday' ? acc('persely').v : g.shared ? g.members.reduce((a,m) => a + m.amt, 0) : g.saved;
+const gTarget = g => g.id==='holiday' ? S.persely.target : g.target;
+const mine = g => g.shared ? (g.members.find(m => m.me) || {amt:0}).amt : gSaved(g);
+const incomeShare = pct => Math.round(S.income.amount * pct / 100);
+// how much reaches a goal per month from its own rules
+function paceOf(g){
+  if(g.shared || isEur(g)) return 0;
+  let v = g.pace || 0;
+  if(S.ruleGoal === g.id){ if(S.payday.on) v += incomeShare(S.payday.pct); if(S.weekly.on) v += Math.round(S.weekly.amt * 52 / 12); }
+  if(g.weekly) v += Math.round(g.weekly * 52 / 12);
+  if(S.roundup.on && S.roundup.goal === g.id) v += ROUND_EST;
+  return v;
+}
+const gMonths = g => { const left = gTarget(g) - gSaved(g); if(left <= 0) return 0; const p = paceOf(g); return p ? Math.max(1, Math.ceil(left / p)) : -1; };
+// the forecast lands after the goal's own date
+const isLate = g => { const m = gMonths(g); if(m <= 0 || !g.date) return false; const d = new Date(); d.setMonth(d.getMonth() + m); return d > new Date(g.date + 'T12:00:00'); };
+const inMonths = m => { const d = new Date(); d.setMonth(d.getMonth() + m); return d.toLocaleDateString('en-GB',{month:'long', year:'numeric'}); };
+const fDate = s => new Date(s + 'T12:00:00').toLocaleDateString('en-GB',{day:'numeric', month:'long', year:'numeric'});
+const monthsTo = s => Math.max(0, (new Date(s + 'T12:00:00') - new Date()) / (30.44 * 864e5));
+const total = () => S.goals.filter(g => !isEur(g)).reduce((a,g) => a + mine(g), 0);
+const eurTotal = () => S.goals.filter(isEur).reduce((a,g) => a + g.saved, 0);
+const r10 = v => v < 100 ? Math.round(v) : Math.round(v / 10) * 10;
+const yearNet = (base = total()) => r10(Math.min(base, CAP) * rate() / 100 * (1 - TAX));
+const plural = (n, w) => `${n} ${w}${n===1?'':'s'}`;
+// streak flame (lit = orange, unlit = grey)
+const flame = (s=22, lit=true) => `<svg class="flame" width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true" style="flex:none"><path fill="${lit?'#FF7A1A':'#D5D9DF'}" d="M12 2c1 4 5.2 5.6 5.2 11.2a5.2 5.2 0 0 1-10.4 0c0-2.1 1-3.6 2-4.6 0 2 1 3 2.1 3 0-3-1-5.2 1.1-9.6z"/><path fill="${lit?'#FFC23A':'#EEF0F3'}" d="M12 12.5c.6 1.6 2.4 2.2 2.4 4.3a2.4 2.4 0 0 1-4.8 0c0-1.2.8-2 1.5-2.4 0 .8.4 1.2.9 1.2 0-1.2-.4-2 0-3.1z"/></svg>`;
+const fromName = id => acc(id).n;
+const avatar = (m, s=26) => `<span class="fav" style="background:${m.c};width:${s}px;height:${s}px;font-size:${Math.round(s*.42)}px">${m.me ? 'KA' : m.n[0]}</span>`;
+const forecast = g => { if(isEur(g)) return 'Euro · no student rate'; if(g.shared) return `With ${g.members.filter(m=>!m.me).map(m=>m.n).join(', ') || 'nobody yet'} · you put in ${ft(mine(g))}`;
+  const m = gMonths(g); return m === 0 ? 'Goal reached' : m < 0 ? 'Add a rule to see the date' : isLate(g) ? `<span class="late">${inMonths(m)} · late</span>` : inMonths(m); };
+
+// the week counts for the streak (once per week)
+function markSaved(){
+  if(S.savedWeek) return false;
+  S.savedWeek = true; S.streak++; S.best = Math.max(S.best, S.streak); S.history.push(S.week);
+  if(S.streak % 4 === 0) S.skips = Math.min(2, S.skips + 1);   // 1 skip week for every 4 weeks of streak
+  return true;
+}
+// one place where forints go into a goal: balances, transaction, streak
+function depositTo(g, v, fromId='junior', how='Between my accounts'){
+  acc(fromId).v -= v;
+  if(g.id==='holiday') acc('persely').v += v; else if(g.shared) g.members.find(m => m.me).amt += v; else g.saved += v;
+  S.monthSaved = (S.monthSaved || 0) + v;
+  S.tx.unshift({d:'Today', n:'PERSELY DEPOSIT', s:how, a:-v, ic:'piggy', note:g.name});
+  return markSaved();
+}
+// Persi: one short line
+function persiSays(){
+  const g = ruleGoal(), pct = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100));
+  if(!S.onboarded) return {mood:'happy', text:"Hi, I'm Persi. Let's pick a goal."};
+  if(!S.verified && !S.bridge) return {mood:'concerned', text:'Verify your student status to earn 3.0%.'};
+  if(!S.savedWeek && S.streak > 0) return {mood:'concerned', text:'Any amount by Sunday keeps your streak.'};
+  if(!S.savedWeek) return {mood:'happy', text:'Any amount this week starts your streak.'};
+  return {mood:'proud', text:`Week done. ${g.name}: ${pct}%.`};
+}
+function vHub(){
+  const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
+  const weeks = Array.from({length:8}, (_,i) => S.week - 7 + i);
+  const chev = `<span class="chev">${I('chev',20)}</span>`;
+  const rg = ruleGoal(), rgr = goalById(S.roundup.goal) || rg;
+  const li = (ic, title, sub, attr, on) => `<button class="li" ${attr}><span class="ic">${I(ic)}</span><span class="t"><b>${title}</b><small>${sub}</small></span>${on === undefined ? '' : `<span class="pill ${on?'ok':''}">${on?'On':'Off'}</span>`}</button>`;
+  return `<div class="tabtitle">Persely</div>
+
+  <div class="persi" data-tour="persi">${pig(ps.mood, 84)}<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>
+    <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
+
+  ${st ? '' : `<div class="card verifyc"><div style="display:flex;gap:12px;align-items:center"><span class="gic">${I('shield',22)}</span><span style="flex:1"><b style="display:block;font-size:15px">Get the student rate: 3.0%</b><span class="k">Today your Persely earns 0.01%</span></span></div><button class="btn" style="margin-top:12px" data-sheet="verify">Verify student status</button></div>`}
+
+  <div class="card hero" data-tour="total">
+    <div class="hrow"><span class="k">Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Student 3.0%' : 'Not verified'}</span></div>
+    <div class="hero-v num">${ft(tot)}${et ? ` <small class="k" style="font-size:15px;font-weight:600">+ ${eur(et)}</small>` : ''}</div>
+    <div class="hero-r">${st ? `<b>${rateLabel()}</b> a year · about <b>${ft(yearNet())}</b> a year after tax` : `0.01% a year · about ${ft(yearNet())} a year`}</div>
+    <div class="hero-btns"><button class="btn" data-sheet="hubsave">Add money</button><button class="btn w" data-sheet="hubout">Withdraw</button></div>
+    <div class="trust"><span>${I('check',15)} Withdraw any time</span><span>${I('check',15)} No fees</span><span>${I('shield',15)} Insured</span></div>
+    ${st ? `<div class="fine" style="margin-top:8px">${S.bridge ? 'Graduate: 3.0% for 12 months while your salary comes to OTP' : 'Verified student · checked again each semester'}</div>` : ''}
+  </div>
+
+  ${S.onboarded ? '' : `<button class="setup" data-onbstart><span style="color:var(--green);display:flex">${I('star',24)}</span><span style="flex:1"><b>Set a goal and a saving rule</b><small>Takes 1 minute</small></span><span style="color:var(--green);display:flex">${I('chev',20)}</span></button>`}
+
+  <div class="card" data-tour="week" style="${!S.savedWeek && S.streak ? 'box-shadow:inset 0 0 0 1.5px #FFB27A,var(--sh)' : ''}">
+    <div style="display:flex;align-items:center;gap:12px">${flame(36, S.streak > 0)}<div style="flex:1"><div style="font-size:22px;font-weight:700">${S.streak}-week streak</div><div style="font-size:12.5px;color:var(--muted)">Best: ${S.best} · ${plural(S.skips,'skip')} left</div></div>${S.savedWeek ? '<span class="pill ok">Saved</span>' : S.streak ? '<span class="pill open">Ends Sunday</span>' : ''}</div>
+    <div class="wk">${weeks.map(w=>{ const on = S.history.includes(w), sk = (S.skipped||[]).includes(w);
+      return `<div class="${on?'on':''} ${sk?'sk':''} ${w===S.week?'today':''}"><i>${on ? '✓' : sk ? '–' : ''}</i><span>${w===S.week ? 'Now' : ''}</span></div>`; }).join('')}</div>
+  </div>
+
+  <div class="sec" data-tour="goals"><span>Goals</span><a data-sheet="newgoal">New ${I('plus',16)}</a></div>
+  ${S.goals.map(g=>{ const s=gSaved(g), t=gTarget(g), p=Math.min(100,Math.round(s/t*100));
+    const attr = `data-goal="${g.id}"`;
+    const right = g.shared ? `<span class="avs">${g.members.map(m=>avatar(m,24)).join('')}</span>` : `<b style="color:var(--green-t)">${p}%</b>`;
+    return `<button class="card goal" ${attr}><div style="display:flex;align-items:center;gap:12px"><span class="gic">${I(g.shared ? 'user' : isEur(g) ? 'euro' : g.ic,22)}</span><span style="flex:1;min-width:0"><b style="display:block;font-size:15px">${esc(g.name)}</b><span class="num" style="font-size:12.5px;color:var(--muted)">${money(g,s)} of ${money(g,t)} · ${forecast(g)}</span></span>${right}</div><div class="prog" style="margin:10px 0 0"><i style="width:${p}%"></i></div></button>`; }).join('')}
+  ${S.goals.some(g=>g.shared) && S.goals.some(isEur) ? '' : `<div class="hero-btns" style="margin:2px 0 4px">${S.goals.some(g=>g.shared) ? '' : `<button class="btn w addbtn" data-sheet="newshared">${I('user',18)} Shared Persely</button>`}${S.goals.some(isEur) ? '' : `<button class="btn w addbtn" data-neweur>${I('euro',18)} Euro Persely</button>`}</div>`}
+
+  <div class="sec" data-tour="auto"><span>Money in</span></div>
+  <div class="card lst">
+    ${li('money', 'Payday rule', S.payday.on ? `${S.payday.pct}% of each salary → ${esc(rg.name)} · ${S.payday.ask ? 'asks first' : 'automatic'}` : 'Move a share of each salary or scholarship', 'data-sheet="payrule"', S.payday.on)}
+    ${li('sched', 'Weekly transfer', S.weekly.on ? `${ft(S.weekly.amt)} every Monday → ${esc(rg.name)}` : 'A fixed amount every Monday', 'data-sheet="weeklyrule"', S.weekly.on)}
+    ${li('limit', 'Round-ups', S.roundup.on ? `Next 100 Ft, ×2 → ${esc(rgr.name)} · about ${ft(ROUND_EST)} a month` : 'Save the change from card payments', 'data-sheet="roundrule"', S.roundup.on)}
+  </div>
+
+  <button class="row" data-go="grad"><span class="t24d"><b class="num">${S.juniorDays}</b><small>days</small></span><span class="t"><b style="display:block;color:var(--ink);font-weight:600">${S.bridge ? '3.0% for 12 more months' : 'Junior ends soon'}</b><small>${S.bridge ? 'While your salary comes to OTP' : 'Keep 3.0% for 12 more months'}</small></span>${chev}</button>
+
+  ${friendsCard()}
+  <div style="text-align:center;margin:14px 0 6px"><a class="link" data-sheet="how">How Persely works ${I('chev',16)}</a></div>`;
+}
+// demo: one week passes
+function nextWeek(){
+  let note = 'New week. Save any amount by Sunday.';
+  if(!S.savedWeek && S.streak > 0){
+    if(S.skips > 0){ S.skips--; S.skipped = (S.skipped||[]).concat(S.week); note = 'Last week was open. A skip week kept your streak.'; }
+    else { S.streak = 0; note = 'Streak started again. Any amount this week starts a new one.'; }
+  }
+  S.week++; S.savedWeek = false; S.juniorDays = Math.max(0, S.juniorDays - 7);
+  if(S.weekly.on){
+    const amt = Math.min(S.weekly.amt, Math.max(0, acc('junior').v - (S.payday.floor ? 20000 : 0)));
+    if(amt > 0){ depositTo(ruleGoal(), amt, 'junior', 'Weekly transfer'); note = `New week. ${ft(amt)} moved on Monday, so this week is done.`; }
+  }
+  S.goals.filter(g => g.weekly).forEach(g => { if(acc('junior').v >= g.weekly){ depositTo(g, g.weekly, 'junior', 'Weekly transfer'); note = 'New week. Your Monday transfers ran, so this week is done.'; } });
+  renderAll(); toast(note);
+}
+// demo: one month passes (salary, rules, card payments with round-ups, interest)
+const MONTH_CARD = 65400, MONTH_ROUND = 3000, MONTH_TX = 30;
+function monthStep(quiet){
+  const g = ruleGoal(), inc = S.income.amount; let moved = 0;
+  S.months++; S.period = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'}); S.storySeen = false;
+  // four weeks pass; the rules keep the streak alive
+  const ran = S.payday.on || S.weekly.on || S.roundup.on || S.goals.some(x => x.weekly);
+  for(let i = 0; i < 4; i++){ S.week++; if(ran){ S.streak++; S.best = Math.max(S.best, S.streak); S.history.push(S.week); } else S.streak = 0; }
+  S.savedWeek = ran; S.monthSaved = 0; S.juniorDays = Math.max(0, S.juniorDays - 30);
+  acc('junior').v += inc; S.tx.unshift({d:'Today', n:'SALARY', s:'Incoming transfer', a:inc, ic:'money'});
+  if(S.payday.on){ const v = incomeShare(S.payday.pct); depositTo(g, v, 'junior', `Payday rule: ${S.payday.pct}%`); moved += v; }
+  if(S.weekly.on){ const v = S.weekly.amt * 4; depositTo(g, v, 'junior', 'Weekly transfers (4)'); moved += v; }
+  S.goals.filter(x => x.weekly).forEach(x => { depositTo(x, x.weekly * 4, 'junior', 'Weekly transfers (4)'); moved += x.weekly * 4; });
+  acc('junior').v -= MONTH_CARD; S.tx.unshift({d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-MONTH_CARD, ic:'cart'});
+  if(S.roundup.on){ depositTo(goalById(S.roundup.goal) || g, MONTH_ROUND, 'junior', `Round-ups (${MONTH_TX} payments)`); S.roundCount += MONTH_TX; S.roundSum += MONTH_ROUND; moved += MONTH_ROUND; }
+  // interest after tax, credited to each forint Persely by its share
+  const base = total(), net = Math.round(Math.min(base, CAP) * rate() / 100 / 12 * (1 - TAX));
+  if(net > 0 && base > 0){
+    S.goals.filter(x => !isEur(x)).forEach(x => { const part = Math.round(net * mine(x) / base); if(part <= 0) return;
+      if(x.id==='holiday') acc('persely').v += part; else if(x.shared) x.members.find(m=>m.me).amt += part; else x.saved += part; });
+    S.tx.unshift({d:'Today', n:'INTEREST', s:`Persely · ${rateLabel()}, after tax`, a:net, ic:'piggy'});
+    S.interest += net;
+  }
+  if(!S.insightUsed) S.insight = true;
+  renderAll();
+  if(!quiet) toast(`One month later. Salary in, ${ft(moved)} saved by your rules${net ? `, +${ft(net)} interest` : ''}.`);
+  return net;
+}
+
+/* ================= sub pages ================= */
+function nekedCards(compact){
+  const art = (bg,icon,col='#fff') => `<div class="im" style="background:${bg};color:${col}">${I(icon,54)}</div>`;
+  return `<div class="hcar">
+    <button class="nk" data-toast="New features – details">${art('linear-gradient(135deg,#4E9C86,#7CC0A8)','cards')}<div class="tx2"><b>New features in MobilBank</b><p>Check out our latest features!</p><span class="tag new"><span>New</span></span></div></button>
+    <button class="nk" data-toast="Fraud quiz – details">${art('linear-gradient(135deg,#2E6FA6,#5FA6D8)','lock')}<div class="tx2"><b>How well prepared are you against fraud?</b><p>Test your knowledge!</p><span class="tag tip"><span>Tip</span></span></div></button>
+  </div>
+  ${compact?'':'<div class="dots" style="margin-bottom:14px"><i class="on"></i><i></i><i></i></div>'}
+  <button class="card offer" data-go="persely" style="width:100%;text-align:left"><div class="tx2"><b style="font-size:15px">Start saving efficiently!</b><p style="margin:6px 0 10px;font-size:13px;color:var(--muted)">Create your Persely and save for your goals free of charge.</p><span class="tag off"><span>Offer</span></span></div><div class="im" style="background:linear-gradient(135deg,#6C79D8,#9AA6EE);color:#BFF0A8">${I('piggy',56)}</div></button>`;
+}
+
+let nekTab = 0;
+const PAGES = {
+  // one Persely: balance, forecast against its date, its rate, the rules that feed it, members (shared) and activity
+  goal:{title:()=> (goalById(S._detail) || {name:'Persely'}).name, html:()=>{
+    const g = goalById(S._detail); if(!g) return '';
+    const s = gSaved(g), t = gTarget(g), p = Math.min(100, Math.round(s / t * 100)), m = gMonths(g), late = isLate(g);
+    const sw = (on, attr) => `<span class="tg ${on?'on':''}" ${attr}></span>`;
+    let html = `<div class="card" style="margin-top:6px">${g.shared ? `<span class="pill ok">Shared Persely · ${plural(g.members.length,'member')}</span>` : ''}
+      <div class="hero-v num" style="margin-top:${g.shared?8:0}px">${money(g,s)} <small class="k" style="font-size:14px;font-weight:600">of ${money(g,t)}</small></div>
+      <div class="prog" style="margin:8px 0 6px;height:10px"><i style="width:${p}%"></i></div>
+      <div style="display:flex;justify-content:space-between;gap:8px" class="k"><span>${p}% saved</span><span>Goal date: ${g.date ? fDate(g.date) : '—'}</span></div>
+      ${!g.shared && !isEur(g) ? `<div class="note" style="margin:12px 0 0;${late ? 'background:#FFF1E6' : ''}">${m === 0 ? '<b>Goal reached.</b> Take it out or start a new goal.' : m < 0 ? 'Add a rule below to see when you get there.' : `At your pace (about ${ft(Math.round(paceOf(g)/100)*100)} a month) you get there in <b>${inMonths(m)}</b>${late ? ', <b>after your goal date</b>. Add a weekly transfer to catch up.' : '.'}`}</div>` : ''}
+      ${isEur(g) ? `<div class="note" style="margin:12px 0 0">Buy euros bit by bit instead of all at once before the trip. Demo rate: 1 € = ${EUR_RATE} Ft.</div>` : ''}
+      <div class="hero-btns" style="margin:14px 0 0"><button class="btn" data-pickgoal="${g.id}">Add money</button><button class="btn w" data-outgoal="${g.id}">Take out</button></div></div>`;
+    if(g.shared){
+      html += `<div class="sec"><span>Who put in what</span></div><div class="card lst">${g.members.map(mb=>`<div class="li">${avatar(mb,32)}<span class="t"><b>${mb.me ? 'Anna (you)' : esc(mb.n)}</b><div class="prog" style="margin:6px 0 0;height:6px"><i style="width:${Math.round(mb.amt / Math.max(1,s) * 100)}%"></i></div></span><b class="num">${ft(mb.amt)}</b></div>`).join('')}</div>
+        <div class="card" style="padding:4px 16px 10px"><ul class="bul sm"><li><b>You can always take out what you put in.</b></li><li>Paying out the whole pot needs everyone to agree.</li><li>Each share earns the student rate and counts toward that member's own 500 000 Ft limit.</li></ul>
+        ${g.members.length < 5 ? `<button class="btn w" style="margin:6px 0 4px" data-invite>Invite a friend</button>` : ''}</div>`;
+    } else if(!isEur(g)){
+      html += `<div class="card lst"><div class="li"><span class="ic">${I('rate')}</span><span class="t"><b>${(S.verified||S.bridge) ? 'Student rate 3.0%' : 'Standard rate 0.01%'}</b><small>About ${ft(yearNet(s))} a year after tax on ${ft(s)}</small></span></div></div>
+        <div class="sec"><span>Money in</span></div>
+        <div class="card lst">
+          <button class="li" data-gpay="${g.id}"><span class="ic">${I('money')}</span><span class="t"><b>Payday rule</b><small>${S.payday.pct}% of each salary${S.payday.on && S.ruleGoal !== g.id ? ` · now goes to ${esc(ruleGoal().name)}` : ''}</small></span>${sw(S.payday.on && S.ruleGoal === g.id)}</button>
+          <button class="li" data-grr="${g.id}"><span class="ic">${I('limit')}</span><span class="t"><b>Round-ups</b><small>Next 100 Ft, ×2 · about ${ft(ROUND_EST)} a month</small></span>${sw(S.roundup.on && S.roundup.goal === g.id)}</button>
+          <button class="li" data-gwk="${g.id}"><span class="ic">${I('sched')}</span><span class="t"><b>Weekly transfer</b><small>${g.weekly ? `${ft(g.weekly)} every Monday` : (S.weekly.on && S.ruleGoal === g.id) ? `${ft(S.weekly.amt)} every Monday` : 'Tap to add 2 000 Ft every Monday'}</small></span>${sw(!!g.weekly || (S.weekly.on && S.ruleGoal === g.id))}</button>
+        </div>`;
+    }
+    const acts = S.tx.filter(x => x.note === g.name).slice(0, 5);
+    if(acts.length) html += `<div class="sec"><span>Activity</span></div><div class="card lst">${acts.map(x=>`<div class="li"><span class="t"><b>${esc(x.s)}</b><small>${x.d}</small></span><b class="num ${x.a>0?'':'pos'}">${x.a>0?'−':'+'}${isEur(g) && x.n==='CURRENCY EXCHANGE' ? ft(Math.abs(x.a)) : ft(Math.abs(x.a))}</b></div>`).join('')}</div>`;
+    return html + `<p class="fine" style="text-align:center;margin:14px 0 4px">Take money out any time, free of charge.</p>`; }},
+  // create a goal in 3 steps with a live projection (from the team handoff)
+  create:{title:'New Persely', html:()=>{
+    const d = S._draft, steps = `<div class="onb-step" style="margin-top:6px">Step ${d.step} of 3</div>`;
+    if(d.step === 1) return `${steps}<h2 style="margin:4px 0 12px">What are you saving for?</h2>
+      <div class="flabel">Name</div><div class="fld"><span class="t"><input id="cgName" maxlength="30" value="${esc(d.name)}" aria-label="Goal name"></span></div>
+      <div class="flabel">Amount</div><div class="chips" style="margin:0 0 4px">${[50000,150000,300000,1000000].map(v=>`<button class="chip ${d.target===v?'on':''}" style="font-size:13.5px;padding:7px 11px" data-cgamt="${v}">${shortFt(v)}</button>`).join('')}</div>
+      <div class="flabel">By when?</div><div class="chips" style="margin:0">${DATES.map(([v,l])=>`<button class="chip ${d.date===v?'on':''}" style="font-size:13.5px;padding:7px 11px" data-cgdate="${v}">${l}</button>`).join('')}</div>`;
+    if(d.step === 2) return `${steps}<h2 style="margin:4px 0 12px">How should money get in?</h2>
+      <div class="flabel">Weekly transfer, every Monday</div><div class="chips" style="margin:0 0 6px">${[0,1000,2000,5000].map(v=>`<button class="chip ${d.weekly===v?'on':''}" style="font-size:13.5px;padding:7px 11px" data-cgwk="${v}">${v ? ft(v) : 'None'}</button>`).join('')}</div>
+      <button class="opt slim ${d.round?'on':''}" data-cground><span class="t"><b>Round-ups</b><small>Next 100 Ft, ×2 · about ${ft(ROUND_EST)} a month${S.roundup.on ? ` (moves them from ${esc((goalById(S.roundup.goal)||ruleGoal()).name)})` : ''}</small></span><span class="tg ${d.round?'on':''}"></span></button>`;
+    const mo = monthsTo(d.date), monthly = d.weekly * 52 / 12 + (d.round ? ROUND_EST : 0), proj = Math.round(monthly * mo), pc = Math.min(100, Math.round(proj / d.target * 100)), short = d.target - proj;
+    const extra = short > 0 ? Math.ceil(short / Math.max(1, mo * 4.345) / 500) * 500 : 0;
+    return `${steps}<h2 style="margin:4px 0 12px">Check and create</h2>
+      <div class="card sumcard">${[['Name', esc(d.name)], ['Goal', ft(d.target)], ['By', fDate(d.date)], ['Weekly transfer', d.weekly ? `${ft(d.weekly)} every Monday` : 'None'], ['Round-ups', d.round ? 'Next 100 Ft, ×2' : 'Off']].map(([k,v])=>`<div class="sr"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
+      <div class="card"><b style="font-size:15px;line-height:1.4;display:block">${monthly ? `With these rules: about ${ft(Math.round(proj/1000)*1000)} by ${fDate(d.date)}` : 'No rules yet. Add a weekly transfer or round-ups to see a forecast.'}</b>
+        ${monthly ? `<div class="prog" style="margin:10px 0 6px;height:10px"><i style="width:${pc}%"></i></div><div class="k">${pc}% of your goal · ${short > 0 ? `about ${ft(Math.round(short/1000)*1000)} short` : 'on time'}</div>` : ''}
+        ${extra ? `<button class="btn w" style="margin-top:12px" data-cgboost="${d.weekly + extra}">Make it ${ft(d.weekly + extra)} a week</button>` : ''}</div>
+      <p class="fine" style="margin:0 2px">Earns ${(S.verified||S.bridge) ? 'the student rate of 3.0%' : '0.01% until you verify your student status'}.</p>`; },
+    foot:()=>{ const d = S._draft; if(!d) return '';
+      return d.step < 3 ? `<div class="hero-btns" style="margin:0">${d.step > 1 ? '<button class="btn w" data-cgstep="-1">Back</button>' : ''}<button class="btn" data-cgstep="1">Next</button></div>`
+        : `<div class="hero-btns" style="margin:0"><button class="btn w" data-cgstep="-1">Back</button><button class="btn" data-cgcreate>Create Persely</button></div>`; }},
+  // graduation bridge: the retention moment, the student rate continues if the salary comes to OTP
+  grad:{title:'Your student rate', html:()=>{ const pr = S.payday;
+    return `<div style="display:flex;justify-content:center;margin-top:6px">${pig('proud',110)}</div>
+    <div class="card" style="padding:20px 18px"><h2 style="margin:0 0 8px;font-size:22px;line-height:1.25">${S.bridge ? 'Your 3.0% continues' : S.juniorDays ? 'Your Junior package ends soon' : 'Congratulations, Anna'}</h2>
+      <div style="font-size:15px;line-height:1.5;color:var(--ink2)">${S.bridge ? 'For 12 months after graduation, on your first 500 000 Ft, while your salary comes to OTP.' : `${S.juniorDays ? `In ${S.juniorDays} days, or when you graduate.` : 'This month.'} Have your first salary paid into OTP and <b>keep 3.0% for 12 more months.</b>`}</div></div>
+    <div class="sec"><span>How it works</span></div>
+    <div class="card lst">${[['1','Give your employer your OTP account number','Copy it from your account details'],['2','Your first salary arrives at OTP','Within 6 months of graduating'],['3','Your Perselys keep 3.0% for 12 months','On the first 500 000 Ft, as now']].map(([n,t,s])=>`<div class="li" style="align-items:flex-start"><span class="stepn">${n}</span><span class="t"><b>${t}</b><small>${s}</small></span></div>`).join('')}</div>
+    <div class="card" style="padding:4px 16px 10px"><ul class="bul sm"><li>Your goals, streak and friends stay as they are</li><li>Without a salary at OTP the rate goes back to standard after 30 days' notice</li></ul></div>
+    ${pr.on && pr.pct < 20 ? `<div class="note"><b>Tip:</b> most people earn more after 24. Saving ${pr.pct+5}% instead of ${pr.pct}% is about ${ft(incomeShare(5))} more a month. <a class="link" data-raise>Raise to ${pr.pct+5}%</a></div>` : ''}`; },
+    foot:()=> S.bridge ? '' : `<button class="btn" data-keeprate>Keep my 3.0%</button>`},
+  kartyaim:{title:'My cards', html:()=>vKartyaim().replace('<div class="tabtitle">My cards</div>','')},
+  szamlaim:{title:'My accounts', html:()=>S.accounts.map(a=>`<div class="card"><b style="font-size:15px">${a.n}</b><div style="font-size:12px;color:var(--muted)">${a.no}</div>
+    <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:13.5px"><span>${a.id==='persely'?'Balance':'Available balance'}</span><b class="num" style="font-size:16px">${ft(a.v)}</b></div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12.5px;color:var(--muted)"><span>${a.h.split(':')[0]}</span><span class="num">${a.h.split(':')[1]||''}</span></div></div>`).join('')},
+  persely:{title:'Persely details', right:`<span class="round">${I('gear',20)}</span>`, html:()=>{
+    const p=S.persely, v=acc('persely').v, pc=Math.min(100,Math.round(v/p.target*100));
+    return `<div style="padding-top:20px"><div class="pico">${I('piggy',32)}</div>
+    <div class="card" style="padding-top:40px;border-radius:24px"><div style="text-align:center;font-weight:700;font-size:15px">${p.name}</div>
+      <div style="display:flex;justify-content:space-between;margin-top:18px;font-size:13.5px"><span><b class="num">${ft(v)}</b> <span style="color:var(--muted)">/ ${ft(p.target)}</span></span><span style="color:var(--muted)">${pc}%</span></div>
+      <div class="prog"><i style="width:${pc}%"></i></div>
+      <button class="btn" data-sheet="befizet">Add money</button>
+      <button class="btn w" style="margin-top:12px" data-sheet="kivesz">Take money out</button></div>
+    <div class="sec"><span>Automatic transfer</span></div>
+    <button class="row" data-go="rendszeres"><span class="t">Recurring transfer<small class="g">${p.auto?`${p.freq}, ${ft(p.amt)}`:'Off'}</small></span><span style="color:var(--blue);display:flex">${I('info',20)}</span><span class="chev">${I('chev',20)}</span></button>
+    <div class="sec"><span>Other actions</span></div>
+    <button class="row" data-tab="tranzakciok"><span class="ic">${I('list')}</span><span class="t">Related transactions</span><span class="chev">${I('chev',20)}</span></button></div>`;}},
+  rendszeres:{title:'Recurring transfer', foot:()=>`<button class="btn" data-savereg>${S.persely.auto?'Save':'Next'}</button>`, html:()=>{
+    const p=S.persely;
+    return `<div class="card" style="padding:18px"><div style="display:flex;align-items:center;justify-content:space-between"><span>Recurring transfer</span><button class="tg ${p.auto?'on':''}" data-autotoggle aria-label="Recurring transfer"></button></div>
+      <p style="margin:14px 0 0;font-size:13px;color:var(--muted);line-height:1.5">Choose how much and how often you want to put money aside automatically. It moves from your current account to your Persely.</p></div>
+    ${p.auto?`<button class="fld" data-cycle="freq"><span class="t"><label>Frequency</label><b>${p.freq}</b></span><span style="color:var(--green)">${I('chev',20)}</span></button>
+    <button class="fld" data-cycle="day"><span class="t"><label>Date</label><b>${p.day}</b></span><span style="color:var(--green)">${I('chev',20)}</span></button>
+    <div class="note">From the chosen date, the recurring transfer will put aside this amount: <b class="num">${ft(p.amt)}</b></div>
+    <div class="fld"><span class="t"><label>Amount</label><input id="regamt" inputmode="numeric" value="${p.amt}"></span><b>Ft</b></div>`:''}`;}},
+  megtakaritas:{title:'Savings options', html:()=>`
+    <h3 style="margin:10px 0 6px;font-size:16px">Start saving!</h3><div style="font-size:14px;color:var(--ink2)">Save online, even for several goals at once!</div>
+    <div class="chips"><span class="chip">Persely</span><span class="chip">Car prize deposit</span><span class="chip">Fixed deposit</span></div>
+    <button class="btn sm" data-go="persely">Persely and recurring savings</button>
+    <h3 style="margin:26px 0 6px;font-size:16px">Securities</h3><div style="font-size:14px;color:var(--ink2);line-height:1.45">From low-risk products to higher-risk products with higher returns.</div>
+    <div class="chips"><span class="chip">Government bonds</span><span class="chip">Bonds</span><span class="chip">Investment funds</span><span class="chip">Open a securities account</span></div>
+    <button class="btn sm" data-toast="Securities – ${NA}">Go to securities</button>
+    <h3 style="margin:26px 0 6px;font-size:16px">Funds</h3><div style="font-size:14px;color:var(--ink2);line-height:1.45">Look after your financial security with regular payments!</div>
+    <div class="chips"><span class="chip">Home savings fund</span><span class="chip">Health fund</span><span class="chip">Pension fund</span></div>
+    <button class="btn sm" data-toast="Funds – ${NA}">Go to funds</button>`},
+  kedvezmenyek:{title:'Discounts', right:`<span style="display:flex">${I('filter',22)}</span>`, foot:()=>discTab===0&&S.disc.activated.length<DISC.length?`<button class="btn" data-actall>Activate all</button>`:'', html:()=>{
+    const list = DISC.filter(d=> discTab===0 ? !S.disc.activated.includes(d.id) : S.disc.activated.includes(d.id));
+    return `<div class="seg"><button class="${discTab===0?'on':''}" data-disctab="0">Waiting for activation</button><button class="${discTab===1?'on':''}" data-disctab="1">Activated</button></div>
+    ${list.length?list.map(d=>`<button class="card disc" data-act1="${d.id}"><span class="t"><span style="display:flex;align-items:center;gap:12px"><span class="lg" style="background:${d.bg};color:${d.c}">${d.lg}</span><b>${d.n}</b></span><p>${d.t}</p><small>Valid until 31 December 2026</small></span><span style="color:var(--green)">${discTab===0?I('chev',20):I('check',22)}</span></button>`).join(''):`<div class="card" style="text-align:center;color:var(--muted);padding:28px">${discTab===0?'You have activated every offer.':'No activated discounts yet.'}</div>`}`;}},
+  neked:{title:'For you', right:`<span style="display:flex;color:var(--blue)">${I('info',24)}</span>`, html:()=>`
+    <div class="utabs">${['All','Tips','News','Offers'].map((t,i)=>`<button class="${nekTab===i?'on':''}" data-nektab="${i}">${t}</button>`).join('')}</div>
+    <div class="sec" style="margin-top:6px"><span>Featured</span></div>${nekedCards(false)}`},
+  ertesitesek:{title:'Notifications', html:()=>{
+    const st = PUSH;
+    let status, action = '';
+    if(PUSH.on){ status = `<span class="ok">${I('check',18)} On</span>`;
+      action = `<button class="btn" data-pushtest>Send a test notification in 5 seconds</button>
+        <p style="font-size:13px;color:var(--muted);text-align:center;margin:10px 0 0">Tap it, then lock your phone. The notification shows up on the lock screen too.</p>`;
+    } else if(st.ios && !st.standalone){ status = '<span class="badge">Not available</span>';
+      action = `<div class="note"><b>To get notifications, add the app to your Home Screen:</b><br>1. Tap the Share button<br>2. Choose “Add to Home Screen”<br>3. Open the app from the icon and come back here.</div>`;
+    } else if(!st.supported){ status = '<span class="badge">Not supported</span>';
+      action = `<div class="note">This browser doesn't support push notifications. On iPhone, open the link in Safari and add it to your Home Screen.</div>`;
+    } else if(st.perm === 'denied'){ status = '<span class="badge">Blocked</span>';
+      action = `<div class="note">Notifications are blocked. Turn them on in iPhone Settings → Notifications → OTP demo.</div>`;
+    } else { status = '<span class="badge" style="background:#E9ECF1;color:var(--muted)">Off</span>';
+      action = `<button class="btn" data-pushon>Turn on notifications</button>`; }
+    return `<div class="card" style="padding:18px"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b style="font-size:15px">Push notifications</b>${status}</div>
+      <p style="margin:12px 0 0;font-size:13px;color:var(--muted);line-height:1.5">We let you know right away about card payments, incoming transfers and how your Persely is doing.</p></div>
+      ${action}
+      <div class="sec"><span>What you get notified about</span></div>
+      <div class="row"><span class="ic">${I('cards')}</span><span class="t">Card payments</span><span class="tg on"></span></div>
+      <div class="row"><span class="ic">${I('money')}</span><span class="t">Incoming transfers</span><span class="tg on"></span></div>
+      <div class="row"><span class="ic">${I('piggy')}</span><span class="t">Persely weekly reminder<small class="g">Sunday 18:00, only if the week is still open</small></span><span class="tg ${S.remind?'on':''}"></span></div>`;}},
+  challenges:{title:'Weekly challenges', html:()=>`<div class="card" style="padding:4px 16px 10px;margin-top:6px"><ul class="bul sm"><li>New challenges every Monday, the week ends on Sunday</li><li>Progress is checked automatically from your card payments</li><li>Join as many as you like</li></ul></div>${CH_DEFS.map(chCard).join('')}`},
+  kiadas:{title:'Monthly spending', right:`<span style="display:flex">${I('gear',22)}</span>`, html:()=>{
+    const spent=CATS.reduce((a,c)=>a+c[2],0), max=Math.max(...CATS.map(c=>c[2]));
+    return `<div style="margin:18px auto 24px;width:230px;padding:18px;border-radius:40px;text-align:center;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff"><b class="num" style="font-size:22px">${ft(spent)}</b><div style="color:var(--green-t);font-size:13px">November</div></div>
+    <div class="cats">${CATS.map((c,i)=>`<div class="cat ${i===0?'on':''}"><span class="ic">${I(c[0],26)}</span><span style="font-size:10.5px;color:${i===0?'var(--green-t)':'var(--muted)'}">${c[1]}</span><span class="col"><i style="height:${c[2]/max*100}%"></i></span><span class="num">${ft(c[2])}</span></div>`).join('')}</div>
+    <div class="sec"><span>Food – Saturday, 8 November</span></div>
+    <div class="tx"><span class="ic">${I('food')}</span><span class="t"><b>WOLT HUNGARY</b><span>Card payment</span><em>${I('food',15)} Food</em></span><span class="a num">${sft(-4690)}</span></div>`;}}
+};
+let discTab = 0;
+const DISC = [
+  {id:'d1',lg:'PZ',n:'Pizzeria Roma',t:'15% instant discount. Tap for details!',bg:'#FDE3E1',c:'#C8312A'},
+  {id:'d2',lg:'TH',n:'Theatre (junior offer)',t:'10% off every purchase. Tap for details!',bg:'#F8E0EA',c:'#B0234F'},
+  {id:'d3',lg:'SP',n:'Sport Outlet',t:'10% off every purchase over 25,000 Ft.',bg:'#E7ECF3',c:'#3B4A63'},
+  {id:'d4',lg:'CR',n:'Car rental',t:'12% off weekend rentals.',bg:'#FFF0D8',c:'#C77A0B'},
+  {id:'d5',lg:'CF',n:'Coffee chain',t:'Every 5th coffee is free when you pay by card.',bg:'#EFE6DD',c:'#6E4B2E'}
+];
+
+/* ================= rendering ================= */
+const TABS = [['fooldal','home','Home',vFooldal],['utalas','money','Transfer',vUtalas],['hub','piggy','Persely',vHub],['tranzakciok','list','Transactions',vTranz],['tovabbiak','menu','More',vTovabbiak]];
+let cur = 'fooldal';
+// orange dot on the Persely tab while today's saving is still open
+function renderTabs(){ $('#tabbar').innerHTML = TABS.map(([id,ic,l])=>`<button class="tb ${id===cur?'on':''}" data-tab="${id}">${I(ic)}${id==='hub' && !S.savedWeek && S.streak>0 ? '<i class="nd"></i>' : ''}${l}</button>`).join(''); }
+function renderView(id){ const t=TABS.find(x=>x[0]===id); $('#v-'+id).innerHTML = t[3](); }
+function renderAll(){ TABS.forEach(t=>renderView(t[0])); renderTabs(); refreshPages(); save(); if(typeof mountPig==='function') mountPig(); }
+function tab(id){
+  cur=id; document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on', v.id==='v-'+id));
+  while(stack.length) popPage(true);
+  renderView(id); renderTabs(); $('#v-'+id).scrollTop=0;
+  if(typeof mountPig==='function') mountPig();
+}
+
+const stack = [];
+function pageHTML(id){
+  const p = PAGES[id];
+  return `<div class="ph"><button class="l" data-pop aria-label="Back">${id==='persely'?`<span class="round">${I('backc',20)}</span>`:I('back',24)}</button><h1>${esc(typeof p.title === 'function' ? p.title() : p.title)}</h1>${p.right?`<span class="r">${p.right}</span>`:''}</div>
+  <div class="scroll">${p.html()}</div>${p.foot&&p.foot()?`<div class="foot">${p.foot()}</div>`:''}`;
+}
+function pushPage(id){
+  const el = document.createElement('div'); el.className='page'; el.dataset.id=id;
+  el.innerHTML = pageHTML(id); $('#stack').appendChild(el); stack.push(el);
+  if(typeof mountPig === 'function') setTimeout(mountPig, 30);
+}
+function popPage(instant){
+  const el = stack.pop(); if(!el) return;
+  if(instant){ el.remove(); if(typeof mountPig === 'function') mountPig(); return; }
+  el.classList.add('out'); setTimeout(()=>{ el.remove(); if(typeof mountPig === 'function') mountPig(); },220);
+}
+function refreshPages(){ stack.forEach(el=>{ const sc=el.querySelector('.scroll'); const top=sc?sc.scrollTop:0; el.innerHTML=pageHTML(el.dataset.id); const n=el.querySelector('.scroll'); if(n) n.scrollTop=top; }); }
+
+/* ================= sheets & toast ================= */
+function sheet(html){ $('#sheet').innerHTML=html; $('#back').classList.add('on'); }
+function closeSheet(){ $('#back').classList.remove('on'); }
+let tt; function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('on'),2400); }
+const SHEETS = {
+  befizet:()=>moneySheet('Add money','Junior account → Persely','befizet'),
+  kivesz:()=>moneySheet('Take money out','Persely → Junior account','kivesz'),
+  sajat:()=>moneySheet('Between my accounts','Junior account → Persely','befizet'),
+  uj:()=>`<h2>New transfer</h2>
+    <div class="fld"><span class="t"><label>Beneficiary name</label><input id="un" value="Nagy Péter"></span></div>
+    <div class="fld"><span class="t"><label>Account number</label><input id="ua" value="11111111-22222222-33333333"></span></div>
+    <div class="fld"><span class="t"><label>Amount</label><input id="uv" inputmode="numeric" value="5000"></span><b>Ft</b></div>
+    <button class="btn" data-dout>Send transfer</button>`,
+  // add money: goal, amount and the account it comes from are all visible before confirming
+  hubsave:()=>{ if(!S.goals.some(g=>g.id===S._goal)) S._goal = S.goals[0].id; S._from = S._from || 'junior';
+    const g = goalById(S._goal), e = isEur(g), v = S._amt || (e ? 20 : 1000);
+    return `<h2>Add money</h2>
+    <div class="flabel">To</div>
+    <div class="chips" style="margin:0 0 4px">${S.goals.map(x=>`<button class="chip ${S._goal===x.id?'on':''}" style="font-size:13.5px;padding:7px 11px" data-pickgoal="${x.id}">${esc(x.name)}</button>`).join('')}</div>
+    <div class="flabel">Amount</div>
+    <div class="fld"><span class="t"><input id="mv" inputmode="numeric" value="${v}" aria-label="Amount"></span><b>${e ? '€' : 'Ft'}</b></div>
+    <div class="chips" style="margin-top:0">${(e ? [10,20,50,100] : [500,1000,2000,5000]).map(x=>`<button class="chip" style="font-size:14px;padding:8px 12px" data-setv="${x}">${e ? eur(x) : ft(x)}</button>`).join('')}</div>
+    <div class="flabel">From</div>
+    ${S.accounts.filter(a=>a.id!=='persely').map(a=>`<button class="opt slim ${S._from===a.id?'on':''}" data-hubfrom="${a.id}"><span class="ic">${I('wallet',22)}</span><span class="t"><b>${a.n}</b><small class="num">${ft(a.v)} available</small></span>${S._from===a.id?`<span style="color:var(--green);display:flex">${I('check',22)}</span>`:''}</button>`).join('')}
+    <div class="fine" style="margin:6px 2px 14px">${e ? `Demo rate 1 € = ${EUR_RATE} Ft. Euro Perselys don't get the student rate.` : S.savedWeek ? 'This week already counts for your streak.' : `Counts for this week: your streak goes to ${S.streak+1}.`}</div>
+    <button class="btn" data-hubsave>Add money</button>`; },
+  // withdraw: the fear "my money is locked" is answered right here
+  hubout:()=>{ if(!S.goals.some(g=>g.id===S._out)) S._out = S.goals[0].id; const g = goalById(S._out), max = mine(g);
+    return `<h2>Withdraw</h2>
+    <div class="flabel">From</div>
+    <div class="chips" style="margin:0 0 4px">${S.goals.map(x=>`<button class="chip ${S._out===x.id?'on':''}" style="font-size:13.5px;padding:7px 11px" data-outgoal="${x.id}">${esc(x.name)} · ${money(x, mine(x))}</button>`).join('')}</div>
+    <div class="flabel">Amount</div>
+    <div class="fld"><span class="t"><input id="mv" inputmode="numeric" value="${isEur(g) ? Math.min(20, max) : Math.min(5000, max)}" aria-label="Amount"></span><b>${isEur(g) ? '€' : 'Ft'}</b></div>
+    <div class="fine" style="margin:0 2px 14px">${g.shared ? `You can take out what you put in: ${ft(max)}. ` : ''}Arrives on your Junior account instantly. No fee. Your streak is not affected.</div>
+    <button class="btn" data-hubout>Withdraw</button>`; },
+  // payday: the app asks before moving money (the user keeps control)
+  payday:()=>{ const g = ruleGoal(), share = incomeShare(S.payday.pct), s = gSaved(g), t = gTarget(g);
+    return `<div style="display:flex;gap:12px;align-items:center"><span class="gic">${I('money',24)}</span><div><div class="k">Salary · today</div><b style="font-size:22px">+${ft(S.income.amount)} arrived</b></div></div>
+    <h2 style="text-align:left;margin:16px 0 10px;font-size:18px;line-height:1.35">Move ${S.payday.pct}% (${ft(share)}) to ${esc(g.name)}?</h2>
+    <div class="card" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;gap:8px;font-size:13px"><span class="k">${esc(g.name)}</span><b class="num">${ft(s)} → ${ft(s+share)}</b></div><div class="prog" style="margin:8px 0 0"><i style="width:${Math.min(100,Math.round((s+share)/t*100))}%"></i></div></div>
+    <button class="btn" data-paymove>Move ${ft(share)}</button><button class="btn ghost" data-closesheet>Not this time</button>
+    <div class="fine" style="text-align:center;margin-top:4px">Your payday rule: ${S.payday.pct}% of every salary. Change it in Persely → Money in.</div>`; },
+  payrule:()=>{ const p = S.payday;
+    return `<h2>Payday rule</h2><div class="fine" style="text-align:center;margin:-8px 0 12px">A share of each payment of 10 000 Ft or more: salary, scholarship, money from family.</div>
+    <div class="chips" style="justify-content:center;margin-top:0">${[5,10,15,20].map(x=>`<button class="chip ${p.pct===x?'on':''}" style="font-size:15px;padding:9px 16px" data-prpct="${x}">${x}%</button>`).join('')}</div>
+    <div class="flabel">Goes to</div>
+    <div class="chips" style="margin:0 0 8px">${S.goals.filter(g=>!g.shared && !isEur(g)).map(g=>`<button class="chip ${S.ruleGoal===g.id?'on':''}" style="font-size:13.5px;padding:7px 11px" data-rulegoal="${g.id}">${esc(g.name)}</button>`).join('')}</div>
+    <button class="opt slim ${p.ask?'on':''}" data-prask><span class="t"><b style="font-size:14px">Ask me each time</b><small>Off: moves automatically</small></span><span class="tg ${p.ask?'on':''}"></span></button>
+    <button class="opt slim ${p.floor?'on':''}" data-prfloor><span class="t"><b style="font-size:14px">Always keep 20 000 Ft on my account</b><small>If money is tight, less or nothing moves</small></span><span class="tg ${p.floor?'on':''}"></span></button>
+    <div class="fine" style="margin:6px 2px 14px">From a ${ft(S.income.amount)} salary: ${ft(incomeShare(p.pct))}.</div>
+    <button class="btn" data-pron>${p.on ? 'Save' : 'Turn on'}</button>${p.on ? '<button class="btn ghost" data-proff>Turn off</button>' : ''}`; },
+  weeklyrule:()=>{ const w = S.weekly;
+    return `<h2>Weekly transfer</h2><div class="fine" style="text-align:center;margin:-8px 0 12px">The same amount moves every Monday to ${esc(ruleGoal().name)}.</div>
+    <div class="chips" style="justify-content:center;margin-top:0">${[1000,2000,5000].map(x=>`<button class="chip ${w.amt===x?'on':''}" style="font-size:15px;padding:9px 14px" data-wkamt="${x}">${ft(x)}</button>`).join('')}</div>
+    <div class="fine" style="margin:6px 2px 14px">About ${ft(Math.round(w.amt*52/12))} a month. Counts for your streak every week.</div>
+    <button class="btn" data-wkon>${w.on ? 'Save' : 'Turn on'}</button>${w.on ? '<button class="btn ghost" data-wkoff>Turn off</button>' : ''}`; },
+  roundrule:()=>{ const r = S.roundup;
+    return `<h2>Round-ups</h2><div class="fine" style="text-align:center;margin:-8px 0 12px">Each card payment is rounded up to the next 100 Ft, and the change is doubled. A 1 190 Ft coffee saves 20 Ft.</div>
+    <div class="flabel">Goes to</div>
+    <div class="chips" style="margin:0 0 8px">${S.goals.filter(g=>!g.shared && !isEur(g)).map(g=>`<button class="chip ${r.goal===g.id?'on':''}" style="font-size:13.5px;padding:7px 11px" data-rrgoal="${g.id}">${esc(g.name)}</button>`).join('')}</div>
+    <div class="fine" style="margin:6px 2px 14px">About ${ft(ROUND_EST)} a month from your usual card spending.</div>
+    <button class="btn" data-rron>${r.on ? 'Save' : 'Turn on'}</button>${r.on ? '<button class="btn ghost" data-rroff>Turn off</button>' : ''}`; },
+  verify:()=>`<div style="text-align:center"><span class="gic" style="margin:4px auto 10px;width:56px;height:56px">${I('shield',28)}</span></div>
+    <h2>Get the student rate</h2>
+    <div class="rev">
+      <div><span>Today</span><b>0.01% · about ${ft(r10(Math.min(total(),CAP)*LOW_RATE/100*(1-TAX)))} a year</b></div>
+      <div><span>As a student</span><b style="color:var(--green-t)">3.0% · about ${ft(r10(Math.min(total(),CAP)*RATE/100*(1-TAX)))} a year</b></div>
+    </div>
+    <div class="fine" style="margin:0 2px 14px">For students aged 18–30, on your first 500 000 Ft, after 28% tax. We check your enrolment with your university (Neptun) once a semester.</div>
+    <button class="btn" data-verify>Verify with Neptun</button>`,
+  sharedgoal:()=>{ const g = goalById(S._shared); if(!g) return '';
+    const s = gSaved(g), p = Math.min(100, Math.round(s / g.target * 100));
+    return `<h2>${esc(g.name)}</h2><div style="text-align:center;margin:-8px 0 12px"><span class="pill ok">Shared Persely · ${plural(g.members.length,'member')}</span></div>
+    <div class="card"><div class="hero-v num" style="font-size:26px">${ft(s)} <small class="k" style="font-size:14px;font-weight:600">of ${ft(g.target)}</small></div><div class="prog" style="margin:8px 0 6px"><i style="width:${p}%"></i></div><div class="k">By ${fDate(g.date)}</div></div>
+    <div class="flabel">Who put in what</div>
+    <div class="card lst">${g.members.map(m=>`<div class="li">${avatar(m,30)}<span class="t"><b>${m.me ? 'Anna (you)' : esc(m.n)}</b><small class="num">${ft(m.amt)}</small></span></div>`).join('')}</div>
+    <div class="fine" style="margin:0 2px 12px">You can always take out what you put in. Paying out the whole pot needs everyone to agree. Each share earns the student rate.</div>
+    <div class="hero-btns" style="margin:0 0 6px"><button class="btn" data-pickgoal="${g.id}">Add money</button><button class="btn w" data-outgoal="${g.id}">Take out</button></div>
+    ${g.members.length < 5 ? '<button class="btn ghost" data-invite>Invite a friend</button>' : ''}`; },
+  newshared:()=>`<h2>New shared Persely</h2><div class="fine" style="text-align:center;margin:-8px 0 12px">Save with friends or flatmates who are also students. 2–5 people.</div>
+    <div class="flabel">Name</div><div class="fld"><span class="t"><input id="shName" maxlength="30" value="Balaton in July" aria-label="Name"></span></div>
+    <div class="flabel">Goal</div><div class="chips" style="margin:0 0 4px">${[60000,120000,200000].map(v=>`<button class="chip ${(S._shGoal||120000)===v?'on':''}" style="font-size:14px;padding:7px 12px" data-shgoal="${v}">${ft(v)}</button>`).join('')}</div>
+    <div class="flabel">Your first deposit</div><div class="chips" style="margin:0 0 4px">${[5000,15000,30000].map(v=>`<button class="chip ${(S._shFirst||15000)===v?'on':''}" style="font-size:14px;padding:7px 12px" data-shfirst="${v}">${ft(v)}</button>`).join('')}</div>
+    <div class="fine" style="margin:8px 2px 14px">Everyone can always take out what they put in. Paying out the whole pot needs everyone to agree.</div>
+    <button class="btn" data-shcreate>Create and invite</button>`,
+  addfriend:()=>`<h2>Add friends</h2><div style="text-align:center;color:var(--muted);font-size:13px;margin:-8px 0 14px">Compare streaks and goal progress. Amounts stay private.</div>
+    <button class="row" data-invite><span class="ic">${I('invite')}</span><span class="t">Invite with a link<small>Send it in any chat app</small></span><span class="chev">${I('chev',20)}</span></button>
+    <div class="sec"><span>People you may know</span></div>
+    ${SUGGEST.map(p=>{ const added = S.friends.some(f=>f.n===p.n);
+      return `<div class="row" style="padding:10px 14px"><span class="fav" style="background:${p.c}">${p.n[0]}</span><span class="t">${p.n}<small>OTP customer · in your contacts</small></span>${added ? `<span style="color:var(--green-t);font-weight:700;font-size:13px">Added</span>` : `<button class="btn sm" style="height:32px;line-height:32px;padding:0 16px" data-addfriend="${p.n}">Add</button>`}</div>`; }).join('')}`,
+  // first deposit in onboarding: choose the account, then review before money moves
+  onbacct:()=>{ const a = acc(O.from), short = a.v < O.first;
+    return `<h2>Pay from</h2>
+    ${S.accounts.filter(x=>x.id!=='persely').map(x=>`<button class="opt slim ${O.from===x.id?'on':''}" data-onbfrom="${x.id}"><span class="ic">${I('wallet',22)}</span><span class="t"><b>${x.n}</b><small><span class="num">${ft(x.v)}</span> available</small></span>${O.from===x.id?`<span style="color:var(--green);display:flex">${I('check',22)}</span>`:''}</button>`).join('')}
+    <div class="rev">
+      <div><span>To</span><b>${esc(O.name || 'Your goal')}</b></div>
+      <div><span>Amount</span><b class="num">${ft(O.first)}</b></div>
+      <div><span>Fee</span><b>0 Ft</b></div>
+      <div><span>Left on ${a.n}</span><b class="num">${ft(a.v - O.first)}</b></div>
+    </div>
+    ${short ? '<div class="warn">Not enough money on this account. Choose the other one or a smaller amount.</div>' : ''}
+    <button class="btn" data-onbconfirm ${short?'disabled':''}>Confirm ${ft(O.first)}</button>`; },
+  newgoal:()=>{ const hasShared = S.goals.some(g=>g.shared), hasEur = S.goals.some(isEur);
+    return `<h2>New goal</h2><div style="text-align:center;color:var(--muted);font-size:13px;margin:-8px 0 14px">Up to 5 Perselys.</div>
+    ${hasShared ? '' : `<button class="row" data-sheet="newshared"><span class="ic">${I('user')}</span><span class="t">Shared Persely<small>Save together with friends or flatmates</small></span><span class="chev">${I('chev',20)}</span></button>`}
+    ${hasEur ? '' : `<button class="row" data-neweur><span class="ic">${I('euro')}</span><span class="t">Euro Persely<small>For Erasmus and travel. No student rate</small></span><span class="chev">${I('plus',20)}</span></button>`}
+    <button class="row" data-cgnew><span class="ic">${I('plus')}</span><span class="t">Your own goal<small>Name, amount, date and a forecast</small></span><span class="chev">${I('chev',20)}</span></button>
+    ${[['PS5 + GTA 6','game',230000],['Erasmus in Lisbon','plane',150000],['Driving licence','car',350000],['Emergency fund','lock',200000]].filter(([n])=>!S.goals.some(g=>g.name===n)).map(([n,ic,t])=>`<button class="row" data-cgpreset="${n}|${ic}|${t}"><span class="ic">${I(ic)}</span><span class="t">${n}<small>Target: ${ft(t)}</small></span><span class="chev">${I('chev',20)}</span></button>`).join('')}`; },
+  how:()=>`<h2>How Persely works</h2>
+    <div class="flabel">Student rate</div>
+    <div class="card" style="padding:4px 16px 10px"><ul class="bul sm"><li>3.0% a year for verified students aged 18–30, on the first 500 000 Ft</li><li>Interest is paid monthly, 28% tax deducted: about 2.2% net</li><li>After graduation: 12 more months at 3.0% if your salary comes to OTP</li></ul></div>
+    <div class="flabel">Money in</div>
+    <div class="card" style="padding:4px 16px 10px"><ul class="bul sm"><li>Payday rule: a share of each salary, the app asks first</li><li>Weekly transfer, round-ups, or add money yourself</li><li>Withdraw any time, free of charge</li></ul></div>
+    <div class="flabel">Streak</div>
+    <div class="card" style="padding:4px 16px 10px"><ul class="bul sm"><li>Save any amount once a week and your streak grows</li><li>1 skip week for every 4 weeks of streak</li><li>The streak never changes your rate</li></ul></div>
+    <button class="btn" data-tourstart>Show me around</button>`
+};
+function moneySheet(title,sub,kind){
+  return `<h2>${title}</h2><div style="text-align:center;color:var(--muted);font-size:13px;margin:-8px 0 14px">${sub}</div>
+  <div class="fld"><span class="t"><label>Amount</label><input id="mv" inputmode="numeric" value="5000"></span><b>Ft</b></div>
+  <div class="chips" style="margin-top:0">${[1000,5000,10000,20000].map(v=>`<button class="chip" style="font-size:14px;padding:8px 12px" data-setv="${v}">${ft(v)}</button>`).join('')}</div>
+  <button class="btn" data-dmove="${kind}">${kind==='kivesz'?'Take out':'Add money'}</button>`;
+}
+
+/* ================= events ================= */
+document.addEventListener('click', e=>{
+  if(e.target.id==='back'){ closeSheet(); return; }
+  const t = e.target.closest('button,a,[data-go],[data-tab]'); if(!t) return;
+  const d = t.dataset;
+  if(d.tab){ closeSheet(); tab(d.tab); return; }
+  if(d.go){ pushPage(d.go); return; }
+  if('pop' in d){ popPage(); return; }
+  if(d.toast){ toast(d.toast); return; }
+  if(d.sheet){ sheet(SHEETS[d.sheet]()); return; }
+  if(d.setv){ $('#mv').value = d.setv; return; }
+  if(d.dmove){
+    const v = Math.max(0, parseInt(($('#mv').value||'0').replace(/\D/g,''))||0); if(!v) return;
+    const from = d.dmove==='kivesz' ? acc('persely') : acc('junior'), to = d.dmove==='kivesz' ? acc('junior') : acc('persely');
+    if(from.v < v){ toast('Not enough money on the account'); return; }
+    if(d.dmove==='kivesz'){ from.v -= v; to.v += v; S.tx.unshift({d:'Today', n:'PERSELY WITHDRAWAL', s:'Between my accounts', a:v, ic:'piggy', note:S.persely.name}); }
+    else depositTo(S.goals.find(g => g.id === 'holiday') || S.goals[0], v);
+    closeSheet(); renderAll(); toast(d.dmove==='kivesz'?`Taken out: ${ft(v)}`:`Added to Persely: ${ft(v)}`); return;
+  }
+  if('dout' in d){
+    const v = parseInt(($('#uv').value||'0').replace(/\D/g,''))||0, n=($('#un').value||'').toUpperCase();
+    if(!v){ return; } if(acc('junior').v < v){ toast('Not enough money on the account'); return; }
+    acc('junior').v -= v; S.tx.unshift({d:'13 November', n, s:'Instant transfer', a:-v, ic:'money'});
+    closeSheet(); renderAll(); toast(`Transfer sent: ${ft(v)}`); return;
+  }
+  if(d.txmode){ txMode=+d.txmode; renderView('tranzakciok'); return; }
+  if('freeze' in d){ S.frozen=!S.frozen; renderAll(); toast(S.frozen?'Your card is temporarily blocked':'Your card is active again'); return; }
+  if(d.disctab){ discTab=+d.disctab; refreshPages(); return; }
+  if(d.act1){ if(discTab===0){ S.disc.activated.push(d.act1); renderAll(); toast('Discount activated'); } return; }
+  if('actall' in d){ S.disc.activated = DISC.map(x=>x.id); renderAll(); toast('All discounts activated'); return; }
+  if(d.nektab){ nekTab=+d.nektab; refreshPages(); return; }
+  if('autotoggle' in d){ S.persely.auto=!S.persely.auto; renderAll(); return; }
+  if(d.cycle){
+    const opts = d.cycle==='freq' ? ['Monthly','Weekly','Daily'] : ['On the 1st of the month','On the 10th of the month','On payday'];
+    const k = d.cycle==='freq'?'freq':'day'; S.persely[k] = opts[(opts.indexOf(S.persely[k])+1)%opts.length]; renderAll(); return;
+  }
+  if('savereg' in d){
+    if(S.persely.auto){ const v=parseInt(($('#regamt')?.value||'').replace(/\D/g,'')); if(v) S.persely.amt=v; renderAll(); popPage(); toast('Recurring transfer saved'); }
+    else { S.persely.auto=true; renderAll(); }
+    return;
+  }
+  if('reset' in d){ closeOnb(); closeWhatsNew(); S=fresh(); renderAll(); tab('fooldal'); showSplash(1100); launchFlow(1300); return; }
+  if('pushon' in d){ enablePush(); return; }
+  if('pushtest' in d){ testPush(); return; }
+  /* Persely tab */
+  if('closesheet' in d){ closeSheet(); return; }
+  if(d.goal){ S._detail = d.goal; closeSheet(); pushPage('goal'); return; }
+  if(d.dm){ closeSheet(); ({payday:salaryArrives, coffee, dori:doriJoins, week:nextWeek, month:()=>monthStep(), sem:endSemester, grad:graduation, update:demoUpdateDay,
+    reset:()=>{ closeOnb(); closeWhatsNew(); S = fresh(); week8State(); tab('hub'); }})[d.dm](); return; }
+  // rules from inside one Persely
+  if(d.gpay){ if(S.payday.on && S.ruleGoal === d.gpay) S.payday.on = false; else { S.payday.on = true; S.ruleGoal = d.gpay; } renderAll(); toast(S.payday.on ? `Payday rule → ${goalById(d.gpay).name}` : 'Payday rule off'); return; }
+  if(d.grr){ if(S.roundup.on && S.roundup.goal === d.grr) S.roundup.on = false; else S.roundup = {on:true, goal:d.grr}; renderAll(); toast(S.roundup.on ? `Round-ups now go to ${goalById(d.grr).name}` : 'Round-ups off'); return; }
+  if(d.gwk){ const g = goalById(d.gwk);
+    if(S.weekly.on && S.ruleGoal === g.id){ S.weekly.on = false; }
+    else g.weekly = g.weekly ? 0 : 2000;
+    renderAll(); toast(g.weekly || (S.weekly.on && S.ruleGoal === g.id) ? `${ft(g.weekly || S.weekly.amt)} every Monday → ${g.name}` : 'Weekly transfer off'); return; }
+  // create a goal: 3 steps with a live projection
+  if(d.cgpreset !== undefined || 'cgnew' in d){
+    const [n, ic, t] = (d.cgpreset || 'Erasmus in Lisbon|plane|150000').split('|');
+    S._draft = {step:1, name:n, ic, target:+t, date:'2027-09-01', weekly:2000, round:true};
+    closeSheet(); pushPage('create'); return; }
+  if(d.cgstep){ keepCgName(); const dr = S._draft;
+    if(dr.step === 1 && !dr.name.trim()){ toast('Give your goal a name'); return; }
+    dr.step = Math.max(1, Math.min(3, dr.step + (+d.cgstep))); refreshPages(); return; }
+  if(d.cgamt){ keepCgName(); S._draft.target = +d.cgamt; refreshPages(); return; }
+  if(d.cgdate){ keepCgName(); S._draft.date = d.cgdate; refreshPages(); return; }
+  if(d.cgwk !== undefined && d.cgwk !== ''){ S._draft.weekly = +d.cgwk; refreshPages(); return; }
+  if('cground' in d){ S._draft.round = !S._draft.round; refreshPages(); return; }
+  if(d.cgboost){ S._draft.weekly = +d.cgboost; refreshPages(); toast(`Weekly transfer set to ${ft(+d.cgboost)}`); return; }
+  if('cgcreate' in d){
+    if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
+    const dr = S._draft, g = {id:'g'+Date.now(), name:dr.name.trim().slice(0,30), ic:dr.ic || 'star', saved:0, target:dr.target, pace:0, date:dr.date, weekly:dr.weekly};
+    S.goals.push(g); if(dr.round) S.roundup = {on:true, goal:g.id};
+    S._draft = null; popPage(true); renderAll(); S._detail = g.id; pushPage('goal');
+    toast(`${g.name} created.${g.weekly ? ' First transfer next Monday.' : ''}`); return; }
+  if(d.pickgoal){ keepAmt(); if(S._goal !== d.pickgoal) S._amt = 0; S._goal = d.pickgoal; sheet(SHEETS.hubsave()); return; }
+  if(d.hubfrom){ keepAmt(); S._from = d.hubfrom; sheet(SHEETS.hubsave()); return; }
+  if('hubsave' in d){
+    const v = amt(), g = goalById(S._goal) || S.goals[0], from = S._from || 'junior'; if(!v){ toast('Enter an amount'); return; }
+    let counted;
+    if(isEur(g)){
+      const huf = v * EUR_RATE; if(acc(from).v < huf){ toast(`Not enough money on ${fromName(from)}`); return; }
+      acc(from).v -= huf; g.saved += v; S.tx.unshift({d:'Today', n:'CURRENCY EXCHANGE', s:`${eur(v)} for ${g.name}`, a:-huf, ic:'euro', note:g.name}); counted = markSaved();
+    } else {
+      if(acc(from).v < v){ toast(`Not enough money on ${fromName(from)}`); return; }
+      counted = depositTo(g, v, from);
+    }
+    S._amt = 0; closeSheet(); renderAll();
+    if(pig3d && cur === 'hub') setTimeout(() => pig3d.celebrate(), 250);   // a coin drops into Persi
+    toast(counted ? `🔥 ${S.streak}-week streak${S.streak % 4 === 0 ? ' · +1 skip week' : ''}. ${money(g, v)} added to ${g.name}` : `${money(g, v)} added to ${g.name}`);
+    return;
+  }
+  if(d.outgoal){ S._out = d.outgoal; sheet(SHEETS.hubout()); return; }
+  if('hubout' in d){
+    const v = amt(), g = goalById(S._out) || S.goals[0]; if(!v){ toast('Enter an amount'); return; }
+    if(mine(g) < v){ toast(g.shared ? `You can take out up to ${ft(mine(g))}` : `${g.name} has ${money(g, mine(g))}`); return; }
+    const huf = isEur(g) ? v * EUR_RATE : v;
+    if(g.id === 'holiday') acc('persely').v -= v; else if(g.shared) g.members.find(m => m.me).amt -= v; else g.saved -= v;
+    acc('junior').v += huf;
+    S.tx.unshift({d:'Today', n: isEur(g) ? 'CURRENCY EXCHANGE' : 'PERSELY WITHDRAWAL', s:'Between my accounts', a:huf, ic:'piggy', note:g.name});
+    closeSheet(); renderAll(); toast(`${ft(huf)} is on your Junior account. No fee`); return;
+  }
+  if(d.sharedgoal){ S._shared = d.sharedgoal; sheet(SHEETS.sharedgoal()); return; }
+  if(d.shgoal){ S._shGoal = +d.shgoal; keepShName(); sheet(SHEETS.newshared()); restoreShName(); return; }
+  if(d.shfirst){ S._shFirst = +d.shfirst; keepShName(); sheet(SHEETS.newshared()); restoreShName(); return; }
+  if('shcreate' in d){
+    if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
+    const name = (($('#shName') && $('#shName').value) || 'Shared goal').trim().slice(0,30) || 'Shared goal', first = S._shFirst || 15000;
+    if(acc('junior').v < first){ toast('Not enough money on your Junior account'); return; }
+    const g = {id:'s'+Date.now(), name, ic:'user', shared:true, target:S._shGoal || 120000, date:'2027-06-30', members:[{n:'Anna', me:true, amt:0, c:'#F07D19'}]};
+    S.goals.push(g); depositTo(g, first, 'junior', 'Shared Persely');
+    renderAll(); closeSheet(); S._detail = g.id; pushPage('goal'); toast('Shared Persely created. Invite link ready to send'); return;
+  }
+  if('neweur' in d){
+    if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
+    S.goals.push({id:'e'+Date.now(), name:'Lisbon spending money', ic:'euro', cur:'EUR', saved:0, target:300, date:'2027-09-01'});
+    closeSheet(); renderAll(); S._detail = S.goals[S.goals.length-1].id; pushPage('goal'); toast('Euro Persely created. Buy euros bit by bit before the trip'); return;
+  }
+  if(d.addgoal){
+    if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
+    const [n, ic, t] = d.addgoal.split('|');
+    S.goals.push({id:'g'+Date.now(), name:n, ic, target:+t, saved:0, pace:0, date:'2028-06-01'});
+    closeSheet(); renderAll(); toast(`${n} added`); return;
+  }
+  /* money in: payday rule, weekly transfer, round-ups */
+  if('paymove' in d){
+    const g = ruleGoal(), v = incomeShare(S.payday.pct);
+    if(acc('junior').v < v){ toast('Not enough money on your Junior account'); return; }
+    const counted = depositTo(g, v, 'junior', `Payday rule: ${S.payday.pct}%`);
+    closeSheet(); renderAll(); if(pig3d && cur === 'hub') setTimeout(() => pig3d.celebrate(), 250);
+    toast(`${ft(v)} moved to ${g.name}.${counted ? ` 🔥 ${S.streak}-week streak` : ''}`); return;
+  }
+  if(d.prpct){ S.payday.pct = +d.prpct; sheet(SHEETS.payrule()); return; }
+  if(d.rulegoal){ S.ruleGoal = d.rulegoal; sheet(SHEETS.payrule()); return; }
+  if('prask' in d){ S.payday.ask = !S.payday.ask; sheet(SHEETS.payrule()); return; }
+  if('prfloor' in d){ S.payday.floor = !S.payday.floor; sheet(SHEETS.payrule()); return; }
+  if('pron' in d){ S.payday.on = true; closeSheet(); renderAll(); toast(`Payday rule on: ${S.payday.pct}% of each salary`); return; }
+  if('proff' in d){ S.payday.on = false; closeSheet(); renderAll(); toast('Payday rule off'); return; }
+  if(d.wkamt){ S.weekly.amt = +d.wkamt; sheet(SHEETS.weeklyrule()); return; }
+  if('wkon' in d){ S.weekly.on = true; closeSheet(); renderAll(); toast(`${ft(S.weekly.amt)} every Monday`); return; }
+  if('wkoff' in d){ S.weekly.on = false; closeSheet(); renderAll(); toast('Weekly transfer off'); return; }
+  if(d.rrgoal){ S.roundup.goal = d.rrgoal; sheet(SHEETS.roundrule()); return; }
+  if('rron' in d){ S.roundup.on = true; closeSheet(); renderAll(); toast(`Round-ups on: they go to ${(goalById(S.roundup.goal)||ruleGoal()).name}`); return; }
+  if('rroff' in d){ S.roundup.on = false; closeSheet(); renderAll(); toast('Round-ups off'); return; }
+  if('verify' in d){ S.verified = true; closeSheet(); renderAll(); toast('Verified. Your Perselys now earn 3.0%'); return; }
+  if('keeprate' in d){ S.bridge = true; renderAll(); popPage(); tab('hub'); toast('Done. Your 3.0% continues for 12 months once your salary arrives at OTP'); return; }
+  if('raise' in d){ S.payday.pct = Math.min(20, S.payday.pct + 5); renderAll(); toast(`Payday rule is now ${S.payday.pct}%`); return; }
+  if('insyes' in d){ const g = ruleGoal(); g.pace = (g.pace || 0) + (+d.insyes); S.insightUsed = true; renderAll(); toast(`Done: ${ft(+d.insyes)} more a month goes to ${g.name}`); return; }
+  if('insno' in d){ S.insightUsed = true; renderAll(); return; }
+  if('remindtg' in d){ S.remind = !S.remind; renderAll(); toast(S.remind ? 'Weekly reminder on: Sunday 18:00' : 'Weekly reminder off'); return; }
+  /* friends */
+  if(d.rankby){ S.rankBy = d.rankby; renderAll(); return; }
+  if(d.nudge){ toast(`Reminder sent to ${d.nudge}`); return; }
+  if('invite' in d){ toast('Invite link copied. Send it in any chat'); return; }
+  if(d.addfriend){
+    const p = SUGGEST.find(x => x.n === d.addfriend);
+    if(p && !S.friends.some(f => f.n === p.n)) S.friends.push({...p});
+    renderAll(); sheet(SHEETS.addfriend()); toast(`${d.addfriend} added`); return;
+  }
+  /* tour, story */
+  if('tournext' in d){ TI++; drawTour(); return; }
+  if('tourskip' in d){ endTour(); return; }
+  if('tourstart' in d){ startTour(); return; }
+  if('story' in d){ openStory(); return; }
+  if('stclose' in d){ closeStory(); return; }
+  if('stshare' in d){ toast('Share card saved. It shows no amounts'); return; }
+  /* update pop-up + onboarding */
+  if(d.wnpick){ S.updateSeen = true; save(); closeWhatsNew(); startOnb(d.wnpick); return; }
+  if('wnlater' in d){ S.updateSeen = true; save(); closeWhatsNew(); toast('You can set it up any time in the Persely tab'); return; }
+  if('onbstart' in d){ startOnb('travel'); return; }
+  if('onbverify' in d){ S.verified = true; O.verified = true; O.i++; renderOnb(); toast('Verified. 3.0% is yours'); return; }
+  if('onbnext' in d){
+    if(STEPS[O.i] === 'goal'){ keepOnbName(); if(!O.name.trim()){ toast('Give your goal a name'); return; } }
+    O.i = Math.min(STEPS.length - 1, O.i + 1); renderOnb(); return;
+  }
+  if('onbback' in d){ keepOnbName(); O.i = Math.max(0, O.i - 1); renderOnb(); return; }
+  if('onbquit' in d){ closeOnb(); renderAll(); toast('You can set it up any time in the Persely tab'); return; }
+  if(d.onbt){ keepOnbName(); O.target = +d.onbt; renderOnb(); return; }
+  if(d.onbdate){ keepOnbName(); O.date = d.onbdate; renderOnb(); return; }
+  if('onbpay' in d && !d.onbpay){ O.payOn = !O.payOn; renderOnb(); return; }
+  if('onbwk' in d && !d.onbwk){ O.weeklyOn = !O.weeklyOn; renderOnb(); return; }
+  if('onbrr' in d){ O.roundOn = !O.roundOn; renderOnb(); return; }
+  if(d.onbpct){ O.pct = +d.onbpct; renderOnb(); return; }
+  if(d.onbweekly){ O.weekly = +d.onbweekly; O.weeklyOn = true; renderOnb(); return; }
+  if(d.onbboost){ O.weeklyOn = true; O.weekly = +d.onbboost; renderOnb(); toast(`Weekly transfer set to ${ft(O.weekly)}`); return; }
+  if(d.onbfirst){ O.first = +d.onbfirst; renderOnb(); return; }
+  if('onbdeposit' in d){ sheet(SHEETS.onbacct()); return; }
+  if(d.onbfrom){ O.from = d.onbfrom; sheet(SHEETS.onbacct()); return; }
+  if('onbconfirm' in d){
+    if(acc(O.from).v < O.first){ toast('Not enough money on this account'); return; }
+    applyOnb(); depositTo(goalById('onb'), O.first, O.from);
+    O.deposited = O.first; closeSheet(); O.i = STEPS.indexOf('done'); renderOnb(); return;
+  }
+  if('onbskipfirst' in d){ applyOnb(); O.deposited = 0; O.i = STEPS.indexOf('done'); renderOnb(); return; }
+  if('onbremind' in d){ O.remind = !O.remind; renderOnb(); return; }
+  if('onbdone' in d){
+    S.remind = O.remind;
+    if(O.remind && PUSH.supported && (PUSH.standalone || !PUSH.ios) && PUSH.perm !== 'granted') enablePush();
+    closeOnb(); renderAll(); setTimeout(startTour, 450); return;
+  }
+  if('jump8' in d){ week8State(); return; }
+});
+const amt = () => parseFloat((($('#mv') && $('#mv').value) || '').replace(/[^\d.]/g,'')) || 0;
+const keepAmt = () => { if($('#mv')) S._amt = amt(); };
+const keepOnbName = () => { if($('#onbName')) O.name = $('#onbName').value; };
+const keepCgName = () => { if($('#cgName') && S._draft) S._draft.name = $('#cgName').value; };
+let shNameKeep = '';
+const keepShName = () => { if($('#shName')) shNameKeep = $('#shName').value; };
+const restoreShName = () => { if($('#shName') && shNameKeep) $('#shName').value = shNameKeep; };
+
+/* ================= app feel: nothing moves except the lists =================
+   iPhone drags the whole page when a finger moves on a part that cannot scroll
+   (tab bar, headers). Block that; let only real scroll areas move. */
+document.addEventListener('touchmove', e=>{
+  if(e.touches.length > 1) return;
+  if(e.target.closest && e.target.closest('input')) return;   // sliders must stay draggable
+  for(let n = e.target; n && n !== document.body; n = n.parentElement){
+    if(n.classList && (n.classList.contains('tabbar') || n.classList.contains('ph') || n.classList.contains('pig3d'))) { e.preventDefault(); return; }
+    const cs = getComputedStyle(n);
+    if((/(auto|scroll)/.test(cs.overflowY) && n.scrollHeight > n.clientHeight) ||
+       (/(auto|scroll)/.test(cs.overflowX) && n.scrollWidth > n.clientWidth)) return;
+  }
+  e.preventDefault();
+}, { passive:false });
+document.addEventListener('gesturestart', e=>e.preventDefault());   // no pinch zoom
+
+/* ================= push notifications ================= */
+const PUSH = { supported:false, standalone:false, ios:false, perm:'default', on:false };
+function pushInfo(){
+  PUSH.supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  PUSH.standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+  PUSH.ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  PUSH.perm = 'Notification' in window ? Notification.permission : 'default';
+}
+async function pushRefresh(){
+  pushInfo();
+  try{
+    if(PUSH.supported && PUSH.perm==='granted'){
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      PUSH.on = !!sub;
+      if(sub) fetch('api/subscribe',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(sub)}).catch(()=>{});
+    } else PUSH.on = false;
+  }catch(e){ PUSH.on = false; }
+  refreshPages();
+}
+const b64 = s => { const p='='.repeat((4-s.length%4)%4), r=atob((s+p).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from([...r].map(c=>c.charCodeAt(0))); };
+async function enablePush(){
+  pushInfo();
+  if(!PUSH.supported){ toast("This browser doesn't support push notifications"); return; }
+  // iOS: the permission prompt must be the first thing after the tap
+  const perm = await Notification.requestPermission();
+  PUSH.perm = perm;
+  if(perm !== 'granted'){ toast('Notifications are not allowed'); refreshPages(); return; }
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    const { publicKey } = await (await fetch('api/vapid')).json();
+    const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:b64(publicKey) });
+    const r = await fetch('api/subscribe',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(sub)});
+    if(!r.ok) throw new Error('server');
+    PUSH.on = true; toast('Notifications turned on');
+  }catch(e){ toast("Couldn't turn them on. Check your internet connection."); }
+  refreshPages();
+}
+async function testPush(){
+  try{
+    const sub = await (await navigator.serviceWorker.ready).pushManager.getSubscription();
+    if(!sub){ PUSH.on=false; refreshPages(); return; }
+    const r = await fetch('api/test',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({endpoint:sub.endpoint, delay:5})});
+    if(r.status===404){ await fetch('api/subscribe',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(sub)}); return testPush(); }
+    toast('The notification arrives in 5 seconds. Lock your phone now.');
+  }catch(e){ toast("Can't reach the server"); }
+}
+
+/* open the right screen when a notification is tapped (link like ./#persely) */
+function routeHash(){
+  const h = location.hash.slice(1); if(!h) return;
+  if(h === 'story'){ tab('hub'); openStory(); }
+  else if(h === 'payday'){ tab('hub'); if(S.payday.on) setTimeout(() => sheet(SHEETS.payday()), 300); }
+  else if(h === 'grad'){ tab('hub'); pushPage('grad'); }
+  else if(TABS.some(t=>t[0]===h)) tab(h);
+  else if(PAGES[h]){ tab('fooldal'); pushPage(h); }
+  history.replaceState(null,'',location.pathname);
+}
+addEventListener('hashchange', routeHash);
+
+/* ================= keep headers below the iPhone status bar =================
+   New iOS shows the page under the status bar, and taps there go to iOS, not to the page.
+   Measure the real safe area; if iOS reports 0 while in the browser, use a safe minimum. */
+function setTop(){
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;top:0;left:0;width:1px;visibility:hidden;height:env(safe-area-inset-top,0px)';
+  document.body.appendChild(probe);
+  const env = probe.offsetHeight; probe.remove();
+  const iphone = /iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1 && innerWidth<760);
+  const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+  // normal mode: iOS itself keeps the page below the clock, so only the real safe area is used
+  document.documentElement.style.setProperty('--top', env + 'px');
+}
+setTop(); addEventListener('resize', setTop); addEventListener('orientationchange', ()=>setTimeout(setTop,300));
+
+/* app height = the area the phone really gives the app (keeps the tab bar on the bottom edge) */
+function setAppH(){
+  document.documentElement.style.setProperty('--app-h', window.innerHeight + 'px');
+}
+setAppH(); addEventListener('resize', setAppH); addEventListener('orientationchange', ()=>setTimeout(setAppH,300));
+
+/* ================= iPhone body: fit to window, live clock ================= */
+const DESK = matchMedia('(min-width:760px)');
+function fit(){
+  const d = $('#device');
+  if(!DESK.matches){ d.style.transform=''; d.style.margin=''; return; }
+  const s = Math.min(1, (innerHeight-80)/952, (innerWidth-40)/450);
+  d.style.transform = `scale(${s})`;
+  d.style.margin = `${-(952*(1-s))/2}px 0`; // remove empty space left by scaling
+}
+addEventListener('resize', fit); DESK.addEventListener?.('change', fit); fit();
+function clock(){ const n=new Date(); $('#clock').textContent = n.getHours()+':'+String(n.getMinutes()).padStart(2,'0'); }
+clock(); setInterval(clock, 15000);
+
+/* ================= mouse works like a finger: drag to scroll ================= */
+(function(){
+  let el=null, sx=0, sy=0, sl=0, st=0, moved=false, horiz=false;
+  const phone = $('#phone');
+  const scroller = (t, h) => {
+    for(let n=t; n && n!==phone; n=n.parentElement){
+      const cs = getComputedStyle(n);
+      if(h && /(auto|scroll)/.test(cs.overflowX) && n.scrollWidth>n.clientWidth) return n;
+      if(!h && /(auto|scroll)/.test(cs.overflowY) && n.scrollHeight>n.clientHeight) return n;
+    }
+    return null;
+  };
+  phone.addEventListener('pointerdown', e=>{
+    if(e.pointerType!=='mouse' || e.button!==0 || e.target.closest('input,.pig3d')) return;
+    el = e.target; sx=e.clientX; sy=e.clientY; moved=false; horiz=null;
+  });
+  addEventListener('pointermove', e=>{
+    if(!el) return;
+    const dx=e.clientX-sx, dy=e.clientY-sy, s=parseFloat(($('#device').style.transform.match(/[\d.]+/)||[1])[0])||1;
+    if(!moved){
+      if(Math.hypot(dx,dy)<6) return;
+      horiz = Math.abs(dx)>Math.abs(dy);
+      const sc = scroller(el, horiz) || (horiz ? null : scroller(el,false));
+      if(!sc){ el=null; return; }
+      el = sc; sl=sc.scrollLeft; st=sc.scrollTop; moved=true; phone.classList.add('drag');
+      el.style.scrollSnapType='none';
+    }
+    if(horiz) el.scrollLeft = sl - dx/s; else el.scrollTop = st - dy/s;
+  });
+  addEventListener('pointerup', ()=>{
+    if(moved && el){ el.style.scrollSnapType=''; setTimeout(()=>phone.classList.remove('drag'),0); }
+    if(moved){ const kill = ev=>{ ev.stopPropagation(); ev.preventDefault(); }; addEventListener('click', kill, {capture:true, once:true}); setTimeout(()=>removeEventListener('click', kill, {capture:true}), 60); }
+    el=null; moved=false;
+  });
+})();
+
+/* ================= 3D piggy (our own design: smooth glossy piggy bank in OTP green) =================
+   One WebGL canvas, moved into whichever .pig3d placeholder is on screen.
+   Drag to turn, tap to make it jump. Moods: happy, proud, concerned, sleepy. pig3d.celebrate() drops a coin. */
+const pig3d = (() => {
+  if(!window.THREE) return null;
+  const T = THREE;
+  const renderer = new T.WebGLRenderer({ antialias:true, alpha:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = T.sRGBEncoding;
+  const canvas = renderer.domElement;
+  canvas.style.cssText = 'width:100%;height:100%;display:block;touch-action:none;cursor:grab';
+  const scene = new T.Scene();
+  const camera = new T.PerspectiveCamera(30, 1, 0.1, 50);
+  camera.position.set(0, 0.6, 5.5); camera.lookAt(0, -0.1, 0);
+  scene.add(new T.HemisphereLight(0xffffff, 0xa9b8a2, 0.95));
+  const key = new T.DirectionalLight(0xffffff, 0.85); key.position.set(2.5, 3.5, 4); scene.add(key);
+  const rim = new T.DirectionalLight(0xdfffd0, 0.35); rim.position.set(-3, 1.5, -2); scene.add(rim);
+
+  // colours are given as normal web colours; convert so they look the same on screen (not washed out)
+  const mat = (color, o = {}) => new T.MeshStandardMaterial(Object.assign({ color:new T.Color(color).convertSRGBToLinear(), roughness:0.35, metalness:0.04 }, o));
+  const GREEN = mat(0x52AE30), DARK = mat(0x3F9A27, {roughness:0.5}), LIGHT = mat(0x7FD45C),
+        PINK = mat(0xF49A9A, {transparent:true, opacity:0.55, roughness:0.8}), INK = mat(0x1F2A1A, {roughness:0.3}),
+        WHITE = mat(0xffffff, {roughness:0.2}), SLOT = mat(0x2C6E1C, {roughness:0.7}),
+        GOLD = mat(0xF4B73A, {metalness:0.55, roughness:0.28});
+  const add = (parent, geo, m, x=0, y=0, z=0) => { const o = new T.Mesh(geo, m); o.position.set(x, y, z); parent.add(o); return o; };
+
+  const root = new T.Group(); scene.add(root);       // turned by the user
+  const pigG = new T.Group(); root.add(pigG);        // bobbing / jumping
+  // body
+  const body = add(pigG, new T.SphereGeometry(1, 56, 40), GREEN); body.scale.set(1.12, 0.98, 1.02);
+  add(pigG, new T.BoxGeometry(0.52, 0.05, 0.12), SLOT, 0, 0.975, -0.08);      // coin slot on the back
+  // snout
+  const snout = add(pigG, new T.SphereGeometry(0.36, 40, 30), LIGHT, 0, -0.06, 0.95); snout.scale.set(1, 0.8, 0.55);
+  [-0.12, 0.12].forEach(x => { const n = add(pigG, new T.SphereGeometry(0.06, 20, 16), INK, x, -0.06, 1.14); n.scale.set(0.75, 1.15, 0.5); });
+  // eyes (each in a group so it can blink)
+  const eyes = [-0.3, 0.3].map(x => {
+    const g = new T.Group(); g.position.set(x, 0.34, 0.86); pigG.add(g);
+    add(g, new T.SphereGeometry(0.19, 32, 24), WHITE);
+    const pupil = add(g, new T.SphereGeometry(0.11, 24, 18), INK, 0, 0.01, 0.12);
+    add(g, new T.SphereGeometry(0.035, 12, 10), WHITE, 0.04, 0.06, 0.22);
+    g.userData.pupil = pupil; return g;
+  });
+  // brows, shown when concerned
+  const brows = [-1, 1].map(s => { const b = add(pigG, new T.BoxGeometry(0.22, 0.045, 0.05), INK, s*0.34, 0.57, 0.86); b.rotation.z = s * 0.35; b.visible = false; return b; });
+  // mouth: half torus, flipped for "concerned"
+  const mouth = add(pigG, new T.TorusGeometry(0.1, 0.024, 10, 28, Math.PI), INK, 0, -0.34, 0.95);
+  mouth.rotation.z = Math.PI;
+  [-1, 1].forEach(s => { const c = add(pigG, new T.SphereGeometry(0.13, 20, 16), PINK, s*0.62, -0.08, 0.74); c.scale.set(1, 0.7, 0.4); });
+  // ears: soft petal shapes (not horns)
+  const ears = [-1, 1].map(s => {
+    const g = new T.Group(); g.position.set(s*0.52, 0.8, 0.2); pigG.add(g);
+    const outer = add(g, new T.SphereGeometry(0.24, 32, 24), DARK, 0, 0.2, 0); outer.scale.set(0.95, 1.25, 0.32);
+    const inner = add(g, new T.SphereGeometry(0.15, 28, 20), PINK, 0, 0.19, 0.06); inner.scale.set(0.85, 1.1, 0.25);
+    g.rotation.z = -s * 0.5; g.rotation.x = 0.25; return g;
+  });
+  // legs
+  [[-0.5,0.45],[0.5,0.45],[-0.5,-0.45],[0.5,-0.45]].forEach(([x,z]) => add(pigG, new T.CylinderGeometry(0.17, 0.2, 0.44, 28), DARK, x, -0.86, z));
+  // curly tail
+  const tail = add(pigG, new T.TorusGeometry(0.12, 0.035, 10, 30, Math.PI*1.6), DARK, 0, 0.12, -1.1); tail.rotation.y = Math.PI/2;
+  // soft shadow on the ground
+  const sc = document.createElement('canvas'); sc.width = sc.height = 128;
+  const sx = sc.getContext('2d'), gr = sx.createRadialGradient(64,64,4,64,64,62);
+  gr.addColorStop(0,'rgba(20,40,20,.28)'); gr.addColorStop(1,'rgba(20,40,20,0)'); sx.fillStyle = gr; sx.fillRect(0,0,128,128);
+  const shadow = new T.Mesh(new T.PlaneGeometry(2.8, 2.8), new T.MeshBasicMaterial({ map:new T.CanvasTexture(sc), transparent:true, depthWrite:false }));
+  shadow.rotation.x = -Math.PI/2; shadow.position.y = -1.1; scene.add(shadow);
+  // gold coin for celebrate()
+  const coin = add(scene, new T.CylinderGeometry(0.22, 0.22, 0.06, 40), GOLD, 0, 3, -0.08); coin.rotation.x = Math.PI/2; coin.visible = false;
+
+  const BASE_Y = -0.4;   // three-quarter view by default
+  root.rotation.y = BASE_Y;
+  let mood = 'happy', holder = null, jumpT = -1, coinT = -1, blinkAt = 2, idleAt = 0;
+  let dragging = false, lastX = 0, lastY = 0, velY = 0, moved = 0;
+
+  function setMood(m){
+    mood = m;
+    const concerned = m === 'concerned';
+    brows.forEach(b => b.visible = concerned);
+    mouth.rotation.z = concerned ? 0 : Math.PI;
+    mouth.position.y = concerned ? -0.38 : -0.34;
+  }
+  function jump(){ jumpT = 0; }
+  function celebrate(){ coin.visible = true; coinT = 0; jumpT = -1; }
+
+  canvas.addEventListener('pointerdown', e => { dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY; velY = 0; canvas.setPointerCapture(e.pointerId); canvas.style.cursor = 'grabbing'; e.stopPropagation(); });
+  canvas.addEventListener('pointermove', e => {
+    if(!dragging) return;
+    const dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY; moved += Math.abs(dx) + Math.abs(dy);
+    velY = dx * 0.012; root.rotation.y += velY;
+    root.rotation.x = Math.max(-0.35, Math.min(0.35, root.rotation.x + dy * 0.006));
+    idleAt = clock.getElapsedTime() + 2.5;
+  });
+  const end = e => { if(!dragging) return; dragging = false; canvas.style.cursor = 'grab'; if(moved < 6) jump(); };
+  canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
+  canvas.addEventListener('click', e => e.stopPropagation());
+
+  function mount(){
+    // priority: onboarding, then the update pop-up, then the screen on top
+    const el = document.querySelector('.story.on .pig3d') || document.querySelector('.onb.on .pig3d') || document.querySelector('.wn.on .pig3d') || [...document.querySelectorAll('.view.on .pig3d, .page .pig3d')].pop();
+    if(!el){ holder = null; return; }
+    holder = el; setMood(el.dataset.mood || 'happy');
+    if(canvas.parentNode !== el) el.appendChild(canvas);
+    const w = el.clientWidth || 120, h = el.clientHeight || 120;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+
+  const clock = new T.Clock();
+  function frame(){
+    requestAnimationFrame(frame);
+    if(!holder || !document.body.contains(canvas) || document.hidden) return;
+    const t = clock.getElapsedTime();
+    const calm = mood === 'concerned' || mood === 'sleepy';
+    // turn: momentum while free, then ease back to the three-quarter view
+    if(!dragging){
+      root.rotation.y += velY; velY *= 0.92;
+      if(t > idleAt){ root.rotation.y += (BASE_Y + Math.sin(t*0.6)*0.12 - root.rotation.y) * 0.03; root.rotation.x *= 0.92; }
+    }
+    // breathing and bobbing
+    let y = Math.sin(t * (calm ? 1.4 : 2.2)) * (calm ? 0.025 : 0.045);
+    if(mood === 'proud' && Math.sin(t*1.3) > 0.97 && jumpT < 0) jump();
+    if(jumpT >= 0){ jumpT += 0.045; y += Math.sin(Math.min(jumpT,1) * Math.PI) * 0.55; pigG.rotation.y = Math.sin(Math.min(jumpT,1)*Math.PI*2) * 0.25; if(jumpT >= 1){ jumpT = -1; pigG.rotation.y = 0; } }
+    pigG.position.y = y;
+    const squash = 1 + Math.sin(t * (calm ? 1.4 : 2.2)) * 0.012;
+    pigG.scale.set(1/squash, squash, 1/squash);
+    pigG.rotation.z = mood === 'concerned' ? 0.12 : Math.sin(t*0.9) * 0.03;
+    shadow.scale.setScalar(1 - Math.max(0, y) * 0.5);
+    // ears wiggle, eyes blink / sleep, pupils follow the turn a little
+    ears.forEach((g, i) => { const s = i ? 1 : -1; g.rotation.z = -s*0.42 + Math.sin(t*3 + i) * (calm ? 0.02 : 0.06); });
+    let lid = 1;
+    if(mood === 'sleepy') lid = 0.12;
+    else { if(t > blinkAt){ blinkAt = t + 2.5 + Math.random()*3; } const d = blinkAt - t; if(d > 2.36) lid = 0.1; }
+    eyes.forEach(g => { g.scale.y = lid; g.userData.pupil.position.y = mood === 'concerned' ? 0.05 : 0.01; });
+    // coin falls into the slot, then a happy jump
+    if(coinT >= 0){
+      coinT += 0.03;
+      coin.position.y = 3 - Math.min(coinT, 1) * (3 - 1.02);
+      coin.rotation.z += 0.25;
+      coin.position.x = 0; coin.position.z = -0.08;
+      if(coinT >= 1){ coin.visible = false; coinT = -1; jump(); }
+    }
+    renderer.render(scene, camera);
+  }
+  frame();
+  // a still portrait of the piggy (used as the sender picture in notifications)
+  let avatar = null;
+  function snapshot(){
+    if(avatar) return avatar;
+    const keep = renderer.getSize(new T.Vector2()), aspect = camera.aspect, rx = root.rotation.x, ry = root.rotation.y, py = pigG.position.y;
+    root.rotation.set(0, BASE_Y, 0); pigG.position.y = 0; pigG.scale.set(1,1,1); setMood('happy'); eyes.forEach(g => g.scale.y = 1);
+    shadow.visible = false; renderer.setSize(180, 180, false); camera.aspect = 1; camera.updateProjectionMatrix();
+    renderer.render(scene, camera); avatar = canvas.toDataURL('image/png');
+    shadow.visible = true; renderer.setSize(keep.x, keep.y, false); camera.aspect = aspect; camera.updateProjectionMatrix();
+    root.rotation.set(rx, ry, 0); pigG.position.y = py; if(holder) setMood(holder.dataset.mood || 'happy');
+    return avatar;
+  }
+  return { mount, setMood, jump, celebrate, snapshot };
+})();
+function mountPig(){ if(pig3d) pig3d.mount(); }
+
+/* ================= update pop-up + onboarding =================
+   Pop-up: one question ("What are you saving for?"). Then: student rate → goal with a date → how money gets in
+   (with a live projection) → first deposit (optional, choose the account) → summary → short tour. */
+const GOAL_PRESETS = {
+  ps5:{label:'PS5 + GTA 6', ic:'game', name:'PS5 + GTA 6', target:230000, date:'2027-12-01', hot:true},
+  travel:{label:'Travel', ic:'plane', name:'Erasmus in Lisbon', target:150000, date:'2027-09-01'},
+  car:{label:'Car', ic:'car', name:'Driving licence', target:350000, date:'2028-06-01'},
+  home:{label:'Own home', ic:'home', name:'Home deposit', target:1000000, date:'2029-06-01'},
+  safety:{label:'Safety net', ic:'lock', name:'Safety net', target:200000, date:'2027-12-01'},
+  study:{label:'Studies', ic:'edu', name:'Study fund', target:120000, date:'2027-09-01'}
+};
+const DATES = [['2027-06-01','June 2027'],['2027-09-01','Sept 2027'],['2027-12-01','Dec 2027'],['2028-06-01','June 2028']];
+const O = { i:0 };
+const STEPS = ['verify','goal','how','first','done'];
+const onbMonthly = () => (O.payOn ? incomeShare(O.pct) : 0) + (O.weeklyOn ? Math.round(O.weekly * 52 / 12) : 0) + (O.roundOn ? ROUND_EST : 0);
+const shortFt = v => v >= 1000000 ? `${v/1000000} M Ft` : `${v/1000}k Ft`;
+// the day the update arrives: nothing set up yet
+function updateDayState(){
+  Object.assign(S, {streak:0, best:0, history:[], skipped:[], savedWeek:false, skips:0, challenges:{}, friends:[], toured:false, monthSaved:4000,
+    verified:false, bridge:false, payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday',
+    insight:false, insightUsed:false});
+  S.goals = S.goals.filter(g => g.id === 'holiday');
+}
+// 8 weeks later: verified student, payday rule on, habit formed (the state used for the main demo)
+function week8State(){
+  const f = fresh();
+  Object.assign(S, {streak:8, best:8, savedWeek:false, skips:1, updateSeen:true, onboarded:true, verified:true,
+    history: Array.from({length:8}, (_,i) => S.week - 8 + i), skipped:[], friends:f.friends, toured:true, monthSaved:23500,
+    payday:{on:true, pct:10, ask:true, floor:true}, insight:true, insightUsed:false});
+  if(!goalById(S.ruleGoal)) S.ruleGoal = 'holiday';
+  S.roundup = {on:true, goal:S.ruleGoal};
+  f.goals.forEach(g => { if(!S.goals.some(x => x.id === g.id || x.name === g.name) && S.goals.length < 5) S.goals.push(g); });
+  closeWhatsNew(); closeOnb(); renderAll(); toast('Demo: 8 weeks later');
+}
+function showWhatsNew(){
+  const w = $('#wn');
+  w.innerHTML = `<div class="wn-card">${pig('happy',112)}<span class="newpill">New in Persely</span>
+    <h2>What are you saving for?</h2>
+    <ul class="bul left"><li>3.0% a year for students</li><li>See the month you reach your goal</li><li>Save a little from every salary</li></ul>
+    <div class="wn-grid three">${Object.entries(GOAL_PRESETS).map(([k,g])=>`<button class="${g.hot?'hot':''}" data-wnpick="${k}">${g.hot ? '<span class="hotb">Trending</span>' : ''}${I(g.ic,24)}${g.label}</button>`).join('')}</div>
+    <button class="later" data-wnlater>Not now</button></div>`;
+  w.classList.add('on'); mountPig();
+}
+function closeWhatsNew(){ const w = $('#wn'); w.classList.remove('on'); w.innerHTML = ''; mountPig(); }
+function launchFlow(delay=1500){
+  if(S.updateSeen) return;
+  setTimeout(()=>{ if(S.updateSeen) return; updateDayState(); renderAll(); tab('fooldal'); showWhatsNew(); }, delay);
+}
+function startOnb(key){
+  const g = GOAL_PRESETS[key] || GOAL_PRESETS.travel;
+  Object.assign(O, {i: (S.verified || S.bridge) ? 1 : 0, key, name:g.name, target:g.target, date:g.date,
+    payOn:true, pct:10, weeklyOn:false, weekly:2000, roundOn:true, first:1000, from:'junior', deposited:0, remind:true, coinShown:false});
+  tab('hub'); $('#onb').classList.add('on'); renderOnb();
+}
+function closeOnb(){ const o = $('#onb'); o.classList.remove('on'); o.innerHTML = ''; mountPig(); }
+function renderOnb(){
+  const i = O.i, step = STEPS[i], n = STEPS.length - 1;
+  const bars = STEPS.slice(0, n).map((_,k) => `<i class="${k<=i?'on':''}"></i>`).join('');
+  const tg = (on, attr, title, sub, extra='') => `<button class="opt slim ${on?'on':''}" ${attr}><span class="t"><b>${title}</b><small>${sub}</small></span><span class="tg ${on?'on':''}"></span></button>${on && extra ? `<div class="subopts">${extra}</div>` : ''}`;
+  let body = '', foot = `<button class="btn" data-onbnext>Next</button>`;
+  if(step === 'verify'){
+    const base = total();
+    body = `<div style="display:flex;justify-content:center">${pig('happy',120)}</div>
+      <div class="onb-step">Step 1 of ${n}</div><h2>Get 3.0% as a student</h2><p class="lead">Your Persely earns 0.01% today. Students aged 18–30 get 3.0% on their first 500 000 Ft.</p>
+      <div class="rev"><div><span>On ${ft(base)} today</span><b>about ${ft(r10(Math.min(base,CAP)*LOW_RATE/100*(1-TAX)))} a year</b></div><div><span>With the student rate</span><b style="color:var(--green-t)">about ${ft(r10(Math.min(base,CAP)*RATE/100*(1-TAX)))} a year</b></div></div>
+      <p class="fine">After 28% tax. We check your enrolment with your university (Neptun) once a semester.</p>`;
+    foot = `<button class="btn" data-onbverify>Verify with Neptun</button><button class="btn ghost" data-onbnext>Later</button>`;
+  } else if(step === 'goal'){
+    body = `<div class="onb-step">Step 2 of ${n}</div><h2>Your goal</h2><p class="lead">You can change it later.</p>
+      <div class="flabel">Name</div>
+      <div class="fld"><span class="t"><input id="onbName" maxlength="30" value="${esc(O.name)}" aria-label="Goal name"></span></div>
+      <div class="flabel">Amount</div>
+      <div class="card"><div class="amt num" id="onbT">${ft(O.target)}</div>
+        <input class="rng" id="onbTR" type="range" min="20000" max="1500000" step="10000" value="${O.target}" aria-label="Amount you need">
+        <div class="chips" style="margin:6px 0 0">${[50000,150000,300000,1000000].map(v=>`<button class="chip ${O.target===v?'on':''}" style="font-size:13px;padding:6px 10px" data-onbt="${v}">${shortFt(v)}</button>`).join('')}</div></div>
+      <div class="flabel">By when?</div>
+      <div class="chips" style="margin:0">${DATES.map(([v,l])=>`<button class="chip ${O.date===v?'on':''}" style="font-size:13.5px;padding:7px 11px" data-onbdate="${v}">${l}</button>`).join('')}</div>`;
+  } else if(step === 'how'){
+    const m = monthsTo(O.date), proj = Math.round(onbMonthly() * m), p = Math.min(100, Math.round(proj / O.target * 100)), short = O.target - proj;
+    const weeks = Math.max(1, m * 4.345), extra = short > 0 ? Math.ceil(short / weeks / 500) * 500 : 0;
+    body = `<div class="onb-step">Step 3 of ${n}</div><h2>How should money get in?</h2><p class="lead">Switch on what suits you. Change it any time.</p>
+      ${tg(O.payOn, 'data-onbpay', 'Payday rule <span class="rec">Recommended</span>', 'A share of each salary or scholarship. We ask first.',
+        `<div class="chips" style="margin:0">${[5,10,15,20].map(x=>`<button class="chip ${O.pct===x?'on':''}" style="font-size:14px;padding:7px 13px" data-onbpct="${x}">${x}%</button>`).join('')}</div>`)}
+      ${tg(O.weeklyOn, 'data-onbwk', 'Weekly transfer', 'The same amount every Monday.',
+        `<div class="chips" style="margin:0">${[1000,2000,3000,5000].map(x=>`<button class="chip ${O.weekly===x?'on':''}" style="font-size:14px;padding:7px 12px" data-onbweekly="${x}">${ft(x)}</button>`).join('')}</div>`)}
+      ${tg(O.roundOn, 'data-onbrr', 'Round-ups', `Card payments rounded up to 100 Ft, ×2. About ${ft(ROUND_EST)} a month.`)}
+      <div class="card" style="padding:14px 16px;margin-top:6px">
+        <b style="font-size:15px;line-height:1.4;display:block">${onbMonthly() ? `About ${ft(Math.round(proj/1000)*1000)} by ${fDate(O.date)}` : 'Switch something on to see your forecast'}</b>
+        ${onbMonthly() ? `<div class="prog" style="margin:10px 0 6px"><i style="width:${p}%"></i></div><div class="k">${p}% of ${ft(O.target)} · ${short > 0 ? `about ${ft(Math.round(short/1000)*1000)} short` : 'on time'}</div>` : ''}
+        ${short > 0 && onbMonthly() ? `<button class="btn w" style="margin-top:12px" data-onbboost="${(O.weeklyOn ? O.weekly : 0) + extra}">Add ${ft(extra)} a week to make it</button>` : ''}
+      </div>`;
+  } else if(step === 'first'){
+    body = `<div class="onb-step">Step 4 of ${n}</div><h2>First deposit</h2><p class="lead">Optional. It starts your streak this week.</p>
+      <div class="amt num" style="text-align:center;font-size:40px;margin:22px 0 8px">${ft(O.first)}</div>
+      <div class="chips" style="justify-content:center">${[500,1000,2000,5000].map(v=>`<button class="chip ${O.first===v?'on':''}" style="font-size:15px;padding:9px 14px" data-onbfirst="${v}">${ft(v)}</button>`).join('')}</div>
+      <p class="fine" style="text-align:center">You choose the account on the next screen. Free, and you can withdraw it any time.</p>`;
+    foot = `<button class="btn" data-onbdeposit>Continue</button><button class="btn ghost" data-onbskipfirst>Skip for now</button>`;
+  } else {
+    const rules = [O.payOn && `${O.pct}% of each salary`, O.weeklyOn && `${ft(O.weekly)} weekly`, O.roundOn && 'round-ups'].filter(Boolean).join(', ') || 'You add money yourself';
+    const rows = [['Goal', `${esc(O.name)}, ${ft(O.target)}`], ['By', fDate(O.date)], ['Rate', (S.verified || S.bridge) ? '3.0% student rate' : '0.01% until you verify'], ['Money in', rules], ['First deposit', O.deposited ? `${ft(O.deposited)} from ${fromName(O.from)}` : 'Not yet']];
+    body = `<div style="display:flex;justify-content:center;margin-top:6px">${pig('proud',120)}</div><h2 style="text-align:center;margin-top:0">You're all set</h2>
+      <p class="lead" style="text-align:center;margin-bottom:12px">${O.deposited ? 'First coin is in. Your streak has started.' : "I'll remind you on Sunday if the week is still open."}</p>
+      <div class="card sumcard">${rows.map(([k,v])=>`<div class="sr"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
+      <button class="opt slim ${O.remind?'on':''}" data-onbremind><span class="ic">${I('bell',22)}</span><span class="t"><b>Weekly reminder</b><small>Sunday 18:00, only if the week is still open</small></span><span class="tg ${O.remind?'on':''}"></span></button>`;
+    foot = `<button class="btn" data-onbdone>Go to Persely</button>`;
+  }
+  const done = step === 'done';
+  $('#onb').innerHTML = `<div class="onb-top">${i>0 && !done ?`<button data-onbback aria-label="Back" style="color:var(--green);display:flex">${I('back',22)}</button>`:''}<div class="onb-bars">${done ? '' : bars}</div>${done ? '' : '<button class="onb-skip" data-onbquit>Not now</button>'}</div>
+    <div class="onb-body">${body}</div><div class="onb-foot">${foot}</div>`;
+  if(step === 'goal'){
+    $('#onbTR').addEventListener('input', e => { O.target = +e.target.value; $('#onbT').textContent = ft(O.target); });
+    $('#onbName').addEventListener('input', e => { O.name = e.target.value; });
+  }
+  mountPig();
+  if(done && O.deposited && pig3d && !O.coinShown){ O.coinShown = true; setTimeout(() => pig3d.celebrate(), 350); }   // the first coin drops in
+}
+// save what the user chose: the new goal comes first and the rules point at it
+function applyOnb(){
+  if(!goalById('onb')){
+    S.goals.unshift({id:'onb', name:(O.name || 'My goal').trim().slice(0,30) || 'My goal', ic:(GOAL_PRESETS[O.key] || GOAL_PRESETS.travel).ic, saved:0, target:O.target, pace:0, date:O.date});
+  }
+  S.ruleGoal = 'onb';
+  S.payday = {on:O.payOn, pct:O.pct, ask:true, floor:true};
+  S.weekly = {on:O.weeklyOn, amt:O.weekly};
+  S.roundup = {on:O.roundOn, goal:'onb'};
+  S.onboarded = true; S.updateSeen = true; save();
+}
+
+/* ================= short tour ================= */
+const TOUR = [
+  ['persi', 'This is Persi', 'One short update here, and at most one reminder a week.'],
+  ['total', 'Your savings', 'Student rate 3.0%. Add or withdraw any time, no fees.'],
+  ['week',  'Your streak', 'Save any amount once a week to keep it going. Automatic savings count too.'],
+  ['goals', 'Your goals', 'Each goal shows the month you get there.'],
+  ['auto',  'Money in', 'Payday rule, weekly transfer and round-ups. Change them here.']
+];
+let TI = -1;
+function startTour(){ closeSheet(); tab('hub'); TI = 0; setTimeout(drawTour, 150); }
+function endTour(){ TI = -1; const t = $('#tour'); t.classList.remove('on'); t.innerHTML = ''; $('#v-hub').scrollTop = 0; S.toured = true; save(); }
+function drawTour(){
+  if(TI < 0) return;
+  if(TI >= TOUR.length) return endTour();
+  const [key, title, text] = TOUR[TI];
+  const target = document.querySelector(`#v-hub [data-tour="${key}"]`);
+  if(!target){ TI++; return drawTour(); }
+  target.scrollIntoView({block:'center'});
+  setTimeout(()=>{
+    const ph = $('#phone'), pr = ph.getBoundingClientRect(), s = pr.width / ph.offsetWidth, r = target.getBoundingClientRect();
+    const x = (r.left - pr.left)/s, y = (r.top - pr.top)/s, w = r.width/s, h = r.height/s, H = ph.offsetHeight;
+    const below = y + h + 170 < H;
+    const t = $('#tour'); t.classList.add('on');
+    t.innerHTML = `<div class="tour-hole" style="left:${x-6}px;top:${y-6}px;width:${w+12}px;height:${h+12}px"></div>
+      <div class="tour-tip" style="${below ? `top:${y+h+16}px` : `bottom:${H-y+16}px`}">
+        <div class="tour-t"><b>${title}</b><p>${text}</p></div>
+        <div class="tour-act"><button class="onb-skip" data-tourskip>Skip</button><span style="font-size:12px;color:var(--muted)">${TI+1} of ${TOUR.length}</span><button class="btn sm" data-tournext>${TI === TOUR.length-1 ? 'Done' : 'Next'}</button></div>
+      </div>`;
+  }, 320);
+}
+
+/* ================= weekly challenges: concrete, tied to the user's own spending ================= */
+const CH_DEFS = [
+  {id:'nodelivery', t:'No food delivery this week', d:'You spent 28 140 Ft on delivery in November.', ic:'food', goal:7, unit:'days', on:'week', reward:'+1 skip week'},
+  {id:'twice', t:'Save twice this week', d:'Two deposits of any size.', ic:'piggy', goal:2, unit:'deposits', on:'save', reward:'+0.1% interest this month'},
+  {id:'round', t:'Round up card payments', d:'Round each card payment up to the next 100 Ft for 7 days.', ic:'limit', goal:7, unit:'days', on:'week', reward:'+0.1% interest this month'},
+  {id:'buddy', t:'Save with a friend', d:'You and one friend both save this week.', ic:'user', goal:2, unit:'people', on:'save', reward:'+1 skip week each'}
+];
+const chState = id => (S.challenges[id] = S.challenges[id] || {joined:false, done:0});
+function progressChallenges(kind){
+  CH_DEFS.forEach(c => {
+    const s = chState(c.id);
+    if(!s.joined || s.done >= c.goal) return;
+    if(kind === 'week'){ if(c.on === 'week') s.done = c.goal; else { s.done = 0; return; } }   // week ends: day-based ones complete, the rest reset
+    else if(c.on === kind) s.done++;
+    else return;
+    if(s.done >= c.goal){ if(c.reward.includes('skip')) S.skips++; setTimeout(()=>toast(`Challenge done: ${c.t}. ${c.reward}`), 900); }
+  });
+}
+function chCard(c, compact){
+  const s = chState(c.id), p = Math.min(100, Math.round(s.done / c.goal * 100));
+  return `<div class="card"><div style="display:flex;gap:12px;align-items:center"><span class="gic">${I(c.ic,22)}</span><span style="flex:1;min-width:0"><b style="display:block">${c.t}</b>${compact ? '' : `<span style="font-size:12.5px;color:var(--muted)">${c.d}</span>`}</span></div>
+    ${s.joined
+      ? `<div class="prog" style="margin:12px 0 6px"><i style="width:${p}%"></i></div><div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--ink2)"><span>${s.done >= c.goal ? 'Done' : `${s.done} of ${c.goal} ${c.unit}`}</span><span style="color:var(--muted)">Reward: ${c.reward}</span></div>`
+      : `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px"><span style="font-size:12.5px;color:var(--muted)">Reward: ${c.reward}</span><button class="btn sm" data-chjoin="${c.id}">Join</button></div>`}</div>`;
+}
+
+/* ================= friends: compare habits, never money ================= */
+const SUGGEST = [{n:'Dóra',c:'#E06C75',s:2,g:22},{n:'Ádám',c:'#2BA3A3',s:9,g:54},{n:'Zsófi',c:'#2F9A3F',s:1,g:12},{n:'Gergő',c:'#7A6FD8',s:5,g:40}];
+function friendsCard(){
+  const g0 = S.goals[0], myG = Math.min(100, Math.round(gSaved(g0) / gTarget(g0) * 100));
+  const byGoal = S.rankBy === 'goal';
+  const rows = [...S.friends.map(f => ({...f})), {n:'You', c:'#F07D19', s:S.streak, g:myG, me:true}].sort((a,b) => byGoal ? b.g - a.g : b.s - a.s);
+  return `<div class="sec" data-tour="friends"><span>Friends</span><a data-sheet="addfriend">Add ${I('plus',16)}</a></div>
+  <div class="card" style="padding:12px 16px 4px">
+    <div class="seg" style="margin-bottom:6px">${[['streak','Streak'],['goal','Goal progress']].map(([k,l])=>`<button class="${(S.rankBy||'streak')===k?'on':''}" data-rankby="${k}">${l}</button>`).join('')}</div>
+    ${S.friends.length
+      ? rows.map((f,i)=>`<div class="fr ${f.me?'me':''}"><span class="rk">${i+1}</span><span class="fav" style="background:${f.c}">${f.n[0]}</span><b>${f.n}</b><span class="fs num">${byGoal ? `${f.g}%` : `${flame(16, f.s > 0)}${f.s}`}</span>${f.me ? '<span style="width:68px"></span>' : `<button class="nudge" data-nudge="${f.n}">Remind</button>`}</div>`).join('')
+      : `<div style="text-align:center;padding:14px 0 6px"><b>Saving is easier with friends</b><div style="font-size:12.5px;color:var(--muted);margin:4px 0 12px">Compare weekly streaks. Nobody sees your balance.</div><button class="btn sm" data-sheet="addfriend">Add friends</button></div>`}
+    <div style="height:8px"></div></div>`;
+}
+
+/* ================= monthly story (reels format, the original design) ================= */
+function storySlides(){
+  const g = S.goals[0], pct = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100));
+  const spent = CATS.reduce((a,c) => a + c[2], 0);
+  const rows = [...S.friends, {n:'You', s:S.streak, me:true}].sort((a,b) => b.s - a.s);
+  const rank = rows.findIndex(r => r.me) + 1, ahead = rank > 1 ? rows[rank-2] : null;
+  return [
+    {bg:'linear-gradient(160deg,#1F6B2A,#52AE30)', k: S.period === 'Autumn semester' ? 'Your semester' : 'Your month', big:S.period, sub:"Here's how it went. Tap to keep going.", pig:'proud'},
+    {bg:'linear-gradient(160deg,#0F3B25,#2C7A3C)', k:'You spent', big:ft(spent), sub:'That is 13% less than in October. Nice control.'},
+    {bg:'linear-gradient(160deg,#C2410C,#F97316)', k:'Food took the biggest bite', big:'43%', sub:'Including 6 Wolt orders for 28 140 Ft. That is GTA 6 on release day.'},
+    {bg:'linear-gradient(160deg,#6B2D7A,#B45FB0)', k:'Fun fact', big:'14 coffees', sub:'9 800 Ft on coffee this month. Exactly 3 cinema tickets.'},
+    {bg:'linear-gradient(160deg,#0E5E4E,#22A38A)', k:'You saved', big:ft(S.monthSaved), sub:'Three times more than last month. Persi is proud of you.', pig:'proud'},
+    ...(S.roundCount ? [{bg:'linear-gradient(160deg,#5B21B6,#8B5CF6)', k:'Small change adds up', big:`${S.roundCount} round-ups`, sub:`They put ${ft(S.roundSum)} into your savings without you noticing.`}] : []),
+    {bg:'linear-gradient(160deg,#9A3412,#FB923C)', k:'Your streak', big:`${Math.max(S.streak,1)} weeks`, sub:'You saved every single week. That is how habits are made.'},
+    {bg:'linear-gradient(160deg,#1E3A8A,#3B82F6)', k:esc(g.name), big:`${pct}%`, sub:`At this pace you get there in ${inMonths(gMonths(g))}.`},
+    {bg:'linear-gradient(160deg,#7C2D12,#D97706)', k:'Among your friends', big:`#${rank}`, sub: !S.friends.length ? 'Add friends and compare next month.' : ahead ? `${ahead.n} is ${plural(ahead.s - S.streak,'week')} ahead. Catch up in December?` : 'You lead your crew. Keep it up.'},
+    {bg:'linear-gradient(160deg,#14532D,#16A34A)', k: S.interest ? 'Interest earned' : 'Your student rate', big: S.interest ? ft(S.interest) : rateLabel(), sub: S.interest ? `Your ${rateLabel()} student rate at work, after tax. At 0.01% it would be a few forints.` : `On ${ft(total())} that is about ${ft(yearNet())} a year after tax.`},
+    {bg:'linear-gradient(160deg,#1F6B2A,#52AE30)', k:'Your tip for next month', big:'2 deliveries less a week', sub:`About 9 000 Ft more saved. ${esc(g.name)} arrives a month sooner.`, pig:'happy'},
+    {bg:'linear-gradient(160deg,#1F6B2A,#52AE30)', share:true, end:true}
+  ];
+}
+// last slide: a card to share, with progress but no amounts
+function shareCard(){
+  const goals = S.goals.filter(g => !isEur(g)).map(g => ({g, p:Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100))})).sort((a,b) => b.p - a.p).slice(0, 2);
+  return `<div class="st-body" style="align-items:center"><div class="st-sub" style="text-align:center;margin-bottom:14px">Share your ${S.period === 'Autumn semester' ? 'semester' : 'month'}. Amounts stay private.</div>
+    <div class="sharec"><span class="k">Anna's ${S.period}</span>
+      <div style="display:flex;align-items:center;gap:8px;margin:6px 0 2px">${flame(40)}<b style="font-size:40px;line-height:1;color:var(--ink)">${S.streak}</b></div>
+      <div style="font-size:15px;font-weight:600;color:var(--ink)">week streak, without a break</div>
+      <div style="height:1px;background:var(--line);margin:14px 0"></div>
+      ${goals.map(({g,p}) => `<div style="display:flex;justify-content:space-between;font-size:14px;color:var(--ink)"><b style="font-weight:600">${esc(g.name)}</b><b style="color:var(--green-t)">${p}%</b></div><div class="prog" style="margin:6px 0 12px"><i style="width:${p}%"></i></div>`).join('')}
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--green-t)">${I('piggy',18)} Saving with OTP Persely</div></div></div>`;
+}
+let SI = 0, storyTimer;
+function openStory(){ closeSheet(); SI = 0; $('#story').classList.add('on'); drawStory(); if(!S.storySeen){ S.storySeen = true; save(); renderView('hub'); } }
+function closeStory(){ clearTimeout(storyTimer); const el = $('#story'); el.classList.remove('on'); el.innerHTML = ''; mountPig(); }
+function drawStory(){
+  clearTimeout(storyTimer);
+  const sl = storySlides(), s = sl[SI], el = $('#story');
+  el.style.background = s.bg;
+  el.innerHTML = `<div class="st-bars">${sl.map((_,k)=>`<i><b class="${k < SI ? 'done' : k === SI ? 'run' : ''}"></b></i>`).join('')}</div>
+    <button class="st-x" data-stclose aria-label="Close">×</button>
+    ${s.share ? shareCard() : `<div class="st-body"><div class="st-k">${s.k}</div><div class="st-big" style="${s.big.length > 11 ? 'font-size:40px' : ''}">${s.big}</div><div class="st-sub">${s.sub}</div>${s.pig ? pig(s.pig,160) : ''}</div>`}
+    ${s.end ? `<div class="st-foot"><button class="btn" style="background:#fff;color:var(--green-t)" data-stshare>Share</button><button class="btn w" style="background:none;box-shadow:none;color:#fff" data-stclose>Close</button></div>` : ''}`;
+  mountPig();
+  if(!s.end) storyTimer = setTimeout(()=>{ SI++; drawStory(); }, 5000);
+}
+$('#story').addEventListener('click', e => {
+  if(e.target.closest('button')) return;
+  const r = $('#story').getBoundingClientRect(), left = e.clientX - r.left < r.width / 3;
+  const n = storySlides().length;
+  if(left) SI = Math.max(0, SI - 1); else if(SI < n - 1) SI++; else return closeStory();
+  drawStory();
+});
+
+/* ================= laptop demo: fake iOS notifications + lock screen =================
+   Small panel left of the phone (laptop only). Keys: 1–7 send a notification, L locks/unlocks, H hides the panel. */
+const DEMO = [
+  {e:'💳', label:'Card payment',      title:'Card payment',            body:'-5 240 Ft · LIDL MAGYARORSZÁG. Balance: 82 210 Ft', url:'tranzakciok'},
+  {e:'💸', label:'Money received',    title:'Money received',          body:'+20 000 Ft from NAGY PÉTER – instant transfer',     url:'tranzakciok'},
+  {e:'🐷', label:'Week still open',   title:'Persi · Persely', persi:true, body:()=>`🔥 Your ${S.streak}-week streak ends Sunday. Drop in any amount and it keeps going.`, url:'hub'},
+  {e:'💚', label:'Interest paid',     title:'Persi · Persely', persi:true, body:()=>`Your 3.0% student rate paid ${ft(Math.max(130, Math.round(Math.min(total(),CAP)*RATE/100/12*(1-TAX))))} this month, after tax.`, url:'hub'},
+  {e:'👯', label:'Friend saved too',  title:'Persi · Persely', persi:true, body:'Dóri added 5 000 Ft to Balaton in July. Your turn?', url:'hub'},
+  {e:'🎓', label:'Junior ends',       title:'Persi · Persely', persi:true, body:'Your Junior package ends in 30 days. Get your salary paid to OTP and keep 3.0% for 12 more months.', url:'grad'},
+  {e:'📊', label:'Monthly story',     title:'Persi · Persely', persi:true, body:()=>`Your ${S.period} story is ready. Take a look.`, url:'story'},
+  {e:'🏷️', label:'New discount',      title:'New discount',            body:'15% instant discount at Pizzeria Roma. Activate it now!', url:'kedvezmenyek'}
+];
+const demo = { delay:0, sound:true, phone:false, locked:false, hidden:false };
+let audioCtx;
+function chime(){
+  if(!demo.sound) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const t = audioCtx.currentTime;
+    [[1318,0],[1760,.11]].forEach(([f,d])=>{
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t+d); g.gain.linearRampToValueAtTime(.18, t+d+.01); g.gain.exponentialRampToValueAtTime(.001, t+d+.35);
+      o.connect(g).connect(audioCtx.destination); o.start(t+d); o.stop(t+d+.4);
+    });
+  }catch(e){}
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const noteHTML = n => `<img src="${n.persi && pig3d ? pig3d.snapshot() : 'icon-180.png'}" class="${n.persi ? 'persi-av' : ''}" alt=""><div class="nb"><div class="nh"><b>${esc(n.title)}</b><small>now</small></div><p>${esc(n.body)}</p></div>`;
+function openFromNote(url){
+  unlockPhone();
+  if(url === 'story'){ tab('hub'); openStory(); return; }
+  if(url === 'payday'){ tab('hub'); if(S.payday.on) sheet(SHEETS.payday()); return; }
+  if(url === 'grad'){ tab('hub'); pushPage('grad'); return; }
+  if(TABS.some(t=>t[0]===url)) tab(url); else if(PAGES[url]){ tab('fooldal'); pushPage(url); }
+}
+let bannerTimer;
+function showBanner(n){
+  document.querySelectorAll('.nbanner').forEach(b=>b.remove());
+  const b = document.createElement('div'); b.className = 'nbanner'; b.innerHTML = noteHTML(n);
+  b.addEventListener('click', ()=>{ b.remove(); openFromNote(n.url); });
+  $('#phone').appendChild(b);
+  b.getBoundingClientRect();                 // let the start position apply, then slide in
+  setTimeout(()=>b.classList.add('in'), 20);
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(()=>{ b.classList.remove('in'); setTimeout(()=>b.remove(), 500); }, 5500);
+}
+function addLockCard(n){
+  const c = document.createElement('div'); c.className = 'lcard'; c.innerHTML = noteHTML(n);
+  c.addEventListener('click', e=>{ e.stopPropagation(); openFromNote(n.url); });
+  $('#lockNotes').prepend(c);
+}
+function lockClock(){
+  const d = new Date();
+  $('#lockTime').textContent = d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+  $('#lockDate').textContent = d.toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'});
+}
+function lockPhone(){
+  closeSheet(); lockClock(); $('#lockNotes').innerHTML = '';
+  document.querySelectorAll('.nbanner').forEach(b=>b.remove());
+  const l = $('#lock'); l.classList.remove('out'); l.classList.add('on'); $('#phone').classList.add('locked');
+  demo.locked = true; renderDemoPanel();
+}
+function unlockPhone(){
+  if(!demo.locked) return;
+  const l = $('#lock'); l.classList.add('out'); $('#phone').classList.remove('locked');
+  setTimeout(()=>{ l.classList.remove('on','out'); }, 350);
+  demo.locked = false; renderDemoPanel();
+}
+$('#lock').addEventListener('click', unlockPhone);
+setInterval(()=>{ if(demo.locked) lockClock(); }, 15000);
+
+function sendDemo(i){
+  if(!DEMO[i]) return;
+  const n = {...DEMO[i], body: typeof DEMO[i].body === 'function' ? DEMO[i].body() : DEMO[i].body};
+  const go = () => {
+    if(demo.locked) addLockCard(n); else showBanner(n);
+    chime();
+    if(demo.phone) realPush(n);
+  };
+  if(demo.delay) setTimeout(go, demo.delay*1000); else go();
+}
+// presenter key for the hosted version: open the app once as …/?key=YOUR_ADMIN_KEY on the laptop, it is remembered
+const ADMIN_KEY = (() => { try{ const k = new URLSearchParams(location.search).get('key'); if(k) localStorage.setItem('otp-admin-key', k); return k || localStorage.getItem('otp-admin-key') || ''; }catch(e){ return ''; } })();
+function realPush(n){
+  fetch('api/push',{method:'POST',headers:{'content-type':'application/json', ...(ADMIN_KEY ? {'x-admin-key':ADMIN_KEY} : {})},body:JSON.stringify({title:n.title, body:n.body, url:'./#'+n.url})})
+    .then(r => { if(r.status === 403) toast('Real push needs the presenter key: open the app as ?key=…'); }).catch(()=>{});
+}
+// a notification from the demo (banner or lock screen, optionally a real push to the iPhone)
+function notify(n){
+  if(demo.locked) addLockCard(n); else showBanner(n);
+  chime();
+  if(demo.phone) realPush(n);
+}
+// salary arrives: the payday rule asks first (or moves automatically if the user chose that)
+function salaryArrives(){
+  const inc = S.income.amount; acc('junior').v += inc;
+  S.tx.unshift({d:'Today', n:'SALARY', s:'Incoming transfer', a:inc, ic:'money'});
+  const g = ruleGoal(), share = incomeShare(S.payday.pct);
+  if(S.payday.on && S.payday.ask){
+    renderAll();
+    notify({title:'Persi · Persely', persi:true, body:`Salary's in: +${ft(inc)}. Move ${ft(share)} to ${g.name}?`, url:'payday'});
+    if(!demo.locked){ tab('hub'); setTimeout(() => sheet(SHEETS.payday()), 600); }
+    return;
+  }
+  let body = `+${ft(inc)} arrived on your Junior account.`, persi = false;
+  if(S.payday.on){
+    const v = S.payday.floor ? Math.max(0, Math.min(share, acc('junior').v - 20000)) : share;
+    if(v > 0){ const counted = depositTo(g, v, 'junior', `Payday rule: ${S.payday.pct}%`); body = `Salary's in: +${ft(inc)}. I moved ${ft(v)} to ${g.name}.${counted ? ' This week is done.' : ''}`; persi = true; }
+  }
+  renderAll();
+  notify({title: persi ? 'Persi · Persely' : 'Salary arrived', body, url:'hub', persi});
+}
+// card purchase: a 1 190 Ft coffee, the round-up (×2) goes to its Persely
+function coffee(){
+  unlockPhone(); acc('junior').v -= 1190; S.tx.unshift({d:'Today', n:'ESPRESSO BAR', s:'Card payment', a:-1190, ic:'food'});
+  if(S.roundup.on){
+    const g = goalById(S.roundup.goal) || ruleGoal(), r = ((100 - 1190 % 100) % 100) * 2;
+    const counted = depositTo(g, r, 'junior', 'Round-up ×2'); S.roundCount++; S.roundSum += r; renderAll();
+    toast(`Coffee 1 190 Ft. Round-up ${ft(r)} → ${g.name}.${counted ? ` 🔥 ${S.streak}-week streak` : ''}`);
+  } else { renderAll(); toast('Coffee 1 190 Ft paid. Turn on round-ups to save the change'); }
+}
+// a friend joins the shared Persely
+function doriJoins(){
+  unlockPhone();
+  const g = S.goals.find(x => x.shared);
+  if(!g){ toast('Create a shared Persely first: Persely → New → Shared Persely'); return; }
+  if(g.members.some(m => m.n === 'Dóri')){ toast('Dóri has already joined'); return; }
+  g.members.push({n:'Dóri', amt:15000, c:'#2F6FB5'}); renderAll();
+  notify({title:'Persi · Persely', persi:true, body:`Dóri joined ${g.name} and added 15 000 Ft. Together: ${ft(gSaved(g))}.`, url:'hub'});
+  tab('hub'); S._detail = g.id; pushPage('goal');
+}
+// end of the autumn semester: two months pass, then the semester story opens
+function endSemester(){
+  unlockPhone(); closeSheet();
+  monthStep(true); monthStep(true);
+  S.period = 'Autumn semester'; S.storySeen = false; renderAll(); tab('hub'); openStory();
+}
+// graduation / the Junior package ends: the bridge offer
+function graduation(){ unlockPhone(); closeSheet(); S.juniorDays = 0; renderAll(); tab('hub'); pushPage('grad'); }
+// replay the launch right after the update: splash, then the pop-up
+function demoUpdateDay(){ unlockPhone(); closeOnb(); closeWhatsNew(); S = fresh(); renderAll(); tab('fooldal'); showSplash(1100); launchFlow(1300); }
+function renderDemoPanel(){
+  const p = $('#demoPanel');
+  p.classList.toggle('hidden', demo.hidden); $('#demoShow').classList.toggle('on', demo.hidden);
+  p.innerHTML = `<h4><span>Demo notifications</span><span>H hides</span></h4>
+    ${DEMO.map((n,i)=>`<button data-dp="${i}">${n.e} ${n.label}<kbd>${i+1}</kbd></button>`).join('')}
+    <div class="sep"></div>
+    <button data-dlock class="${demo.locked?'on':''}">${demo.locked?'🔓 Unlock phone':'🔒 Lock phone'}<kbd>L</kbd></button>
+    <button data-dsalary>💰 Payday<kbd>P</kbd></button>
+    <button data-dcoffee>☕ Card purchase<kbd>C</kbd></button>
+    <button data-ddori>👯 Dóri joins<kbd>D</kbd></button>
+    <button data-dnext>⏭ Next week<kbd>N</kbd></button>
+    <button data-dmonth>📆 +1 month<kbd>O</kbd></button>
+    <button data-dsem>🎓 End of semester<kbd>E</kbd></button>
+    <button data-dgrad>🎉 Junior ends / graduation<kbd>G</kbd></button>
+    <button data-dstory>📊 Story<kbd>M</kbd></button>
+    <button data-dtour>🧭 Tab tour<kbd>T</kbd></button>
+    <button data-dupdate>🆕 Update day (pop-up)<kbd>U</kbd></button>
+    <button data-djump>📅 8 weeks later<kbd>J</kbd></button>
+    <button data-ddelay>⏱ Delay: ${demo.delay ? demo.delay+' s' : 'none'}</button>
+    <button data-dphone class="${demo.phone?'on':''}">📱 Also send to iPhone: ${demo.phone?'on':'off'}</button>
+    <button data-dsound>${demo.sound?'🔔 Sound: on':'🔕 Sound: off'}</button>
+    <button data-dreset>↺ Reset app</button>
+    <button data-dhide>Hide panel<kbd>H</kbd></button>`;
+}
+$('#demoPanel').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  const d = b.dataset;
+  if(d.dp !== undefined) sendDemo(+d.dp);
+  else if('dlock' in d) demo.locked ? unlockPhone() : lockPhone();
+  else if('dnext' in d) nextWeek();
+  else if('dsalary' in d) salaryArrives();
+  else if('dcoffee' in d) coffee();
+  else if('ddori' in d) doriJoins();
+  else if('dmonth' in d){ unlockPhone(); closeSheet(); monthStep(); }
+  else if('dsem' in d) endSemester();
+  else if('dgrad' in d) graduation();
+  else if('dstory' in d){ unlockPhone(); tab('hub'); openStory(); }
+  else if('dtour' in d){ unlockPhone(); startTour(); }
+  else if('dupdate' in d) demoUpdateDay();
+  else if('djump' in d) week8State();
+  else if('ddelay' in d){ demo.delay = {0:3, 3:10, 10:0}[demo.delay]; renderDemoPanel(); }
+  else if('dphone' in d){ demo.phone = !demo.phone; renderDemoPanel(); }
+  else if('dsound' in d){ demo.sound = !demo.sound; renderDemoPanel(); }
+  else if('dreset' in d){ unlockPhone(); closeOnb(); closeWhatsNew(); S = fresh(); week8State(); tab('fooldal'); showSplash(1100); }
+  else if('dhide' in d){ demo.hidden = true; renderDemoPanel(); }
+});
+$('#demoShow').addEventListener('click', ()=>{ demo.hidden = false; renderDemoPanel(); });
+// on the phone itself: long-press Anna's avatar on Home opens the demo controls (idea from the team handoff)
+function demoSheet(){
+  const b = (a, e, t, s) => `<button data-dm="${a}">${e} ${t}<small>${s}</small></button>`;
+  return `<h2>Demo controls</h2><div class="dsheet">${b('payday','💰','Payday','Salary, asks 10%')}${b('coffee','☕','Card purchase','Coffee, round-up')}${b('dori','👯','Dóri joins','Shared Persely')}${b('week','⏭','Next week','')}${b('month','📆','+1 month','Rules and interest')}${b('sem','🎓','End of semester','Semester story')}${b('grad','🎉','Junior ends','Keep my 3.0%')}${b('update','🆕','Update day','Pop-up again')}${b('reset','↺','Reset','8 weeks later')}</div>`;
+}
+let lpTimer = null;
+document.addEventListener('pointerdown', e => { if(!(e.target.closest && e.target.closest('.hhead .avatar'))) return; clearTimeout(lpTimer); lpTimer = setTimeout(() => { lpTimer = null; sheet(demoSheet()); }, 650); });
+['pointerup','pointercancel','pointermove'].forEach(ev => document.addEventListener(ev, e => { if(ev === 'pointermove' && !(e.target.closest && e.target.closest('.hhead .avatar'))) clearTimeout(lpTimer); else if(ev !== 'pointermove') clearTimeout(lpTimer); }));
+addEventListener('keydown', e=>{
+  if(e.target.closest && e.target.closest('input')) return;
+  const k = e.key.toLowerCase();
+  if(k >= '1' && k <= String(DEMO.length)) sendDemo(+k - 1);
+  else if(k === 'l') demo.locked ? unlockPhone() : lockPhone();
+  else if(k === 'n') nextWeek();
+  else if(k === 'p') salaryArrives();
+  else if(k === 'c') coffee();
+  else if(k === 'd') doriJoins();
+  else if(k === 'o'){ unlockPhone(); closeSheet(); monthStep(); }
+  else if(k === 'e') endSemester();
+  else if(k === 'g') graduation();
+  else if(k === 'm'){ unlockPhone(); tab('hub'); openStory(); }
+  else if(k === 't'){ unlockPhone(); startTour(); }
+  else if(k === 'u') demoUpdateDay();
+  else if(k === 'j') week8State();
+  else if(k === 'h'){ demo.hidden = !demo.hidden; renderDemoPanel(); }
+});
+renderDemoPanel();
+
+/* ================= loading screen =================
+   Shown on every start, then fades out. While it shows, the iPhone status bar
+   is dark (same colour as the loading screen); afterwards it turns light. */
+let splashTimer;
+// status bar colour is no longer changed (full-screen mode, see the head)
+const setBar = () => {};
+function showSplash(ms=1300){
+  const sp = $('#splash'), ph = $('#phone');
+  clearTimeout(splashTimer);               // a new start cancels the old hide
+  sp.style.visibility = ''; sp.classList.remove('hide'); ph.classList.add('splashing'); setBar('#2A2B2E');
+  splashTimer = setTimeout(()=>{
+    sp.classList.add('hide'); ph.classList.remove('splashing'); setBar('#EEF0F5');
+    splashTimer = setTimeout(()=>{ sp.style.visibility = 'hidden'; }, 400);   // fully gone even if the fade did not run
+  }, ms);
+}
+showSplash();
+
+renderAll();
+routeHash();
+launchFlow(1500);   // first launch after the update: show the pop-up
+if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost')) navigator.serviceWorker.register('sw.js').then(pushRefresh).catch(()=>{});
+else pushInfo();
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) pushRefresh(); });
+</script>
+</body>
+</html>
