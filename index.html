@@ -523,7 +523,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .opt .rd{width:20px;height:20px;border-radius:50%;border:2px solid #C3C8D0;flex:none;margin-top:1px;transition:border .15s}
 .opt.on .rd{border:6px solid var(--green)}
 .rec{display:inline-block;font-size:var(--fs-xs);font-weight:700;color:var(--green-t);background:var(--green-l);padding:2px 7px;border-radius:8px;margin-left:6px;vertical-align:1px}
-.subopts{margin:-2px 0 12px 48px}
+.subopts{margin:-2px 0 12px}
 .rev{background:#fff;border-radius:16px;box-shadow:var(--sh);padding:2px 16px;margin:6px 0 12px}
 .rev div,.sr{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:0.875rem}
 .rev div:last-child,.sr:last-child{border-bottom:0}
@@ -665,6 +665,9 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .u-mb6.u-mb6{margin:0 0 6px}
 .u-mt0.u-mt0{margin-top:0}
 .u-chips-c.u-chips-c{justify-content:center;margin-top:0}
+.chips.eq{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:8px}
+.chips.eq button.chip{width:100%;padding:0 4px}
+.onb-body .chips.eq{gap:6px}
 .u-fw6.u-fw6{font-weight:600}
 .u-k-xs.u-k-xs{font-size:var(--fs-xs);color:var(--muted-t)}
 .u-bk-m14.u-bk-m14{font-size:var(--fs-m);line-height:1.4;display:block}
@@ -2160,7 +2163,7 @@ const SHEETS = {
     <div class="fine" style="text-align:center;margin-top:4px">Your payday rule: ${S.payday.pct}% of every salary. Change it in Persely → Money in.</div>`; },
   payrule:()=>{ const p = S.payday;
     return `<h2>Payday rule</h2><div class="fine u-sheet-sub">A share of each payment of 10 000 Ft or more: salary, scholarship, money from family.</div>
-    <div class="chips u-chips-c">${[5,10,15,20].map(x=>`<button class="chip ${p.pct===x?'on':''} lg" data-prpct="${x}">${x}%</button>`).join('')}</div>
+    <div class="chips eq u-chips-c">${[5,10,15,20].map(x=>`<button class="chip ${p.pct===x?'on':''} lg" data-prpct="${x}">${x}%</button>`).join('')}</div>
     <div class="flabel">Goes to</div>
     <div class="chips u-mb8">${S.goals.filter(g=>!g.shared && !isEur(g)).map(g=>`<button class="chip ${S.ruleGoal===g.id?'on':''}" data-rulegoal="${g.id}">${esc(g.name)}</button>`).join('')}</div>
     <button class="opt slim ${p.ask?'on':''}" data-prask><span class="t"><b class="u-fs-14">Ask me each time</b><small>Off: moves automatically</small></span><span class="tg ${p.ask?'on':''}"></span></button>
@@ -2236,7 +2239,7 @@ const SHEETS = {
     <button class="btn ghost" data-closesheet>Close</button>`; },
   weeklyrule:()=>{ const w = S.weekly;
     return `<h2>Weekly transfer</h2><div class="fine u-sheet-sub">The same amount moves every Monday to ${esc(ruleGoal().name)}.</div>
-    <div class="chips u-chips-c">${[1000,2000,5000].map(x=>`<button class="chip ${w.amt===x?'on':''} lg" data-wkamt="${x}">${ft(x)}</button>`).join('')}</div>
+    <div class="chips eq u-chips-c" style="--n:3">${[1000,2000,5000].map(x=>`<button class="chip ${w.amt===x?'on':''} lg" data-wkamt="${x}">${ft(x)}</button>`).join('')}</div>
     <div class="fine u-note-t6">About ${ft(Math.round(w.amt*52/12))} a month. Counts for your streak every week.</div>
     <button class="btn" data-wkon>${w.on ? 'Save' : 'Turn on'}</button>${w.on ? '<button class="btn ghost" data-wkoff>Turn off</button>' : ''}`; },
   roundrule:()=>{ const r = S.roundup;
@@ -3115,9 +3118,9 @@ function renderOnb(){
     const weeks = Math.max(1, m * 4.345), extra = short > 0 ? Math.ceil(short / weeks / 500) * 500 : 0;
     body = `<div class="onb-step">Step 2 of ${n}</div><h2>How should money get in?</h2><p class="lead">Switch on what suits you. Change it any time.</p>
       ${tg(O.payOn, 'data-onbpay', 'Payday rule <span class="rec">Recommended</span>', 'A share of each salary or scholarship. We ask first.',
-        `<div class="chips u-m0">${[5,10,15,20].map(x=>`<button class="chip ${O.pct===x?'on':''}" data-onbpct="${x}">${x}%</button>`).join('')}</div>`)}
+        `<div class="chips eq u-m0">${[5,10,15,20].map(x=>`<button class="chip ${O.pct===x?'on':''}" data-onbpct="${x}">${x}%</button>`).join('')}</div>`)}
       ${tg(O.weeklyOn, 'data-onbwk', 'Weekly transfer', 'The same amount every Monday.',
-        `<div class="chips u-m0">${[1000,2000,3000,5000].map(x=>`<button class="chip ${O.weekly===x?'on':''}" data-onbweekly="${x}">${ft(x)}</button>`).join('')}</div>`)}
+        `<div class="chips eq u-m0">${[1000,2000,3000,5000].map(x=>`<button class="chip ${O.weekly===x?'on':''}" data-onbweekly="${x}">${ft(x)}</button>`).join('')}</div>`)}
       ${tg(O.roundOn, 'data-onbrr', 'Round-ups', `Card payments rounded up to 100 Ft, ×2. About ${ft(ROUND_EST)} a month.`)}
       <div class="card" style="padding:14px 16px;margin-top:6px">
         <b class="u-bk-m14">${onbMonthly() ? `About ${ft(Math.round(proj/1000)*1000)} by ${fDate(O.date)}` : 'Switch something on to see your forecast'}</b>
