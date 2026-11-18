@@ -368,8 +368,6 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .opt .t{flex:1;min-width:0}.opt b{display:block;font-size:var(--fs-m)}.opt small{display:block;font-size:0.78125rem;color:var(--muted-t);margin-top:2px}
 .opt .ic{color:var(--green);display:flex}
 .opt .sample{display:block;margin-top:8px;font-size:var(--fs-s);color:var(--ink2);background:var(--bg);border-radius:12px 12px 12px 4px;padding:8px 10px}
-.amt{font-size:1.875rem;font-weight:700;margin:2px 0 4px}
-input[type=range].rng{width:100%;accent-color:var(--green);height:30px}
 .onb-li{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:0.90625rem;color:var(--ink2);text-align:left}
 .onb-li span{width:38px;height:38px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center;flex:none}
 .persi-says{display:flex;gap:10px;align-items:flex-end;margin-top:14px;animation:pop .35s cubic-bezier(.2,.9,.25,1.15)}
@@ -649,6 +647,50 @@ input[type=range].rng{width:100%;accent-color:var(--green);height:30px}
   .rotate b{font-size:var(--fs-l)}
   .rotate span{font-size:var(--fs-s);color:var(--ink2);max-width:240px;line-height:1.4}
 }
+/* ---------- goal step: amount and date pickers (shared by onboarding and New Persely) ---------- */
+.pk{padding:10px 16px 12px}
+.pkrow{display:flex;align-items:center;gap:10px}
+.pkfld{flex:1;min-width:0;display:flex;align-items:baseline;gap:6px;border-bottom:2px solid #CDD2DA}
+.pkfld:focus-within{border-bottom-color:var(--green)}
+.pkfld input{flex:1;min-width:0;border:0;outline:0;background:none;font-size:1.875rem;font-weight:700;color:var(--ink);padding:0;min-height:var(--tap);font-family:inherit}
+.pkfld span{font-size:var(--fs-m);font-weight:600;color:var(--muted-t)}
+.pkstack{position:relative;width:60px;height:58px;flex:none;--L:1;--st:4px}
+.pkstack i{position:absolute;left:50%;bottom:calc(var(--k) * var(--st))}
+.pkstack i.n{width:48px;height:9px;margin-left:-24px;border-radius:3px;background:linear-gradient(var(--green-l),#C9E5BC);box-shadow:inset 0 0 0 1.5px var(--green)}
+.pkstack i.n:nth-child(odd){margin-left:-26px}
+.pkstack i.c{width:30px;height:8px;margin-left:-15px;border-radius:50%;background:radial-gradient(ellipse at 50% 30%,#8AD06C,var(--green));box-shadow:0 1px 0 var(--green-d)}
+.pkstack s{display:none;position:absolute;left:50%;bottom:0;width:10px;margin-left:-5px;height:calc(var(--L) * var(--st) + 6px);background:#fff;border:1.5px solid var(--act);border-radius:2px;opacity:.92}
+.pkstack.strap s{display:block}
+.pkstack i.drop{animation:pkdrop .14s ease-out}
+.pkstack i.off{animation:pkoff .14s ease-in forwards}
+@keyframes pkdrop{0%{transform:translateY(-8px);opacity:0}70%{transform:translateY(1px);opacity:1}100%{transform:none}}
+@keyframes pkoff{to{transform:translateX(16px);opacity:0}}
+.pksl{position:relative;height:44px;touch-action:none;cursor:pointer;outline:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.pkin{position:absolute;inset:0 14px}
+.pkin::before{content:"";position:absolute;left:-14px;right:-14px;top:50%;height:8px;margin-top:-4px;border-radius:4px;background:#E1E5EA}
+.pkfill{position:absolute;left:-14px;top:50%;height:8px;margin-top:-4px;border-radius:4px;background:var(--green);width:calc(var(--p) + 14px)}
+.pkthumb{position:absolute;top:50%;left:var(--p);width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(30,40,60,.32),0 0 0 1px rgba(0,0,0,.06)}
+.pksl:focus-visible .pkthumb{box-shadow:0 0 0 3px var(--act),0 2px 6px rgba(30,40,60,.32)}
+.pkchips{margin:2px 0 0;gap:6px;flex-wrap:nowrap}
+.pkchips button.chip{flex:1 1 auto;min-width:0;padding:0 6px;font-size:.8125rem;white-space:nowrap}
+.pkd .fld{cursor:pointer;margin-bottom:8px}
+.pkd .fld .pkl{display:block;font-size:0.78125rem;color:var(--muted-t)}
+.pkd .fld .pks{font-weight:400;color:var(--muted-t);font-size:var(--fs-s)}
+.pkd .fld .chev{color:var(--green);display:flex}
+.pkdc{margin:0 0 10px}
+@media (max-width:340px){.pkdc{flex-wrap:wrap}}
+.pkreal{margin:0 0 12px}
+.pkreal.hard{background:var(--orange-l)}
+.pkm{touch-action:none}
+.pkyears{display:flex;margin:0 0 10px;border-bottom:1px solid #DDE1E7}
+.pkyears button{position:relative;flex:1;min-height:var(--tap);font-weight:600;font-size:var(--fs-m);color:var(--muted-t)}
+.pkyears button.on{color:var(--green-t)}
+.pkyears button.on::after{content:"";position:absolute;left:25%;right:25%;bottom:-1px;height:3px;border-radius:3px;background:var(--green)}
+.pkgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px}
+.pkgrid button.chip{min-height:48px;font-size:var(--fs-m);font-weight:600;border-radius:12px;padding:0}
+.pkgrid .pkmo.cur{box-shadow:inset 0 0 0 1.5px var(--muted-t)}
+.pkgrid .pkmo.on{background:var(--act);color:#fff;box-shadow:none}
+@media (prefers-reduced-motion:reduce){.pkstack i{animation:none !important}}
 /* ---------- keyboard: JS sets --app-h to the visible height and body top to the visual viewport offset, so the sticky footers and sheet buttons sit just above the keypad ---------- */
 body{top:var(--vv-top,0px)}
 html.kb .tabbar{display:none}
@@ -664,7 +706,13 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
   .onb-body .flabel{margin:8px 2px 4px}
   .onb-body .fld{margin-bottom:6px;padding:2px 16px}
   .onb-body .card{padding:8px 16px;margin-bottom:6px}
-  .onb-body .amt{font-size:1.5rem;margin:0}
+  .onb-body .pk{padding:6px 16px 8px}
+  .onb-body .pkfld input{font-size:1.5rem;min-height:40px}
+  .onb-body .pkstack{height:50px;--st:3px}
+  .onb-body .pksl{height:40px}
+  .onb-body .pkd .fld{margin-bottom:4px}
+  .onb-body .pkdc{margin:0 0 6px}
+  .onb-body .pkreal{margin:0}
   .onb-body .chips{margin:4px 0 0;gap:6px}
   .onb-body .note{padding:8px 12px;margin-bottom:0}
   .onb-foot{padding-top:6px;padding-bottom:calc(env(safe-area-inset-bottom) + 10px)}
@@ -1299,8 +1347,8 @@ const PAGES = {
     const d = S._draft, steps = `<div class="onb-step u-mt6">Step ${d.step} of 3</div>`;
     if(d.step === 1) return `${steps}<h2 class="u-mt4-b12">What are you saving for?</h2>
       <div class="flabel">Name</div><div class="fld"><span class="t"><input id="cgName" maxlength="30" value="${esc(d.name)}" aria-label="Goal name"></span></div>
-      <div class="flabel">Amount</div><div class="chips u-mb4">${[50000,150000,300000,1000000].map(v=>`<button class="chip ${d.target===v?'on':''}" data-cgamt="${v}">${shortFt(v)}</button>`).join('')}</div>
-      <div class="flabel">By when?</div><div class="chips u-m0">${DATES.map(([v,l])=>`<button class="chip ${d.date===v?'on':''}" data-cgdate="${v}">${l}</button>`).join('')}</div>`;
+      <div class="flabel">Amount</div>${amountPicker('cg')}
+      ${monthPicker('cg')}`;
     if(d.step === 2) return `${steps}<h2 class="u-mt4-b12">How should money get in?</h2>
       <div class="flabel">Weekly transfer, every Monday</div><div class="chips u-mb6">${[0,1000,2000,5000].map(v=>`<button class="chip ${d.weekly===v?'on':''}" data-cgwk="${v}">${v ? ft(v) : 'None'}</button>`).join('')}</div>
       <button class="opt slim ${d.round?'on':''}" data-cground><span class="t"><b>Round-ups</b><small>Next 100 Ft, ×2 · about ${ft(ROUND_EST)} a month${S.roundup.on ? ` (moves them from ${esc((goalById(S.roundup.goal)||ruleGoal()).name)})` : ''}</small></span><span class="tg ${d.round?'on':''}"></span></button>`;
@@ -1643,6 +1691,7 @@ const SHEETS = {
     ${hasEur ? '' : `<button class="row" data-neweur><span class="ic">${I('euro')}</span><span class="t">Euro Persely<small>For Erasmus and travel. No 3.0% rate</small></span><span class="chev">${I('plus',20)}</span></button>`}
     <button class="row" data-cgnew><span class="ic">${I('plus')}</span><span class="t">Your own goal<small>Name, amount, date and a forecast</small></span><span class="chev">${I('chev',20)}</span></button>
     ${[['PS5 + GTA 6','game',230000],['Erasmus in Lisbon','plane',150000],['Driving licence','car',350000],['Emergency fund','lock',200000]].filter(([n])=>!S.goals.some(g=>g.name===n)).map(([n,ic,t])=>`<button class="row" data-cgpreset="${n}|${ic}|${t}"><span class="ic">${I(ic)}</span><span class="t">${n}<small>Target: ${ft(t)}</small></span><span class="chev">${I('chev',20)}</span></button>`).join('')}`; },
+  month:()=>pkMonthSheet(),
   how:()=>`<h2>How Persely works</h2>
     <div class="flabel">Junior rate</div>
     <div class="card u-card-bul"><ul class="bul sm"><li>3.0% a year for every Junior customer, automatically, on the first 500 000 Ft</li><li>Interest is paid monthly, 28% tax deducted: about 2.2% net</li><li>When Junior ends: 12 more months at 3.0% if your salary comes to OTP</li></ul></div>
@@ -1732,13 +1781,20 @@ document.addEventListener('click', e=>{
   // create a goal: 3 steps with a live projection
   if(d.cgpreset !== undefined || 'cgnew' in d){
     const [n, ic, t] = (d.cgpreset || 'Erasmus in Lisbon|plane|150000').split('|');
-    S._draft = {step:1, name:n, ic, target:+t, date:'2027-09-01', weekly:2000, round:true};
+    S._draft = {step:1, name:n, ic, target:+t, typeAmt:+t, date:pkIdxDate(pkNow() + 10), weekly:2000, round:true};
     closeSheet(); pushPage('create'); return; }
   if(d.cgstep){ keepCgName(); const dr = S._draft;
     if(dr.step === 1 && !dr.name.trim()){ toast('Give your goal a name'); return; }
+    if(dr.step === 1 && dr.target < PK_MIN) pkSet('cg', PK_MIN);
     dr.step = Math.max(1, Math.min(3, dr.step + (+d.cgstep))); refreshPages(); return; }
-  if(d.cgamt){ keepCgName(); S._draft.target = +d.cgamt; refreshPages(); return; }
-  if(d.cgdate){ keepCgName(); S._draft.date = d.cgdate; refreshPages(); return; }
+  // amount and month pickers (shared by onboarding and New Persely)
+  if(d.pkamt){ const k = pkKind(t); pkSet(k, +d.pkamt); return; }
+  if(d.pkdate){ const k = pkKind(t); pkObj(k).date = d.pkdate; pkSync(k); return; }
+  if('pkmonth' in d){ const k = pkKind(t), o = pkObj(k), now = pkNow(), idx = Math.min(now + 36, Math.max(now + 1, pkDateIdx(o.date)));
+    PKM = {k, year:Math.floor(idx / 12), sel:o.date}; sheet(SHEETS.month()); return; }
+  if(d.pkyear){ PKM.year = +d.pkyear; $('#sheet').innerHTML = SHEETS.month(); const b = $(`#sheet [data-pkyear="${PKM.year}"]`); if(b) b.focus(); return; }
+  if(d.pkmo){ PKM.sel = pkIdxDate(+d.pkmo); $('#sheet').innerHTML = SHEETS.month(); const b = $(`#sheet [data-pkmo="${d.pkmo}"]`); if(b) b.focus(); return; }
+  if('pkdone' in d){ pkObj(PKM.k).date = PKM.sel; closeSheet(); pkSync(PKM.k); const b = document.querySelector(`[data-pk="${PKM.k}"] [data-pkmonth]`); if(b) b.focus({preventScroll:true}); return; }
   if(d.cgwk !== undefined && d.cgwk !== ''){ S._draft.weekly = +d.cgwk; refreshPages(); return; }
   if('cground' in d){ S._draft.round = !S._draft.round; refreshPages(); return; }
   if(d.cgboost){ S._draft.weekly = +d.cgboost; refreshPages(); toast(`Weekly transfer set to ${ft(+d.cgboost)}`); return; }
@@ -1864,13 +1920,11 @@ document.addEventListener('click', e=>{
   if('wnlater' in d){ S.updateSeen = true; save(); closeWhatsNew(); toast('You can set it up any time in the Persely tab'); return; }
   if('onbstart' in d){ startOnb('travel'); return; }
   if('onbnext' in d){
-    if(STEPS[O.i] === 'goal'){ keepOnbName(); if(!O.name.trim()){ toast('Give your goal a name'); return; } }
+    if(STEPS[O.i] === 'goal'){ keepOnbName(); if(!O.name.trim()){ toast('Give your goal a name'); return; } if(O.target < PK_MIN) pkSet('onb', PK_MIN); }
     O.i = Math.min(STEPS.length - 1, O.i + 1); renderOnb(); return;
   }
   if('onbback' in d){ keepOnbName(); O.i = Math.max(0, O.i - 1); renderOnb(); return; }
   if('onbquit' in d){ closeOnb(); renderAll(); toast('You can set it up any time in the Persely tab'); return; }
-  if(d.onbt){ keepOnbName(); O.target = +d.onbt; renderOnb(); return; }
-  if(d.onbdate){ keepOnbName(); O.date = d.onbdate; renderOnb(); return; }
   if('onbpay' in d && !d.onbpay){ O.payOn = !O.payOn; renderOnb(); return; }
   if('onbwk' in d && !d.onbwk){ O.weeklyOn = !O.weeklyOn; renderOnb(); return; }
   if('onbrr' in d){ O.roundOn = !O.roundOn; renderOnb(); return; }
@@ -1890,6 +1944,52 @@ document.addEventListener('click', e=>{
     if(O.first && pig3d) setTimeout(() => pig3d.celebrate(), 400);   // the first coin drops in
     return;
   }
+});
+/* goal step pickers: slider drag and keys, typed amount, swipe-down on the month sheet */
+let PKD = null;
+const pkKind = el => { const r = el.closest('[data-pk]'); return r ? r.dataset.pk : 'onb'; };
+function pkDrag(e){
+  const r = PKD.inn.getBoundingClientRect(), v = pkVal((e.clientX - r.left) / r.width);
+  if(v !== pkObj(PKD.k).target){ pkSet(PKD.k, v); PKD.moved = true; }
+}
+document.addEventListener('pointerdown', e => {
+  const s = e.target.closest && e.target.closest('.pksl'); if(s){
+    PKD = {s, inn:s.querySelector('.pkin'), k:pkKind(s), moved:false}; try{ s.setPointerCapture(e.pointerId); }catch(x){}
+    s.focus({preventScroll:true}); pkDrag(e); return; }
+  const m = e.target.closest && e.target.closest('#sheet'); if(m && m.querySelector('.pkm') && !e.target.closest('.btn')) PKD = {sw:true, y:e.clientY, id:e.pointerId, dy:0, el:$('#sheet')};
+});
+document.addEventListener('pointermove', e => {
+  if(!PKD) return;
+  if(PKD.sw){ const dy = e.clientY - PKD.y; if(!PKD.cap && dy > 10){ PKD.cap = true; try{ PKD.el.setPointerCapture(PKD.id); }catch(x){} }
+    if(PKD.cap){ PKD.dy = Math.max(0, dy); PKD.el.style.transform = `translateY(${PKD.dy}px)`; PKD.el.style.transition = 'none'; } return; }
+  pkDrag(e);
+});
+const pkUp = e => {
+  if(!PKD) return; const p = PKD; PKD = null;
+  if(p.sw){ if(p.cap){ p.el.style.transition = 'transform .18s ease-out'; if(p.dy > 70 && e.type === 'pointerup'){ closeSheet(); setTimeout(() => { p.el.style.transform = ''; p.el.style.transition = ''; }, 300); } else { p.el.style.transform = ''; setTimeout(() => { p.el.style.transition = ''; }, 200); } } return; }
+  if(p.moved && e.type === 'pointerup') coinSound();
+};
+document.addEventListener('pointerup', pkUp); document.addEventListener('pointercancel', pkUp);
+document.addEventListener('keydown', e => {
+  const s = e.target.closest && e.target.closest('.pksl'); if(s){
+    const k = pkKind(s), v = pkObj(k).target, n = pkIdx(v), st = {ArrowRight:1, ArrowUp:1, ArrowLeft:-1, ArrowDown:-1, PageUp:10, PageDown:-10}[e.key];
+    let nv = null;
+    if(st){ const t = st > 0 ? Math.floor(n + 1e-9) + st : Math.ceil(n - 1e-9) + st; nv = pkAt(Math.max(0, Math.min(PK_N, t))); if(v > PK_MAX && st < 0) nv = PK_MAX; if(v > PK_MAX && st > 0) nv = v; }
+    else if(e.key === 'Home') nv = PK_MIN; else if(e.key === 'End') nv = PK_MAX;
+    if(nv !== null){ e.preventDefault(); if(nv !== v) pkSet(k, nv); } return; }
+  if(e.key === 'Enter' && e.target.classList && e.target.classList.contains('pkamt')){ e.preventDefault(); e.target.blur(); }
+});
+document.addEventListener('input', e => {
+  const t = e.target; if(!t.classList || !t.classList.contains('pkamt')) return;
+  const before = t.value.slice(0, t.selectionStart || 0).replace(/\D/g, '').length, n = +t.value.replace(/\D/g, '').slice(0, 8) || 0;
+  t.value = n ? pkSpace(n) : '';
+  let pos = 0, seen = 0; while(pos < t.value.length && seen < before){ if(/\d/.test(t.value[pos])) seen++; pos++; }
+  try{ t.setSelectionRange(pos, pos); }catch(x){}
+  pkSet(pkKind(t), n, 'type');
+});
+document.addEventListener('focusout', e => {
+  const t = e.target; if(!t.classList || !t.classList.contains('pkamt')) return;
+  const k = pkKind(t); if(pkObj(k).target < PK_MIN){ pkSet(k, PK_MIN); }
 });
 const amt = () => parseFloat((($('#mv') && $('#mv').value) || '').replace(/[^\d.]/g,'')) || 0;
 const keepAmt = () => { if($('#mv')) S._amt = amt(); };
@@ -2230,11 +2330,107 @@ const GOAL_PRESETS = {
   safety:{label:'Safety net', ic:'lock', name:'Safety net', target:200000, date:'2027-12-01'},
   study:{label:'Studies', ic:'edu', name:'Study fund', target:120000, date:'2027-09-01'}
 };
-const DATES = [['2027-06-01','June 2027'],['2027-09-01','Sept 2027'],['2027-12-01','Dec 2027'],['2028-06-01','June 2028']];
+/* ================= goal step: amount and date (shared by onboarding step 1 and New Persely step 1) =================
+   k = 'onb' (the O object) or 'cg' (the S._draft object). Both have .target and .date ('YYYY-MM-01').
+   Amount: type it, tap a chip, or drag the slider. The slider is not linear: 5 000 to 300 000 Ft take the first 70% of the track in
+   5 000 steps, 300 000 to 1 000 000 Ft the last 30% in 25 000 steps. Above 1 000 000 Ft only typing works. */
+const PK_MIN = 5000, PK_MID = 300000, PK_MAX = 1000000, PK_N1 = 59, PK_N2 = 28, PK_SPLIT = .7, PK_N = PK_N1 + PK_N2;   // PK_N = last notch index (86)
+const pkObj = k => k === 'onb' ? O : S._draft;
+const pkIdx = v => v <= PK_MID ? (Math.max(v, PK_MIN) - PK_MIN) / 5000 : PK_N1 + (Math.min(v, PK_MAX) - PK_MID) / 25000;   // notch number, can be fractional for typed values
+const pkAt = n => n <= PK_N1 ? PK_MIN + n * 5000 : PK_MID + (n - PK_N1) * 25000;
+const pkPos = v => { const n = pkIdx(v); return n <= PK_N1 ? n / PK_N1 * PK_SPLIT : PK_SPLIT + (n - PK_N1) / PK_N2 * (1 - PK_SPLIT); };
+const pkVal = p => { p = Math.min(1, Math.max(0, p)); return pkAt(p <= PK_SPLIT ? Math.round(p / PK_SPLIT * PK_N1) : PK_N1 + Math.round((p - PK_SPLIT) / (1 - PK_SPLIT) * PK_N2)); };
+const pkLayers = v => v > 0 ? Math.min(12, Math.max(1, Math.ceil(pkPos(v) * 12))) : 0;   // follows the slider position, so it grows evenly
+const pkSpace = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const pkShort = v => v >= 1000000 ? `${v / 1000000} M Ft` : `${v / 1000}k Ft`;
+const pkReduced = () => window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
+const pkNow = () => { const d = new Date(); return d.getFullYear() * 12 + d.getMonth(); };
+const pkDateIdx = s => +s.slice(0, 4) * 12 + (+s.slice(5, 7) - 1);
+const pkIdxDate = i => `${Math.floor(i / 12)}-${String(i % 12 + 1).padStart(2, '0')}-01`;
+const pkMonthName = s => new Date(s + 'T12:00:00').toLocaleDateString('en-GB', {month:'long', year:'numeric'});
+const pkMonthShort = s => new Date(s + 'T12:00:00').toLocaleDateString('en-GB', {month:'short', year:'numeric'});
+const pkIn = n => n <= 0 ? 'this month' : n === 1 ? 'next month' : n < 24 ? `in ${n} months` : `in ${Math.floor(n / 12)} years${n % 12 ? ` ${n % 12} month${n % 12 > 1 ? 's' : ''}` : ''}`;
+// what the amount and date ask of a week: the same maths as the forecast on the next step
+function pkMath(target, date){
+  const m = Math.max(.5, monthsTo(date)), wk = Math.ceil(target / (m * 4.345) / 100) * 100, cap = incomeShare(10) * 12 / 52 + 5000;   // payday rule + 5 000 Ft a week
+  return {m, wk, hard: wk > cap};
+}
+function pkRealHTML(o){
+  if(!o.target) return 'Type how much you need.';
+  const r = pkMath(o.target, o.date);
+  return `${ft(o.target)} by ${pkMonthShort(o.date)} ≈ <b class="${r.hard ? 'late' : ''}">${ft(r.wk)} a week</b>${r.hard ? `<div class="fine">That is a lot for a week. A later date or a smaller amount makes it easier.</div>` : ''}`;
+}
+const pkStackHTML = v => `<span class="pkstack ${v >= 500000 ? 'strap' : ''}" style="--L:${pkLayers(v)}" aria-hidden="true">${Array.from({length: pkLayers(v)}, (_, i) => `<i class="${i < 2 ? 'c' : 'n'}" style="--k:${i}"></i>`).join('')}<s></s></span>`;
+function pkStackSync(st, v){
+  const L = pkLayers(v), red = pkReduced(), cur = [...st.querySelectorAll('i:not(.off)')];
+  for(let i = cur.length; i < L; i++){ const e = document.createElement('i'); e.className = (i < 2 ? 'c' : 'n') + (red ? '' : ' drop'); e.style.setProperty('--k', i); st.insertBefore(e, st.querySelector('s')); }
+  for(let i = cur.length - 1; i >= L; i--){ const e = cur[i]; if(red) e.remove(); else { e.classList.remove('drop'); e.classList.add('off'); setTimeout(() => e.remove(), 160); } }
+  st.style.setProperty('--L', L); st.classList.toggle('strap', v >= 500000);
+}
+function amountPicker(k){
+  const o = pkObj(k), v = o.target, chips = [...new Set([o.typeAmt, 50000, 150000, 300000, 1000000].filter(Boolean))].sort((a, b) => a - b).slice(0, 5);
+  return `<div class="card pk" data-pk="${k}">
+    <div class="pkrow"><div class="pkfld"><input class="pkamt" inputmode="numeric" pattern="[0-9 ]*" enterkeyhint="done" autocomplete="off" maxlength="11" value="${v ? pkSpace(v) : ''}" aria-label="Amount you need, in forints. Type it, or use the slider"><span>Ft</span></div>${pkStackHTML(v)}</div>
+    <div class="pksl" role="slider" tabindex="0" aria-label="Amount you need" aria-valuemin="${PK_MIN}" aria-valuemax="${PK_MAX}" aria-valuenow="${Math.min(PK_MAX, Math.max(PK_MIN, v))}" aria-valuetext="${pkSpace(v)} forints" style="--p:${(pkPos(v) * 100).toFixed(2)}%"><div class="pkin"><i class="pkfill"></i><b class="pkthumb"></b></div></div>
+    <div class="chips pkchips">${chips.map(c => `<button class="chip ${v === c ? 'on' : ''}" data-pkamt="${c}" aria-pressed="${v === c}" aria-label="${pkSpace(c)} forints${c === o.typeAmt ? ', suggested for this goal' : ''}">${pkShort(c)}</button>`).join('')}</div></div>`;
+}
+function monthPicker(k){
+  const o = pkObj(k), n = pkDateIdx(o.date) - pkNow(), now = pkNow(), y = Math.floor(now / 12), mo = now % 12;
+  const quick = [['In 6 months', pkIdxDate(now + 6)], ['Next summer (June)', pkIdxDate((mo < 5 ? y : y + 1) * 12 + 5)], ['In a year', pkIdxDate(now + 12)]];
+  return `<div class="pkd" data-pk="${k}">
+    <button class="fld" data-pkmonth aria-haspopup="dialog" aria-label="By when? ${pkMonthName(o.date)}, ${pkIn(n)}. Change month"><span class="t"><span class="pkl">By when?</span><b>${pkMonthName(o.date)}</b> <span class="pks">· ${pkIn(n)}</span></span><span class="chev">${I('chev', 20)}</span></button>
+    <div class="chips pkchips pkdc">${quick.map(([l, v]) => `<button class="chip ${o.date === v ? 'on' : ''}" data-pkdate="${v}" aria-pressed="${o.date === v}">${l}</button>`).join('')}</div></div>
+    <div class="note pkreal ${o.target && pkMath(o.target, o.date).hard ? 'hard' : ''}" data-pk="${k}" role="status">${pkRealHTML(o)}</div>`;
+}
+// update everything that shows the amount or the date, without redrawing (so the keypad stays open and a drag is not interrupted)
+function pkSync(k, from){
+  const o = pkObj(k), v = o.target;
+  document.querySelectorAll(`[data-pk="${k}"]`).forEach(r => {
+    if(r.classList.contains('pk')){
+      const inp = r.querySelector('.pkamt'); if(from !== 'type') inp.value = v ? pkSpace(v) : '';
+      const sl = r.querySelector('.pksl'); sl.style.setProperty('--p', (pkPos(v) * 100).toFixed(2) + '%');
+      sl.setAttribute('aria-valuenow', Math.min(PK_MAX, Math.max(PK_MIN, v))); sl.setAttribute('aria-valuetext', `${pkSpace(v)} forints`);
+      pkStackSync(r.querySelector('.pkstack'), v);
+      r.querySelectorAll('[data-pkamt]').forEach(b => { const on = +b.dataset.pkamt === v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+    } else if(r.classList.contains('pkd')){
+      const n = pkDateIdx(o.date) - pkNow(), f = r.querySelector('.fld');
+      f.querySelector('b').textContent = pkMonthName(o.date); f.querySelector('.pks').textContent = `· ${pkIn(n)}`;
+      f.setAttribute('aria-label', `By when? ${pkMonthName(o.date)}, ${pkIn(n)}. Change month`);
+      r.querySelectorAll('[data-pkdate]').forEach(b => { const on = b.dataset.pkdate === o.date; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+    } else if(r.classList.contains('pkreal')){
+      r.innerHTML = pkRealHTML(o); r.classList.toggle('hard', !!(v && pkMath(v, o.date).hard));
+    }
+  });
+}
+function pkSet(k, v, from){ pkObj(k).target = v; pkSync(k, from); }
+// month sheet: tentative choice until Done; tapping outside or swiping down closes without changing
+let PKM = {k:'onb', year:0, sel:''};
+function pkMonthSheet(){
+  const o = pkObj(PKM.k), now = pkNow(), y0 = Math.floor(now / 12), r = pkMath(o.target, PKM.sel), n = pkDateIdx(PKM.sel) - now;
+  const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], full = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `<div class="pkm"><h2>By when?</h2>
+    <div class="pkyears" role="group" aria-label="Year">${[0,1,2,3].map(i => `<button class="${PKM.year === y0 + i ? 'on' : ''}" data-pkyear="${y0 + i}" aria-pressed="${PKM.year === y0 + i}">${y0 + i}</button>`).join('')}</div>
+    <div class="pkgrid" role="group" aria-label="Month in ${PKM.year}">${names.map((nm, m) => { const idx = PKM.year * 12 + m, ok = idx > now && idx <= now + 36, on = idx === pkDateIdx(PKM.sel);
+      return `<button class="chip pkmo ${on ? 'on' : ''} ${idx === now ? 'cur' : ''}" data-pkmo="${idx}" ${ok ? '' : 'disabled'} aria-pressed="${on}" aria-label="${full[m]} ${PKM.year}${idx === now ? ', this month, not available' : !ok ? ', not available' : ''}">${nm}</button>`; }).join('')}</div>
+    <div class="note pkreal ${r.hard ? 'hard' : ''}" role="status">${pkIn(n).replace(/^in /, '')} · about <b class="${r.hard ? 'late' : ''}">${ft(r.wk)} a week</b>${r.hard ? `<div class="fine">That is a lot for a week. A later date makes it easier.</div>` : ''}</div>
+    <button class="btn" data-pkdone>Done</button></div>`;
+}
+function coinSound(){   // a short coin clink, once, when the slider is let go
+  if(!demo.sound) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const t = audioCtx.currentTime;
+    [[1568,0],[2349,.06]].forEach(([f, d]) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t + d); g.gain.linearRampToValueAtTime(.14, t + d + .008); g.gain.exponentialRampToValueAtTime(.001, t + d + .22);
+      o.connect(g).connect(audioCtx.destination); o.start(t + d); o.stop(t + d + .25);
+    });
+  }catch(e){}
+}
 const O = { i:0 };
 const STEPS = ['goal','how','sum'];   // 3 screens: goal, money in, summary with the optional first deposit
 const onbMonthly = () => (O.payOn ? incomeShare(O.pct) : 0) + (O.weeklyOn ? Math.round(O.weekly * 52 / 12) : 0) + (O.roundOn ? ROUND_EST : 0);
-const shortFt = v => v >= 1000000 ? `${v/1000000} M Ft` : `${v/1000}k Ft`;
 // the day the update arrives: nothing set up yet
 function updateDayState(){
   Object.assign(S, {streak:0, best:0, history:[], skipped:[], savedWeek:false, skips:0, challenges:{}, friends:[], toured:false, hints:{}, monthSaved:4000,
@@ -2269,17 +2465,11 @@ function launchFlow(delay=1500){
 }
 function startOnb(key){
   const g = GOAL_PRESETS[key] || GOAL_PRESETS.travel;
-  Object.assign(O, {i: 0, key, name:g.name, target:g.target, date:g.date,
+  Object.assign(O, {i: 0, key, name:g.name, target:g.target, typeAmt:g.target, date:g.date,
     payOn:true, pct:10, weeklyOn:false, weekly:2000, roundOn:true, first:1000, from:'junior', deposited:0, remind:true, coinShown:false});
   tab('hub'); $('#onb').classList.add('on'); renderOnb();
 }
 function closeOnb(){ const o = $('#onb'); o.classList.remove('on'); o.innerHTML = ''; mountPig(); }
-// the plain consequence of the amount and date: what it takes per week (same maths as the forecast on the next screen)
-function onbReality(){
-  const m = Math.max(.5, monthsTo(O.date)), wk = Math.ceil(O.target / (m * 4.345) / 100) * 100, cap = incomeShare(10) * 12 / 52 + 5000, hard = wk > cap;
-  const d = new Date(O.date + 'T12:00:00').toLocaleDateString('en-GB', {month:'short', year:'numeric'});
-  return `${ft(O.target)} by ${d} ≈ <b class="${hard ? 'late' : ''}">${ft(wk)} a week</b>${hard ? `<div class="fine">That is a lot for a week. A later date or a smaller amount makes it easier.</div>` : ''}`;
-}
 function renderOnb(){
   const i = O.i, step = STEPS[i], n = STEPS.length;
   const bars = STEPS.map((_,k) => `<i class="${k<=i?'on':''}"></i>`).join('');
@@ -2290,12 +2480,8 @@ function renderOnb(){
       <div class="flabel">Name</div>
       <div class="fld"><span class="t"><input id="onbName" maxlength="30" value="${esc(O.name)}" aria-label="Goal name"></span></div>
       <div class="flabel">Amount</div>
-      <div class="card"><div class="amt num" id="onbT">${ft(O.target)}</div>
-        <input class="rng" id="onbTR" type="range" min="20000" max="1500000" step="10000" value="${O.target}" aria-label="Amount you need">
-        <div class="chips" style="margin:6px 0 0">${[50000,150000,300000,1000000].map(v=>`<button class="chip ${O.target===v?'on':''}" data-onbt="${v}">${shortFt(v)}</button>`).join('')}</div></div>
-      <div class="flabel">By when?</div>
-      <div class="chips u-m0">${DATES.map(([v,l])=>`<button class="chip ${O.date===v?'on':''}" data-onbdate="${v}">${l}</button>`).join('')}</div>
-      <div class="note u-mt12" id="onbReal" role="status">${onbReality()}</div>`;
+      ${amountPicker('onb')}
+      ${monthPicker('onb')}`;
   } else if(step === 'how'){
     const m = monthsTo(O.date), proj = Math.round(onbMonthly() * m), p = Math.min(100, Math.round(proj / O.target * 100)), short = O.target - proj;
     const weeks = Math.max(1, m * 4.345), extra = short > 0 ? Math.ceil(short / weeks / 500) * 500 : 0;
@@ -2326,7 +2512,6 @@ function renderOnb(){
   $('#onb').innerHTML = `<div class="onb-top">${i>0 ?`<button class="onb-back" data-onbback aria-label="Back">${I('back',22)}</button>`:''}<div class="onb-bars">${bars}</div><button class="onb-skip" data-onbquit>Not now</button></div>
     <div class="onb-body">${body}</div><div class="onb-foot">${foot}</div>`;
   if(step === 'goal'){
-    $('#onbTR').addEventListener('input', e => { O.target = +e.target.value; $('#onbT').textContent = ft(O.target); $('#onbReal').innerHTML = onbReality(); });
     $('#onbName').addEventListener('input', e => { O.name = e.target.value; });
   }
   mountPig();
