@@ -62,6 +62,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
   <a href="#open">Open the prototype</a>
   <a href="#journey">User journey</a>
   <a href="#tab">Persely tab</a>
+  <a href="#analyst">Analyst and health score</a>
   <a href="#screens">Other screens</a>
   <a href="#rules">Rules and numbers</a>
   <a href="#persi">Persi and pushes</a>
@@ -137,6 +138,23 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
       <div class="box"><h3>Sheets</h3><ul><li><b>Add money</b>: goal chips, amount, from Junior or Savings account, streak hint</li><li><b>Withdraw</b>: instant, no fee, streak not affected; shared = only your part</li><li><b>Payday</b>: "+75,000 Ft arrived. Move 10% (7,500 Ft)?" with before → after</li><li><b>Payday rule / Weekly / Round-ups</b> settings</li></ul></div>
       <div class="box"><h3>Graduation screen</h3><p>"Congratulations, Anna" (or "Your Junior package ends soon"). Three steps: give employer your OTP account number, first salary arrives at OTP within 6 months, Perselys keep 3.0% for 12 months. Tip to raise the payday rule. <b>Keep my 3.0%</b> turns the badge into Graduate 3.0%.</p></div>
     </div>
+  </section>
+
+  <section id="analyst">
+    <h2>Analyst and health score</h2>
+    <p>New in the next version of the prototype. It answers the analyst promise in the opening script: Persi stops being only a tip card and helps the student plan the month.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Feature</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>Analyst switch</td><td>In <b>More</b>, next to Notifications. Off by default (opt-in). When on, the analyst reads the last 3 months of card payments and income.</td></tr>
+        <tr><td>My split</td><td>A card in the Persely tab, shown only when the analyst is on. Three buckets with live use, e.g. "Fun: 70% used, 12 days left". An edit sheet starts from the suggestion: Essentials 50% (37,500 Ft), Fun 40% (30,000 Ft), Saving 10% (7,500 Ft) of a 75,000 Ft salary. The <b>Saving bucket is the payday rule</b>, so the two always show the same number.</td></tr>
+        <tr><td>Recategorise</td><td>The student can move a transaction to another category, and the split and Persi's tips follow.</td></tr>
+        <tr><td>Financial health score</td><td>0–100, shown beside the streak with the change since last month. Four indicators, 25 points each, over a rolling 3 months: spends less than earns; no overdraft or failed payment; a buffer of about one month of spending; saves regularly toward a named goal.</td></tr>
+        <tr><td>Rewards</td><td>Earned on improvement or on staying within the split, never on balance size. For students: boosted partner cashback and goal-linked partner offers (a fee waiver would only make sense for OTP GO customers, 24–28, because Junior accounts are already free).</td></tr>
+        <tr><td>Score-change story</td><td>A slide in the monthly story: score last month, score now, what moved it.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note"><b>Proposal only:</b> the split percentages, the score design, the rewards and all rates are team proposals, not OTP facts. Demo order: switch on the analyst after the first deposit, then press <kbd>O</kbd> a month later to see the score and the reward.</p>
   </section>
 
   <section id="screens">
