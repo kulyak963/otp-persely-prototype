@@ -63,6 +63,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
   <a href="#journey">User journey</a>
   <a href="#tab">Persely tab</a>
   <a href="#analyst">Analyst and health score</a>
+  <a href="#bills">Bills, next month, Safe to spend</a>
   <a href="#screens">Other screens</a>
   <a href="#rules">Rules and numbers</a>
   <a href="#persi">Persi and pushes</a>
@@ -145,7 +146,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
     <div class="tbl"><table>
       <thead><tr><th>Feature</th><th>What it does</th></tr></thead>
       <tbody>
-        <tr><td>Analyst, offered in context</td><td>Off by default (opt-in). It is offered where it helps: on a late goal's page, on Persi's monthly tip on Home, under My monthly spending on Home ("See how it fits your income"), on the Monthly spending page, and with a switch in <b>More</b> (the switch turns it off in one tap). Every entry opens <b>one sheet</b>: what it measures, and the suggested Essentials 50% / Fun 40% / Saving 10% (37,500 / 30,000 / 7,500 Ft) from the last 3 months of card payments and income. <b>Turn on and use this split</b> (2 taps in all), or "Only turn it on, I will choose later", or change the percentages. Undo for 5 seconds.</td></tr>
+        <tr><td>Analyst, offered in context</td><td>Off by default (opt-in). It is offered where it helps: on a late goal's page, on Persi's monthly tip on Home, under My monthly spending on Home ("See how it fits your income"), on the Monthly spending page, and with a switch in <b>More</b> (the switch turns it off in one tap). Every entry opens <b>one sheet</b>. Its consent bullets: what it measures (card payments, transfers, direct debits and income on this OTP account; your regular bills and a guess for next month; your monthly split: Essentials, Fun and Saving, and one insight a month), and that the names of people you pay are only used to sort your payments. It then shows the suggested Essentials 50% / Fun 40% / Saving 10% (37,500 / 30,000 / 7,500 Ft) from the last 3 months of card payments and income. <b>Turn on and use this split</b> (2 taps in all), or "Only turn it on, I will choose later", or change the percentages. Undo for 5 seconds.</td></tr>
         <tr><td>My split</td><td>A card in the Persely tab, shown only when the analyst is on. Three buckets with live use, e.g. "Fun: 70% used, 12 days left". An edit sheet starts from the suggestion: Essentials 50% (37,500 Ft), Fun 40% (30,000 Ft), Saving 10% (7,500 Ft) of a 75,000 Ft salary. The <b>Saving bucket is the payday rule</b>, so the two always show the same number.</td></tr>
         <tr><td>Recategorise</td><td>With the analyst on, card payments in Transactions are tappable. The student can move one to another category, and the split and Persi's tips follow.</td></tr>
         <tr><td>Financial health score</td><td>0–100, shown as the bottom row of the Your habits card ("N of 100 · Financial health score · ▲ +N since last month"); tap it for the four indicators and the Rewards list. Four indicators, 25 points each, over a rolling 3 months: spends less than earns; no overdraft or failed payment; a buffer of about one month of spending; saves regularly toward a named goal.</td></tr>
@@ -154,6 +155,27 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
       </tbody>
     </table></div>
     <p class="note"><b>Proposal only:</b> the split percentages, the score design, the rewards and all rates are team proposals, not OTP facts. Demo order: turn on the analyst after the first deposit, then press <kbd>O</kbd> a month later. With the split accepted, Anna lands Essentials 36,900 of 37,500 Ft and Fun 27,000 of 30,000 Ft. Messages come one at a time: Persi's push "Reward earned…" (it also goes to the iPhone if <b>Also send to iPhone</b> is on), then the "Reward earned" sheet (score 50 → 75, 5% partner cashback next month), then the summary toast. The monthly story gets a score slide.</p>
+  </section>
+
+  <section id="bills">
+    <h2>Bills, next month and Safe to spend</h2>
+    <p>Financial analytics on top of the analyst (plan section 14). Everything here needs the analyst on, only tells and never blocks: no card is declined, nothing is held and no money moves without a tap. Only this OTP account is seen, so cash and money moved to other apps show as unknown.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Screen or sheet</th><th>What it does and where it opens</th></tr></thead>
+      <tbody>
+        <tr><td>Next month <span class="muted">(page)</span></td><td>Opens from the "Bills and next month" block in the Persely tab (under My split) and from the link row under My monthly spending on Home. A guess for the coming month from the last 3 finished months (recent months count more): expected income (regular salary and family transfer plus the lowest of the other incoming transfers), a bar and list that add up to 100% (Must-pay bills, Everyday essentials, Fun, Other, Saving, Left over), the categories with a small 3-month trend, and one-off payments that are left out (for example MediaMarkt, more than 3 times the usual). With fewer months it says "Rough estimate, gets better each month". Demo figures: about 138,000 Ft in, must-pay 61,000 Ft (44%), everyday essentials 36,900 Ft (27%), Fun 27,000 Ft (20%), Other 3,500 Ft, Saving 7,500 Ft, left over 2,100 Ft. These come from the demo history and are not real data.</td></tr>
+        <tr><td>Must-pay bills <span class="muted">(page)</span></td><td>Same block, and a link on Home. Regular payments found in the last 3 months: the same payee, one payment each month, 25 to 35 days apart, amounts within 15%. The demo has 6 must-pay bills (rent share 42,000 Ft, electricity 3,600, gas 2,400, internet 4,000, BKK student pass 3,450, phone 5,550 = 61,000 Ft); Netflix and Spotify are found too but count as Fun. The student confirms the list once and can switch each bill on or off. Each row has a status: Paid, Paid less than usual, Due in N days, Due today, Not paid yet.</td></tr>
+        <tr><td>Bill <span class="muted">(sheet)</span></td><td>Tap a bill: usual amount, due day, months seen, last payment, the must-pay switch, and <b>Pay now</b>, <b>Already paid elsewhere</b>, <b>Not due this month</b>.</td></tr>
+        <tr><td>Pay now <span class="muted">(sheet)</span></td><td>A prefilled transfer (payee, reference, amount from the last payment). It pays from the Bills pocket while that holds enough, otherwise from the Junior account. Nothing is sent until <b>Pay 42,000 Ft</b> is tapped. Undo for 5 seconds.</td></tr>
+        <tr><td>Safe to spend <span class="muted">(sheet)</span></td><td>Opens from the row under the balance on Home and from "Safe to spend now" in My split. <b>Formula: Junior account balance − bills still to pay (less what the Bills pocket covers) − the saving rule not yet moved this month − groceries kept free (the lowest of the last 3 months).</b> The Bills pocket balance is held apart and never counted. A guide, not a limit. Demo start: 87,450 − 5,550 − 3,500 − 18,560 = 59,840 Ft.</td></tr>
+        <tr><td>Payment <span class="muted">(sheet)</span></td><td>With the analyst on, tap a payment in Transactions: date, type, category, a "Repeats monthly" badge, the must-pay switch and Change category.</td></tr>
+        <tr><td>Bills first <span class="muted">(card and alert)</span></td><td>An orange card on Home and on the Persely tab when a must-pay bill is not paid after its date window, or one is due within 7 days and the balance does not cover it: "Bills first: 47,550 Ft still to pay", with Pay now, All bills, Already paid elsewhere, Not due this month. The Fun bar in My split says "Bills first: … to pay". Persi says the same line, and one push a day at most after a Fun card payment. When the bills are paid Persi says "Bills paid. Fun is back on."</td></tr>
+        <tr><td>Payday: Bills first <span class="muted">(sheet)</span></td><td>When a bill is open, the payday sheet (key <kbd>P</kbd>) shows Salary +75,000 Ft, Bills still to pay −47,550 Ft, Saving rule −7,500 Ft and Left for Fun 19,950 Ft, with <b>Move 61,000 Ft to Bills pocket</b> and the usual <b>Move 7,500 Ft</b> to the goal.</td></tr>
+        <tr><td>Bills pocket</td><td>A pot for bills only on the Must-pay bills page: no goal, no interest, held outside the Junior balance. Moving money in is an own-account move (it is not spending and not income). "Move 61,000 Ft to Bills pocket" is a month of must-pay bills; it can be moved back at any time.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note"><b>Nothing is counted twice:</b> every transaction is either income, spending in one category, an own-account move (Persely, Savings, Bills pocket, interest), cash or a top-up to another app. Own-account moves are never income and never spending. The self-check <code>window.__checkAnalytics()</code> in the browser console runs the checks: all must pass.</p>
+    <p class="note"><b>Demo data and proposals:</b> the 3-month history behind these screens (August to October, about 60 payments a month, and the bills) is made-up demo data, the same on every Reset. The projection weights, the 7-day and 15% limits, the groceries rule and the Bills pocket are team proposals, not OTP facts and not bank data.</p>
   </section>
 
   <section id="screens">
@@ -189,7 +211,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
 
   <section id="persi">
     <h2>Persi and notifications</h2>
-    <p>Persi is our own 3D version of the green Persely piggy (three.js). It appears in the tab header, the update pop-up, the onboarding summary (a coin drops in), the hint strips on the Persely tab, the graduation screen, the story and the Home card. It speaks in one short, friendly line, without slang. Persely notifications are signed "Persi · Persely". The +1 month push "Reward earned: …" comes before the reward sheet and reaches the iPhone if <b>Also send to iPhone</b> is on. On the laptop the banner shows Persi's portrait; a real iPhone always shows the app icon.</p>
+    <p>There are <b>ten notification keys</b>: <kbd>1</kbd> to <kbd>9</kbd> and <kbd>P</kbd>. Persi is our own 3D version of the green Persely piggy (three.js). It appears in the tab header, the update pop-up, the onboarding summary (a coin drops in), the hint strips on the Persely tab, the graduation screen, the story and the Home card. It speaks in one short, friendly line, without slang. Persely notifications are signed "Persi · Persely". The +1 month push "Reward earned: …" comes before the reward sheet and reaches the iPhone if <b>Also send to iPhone</b> is on. On the laptop the banner shows Persi's portrait; a real iPhone always shows the app icon.</p>
     <div class="tbl"><table>
       <thead><tr><th>Key</th><th>Notification</th><th>Opens</th></tr></thead>
       <tbody>
@@ -201,7 +223,8 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
         <tr><td><kbd>6</kbd></td><td>Junior package ends in 30 days… keep 3.0%</td><td>Graduation screen</td></tr>
         <tr><td><kbd>7</kbd></td><td>Your story is ready</td><td>Story</td></tr>
         <tr><td><kbd>8</kbd></td><td>New discount at Pizzeria Roma</td><td>Discounts</td></tr>
-        <tr><td><kbd>P</kbd></td><td>Salary's in: +75,000 Ft. Move 7,500 Ft to …?</td><td>Payday sheet</td></tr>
+        <tr><td><kbd>9</kbd></td><td>Bills first: X Ft still to pay. Safe to spend is now Y Ft. (or "All your must-pay bills are paid. Fun is back on.")</td><td>Persely</td></tr>
+        <tr><td><kbd>P</kbd></td><td>Salary's in: +75,000 Ft. Move 7,500 Ft to …? (with a bill open: "Bills first: 47,550 Ft still to pay. Then Persely.")</td><td>Payday sheet</td></tr>
       </tbody>
     </table></div>
   </section>
@@ -214,10 +237,11 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
         <tr><td><kbd>U</kbd></td><td>Update day: pop-up and onboarding from zero</td><td><kbd>J</kbd></td><td>8 weeks later: payday rule on, streak 8, friends</td></tr>
         <tr><td><kbd>P</kbd></td><td>Payday with the 10% question</td><td><kbd>C</kbd></td><td>Card purchase: coffee with round-up</td></tr>
         <tr><td><kbd>D</kbd></td><td>Dóri joins the shared Persely</td><td><kbd>N</kbd></td><td>Next week (uses a skip if the week was open)</td></tr>
-        <tr><td><kbd>O</kbd></td><td>+1 month: salary, rules, round-ups, interest, Home tip. Analyst on and split accepted: "Reward earned" sheet (score 50 → 75, 5% partner cashback next month, up to 2,000 Ft) and a score slide in the story</td><td><kbd>E</kbd></td><td>End of semester: 2 months, semester story</td></tr>
+        <tr><td><kbd>O</kbd></td><td>+1 month: salary, rules, round-ups, interest, Home tip. Analyst on and split accepted: "Reward earned" sheet (score 50 → 75, 5% partner cashback next month, up to 2,000 Ft) and a score slide in the story. With the analyst on, the family transfer arrives on the 1st and the must-pay bills are paid up to the 14th (the phone, due on the 20th, is still to come)</td><td><kbd>E</kbd></td><td>End of semester: 2 months, semester story</td></tr>
         <tr><td><kbd>G</kbd></td><td>Junior ends / graduation screen</td><td><kbd>M</kbd></td><td>Open the story</td></tr>
         <tr><td><kbd>T</kbd></td><td>Persi hints again (button "Persi hints again")</td><td><kbd>L</kbd></td><td>Lock / unlock phone (pushes land on the lock screen)</td></tr>
-        <tr><td><kbd>H</kbd></td><td>Hide the panel</td><td><kbd>1–8</kbd></td><td>Notifications (see above)</td></tr>
+        <tr><td><kbd>H</kbd></td><td>Hide the panel</td><td><kbd>1–9</kbd></td><td>Notifications (see above)</td></tr>
+        <tr><td><kbd>B</kbd></td><td>Rent not paid: takes back this month's rent payment (turns the analyst on if it is off), shows the Bills first card, Persi's line and a push. <b>Pay now</b> clears it. Then <kbd>P</kbd> shows the Bills first payday sheet</td><td></td><td></td></tr>
       </tbody>
     </table></div>
     <p>The panel also has Delay (0/3/10 s), <b>Also send to iPhone</b> (real push), Sound and <b>Reset app</b> (back to "8 weeks later"); "Demo: 8 weeks later" lives here and on <kbd>J</kbd>, no longer in More. The analyst is switched on from its offers (late goal, Home, Monthly spending, More), not with a key. With it on, reaching a goal opens a goal-linked partner offer (Summer holiday: travel partner, 8% back on one booking, up to 10,000 Ft; other goals: 5% boosted cashback, up to 2,000 Ft). On the phone: long-press Anna's picture on Home for the same controls. The step-by-step presentation (about 6 minutes) is in the <a href="https://claude.ai/artifact/WnAXG26ZGs2F1NbKHHckYc">Persely demo script</a>.</p>

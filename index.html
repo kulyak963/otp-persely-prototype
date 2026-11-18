@@ -936,8 +936,9 @@ function demoHistory(){
     hist.push(mk(ym, 1, 'BKK ZRT. DIÁKBÉRLET', 'Direct debit', -3450, 'bus', 'bérlet ' + mn), mk(ym, 2, 'SZABÓ DÓRA', 'Transfer out', -42000, 'wallet', 'albérlet ' + mn),
       mk(ym, 9, 'DIGI KFT.', 'Direct debit', -4000, 'wallet', 'internet'), mk(ym, 12, 'MVM NEXT ENERGIAKERESKEDŐ', 'Direct debit', -BILL.elec[i], 'wallet', 'áram'),
       mk(ym, 13, 'FŐGÁZ ZRT.', 'Direct debit', -BILL.gas[i], 'wallet', 'gáz'), mk(ym, 20, 'YETTEL MAGYARORSZÁG', 'Direct debit', -BILL.phone[i], 'wallet', 'telefon'));
-    hist.push(mk(ym, 10, 'PERSELY DEPOSIT', 'Between my accounts', -4000, 'piggy'), mk(ym, 7, 'ATM WITHDRAWAL OTP', 'Cash withdrawal', -2000, 'money'), mk(ym, 24, 'ATM WITHDRAWAL OTP', 'Cash withdrawal', -1000, 'money'));
+    hist.push(mk(ym, 10, 'PERSELY DEPOSIT', 'Between my accounts', -4000, 'piggy'));
   });
+  hist.push(mk('2026-09', 7, 'ATM WITHDRAWAL OTP', 'Cash withdrawal', -1000, 'money'));   // the only cash withdrawal: keeps "Other" small, so the default projection leaves a little
   hist.push(mk('2026-08', 6, 'TRANSFER TO SAVINGS ACCOUNT', 'Between my accounts', -5000, 'piggy'), mk('2026-08', 17, 'KOVÁCS BENCE', 'Instant transfer', 3000, 'money', 'vacsora'),
     mk('2026-08', 19, 'TÓTH LILI', 'Instant transfer', -2000, 'money', 'mozi'),
     mk('2026-09', 22, 'FEKETE MÁRK', 'Instant transfer', 5000, 'money', 'jegy'), mk('2026-09', 11, 'SZŐKE ANNA', 'Instant transfer', -2000, 'money', 'ebéd'),
@@ -971,8 +972,9 @@ function billName(cat, key, kind){
   for(const [re, l] of BILL_LABELS) if(re.test(key)) return l;
   return cat === 'housing' ? 'Rent share' : titleCase(key);
 }
-// a payment is recurring when the same payee has exactly one payment in each month it appears, in at least 2 months, 25-35 days apart, amounts within 15% of the latest.
+// a payment is recurring when the same payee has exactly one payment in each month it appears, in at least 2 neighbouring months of the window (consecutive calendar months: 25-35 days apart), amounts within 15% of the latest.
 // Looks at the last 3 finished months (S.closedYm) plus the current month so far. Returns {bills:[outgoing], income:[incoming]}, each {id,key,kind,cat,name,exp,day,win,months,last}
+const ymOrd = ym => +ym.slice(0, 4) * 12 + +ym.slice(5);
 function detectRecurring(st = S){
   const cur = billToday(st).ym, closed = (st.closedYm || []).slice(-3), months = closed.includes(cur) ? closed : closed.concat(cur), G = {};
   st.tx.forEach(t => {
@@ -986,7 +988,8 @@ function detectRecurring(st = S){
     arr.sort((a, b) => absDay(b.w.ym, b.w.day) - absDay(a.w.ym, a.w.day));
     const L = Math.abs(arr[0].t.a); let n = 1, prev = arr[0];
     for(let i = 1; i < arr.length; i++){ const e = arr[i], gap = absDay(prev.w.ym, prev.w.day) - absDay(e.w.ym, e.w.day);
-      if(gap < 25 || gap > 35 || Math.abs(Math.abs(e.t.a) - L) / L > .15) break; n++; prev = e; }
+      const between = months.some(m => m > e.w.ym && m < prev.w.ym);   // a window month in between with no payment breaks the chain; months outside the window (the simulated +1 month skips November) do not
+      if(between || (ymOrd(prev.w.ym) - ymOrd(e.w.ym) === 1 && (gap < 25 || gap > 35)) || Math.abs(Math.abs(e.t.a) - L) / L > .15) break; n++; prev = e; }
     if(n < 2) return;
     const kind = gk.slice(0, 2) === 'in' ? 'in' : 'out', key = gk.slice(gk.indexOf('|') + 1), days = arr.slice(0, n).map(x => x.w.day).sort((a, b) => a - b), cat = classify(arr[0].t, st);
     (kind === 'in' ? res.income : res.bills).push({id:key.toLowerCase().replace(/[^a-z0-9]+/g, '-'), key, kind, cat, name:billName(cat, key, kind), exp:L, day:days[Math.floor(days.length / 2)], win:5, months:n, last:arr[0].w});
@@ -1120,6 +1123,17 @@ function __checkAnalytics(){
   ok('classify: merchant, card icon, reference text, Other', T({n:'LIDL MAGYARORSZÁG', s:'Card payment', a:-1, ic:'cart'}, 'groceries') && T({n:'SZABÓ DÓRA', s:'Transfer out', a:-1, ref:'albérlet'}, 'housing') && T({n:'XYZ BOLT', s:'Card payment', a:-1, ic:'food'}, 'transport') && T({n:'X', s:'Card payment', a:-1, ic:'food'}, 'food') && T({n:'TÓTH LILI', s:'Instant transfer', a:-1, ref:'mozi'}, 'other') && T({n:'PERSELY DEPOSIT', s:'Between my accounts', a:-1}, 'saving'));
   const c8 = clone(); c8.catRules = {'WOLT HUNGARY':'groceries'}; const w = {n:'WOLT HUNGARY', s:'Card payment', a:-1, ic:'food'};
   ok('classify: payee rule beats merchant, own choice beats payee rule', classify(w, c8) === 'groceries' && classify({...w, cat:'fun'}, c8) === 'fun');
+  // step 10: proportions, bills before/after +1 month, alert on/off, nothing counted twice, Safe to spend without the pocket
+  const sB = clone(); sB.tx = sB.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); sB.payday.on = true;
+  ok('proportions add to 100% in the default state and after key B (rent not paid)', sum(project(F).pct) === 100 && sum(project(sB).pct) === 100 && project(sB).pct.left >= 0, [project(F).pct, project(sB).pct]);
+  const pd = clone(); pd.payday.on = true; const pdp = project(pd);
+  ok('main demo state (payday rule on): small positive amount left, no deficit', pdp.deficit === 0 && pdp.left >= 2000 && pdp.left <= 4000 && pdp.saving === 7500 && sum(pdp.pct) === 100, [pdp.left, pdp.deficit, pdp.pct]);
+  const detB = detectRecurring(sB); ok('after key B: all 8 demo bills and both income lines are still found', Object.keys(want).every(k => detB.bills.some(b => b.key === k && b.exp === want[k])) && detB.income.length === 2, detB.bills.map(b => b.key));
+  ok('alert: default OFF, after key B ON, after paying the rent OFF', !billsFirst(F).on && billsFirst(sB).on && (() => { const x = JSON.parse(JSON.stringify(sB)); x.tx.unshift({ym:'2026-11', day:14, d:'14 November', n:'SZABÓ DÓRA', s:'Transfer out', a:-42000, ic:'wallet'}); return !billsFirst(x).on; })());
+  const sP = clone(), spB = safeToSpend(sP); sP.accounts.find(a => a.id === 'junior').v -= 61000; sP.billsPocket = {on:true, bal:61000}; sP.tx.unshift({ym:'2026-11', day:14, d:'Today', n:'BILLS POCKET', s:'Between my accounts', a:-61000, ic:'wallet'});
+  const spA = safeToSpend(sP), uP = monthUse('2026-11', sP), uF = monthUse('2026-11', F);
+  ok('Safe to spend excludes the pocket: = Junior balance - unpaid bills not covered by the pocket - rule - groceries', spA.safe === balanceOf(sP) - spA.unpaidBills - spA.savingRule - spA.groceries && spA.safe === spB.safe - 61000 + 5550 && spA.pocket === 61000, [spB, spA]);
+  ok('Bills pocket move is an own-account row: income and spending unchanged, nothing counted twice', uP.income === uF.income && uP.spendTotal === uF.spendTotal && uP.own === uF.own + 61000 && uP.income - uP.spendTotal - uP.own - uP.cash - uP.topup === uP.sumA, [uP, uF]);
   // steps 6-9 and 12 run against a copy of the app state, then the real state is put back
   const keep = S; try{
     S = clone(); S.analyst.on = true; S.onboarded = true; ok('suggestSplit comes from the projection: 50 / 40 / 10', JSON.stringify(suggestSplit()) === JSON.stringify({ess:50, fun:40, save:10}), suggestSplit());
@@ -1133,6 +1147,11 @@ function __checkAnalytics(){
     const uu = splitUse(), nb = billsFirst(), fam = S.tx.find(t => t.n === 'KISS ISTVÁN' && t.ym === ymAt(1));
     ok('+1 month: Essentials 36 900 of 37 500, Fun 27 000 of 30 000, score 50 -> 75', uu.ess === 36900 && uu.fun === 27000 && splitAmt(50) === 37500 && splitAmt(40) === 30000 && scoreNow().t === 75 && scorePrev().t === 50, [uu, scoreNow().t]);
     ok('+1 month: family transfer on the 1st, bills paid on their days, only the phone still to come', fam && fam.a === 60000 && fam.day === 1 && nb.total === 5550 && nb.count === 1 && !nb.on && S.tx.filter(t => t.ym === ymAt(1) && t.a < 0 && txType(t) !== 'card' && txType(t) !== 'own').length === 5, [nb.total, nb.count]);
+    ok('after +1 month: all 8 demo bills found again, income still salary 75 000 + family 60 000, projection consistent', (() => { const d = detectRecurring(), pj = project(); return Object.keys(want).every(k => d.bills.some(b => b.key === k && b.exp === want[k])) && d.income.length === 2 && d.income.some(i => i.key === 'SALARY' && i.exp === 75000) && d.income.some(i => i.key === 'KISS ISTVÁN' && i.exp === 60000) && pj.income.recurring === 135000 && pj.mustPay === 61000 && pj.deficit === 0 && pj.left > 0; })(), detectRecurring().bills.map(b => b.key));
+    ok('after +1 month: proportions add to 100%', sum(project().pct) === 100, project().pct);
+    ok('after +1 month: nothing counted twice (every month in the window)', ['2026-09', '2026-10', '2026-11', '2026-12'].every(ym => { const u = monthUse(ym), all = S.tx.filter(t => txWhen(t).ym === ym), t = all.reduce((a, x) => a + x.a, 0); return u.count === all.length && u.income - u.spendTotal - u.own - u.cash - u.topup === t; }));
+    S = clone(); S.analyst.on = true; S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); const was = bfNow().on, pr = payBill('szab-d-ra');
+    ok('alert in the app: on after key B, off after Pay now rent', was && !pr.err && !bfNow().on && bfCard() === '', [was, pr]);
   } finally { S = keep; renderAll(); }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   const bad = out.filter(r => !r.pass);
