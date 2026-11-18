@@ -40,6 +40,7 @@ html{font-size:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 html,body{margin:0;height:100%;font-family:var(--font);color:var(--ink);-webkit-font-smoothing:antialiased}
 body{font-size:var(--fs-m)}
 body{background:var(--bg)}
+@media (min-width:441px){body{background:#E2E5EB}}   /* wider than a phone, no frame: the app stays phone-wide, centred */
 /* app feel: the page itself never moves or bounces; only the lists inside scroll */
 html,body{overflow:hidden;overscroll-behavior:none}
 body{position:fixed;inset:0;bottom:auto;height:var(--app-h,100%);width:100%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -52,13 +53,13 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stro
 /* stage */
 .stage{min-height:var(--app-h,100%);display:flex;align-items:center;justify-content:center}
 /* --app-h = real screen height (set by JS; iPhone full-screen mode reports a too-small 100dvh) */
-.phone{position:relative;width:100%;height:var(--app-h,100dvh);overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+.phone{position:relative;width:100%;max-width:440px;margin:0 auto;height:var(--app-h,100dvh);overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
 .sbar,.hw,.homebar,.caption{display:none}
 .device,.bezel{display:contents}
 .safe-top{padding-top:env(safe-area-inset-top)}
 
 /* ---------- desktop: realistic iPhone body ---------- */
-@media (min-width:760px) and (min-height:700px) and (hover:hover){
+@media (min-width:760px) and (hover:hover){
   body{background:radial-gradient(ellipse at 50% 35%,#F7F8FA 0%,#E2E5EB 55%,#C9CED7 100%)}
   .stage{height:100vh;flex-direction:column}
   .device{display:block;position:relative;flex:none;width:450px;height:952px;padding:4px;border-radius:78px;
@@ -90,7 +91,7 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stro
 :root{--top:env(safe-area-inset-top,0px)}
 .safe-top{padding-top:var(--top)}
 .page{padding-top:var(--top)}
-@media (min-width:760px) and (min-height:700px) and (hover:hover){.safe-top,.page{padding-top:0}}
+@media (min-width:760px) and (hover:hover){.safe-top,.page{padding-top:0}}
 
 /* layers */
 .body{flex:1;position:relative;min-height:0}
@@ -348,7 +349,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* ---------- onboarding in the Persely tab ---------- */
 .onb{position:absolute;inset:0;z-index:72;background:var(--bg);display:none;flex-direction:column;padding-top:var(--top)}
 .onb.on{display:flex}
-@media (min-width:760px) and (min-height:700px) and (hover:hover){.phone .onb{top:56px;padding-top:0}}
+@media (min-width:760px) and (hover:hover){.phone .onb{top:56px;padding-top:0}}
 .onb-top{display:flex;align-items:center;gap:12px;padding:14px 18px 6px;flex:none}
 .onb-skip::before,.onb-back::before{content:"";position:absolute;inset:-12px -8px}
 .onb-back{position:relative;color:var(--green-i);display:flex}
@@ -361,7 +362,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .onb-body h2{font-size:var(--fs-xl);margin:6px 0 8px;letter-spacing:-.3px;line-height:1.2}
 .onb-body .lead{font-size:var(--fs-m);color:var(--ink2);line-height:1.5;margin:0 0 16px}
 .onb-foot{padding:10px 20px calc(env(safe-area-inset-bottom) + 16px);flex:none}
-@media (min-width:760px) and (min-height:700px) and (hover:hover){.onb-foot{padding-bottom:34px}}
+@media (min-width:760px) and (hover:hover){.onb-foot{padding-bottom:34px}}
 .onb .pig3d{margin:0 auto}
 .opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh);border:2px solid transparent}
 .opt.on{border-color:var(--green);background:#F7FCF4}
@@ -396,7 +397,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .st-sub{font-size:1.125rem;line-height:1.42;max-width:330px}
 .st-body .pig3d{margin:18px 0 0}
 .st-foot .btn+.btn{margin-top:8px}
-@media (min-width:760px) and (min-height:700px) and (hover:hover){.phone .story{padding-top:70px}.phone .st-bars{top:66px}.phone .st-x{top:78px}}
+@media (min-width:760px) and (hover:hover){.phone .story{padding-top:70px}.phone .st-bars{top:66px}.phone .st-x{top:78px}}
 
 /* ---------- fake iOS notification (for the laptop demo) ---------- */
 .nbanner{position:absolute;left:8px;right:8px;top:calc(var(--top) + 6px);z-index:85;display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:22px;
@@ -428,11 +429,11 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .phone.locked .sbar svg{fill:#fff}
 .phone.locked .sbar svg rect[stroke]{stroke:#fff}
 .phone.locked .homebar{background:#fff}
-@media (min-width:760px) and (min-height:700px) and (hover:hover){.nbanner{top:54px}.lock{padding-top:84px}.lock .lhint{bottom:22px}}
+@media (min-width:760px) and (hover:hover){.nbanner{top:54px}.lock{padding-top:84px}.lock .lhint{bottom:22px}}
 
 /* ---------- small demo panel next to the phone (laptop only) ---------- */
 .demo-panel,.demo-show{display:none}
-@media (min-width:760px) and (min-height:700px) and (hover:hover){
+@media (min-width:760px) and (hover:hover){
   .demo-panel{display:flex;flex-direction:column;gap:5px;position:fixed;left:18px;top:50%;transform:translateY(-50%);width:186px;padding:10px;border-radius:16px;max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;
     background:rgba(255,255,255,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 6px 24px rgba(30,40,60,.12);z-index:200}
   .demo-panel.hidden{display:none}
@@ -509,9 +510,6 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .wn-ic{width:56px;height:56px;border-radius:50%;background:var(--green-l);color:var(--green-i);display:flex;align-items:center;justify-content:center;margin:16px auto 10px}
 .wn-grid.three{grid-template-columns:repeat(3,1fr);gap:8px}
 .wn-grid.three button{padding:12px 4px;font-size:0.78125rem}
-.wn-grid + .wn-else{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;margin-bottom:2px;border-radius:16px;background:var(--bg);font-weight:600;font-size:0.875rem;color:var(--ink)}
-.wn-else svg{color:var(--green-i)}
-.wn-else:active{background:var(--green-l)}
 .fr .nudge::after{content:"";position:absolute;inset:-7px -3px}
 .fr .nudge{position:relative;width:auto;height:30px;padding:0 12px;border-radius:15px;font-size:0.78125rem;font-weight:600;color:var(--green-t);background:var(--green-l)}
 /* merged savings features: money-in list, verification, shared goals, share card */
@@ -858,7 +856,7 @@ const fresh = () => ({
   rankBy:'streak', toured:true, hints:{}, monthSaved:23500, months:0, period:'November', interest:0, roundCount:0, roundSum:0, insight:false, insightUsed:false,
   goals:[
     {id:'holiday', name:'Summer holiday', ic:'plane', pace:6000, date:'2027-06-01'},
-    {id:'ps5', name:'PS5 + GTA 6', ic:'game', saved:46000, target:230000, pace:12000, date:'2027-12-01'},
+    {id:'ps5', name:'PS5 + GTA VI', ic:'game', saved:46000, target:230000, pace:12000, date:'2026-11-19'},
     {id:'fest', name:'Festival ticket', ic:'fun', saved:30000, target:45000, pace:5000, date:'2027-07-01'}
   ],
   accounts:[
@@ -879,6 +877,7 @@ const fresh = () => ({
   ]
 });
 let S; try{ S = JSON.parse(localStorage.getItem(KEY)) || fresh(); }catch(e){ S = fresh(); }
+try{ (S.goals || []).forEach(g => { if(g.id === 'ps5' && g.name === 'PS5 + GTA 6'){ g.name = 'PS5 + GTA VI'; g.date = '2026-11-19'; } }); }catch(e){}   // older saved demo state
 if(!S.analyst) S.analyst = fresh().analyst;   // state saved before the analyst existed
 if(S.txMark === undefined) S.txMark = 0;
 if(!S.scoreHist) S.scoreHist = fresh().scoreHist;   // state saved before the health score existed
@@ -1082,17 +1081,42 @@ const fromName = id => acc(id).n;
 const avBg = c => { const m = /^#([0-9a-f]{6})$/i.exec(c || ''); if(!m) return c; let v = [0,2,4].map(i => parseInt(m[1].substr(i,2),16)); const L = a => { const f = x => { x /= 255; return x <= .03928 ? x/12.92 : Math.pow((x+.055)/1.055, 2.4); }; return .2126*f(a[0]) + .7152*f(a[1]) + .0722*f(a[2]); };
   for(let i = 0; i < 40 && 1.05/(L(v)+.05) < 4.6; i++) v = v.map(x => Math.round(x*.95)); return '#' + v.map(x => x.toString(16).padStart(2,'0')).join(''); };   // white initials on an avatar need 4.5:1
 const avatar = (m, s=26) => `<span class="fav" style="background:${avBg(m.c)};width:${s}px;height:${s}px;font-size:${Math.round(s*.42)}px">${m.me ? 'KA' : m.n[0]}</span>`;
+/* ---------- a goal with an exact day (GTA VI launch day) that is close or past ----------
+   Dates are normally the 1st of a month. A goal with another day is an exact deadline. Within 14 days of it (or after it) a weekly top-up can no longer
+   help, so the goal is "behind": no forecast month, no weekly fix. Instead: a new date (with a small weekly top-up if needed) or a lump sum from Junior.
+   "Today" for the deadline is the real date plus the demo months (key O), so pressing O moves past it. */
+const demoNow = () => { const d = new Date(); d.setMonth(d.getMonth() + (S.months || 0)); return d; };
+const isExact = g => !!g.date && g.date.slice(8) !== '01';
+const toGo = g => Math.max(0, gTarget(g) - gSaved(g));
+const daysTo = g => { const t = demoNow(); t.setHours(12,0,0,0); return Math.round((new Date(g.date + 'T12:00:00') - t) / 864e5); };
+const isTight = g => !g.shared && !isEur(g) && isExact(g) && toGo(g) > 0 && daysTo(g) <= 14;
+const dueTxt = g => { const n = daysTo(g); return n < 0 ? 'Deadline passed' : n === 0 ? 'Due today' : n === 1 ? 'Due tomorrow' : `Due in ${n} days`; };
 const forecast = g => { if(isEur(g)) return 'Euro · no 3.0% rate'; if(g.shared) return `With ${g.members.filter(m=>!m.me).map(m=>m.n).join(', ') || 'nobody yet'} · you put in ${ft(mine(g))}`;
+  if(isTight(g)) return daysTo(g) < 0 ? `<span class="late">Deadline passed · ${ft(toGo(g))} to go</span>` : `<span class="late">Behind · ${dueTxt(g).toLowerCase()}</span>`;
   const m = gMonths(g); return m === 0 ? 'Goal reached' : m < 0 ? 'Add a rule to see the date' : isLate(g) ? `<span class="late">${inMonths(m)} · late</span>` : inMonths(m); };
 
 /* ---------- a late goal always gets a fix ----------
    lateFix(g): the smallest weekly top-up (500 Ft steps) that gets the goal there by its date. Applied to the weekly transfer that feeds this goal. */
 function bumpWeekly(g, x){ if(S.weekly.on && S.ruleGoal === g.id) S.weekly.amt += x; else g.weekly = (g.weekly || 0) + x; }
 function lateFix(g){
-  if(g.shared || isEur(g) || !isLate(g)) return 0;
+  if(g.shared || isEur(g) || isTight(g) || !isLate(g)) return 0;
   let x = 0; while(isLate(g) && x < 100000){ bumpWeekly(g, 500); x += 500; }
   bumpWeekly(g, -x); return x;
 }
+// a goal that is behind: the nearest month from which a weekly top-up of at most 2 000 Ft gets it there (tried on the goal, then put back)
+function behindFix(g){
+  if(!isTight(g)) return null;
+  const keep = g.date, b = demoNow(), i0 = b.getFullYear() * 12 + b.getMonth(); let out = null;
+  for(let n = 6; n <= 36 && !out; n++){
+    g.date = pkIdxDate(i0 + n); let x = 0;
+    while(isLate(g) && x < 2000){ bumpWeekly(g, 500); x += 500; }
+    const ok = !isLate(g); bumpWeekly(g, -x);
+    if(ok) out = {date:g.date, x};
+  }
+  g.date = keep; return out;
+}
+const lumpOf = g => { const v = Math.min(toGo(g), Math.floor((acc('junior').v - 20000) / 5000) * 5000); return v >= 10000 ? v : 0; };   // keeps 20 000 Ft in Junior
+const behindLabel = f => `New date: ${pkMonthShort(f.date)}${f.x ? ` · +${ft(f.x)} a week` : ''}`;
 const fixLabel = x => `+${ft(x)} a week → on time`;
 // progress shown for a goal: never "0%" when money is in it, and a bar you can see (first step)
 function pctOf(g){ const s = gSaved(g), r = s / gTarget(g) * 100, p = Math.min(100, Math.round(r));
@@ -1135,6 +1159,7 @@ function persiSays(){
   if(!S.onboarded) return {mood:'happy', text:"Hi, I'm Persi. Let's pick a goal."};
   if(!S.savedWeek && S.streak > 0) return {mood:'concerned', text:'Any amount by Sunday keeps your streak.'};
   if(!S.savedWeek) return {mood:'happy', text:'Any amount this week starts your streak.'};
+  const bh = S.goals.find(isTight); if(bh) return {mood:'concerned', text:`${bh.name} is behind. That is okay, a new date can fix it.`};
   if(pctOf(g).first) return {mood:'proud', text:`First ${money(g, gSaved(g))} is in. ${money(g, gTarget(g) - gSaved(g))} to go.`};
   return {mood:'proud', text:`Week done. ${g.name}: ${pct}%.`};
 }
@@ -1221,11 +1246,11 @@ function vHub(){
   ${S.onboarded ? '' : `<button class="setup" data-onbstart><span class="u-ico-g">${I('star',24)}</span><span class="u-fx1"><b>Set a goal and a saving rule</b><small>Takes 1 minute</small></span><span class="u-ico-g">${I('chev',20)}</span></button>`}
 
   ${hintHTML('goals')}<div class="sec" data-tour="goals"><span>Goals</span><a data-sheet="newgoal">New ${I('plus',16)}</a></div>
-  ${S.goals.map(g=>{ const s=gSaved(g), t=gTarget(g), pc=pctOf(g), fx=lateFix(g);
+  ${S.goals.map(g=>{ const s=gSaved(g), t=gTarget(g), pc=pctOf(g), fx=lateFix(g), bf=behindFix(g);
     const attr = `data-goal="${g.id}"`;
     const right = g.shared ? `<span class="avs">${g.members.map(m=>avatar(m,24)).join('')}</span>` : `<b class="u-c-gt">${pc.txt}</b>`;
     const sub = pc.first && !g.shared ? `${money(g,s)} in · first step · ${forecast(g)}` : `${money(g,s)} of ${money(g,t)} · ${forecast(g)}`;
-    return `<div class="gwrap ${fx ? 'fx' : ''}"><button class="card goal" ${attr}><div class="u-rowc"><span class="gic">${I(g.shared ? 'user' : isEur(g) ? 'euro' : g.ic,22)}</span><span class="u-fx0"><b class="u-bk-m">${esc(g.name)}</b><span class="num u-k-sm">${sub}</span></span>${right}</div><div class="prog" style="margin:10px 0 0"><i style="width:${pc.w}%"></i></div></button>${fx ? `<button class="gfix" data-latefix="${g.id}">${fixLabel(fx)}</button>` : ''}</div>`; }).join('')}
+    return `<div class="gwrap ${fx || bf ? 'fx' : ''}"><button class="card goal" ${attr}><div class="u-rowc"><span class="gic">${I(g.shared ? 'user' : isEur(g) ? 'euro' : g.ic,22)}</span><span class="u-fx0"><b class="u-bk-m">${esc(g.name)}</b><span class="num u-k-sm">${sub}</span></span>${right}</div><div class="prog" style="margin:10px 0 0"><i style="width:${pc.w}%"></i></div></button>${fx ? `<button class="gfix" data-latefix="${g.id}">${fixLabel(fx)}</button>` : bf ? `<button class="gfix" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}</div>`; }).join('')}
 
   ${hintHTML('auto')}<div class="sec" data-tour="auto"><span>Money in</span></div>
   <div class="card lst">
@@ -1324,13 +1349,13 @@ const PAGES = {
   // one Persely: balance, forecast against its date, its rate, the rules that feed it, members (shared) and activity
   goal:{title:()=> (goalById(S._detail) || {name:'Persely'}).name, html:()=>{
     const g = goalById(S._detail); if(!g) return '';
-    const s = gSaved(g), t = gTarget(g), pc = pctOf(g), m = gMonths(g), late = isLate(g), fx = lateFix(g);
+    const s = gSaved(g), t = gTarget(g), pc = pctOf(g), m = gMonths(g), late = isLate(g), fx = lateFix(g), tight = isTight(g), bf = behindFix(g), lump = tight ? lumpOf(g) : 0;
     const sw = swBtn;
     let html = `<div class="card u-mt6">${g.shared ? `<span class="pill ok">Shared Persely · ${plural(g.members.length,'member')}</span>` : ''}
       <div class="hero-v num" style="margin-top:${g.shared?8:0}px">${money(g,s)} <small class="k u-fs-14b">of ${money(g,t)}</small></div>
       <div class="prog" style="margin:8px 0 6px;height:10px"><i style="width:${pc.w}%"></i></div>
-      <div style="display:flex;justify-content:space-between;gap:8px" class="k"><span>${pc.first ? 'First step · ' : ''}${pc.txt} saved</span><span>Goal date: ${g.date ? fDate(g.date) : '—'}</span></div>
-      ${!g.shared && !isEur(g) ? `<div class="note" style="margin:12px 0 0;${late ? 'background:#FFF1E6' : ''}">${m === 0 ? '<b>Goal reached.</b> Take it out or start a new goal.' : m < 0 ? 'Add a rule below to see when you get there.' : `At your pace (about ${ft(Math.round(paceOf(g)/100)*100)} a month) you get there in <b>${inMonths(m)}</b>${late ? ', <b>after your goal date</b>.' : '.'}`}</div>${late && fx ? `<button class="btn" data-latefix="${g.id}">${fixLabel(fx)}</button>${S.analyst.on && S.analyst.accepted ? '' : '<button class="btn ghost" data-sheet="analyst">Or see what the analyst suggests</button>'}` : ''}` : ''}
+      <div style="display:flex;justify-content:space-between;gap:8px" class="k"><span>${pc.first ? 'First step · ' : ''}${pc.txt} saved</span><span>${tight ? dueTxt(g) + ' · ' : 'Goal date: '}${g.date ? fDate(g.date) : '—'}</span></div>
+      ${!g.shared && !isEur(g) ? `<div class="note" style="margin:12px 0 0;${late ? 'background:#FFF1E6' : ''}">${tight ? (daysTo(g) < 0 ? `<b>Deadline passed: ${ft(toGo(g))} to go.</b> Nothing is lost. Your ${ft(s)} is still yours and still earns interest. Pick a date that fits.` : `<b>Behind: ${ft(toGo(g))} to go by ${daysTo(g) === 1 ? 'tomorrow' : daysTo(g) === 0 ? 'today' : 'the date'}.</b> At about ${ft(Math.round(paceOf(g)/100)*100)} a month this date is out of reach. Moving it is fine, most goals shift.`) : m === 0 ? '<b>Goal reached.</b> Take it out or start a new goal.' : m < 0 ? 'Add a rule below to see when you get there.' : `At your pace (about ${ft(Math.round(paceOf(g)/100)*100)} a month) you get there in <b>${inMonths(m)}</b>${late ? ', <b>after your goal date</b>.' : '.'}`}</div>${late && (fx || bf || lump) ? `${fx ? `<button class="btn" data-latefix="${g.id}">${fixLabel(fx)}</button>` : ''}${!fx && bf ? `<button class="btn" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}${!fx && lump ? `<button class="btn w" data-behindlump="${g.id}">Add ${ft(lump)} from Junior</button>` : ''}${S.analyst.on && S.analyst.accepted ? '' : '<button class="btn ghost" data-sheet="analyst">Or see what the analyst suggests</button>'}` : ''}` : ''}
       ${isEur(g) ? `<div class="note" style="margin:12px 0 0">Buy euros bit by bit instead of all at once before the trip. Demo rate: 1 € = ${EUR_RATE} Ft.</div>` : ''}
       <div class="hero-btns" style="margin:14px 0 0"><button class="btn" data-pickgoal="${g.id}">Add money</button><button class="btn w" data-outgoal="${g.id}">Take out</button></div></div>`;
     if(g.shared){
@@ -1697,7 +1722,7 @@ const SHEETS = {
     ${hasShared ? '' : `<button class="row" data-sheet="newshared"><span class="ic">${I('user')}</span><span class="t">Shared Persely<small>Save together with friends or flatmates</small></span><span class="chev">${I('chev',20)}</span></button>`}
     ${hasEur ? '' : `<button class="row" data-neweur><span class="ic">${I('euro')}</span><span class="t">Euro Persely<small>For Erasmus and travel. No 3.0% rate</small></span><span class="chev">${I('plus',20)}</span></button>`}
     <button class="row" data-cgnew><span class="ic">${I('plus')}</span><span class="t">Your own goal<small>Name, amount, date and a forecast</small></span><span class="chev">${I('chev',20)}</span></button>
-    ${[['PS5 + GTA 6','game',230000],['Erasmus in Lisbon','plane',150000],['Driving licence','car',350000],['Emergency fund','lock',200000]].filter(([n])=>!S.goals.some(g=>g.name===n)).map(([n,ic,t])=>`<button class="row" data-cgpreset="${n}|${ic}|${t}"><span class="ic">${I(ic)}</span><span class="t">${n}<small>Target: ${ft(t)}</small></span><span class="chev">${I('chev',20)}</span></button>`).join('')}`; },
+    ${[['Erasmus in Lisbon','plane',150000],['Driving licence','car',350000],['Emergency fund','lock',200000]].filter(([n])=>!S.goals.some(g=>g.name===n)).map(([n,ic,t])=>`<button class="row" data-cgpreset="${n}|${ic}|${t}"><span class="ic">${I(ic)}</span><span class="t">${n}<small>Target: ${ft(t)}</small></span><span class="chev">${I('chev',20)}</span></button>`).join('')}`; },
   month:()=>pkMonthSheet(),
   how:()=>`<h2>How Persely works</h2>
     <div class="flabel">Junior rate</div>
@@ -1774,6 +1799,10 @@ document.addEventListener('click', e=>{
   if('closesheet' in d){ closeSheet(); return; }
   if(d.latefix){ const g = goalById(d.latefix), fx = g ? lateFix(g) : 0; if(!fx) return; const before = snap();
     bumpWeekly(g, fx); renderAll(); undoable(before, `${fixLabel(fx)}: ${g.name} now ${inMonths(gMonths(g))}`); return; }
+  if(d.behindfix){ const g = goalById(d.behindfix), f = g ? behindFix(g) : null; if(!f) return; const before = snap();
+    g.date = f.date; if(f.x) bumpWeekly(g, f.x); renderAll(); undoable(before, `${g.name}: new date ${pkMonthName(f.date)}${f.x ? `, +${ft(f.x)} a week` : ''}`); return; }
+  if(d.behindlump){ const g = goalById(d.behindlump), v = g ? lumpOf(g) : 0; if(!v) return; const before = snap();
+    depositTo(g, v); renderAll(); undoable(before, `${ft(v)} moved to ${g.name}`); return; }
   if(d.hintok){ endHint(); return; }
   if(d.goal){ S._detail = d.goal; closeSheet(); pushPage('goal'); return; }
   if(d.dm){ closeSheet(); ({payday:salaryArrives, coffee, dori:doriJoins, week:nextWeek, month:()=>monthStep(), sem:endSemester, grad:graduation, update:demoUpdateDay,
@@ -2096,7 +2125,7 @@ function setTop(){
   probe.style.cssText = 'position:fixed;top:0;left:0;width:1px;visibility:hidden;height:env(safe-area-inset-top,0px)';
   document.body.appendChild(probe);
   const env = probe.offsetHeight; probe.remove();
-  const iphone = /iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1 && !matchMedia('(min-width:760px) and (min-height:700px) and (hover:hover)').matches);
+  const iphone = /iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1 && !matchMedia('(min-width:760px) and (hover:hover)').matches);
   const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
   // normal mode: iOS itself keeps the page below the clock, so only the real safe area is used
   document.documentElement.style.setProperty('--top', env + 'px');
@@ -2105,7 +2134,7 @@ setTop(); addEventListener('resize', setTop); addEventListener('orientationchang
 
 /* app height = the area the phone really gives the app (keeps the tab bar on the bottom edge) */
 /* the iPhone frame shows only on a real desktop: wide, tall and with a mouse (same query as the CSS) */
-const DESK = matchMedia('(min-width:760px) and (min-height:700px) and (hover:hover)');
+const DESK = matchMedia('(min-width:760px) and (hover:hover)');
 const isTyping = () => { const a = document.activeElement; return !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA') && !/^(range|checkbox|radio|button)$/.test(a.type); };
 function setAppH(){
   const R = document.documentElement, vv = window.visualViewport;
@@ -2349,10 +2378,9 @@ function mountPig(){ if(pig3d) pig3d.mount(); }
 const cleanName = s => String(s || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 30);   // custom names are typed by the user: no markup, one line, 30 characters
 const customGoal = () => ({ic:'star', name:'', target:100000, date:pkIdxDate(pkNow() + 12)});   // "Something else": own name, 100 000 Ft, 12 months ahead
 const GOAL_PRESETS = {
-  ps5:{label:'PS5 + GTA 6', ic:'game', name:'PS5 + GTA 6', target:230000, date:'2027-12-01', hot:true},
+  home:{label:'Own home', ic:'home', name:'First home fund', target:500000, date:'2029-06-01', hot:true},
   travel:{label:'Travel', ic:'plane', name:'Erasmus in Lisbon', target:150000, date:'2027-09-01'},
   car:{label:'Car', ic:'car', name:'Driving licence', target:350000, date:'2028-06-01'},
-  home:{label:'Own home', ic:'home', name:'Home deposit', target:1000000, date:'2029-06-01'},
   safety:{label:'Safety net', ic:'lock', name:'Safety net', target:200000, date:'2027-12-01'},
   study:{label:'Studies', ic:'edu', name:'Study fund', target:120000, date:'2027-09-01'}
 };
@@ -2462,7 +2490,7 @@ function updateDayState(){
   Object.assign(S, {streak:0, best:0, history:[], skipped:[], savedWeek:false, skips:0, challenges:{}, friends:[], toured:false, hints:{}, monthSaved:4000,
     verified:true, bridge:false, payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday',
     insight:false, insightUsed:false});
-  S.goals = S.goals.filter(g => g.id === 'holiday');
+  S.goals = S.goals.filter(g => g.id === 'holiday' || g.id === 'ps5');
 }
 // 8 weeks later: Junior customer, payday rule on, habit formed (the state used for the main demo)
 function week8State(){
@@ -2480,8 +2508,7 @@ function showWhatsNew(){
   w.innerHTML = `<div class="wn-card">${pig('happy',112)}<span class="newpill">New in Persely</span>
     <h2>What are you saving for?</h2>
     <ul class="bul left"><li>3.0% a year with your Junior account</li><li>See the month you reach your goal</li><li>Save a little from every salary</li></ul>
-    <div class="wn-grid three">${Object.entries(GOAL_PRESETS).map(([k,g])=>`<button class="${g.hot?'hot':''}" data-wnpick="${k}">${g.hot ? '<span class="hotb">Trending</span>' : ''}${I(g.ic,24)}${g.label}</button>`).join('')}</div>
-    <button class="wn-else" data-wnpick="custom">${I('plus',20)}Something else</button>
+    <div class="wn-grid three">${Object.entries(GOAL_PRESETS).map(([k,g])=>`<button class="${g.hot?'hot':''}" data-wnpick="${k}">${g.hot ? '<span class="hotb">Trending</span>' : ''}${I(g.ic,24)}${g.label}</button>`).join('')}<button data-wnpick="custom">${I('plus',24)}Something else</button></div>
     <button class="later" data-wnlater>Not now</button></div>`;
   w.classList.add('on'); mountPig();
 }
@@ -2616,13 +2643,14 @@ function storySlides(){
   return [
     {bg:'linear-gradient(160deg,#1B5E24,#2F7A1B)', k: S.period === 'Autumn semester' ? 'Your semester' : 'Your month', big:S.period, sub:"Here's how it went. Tap to keep going.", pig:'proud'},
     {bg:'linear-gradient(160deg,#0F3B25,#2C7A3C)', k:'You spent', big:ft(spent), sub:'That is 13% less than in October. Nice control.'},
-    {bg:'linear-gradient(160deg,#9A3412,#C2410C)', k:'Food took the biggest bite', big:'43%', sub:'Including 6 Wolt orders for 28 140 Ft. That is GTA 6 on release day.'},
+    {bg:'linear-gradient(160deg,#9A3412,#C2410C)', k:'Food took the biggest bite', big:'43%', sub:'Including 6 Wolt orders for 28 140 Ft. That is GTA VI on release day.'},
     {bg:'linear-gradient(160deg,#6B2D7A,#A0407B)', k:'Fun fact', big:'14 coffees', sub:'9 800 Ft on coffee this month. Exactly 3 cinema tickets.'},
     {bg:'linear-gradient(160deg,#0E5E4E,#0F7A66)', k:'You saved', big:ft(S.monthSaved), sub:'Three times more than last month. Persi is proud of you.', pig:'proud'},
     ...(S.roundCount ? [{bg:'linear-gradient(160deg,#5B21B6,#7C3AED)', k:'Small change adds up', big:`${S.roundCount} round-ups`, sub:`They put ${ft(S.roundSum)} into your savings without you noticing.`}] : []),
     ...scoreSlide(),
     {bg:'linear-gradient(160deg,#92400E,#B45309)', k:'Your streak', big:`${Math.max(S.streak,1)} weeks`, sub:'You saved every single week. That is how habits are made.'},
     {bg:'linear-gradient(160deg,#1E3A8A,#2563EB)', k:esc(g.name), big:`${pct}%`, sub:`At this pace you get there in ${inMonths(gMonths(g))}.`},
+    ...S.goals.filter(isTight).slice(0,1).map(x => ({bg:'linear-gradient(160deg,#7C2D12,#B45309)', k:esc(x.name), big:daysTo(x) < 0 ? 'Deadline passed' : 'Behind', sub:`${ft(toGo(x))} to go. Your ${ft(gSaved(x))} is safe. Pick a new date and it is back on track.`, pig:'concerned'})),
     {bg:'linear-gradient(160deg,#7C2D12,#A16207)', k:'Among your friends', big:`#${rank}`, sub: !S.friends.length ? 'Add friends and compare next month.' : ahead ? `${ahead.n} is ${plural(ahead.s - S.streak,'week')} ahead. Catch up in December?` : 'You lead your crew. Keep it up.'},
     {bg:'linear-gradient(160deg,#14532D,#15803D)', k: S.interest ? 'Interest earned' : 'Your Junior rate', big: S.interest ? ft(S.interest) : rateLabel(), sub: S.interest ? `Your ${rateLabel()} Junior rate at work, after tax. At 0.01% it would be a few forints.` : `On ${ft(total())} that is about ${ft(yearNet())} a year after tax.`},
     {bg:'linear-gradient(160deg,#1B5E24,#2F7A1B)', k:'Your tip for next month', big:'2 deliveries less a week', sub:`About 9 000 Ft more saved. ${esc(g.name)} arrives a month sooner.`, pig:'happy'},
