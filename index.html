@@ -670,7 +670,9 @@ const fresh = () => ({
   // money in: payday rule (share of each payment of 10 000 Ft or more, asks first), weekly transfer, round-ups
   payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday',
   // financial analyst (opt-in, off by default). split.save is the payday rule share (one setting, kept in sync with payday.pct)
-  analyst:{on:false, accepted:false, split:{ess:50, fun:40, save:10}}, txMark:0,   // txMark: how many transactions existed when this month began; this month = S.tx.slice(0, S.tx.length - S.txMark)
+  analyst:{on:false, accepted:false, split:{ess:50, fun:40, save:10}}, txMark:0,
+  // health score history: one entry per finished month, 1 = the indicator held that month. Score = 25 points per indicator x share of the last 3 months. Rewards earned / goal offers already used
+  scoreHist:[{m:'July',earn:1,safe:1,buf:0,goal:0},{m:'August',earn:0,safe:1,buf:0,goal:0},{m:'September',earn:0,safe:1,buf:0,goal:1},{m:'October',earn:1,safe:1,buf:0,goal:1}], rewards:[], goalRewarded:[],   // txMark: how many transactions existed when this month began; this month = S.tx.slice(0, S.tx.length - S.txMark)
   // weekly streak: any amount once a week keeps it (automatic savings count too); it never changes the rate
   week:40, streak:8, best:8, savedWeek:false, skips:1, juniorDays:41, remind:true,
   history:[32,33,34,35,36,37,38,39], skipped:[],
@@ -702,6 +704,9 @@ const fresh = () => ({
 let S; try{ S = JSON.parse(localStorage.getItem(KEY)) || fresh(); }catch(e){ S = fresh(); }
 if(!S.analyst) S.analyst = fresh().analyst;   // state saved before the analyst existed
 if(S.txMark === undefined) S.txMark = 0;
+if(!S.scoreHist) S.scoreHist = fresh().scoreHist;   // state saved before the health score existed
+if(!S.rewards) S.rewards = [];
+if(!S.goalRewarded) S.goalRewarded = [];
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
 const CATS = [['food','Food',38200],['cart','Shopping',21400],['bus','Transport',9500],['fun','Fun',14300],['edu','Education',6000]];
 const acc = id => S.accounts.find(a=>a.id===id);
@@ -906,10 +911,14 @@ function markSaved(){
 }
 // one place where forints go into a goal: balances, transaction, streak
 function depositTo(g, v, fromId='junior', how='Between my accounts'){
+  const wasDone = gSaved(g) >= gTarget(g);
   acc(fromId).v -= v;
   if(g.id==='holiday') acc('persely').v += v; else if(g.shared) g.members.find(m => m.me).amt += v; else g.saved += v;
   S.monthSaved = (S.monthSaved || 0) + v;
   S.tx.unshift({d:'Today', n:'PERSELY DEPOSIT', s:how, a:-v, ic:'piggy', note:g.name});
+  if(!wasDone && gSaved(g) >= gTarget(g) && S.analyst && S.analyst.on && !S.goalRewarded.includes(g.id)){   // goal reached: offer a goal-linked partner offer
+    S.goalRewarded.push(g.id); S._offer = g.id; setTimeout(() => { if(S._offer){ sheet(SHEETS.goaloffer()); } }, 500);
+  }
   return markSaved();
 }
 // Persi: one short line
@@ -963,6 +972,22 @@ function splitCard(){
   return `${head}<div class="card" style="padding:6px 16px 14px">${rows}
     <div class="fine" style="border-top:1px solid var(--line);padding-top:10px">${S.payday.on ? 'Your payday rule moves this to Persely.' : 'Your payday rule is off, so Saving does not move by itself. Turn it on in Money in.'} The Saving share is the same setting as the payday rule, so changing one changes the other. Based on a ${ft(S.income.amount)} income.</div></div>`;
 }
+/* ---------- financial health score (0-100), shown only when the analyst is on ----------
+   Four indicators, 25 points each, over the last 3 finished months (S.scoreHist). Rewards trigger on improvement
+   or on staying within the split, never on balance size. Neither the score nor the streak changes the rate. */
+const SCORE_IND = [['earn','Spends less than it earns','Card spending below income','Spending vs income'], ['safe','No overdraft or failed payment','Every payment went through','Safe payments'],
+  ['buf','Keeps about a month of spending','Junior account covers a month of card spending','Buffer'], ['goal','Saves regularly toward a named goal','Money moved to a goal that month','Saving for a goal']];
+function scoreOf(h){ const w = h.slice(-3), p = {}; let t = 0;
+  SCORE_IND.forEach(([k]) => { p[k] = w.length ? Math.round(25 * w.filter(m => m[k]).length / w.length) : 0; t += p[k]; }); return {p, t, w}; }
+const scoreNow = () => scoreOf(S.scoreHist), scorePrev = () => scoreOf(S.scoreHist.slice(0, -1));
+const deltaTxt = d => d > 0 ? `▲ +${d}` : d < 0 ? `▼ −${-d}` : 'No change';
+const deltaCol = d => d > 0 ? 'var(--green-t)' : d < 0 ? 'var(--orange)' : 'var(--muted)';
+const nextMonthName = () => new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'});
+function scoreRow(){
+  if(!S.analyst.on) return '';
+  const n = scoreNow(), d = n.t - scorePrev().t;
+  return `<button class="row" data-sheet="score" data-tour="score"><span class="t24d"><b class="num">${n.t}</b><small>of 100</small></span><span class="t"><b style="display:block;color:var(--ink);font-weight:600">Financial health score</b><small style="color:${deltaCol(d)}">${deltaTxt(d)} since last month</small></span><span class="chev">${I('chev',20)}</span></button>`;
+}
 function vHub(){
   const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
   const weeks = Array.from({length:8}, (_,i) => S.week - 7 + i);
@@ -991,6 +1016,8 @@ function vHub(){
     <div class="wk">${weeks.map(w=>{ const on = S.history.includes(w), sk = (S.skipped||[]).includes(w);
       return `<div class="${on?'on':''} ${sk?'sk':''} ${w===S.week?'today':''}"><i>${on ? '✓' : sk ? '–' : ''}</i><span>${w===S.week ? 'Now' : ''}</span></div>`; }).join('')}</div>
   </div>
+
+  ${scoreRow()}
 
   <div class="sec" data-tour="goals"><span>Goals</span><a data-sheet="newgoal">New ${I('plus',16)}</a></div>
   ${S.goals.map(g=>{ const s=gSaved(g), t=gTarget(g), p=Math.min(100,Math.round(s/t*100));
@@ -1029,9 +1056,10 @@ function nextWeek(){
   renderAll(); toast(note);
 }
 // demo: one month passes (salary, rules, card payments with round-ups, interest)
-const MONTH_CARD = 65400, MONTH_ROUND = 3000, MONTH_TX = 30;
+const MONTH_CARD = 63900, MONTH_ROUND = 3000, MONTH_TX = 30;
 function monthStep(quiet){
   const g = ruleGoal(), inc = S.income.amount; let moved = 0;
+  const done = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'});   // the month that just ended
   S.txMark = S.tx.length;   // a new month starts: the split use counts from here
   S.months++; S.period = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'}); S.storySeen = false;
   // four weeks pass; the rules keep the streak alive
@@ -1042,7 +1070,7 @@ function monthStep(quiet){
   if(S.payday.on){ const v = incomeShare(S.payday.pct); depositTo(g, v, 'junior', `Payday rule: ${S.payday.pct}%`); moved += v; }
   if(S.weekly.on){ const v = S.weekly.amt * 4; depositTo(g, v, 'junior', 'Weekly transfers (4)'); moved += v; }
   S.goals.filter(x => x.weekly).forEach(x => { depositTo(x, x.weekly * 4, 'junior', 'Weekly transfers (4)'); moved += x.weekly * 4; });
-  acc('junior').v -= MONTH_CARD; S.tx.unshift({d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-MONTH_CARD, ic:'cart', parts:{ess:38400, fun:27000}});
+  acc('junior').v -= MONTH_CARD; S.tx.unshift({d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-MONTH_CARD, ic:'cart', parts:{ess:36900, fun:27000}});
   if(S.roundup.on){ depositTo(goalById(S.roundup.goal) || g, MONTH_ROUND, 'junior', `Round-ups (${MONTH_TX} payments)`); S.roundCount += MONTH_TX; S.roundSum += MONTH_ROUND; moved += MONTH_ROUND; }
   // interest after tax, credited to each forint Persely by its share
   const base = total(), net = Math.round(Math.min(base, CAP) * rate() / 100 / 12 * (1 - TAX));
@@ -1053,8 +1081,18 @@ function monthStep(quiet){
     S.interest += net;
   }
   if(!S.insightUsed) S.insight = true;
+  // health score: log the finished month; reward when the analyst is on and Fun and Essentials stayed within the split
+  const oldScore = scoreNow(), u = splitUse(), spent = u.ess + u.fun, a = S.analyst;
+  S.scoreHist.push({m:done, earn: spent < inc ? 1 : 0, safe: acc('junior').v >= 0 ? 1 : 0, buf: acc('junior').v >= spent ? 1 : 0, goal: u.save > 0 ? 1 : 0});
+  S.scoreHist = S.scoreHist.slice(-8);
+  const newScore = scoreNow(); S._rw = null;
+  if(a.on && a.accepted && u.ess <= splitAmt(a.split.ess) && u.fun <= splitAmt(a.split.fun)){
+    const rew = {id:'r' + S.months, title:'5% cashback at a partner', note:`Valid in ${nextMonthName()}. Up to 2 000 Ft back.`, why:`Stayed within the split in ${done}`};
+    S.rewards.unshift(rew); S._rw = {old:oldScore.t, now:newScore.t, rew, ess:u.ess, fun:u.fun};
+  }
   renderAll();
   if(!quiet) toast(`One month later. Salary in, ${ft(moved)} saved by your rules${net ? `, +${ft(net)} interest` : ''}.`);
+  if(!quiet && S._rw) sheet(SHEETS.reward());
   return net;
 }
 
@@ -1308,6 +1346,35 @@ const SHEETS = {
     ${splitRows}
     <div class="fine" style="margin:0 2px 14px">It reads your card payment categories, builds your split and gives one insight a month. You can change a payment's category in Transactions. Turn it off and the split and the tip go away. Nothing is shared.</div>
     <button class="btn w" data-splitopen>Edit my split</button><button class="btn ghost" data-anoff>Turn off the analyst</button>`; },
+  // financial health score: four indicators, what they mean, rewards earned
+  score:()=>{ const n = scoreNow(), pv = scorePrev(), d = n.t - pv.t;
+    return `<h2>Financial health score</h2>
+    <div style="text-align:center;margin:-8px 0 14px"><span class="num" style="font-size:46px;font-weight:700;line-height:1">${n.t}</span><span class="k" style="font-size:16px"> / 100</span>
+      <div style="font-size:14px;font-weight:600;margin-top:4px;color:${deltaCol(d)}">${deltaTxt(d)} since last month</div></div>
+    <div class="flabel">Four indicators, 25 points each</div>
+    <div class="card lst">${SCORE_IND.map(([k,l,hint]) => { const c = n.w.filter(m => m[k]).length, dk = n.p[k] - pv.p[k];
+      return `<div class="li"><span class="t"><b>${l}</b><small>${c} of ${n.w.length} months · ${hint}${dk ? ` · <span style="color:${deltaCol(dk)}">${deltaTxt(dk)}</span>` : ''}</small></span><b class="num">${n.p[k]} / 25</b></div>`; }).join('')}</div>
+    <div class="flabel">Rewards</div>
+    ${S.rewards.length ? `<div class="card lst">${S.rewards.map(r => `<div class="li"><span class="ic">${I('star')}</span><span class="t"><b>${esc(r.title)}</b><small>${esc(r.why)}. ${esc(r.note)}</small></span></div>`).join('')}</div>`
+      : `<div class="fine" style="margin:0 2px 12px">None yet. Stay within your split for a month and the first one arrives.</div>`}
+    <div class="fine" style="margin:0 2px 14px">Measured over your last 3 months. Rewards come when your score improves or you stay within your split, never because of how much money you have. Streaks and the score never change your Persely rate.</div>
+    <button class="btn ghost" data-closesheet>Close</button>`; },
+  // after +1 month: stayed within the split, score up, reward
+  reward:()=>{ const r = S._rw; if(!r) return '';
+    return `<div style="text-align:center">${pig('proud', 84)}</div><h2>Reward earned</h2>
+    <div style="text-align:center;margin:-6px 0 14px"><b style="font-size:16px">You stayed within your split</b><div class="fine" style="margin-top:4px">Essentials ${ft(r.ess)} of ${ft(splitAmt(S.analyst.split.ess))} · Fun ${ft(r.fun)} of ${ft(splitAmt(S.analyst.split.fun))}</div></div>
+    <div class="card" style="padding:12px 16px;text-align:center"><div class="k">Health score</div><b class="num" style="font-size:22px">${r.old} → ${r.now}</b><div style="font-size:13px;font-weight:600;color:${deltaCol(r.now - r.old)}">${deltaTxt(r.now - r.old)}</div></div>
+    <div class="card" style="padding:12px 16px;display:flex;gap:12px;align-items:center"><span style="color:var(--green);display:flex">${I('star',26)}</span><span><b style="display:block;font-size:15px">${esc(r.rew.title)}</b><span class="fine">${esc(r.rew.note)}</span></span></div>
+    <div class="fine" style="margin:0 2px 14px">Boosted cashback for your next month at partner shops. It is for staying within your split, not for how much you have.</div>
+    <button class="btn" data-sheet="score">See my score</button><button class="btn ghost" data-closesheet>Close</button>`; },
+  // a goal reached 100%: goal-linked partner offer (no fee waiver for students)
+  goaloffer:()=>{ const g = goalById(S._offer); if(!g) return '';
+    const travel = g.ic === 'plane', o = travel ? {title:'Travel partner offer', note:'8% back on one booking with a partner travel agency. Up to 10 000 Ft.'} : {title:'5% cashback at a partner', note:'Boosted cashback for one month. Up to 2 000 Ft back.'};
+    return `<div style="text-align:center">${pig('proud', 84)}</div><h2>${esc(g.name)} is fully saved</h2>
+    <div class="fine" style="text-align:center;margin:-6px 0 12px">You reached 100%. Here is an offer that fits.</div>
+    <div class="card" style="padding:12px 16px;display:flex;gap:12px;align-items:center"><span style="color:var(--green);display:flex">${I(travel ? 'plane' : 'star',26)}</span><span><b style="display:block;font-size:15px">${o.title}</b><span class="fine">${o.note}</span></span></div>
+    <div class="fine" style="margin:0 2px 14px">Optional. Offers come from reaching a goal, not from how much you hold.</div>
+    <button class="btn" data-claimoffer>Add to my rewards</button><button class="btn ghost" data-closesheet>Not now</button>`; },
   // edit the split: the three shares must add up to 100%; Saving is the payday rule (5-20%)
   splitedit:()=>{ const d = S._split || S.analyst.split, sum = d.ess + d.fun + d.save, ok = sum === 100;
     const row = (k, l, lo, hi) => `<div class="li" style="padding:10px 0"><span class="t"><b>${l}</b><small class="num">${ft(splitAmt(d[k]))} a month</small></span>
@@ -1515,6 +1582,9 @@ document.addEventListener('click', e=>{
     closeSheet(); renderAll(); toast(`${n} added`); return;
   }
   /* financial analyst */
+  if('claimoffer' in d){ const g = goalById(S._offer); if(g){ const travel = g.ic === 'plane';
+      S.rewards.unshift({id:'o' + g.id, title: travel ? 'Travel partner offer' : '5% cashback at a partner', note: travel ? '8% back on one booking. Up to 10 000 Ft.' : 'Up to 2 000 Ft back.', why:`Reached ${g.name}`}); }
+    S._offer = null; closeSheet(); renderAll(); toast('Offer added to your rewards'); return; }
   if('anon' in d){ S.analyst.on = true; renderAll(); sheet(SHEETS.analyst()); toast('Analyst on'); return; }
   if('anoff' in d){ S.analyst.on = false; closeSheet(); renderAll(); toast('Analyst off. Your split and tips are hidden'); return; }
   if('anaccept' in d){ const sg = suggestSplit(), turnedOn = !S.payday.on;
@@ -2113,6 +2183,14 @@ function friendsCard(){
 }
 
 /* ================= monthly story (reels format, the original design) ================= */
+// score-change slide: only when the analyst is on and the split is accepted
+function scoreSlide(){
+  if(!S.analyst.on || !S.analyst.accepted || !S.scoreHist.length) return [];
+  const n = scoreNow(), pv = scorePrev(), d = n.t - pv.t, names = c => SCORE_IND.filter(([k]) => c(n.p[k] - pv.p[k])).map(x => x[3]);
+  const up = names(x => x > 0), down = names(x => x < 0), rw = S.rewards[0] && S.rewards[0].id === 'r' + S.months ? S.rewards[0] : null;
+  const sub = d > 0 ? `Improved: ${up.join(', ').toLowerCase()}.${rw ? ` Reward: ${rw.title.toLowerCase()} in ${nextMonthName()}.` : ''}` : d < 0 ? `Dropped: ${down.join(', ').toLowerCase()}. It recovers as the 3 month window moves on.` : 'Same as last month. Nothing lost, nothing to claim.';
+  return [{bg:'linear-gradient(160deg,#0E5E4E,#22A38A)', k:'Your health score', big: d ? `${pv.t} → ${n.t}` : `${n.t}`, sub}];
+}
 function storySlides(){
   const g = S.goals[0], pct = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100));
   const spent = CATS.reduce((a,c) => a + c[2], 0);
@@ -2125,6 +2203,7 @@ function storySlides(){
     {bg:'linear-gradient(160deg,#6B2D7A,#B45FB0)', k:'Fun fact', big:'14 coffees', sub:'9 800 Ft on coffee this month. Exactly 3 cinema tickets.'},
     {bg:'linear-gradient(160deg,#0E5E4E,#22A38A)', k:'You saved', big:ft(S.monthSaved), sub:'Three times more than last month. Persi is proud of you.', pig:'proud'},
     ...(S.roundCount ? [{bg:'linear-gradient(160deg,#5B21B6,#8B5CF6)', k:'Small change adds up', big:`${S.roundCount} round-ups`, sub:`They put ${ft(S.roundSum)} into your savings without you noticing.`}] : []),
+    ...scoreSlide(),
     {bg:'linear-gradient(160deg,#9A3412,#FB923C)', k:'Your streak', big:`${Math.max(S.streak,1)} weeks`, sub:'You saved every single week. That is how habits are made.'},
     {bg:'linear-gradient(160deg,#1E3A8A,#3B82F6)', k:esc(g.name), big:`${pct}%`, sub:`At this pace you get there in ${inMonths(gMonths(g))}.`},
     {bg:'linear-gradient(160deg,#7C2D12,#D97706)', k:'Among your friends', big:`#${rank}`, sub: !S.friends.length ? 'Add friends and compare next month.' : ahead ? `${ahead.n} is ${plural(ahead.s - S.streak,'week')} ahead. Catch up in December?` : 'You lead your crew. Keep it up.'},
