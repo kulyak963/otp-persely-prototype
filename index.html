@@ -529,7 +529,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .sring small{font-size:var(--fs-xs);font-weight:600;color:var(--orange-t)}
 .sring.seen small{color:var(--muted-t);font-weight:500}
 .wn-grid button.hot{position:relative;background:var(--green-l);box-shadow:inset 0 0 0 1.5px var(--green);color:var(--green-t)}
-.hotb{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:var(--fs-xs);font-weight:800;letter-spacing:.3px;background:#FF7A1A;color:#2B3038;padding:2px 7px;border-radius:8px;white-space:nowrap}
+.hotb{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:var(--fs-xs);font-weight:800;letter-spacing:.3px;background:var(--act);color:#fff;padding:2px 7px;border-radius:8px;white-space:nowrap}
 .addbtn{height:44px;font-size:0.875rem;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:inset 0 0 0 1.5px var(--green-l),var(--sh)}
 .lst .li b.num{font-size:0.875rem;white-space:nowrap}
 .lst .li b.pos{color:var(--green-t)}
@@ -592,6 +592,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .persi-t{flex:1;min-width:0;font-size:0.875rem;line-height:1.4;color:var(--ink2)}
 .persi-t b{display:block;font-size:0.78125rem;color:var(--green-t);margin-bottom:1px}
 .wn-card .pig3d{margin:4px auto -2px}
+#sheet .pig3d{margin:22px auto 0}   /* room above Persi so a jump is not cut by the scrolling sheet */
 .nbanner img.persi-av,.lcard img.persi-av{background:#EAF5E4;object-fit:contain}
 .hubteaser .pig{flex:none;margin:-6px 0}
 /* ---- utilities (replace repeated inline styles; keep these LAST; the doubled class name makes them win over rules like ".opt b", as the inline styles did) ---- */
@@ -1501,8 +1502,8 @@ const MQ = {q:[], banner:false, toast:false};
 const UNDO = {fn:null, base:null};   // fn = the Undo of the toast on screen; base = state saved when a rule sheet was opened
 const RULE_SHEETS = ['payrule','weeklyrule','roundrule'];
 const sheetOpen = () => $('#back').classList.contains('on');
-function sheet(html){ hideToast(true); $('#sheet').innerHTML = html; $('#back').classList.add('on'); }
-function closeSheet(){ const was = sheetOpen(); $('#back').classList.remove('on'); if(was || MQ.q.length) setTimeout(mqPump, 280); }
+function sheet(html){ hideToast(true); $('#sheet').innerHTML = html; $('#back').classList.add('on'); if(typeof mountPig === 'function') mountPig(); }
+function closeSheet(){ const was = sheetOpen(); $('#back').classList.remove('on'); if(typeof mountPig === 'function') mountPig(); if(was || MQ.q.length) setTimeout(mqPump, 280); }
 function qSheet(fn, id, late){ if(id) MQ.q = MQ.q.filter(x => x.id !== id); MQ.q.push({k:'sheet', fn, id, late}); mqPump(); }   // late: only after the toast
 function mqDrop(id){ MQ.q = MQ.q.filter(x => x.id !== id); }
 function toast(m, o){ if(sheetOpen()){ sheetNote(m); return; } MQ.q = MQ.q.filter(x => x.k !== 'toast'); MQ.q.push({k:'toast', m, o}); mqPump(); }
@@ -2175,7 +2176,10 @@ const pig3d = (() => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputEncoding = T.sRGBEncoding;
   const canvas = renderer.domElement;
-  canvas.style.cssText = 'width:100%;height:100%;display:block;touch-action:none;cursor:grab';
+  // The canvas is taller than the slot (HEAD extra above it, transparent, ignores the pointer) so a jump or the falling coin is never cut off.
+  // The camera is offset so the resting piggy keeps exactly the same size and place inside the slot.
+  const HEAD = 0.55;
+  canvas.style.cssText = 'position:absolute;left:0;bottom:0;width:100%;height:' + (100*(1+HEAD)) + '%;display:block;pointer-events:none';
   const scene = new T.Scene();
   const camera = new T.PerspectiveCamera(30, 1, 0.1, 50);
   camera.position.set(0, 0.6, 5.5); camera.lookAt(0, -0.1, 0);
@@ -2231,7 +2235,7 @@ const pig3d = (() => {
   const shadow = new T.Mesh(new T.PlaneGeometry(2.8, 2.8), new T.MeshBasicMaterial({ map:new T.CanvasTexture(sc), transparent:true, depthWrite:false }));
   shadow.rotation.x = -Math.PI/2; shadow.position.y = -1.1; scene.add(shadow);
   // gold coin for celebrate()
-  const coin = add(scene, new T.CylinderGeometry(0.22, 0.22, 0.06, 40), GOLD, 0, 3, -0.08); coin.rotation.x = Math.PI/2; coin.visible = false;
+  const COIN_Y = 2.3, coin = add(scene, new T.CylinderGeometry(0.22, 0.22, 0.06, 40), GOLD, 0, COIN_Y, -0.08); coin.rotation.x = Math.PI/2; coin.visible = false;
 
   const BASE_Y = -0.4;   // three-quarter view by default
   root.rotation.y = BASE_Y;
@@ -2248,26 +2252,33 @@ const pig3d = (() => {
   function jump(){ jumpT = 0; }
   function celebrate(){ coin.visible = true; coinT = 0; jumpT = -1; }
 
-  canvas.addEventListener('pointerdown', e => { dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY; velY = 0; canvas.setPointerCapture(e.pointerId); canvas.style.cursor = 'grabbing'; e.stopPropagation(); });
-  canvas.addEventListener('pointermove', e => {
+  // drag / tap handled on the slot (the canvas itself is pointer-transparent, so the headroom never blocks taps)
+  const onDown = e => { dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY; velY = 0; try{ e.currentTarget.setPointerCapture(e.pointerId); }catch(_){} e.currentTarget.style.cursor = 'grabbing'; e.stopPropagation(); };
+  const onMove = e => {
     if(!dragging) return;
     const dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY; moved += Math.abs(dx) + Math.abs(dy);
     velY = dx * 0.012; root.rotation.y += velY;
     root.rotation.x = Math.max(-0.35, Math.min(0.35, root.rotation.x + dy * 0.006));
     idleAt = clock.getElapsedTime() + 2.5;
-  });
-  const end = e => { if(!dragging) return; dragging = false; canvas.style.cursor = 'grab'; if(moved < 6) jump(); };
-  canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
-  canvas.addEventListener('click', e => e.stopPropagation());
+  };
+  const onEnd = e => { if(!dragging) return; dragging = false; e.currentTarget.style.cursor = 'grab'; if(moved < 6) jump(); };
+  const onClick = e => e.stopPropagation();
+  function bind(el, on){ const f = on ? 'addEventListener' : 'removeEventListener';
+    el[f]('pointerdown', onDown); el[f]('pointermove', onMove); el[f]('pointerup', onEnd); el[f]('pointercancel', onEnd); el[f]('click', onClick); }
 
   function mount(){
     // priority: onboarding, then the update pop-up, then the screen on top
-    const el = document.querySelector('.story.on .pig3d') || document.querySelector('.onb.on .pig3d') || document.querySelector('.wn.on .pig3d') || [...document.querySelectorAll('.view.on .pig3d, .page .pig3d')].pop();
+    const el = document.querySelector('.story.on .pig3d') || document.querySelector('.onb.on .pig3d') || document.querySelector('.wn.on .pig3d') || document.querySelector('#back.on #sheet .pig3d') || [...document.querySelectorAll('.view.on .pig3d, .page .pig3d')].pop();
     if(!el){ holder = null; return; }
+    if(holder && holder !== el){ bind(holder, false); dragging = false; }
+    if(holder !== el){ bind(el, true); el.style.cursor = 'grab'; el.style.touchAction = 'none'; }
     holder = el; setMood(el.dataset.mood || 'happy');
     if(canvas.parentNode !== el) el.appendChild(canvas);
-    const w = el.clientWidth || 120, h = el.clientHeight || 120;
-    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    if(getComputedStyle(el).position === 'static') el.style.position = 'relative';
+    el.style.overflow = 'visible';
+    const w = el.clientWidth || 120, h = el.clientHeight || 120, H = Math.round(h * (1 + HEAD));
+    renderer.setSize(w, H, false);
+    camera.aspect = w / h; camera.setViewOffset(w, h, 0, -(H - h), w, H);   // taller window, same scale as the slot
   }
 
   const clock = new T.Clock(), PIG_RM = matchMedia('(prefers-reduced-motion:reduce)');
@@ -2299,7 +2310,7 @@ const pig3d = (() => {
     // coin falls into the slot, then a happy jump
     if(coinT >= 0){
       coinT += 0.03;
-      coin.position.y = 3 - Math.min(coinT, 1) * (3 - 1.02);
+      coin.position.y = COIN_Y - Math.min(coinT, 1) * (COIN_Y - 1.02);
       coin.rotation.z += 0.25;
       coin.position.x = 0; coin.position.z = -0.08;
       if(coinT >= 1){ coin.visible = false; coinT = -1; jump(); }
@@ -2313,9 +2324,9 @@ const pig3d = (() => {
     if(avatar) return avatar;
     const keep = renderer.getSize(new T.Vector2()), aspect = camera.aspect, rx = root.rotation.x, ry = root.rotation.y, py = pigG.position.y;
     root.rotation.set(0, BASE_Y, 0); pigG.position.y = 0; pigG.scale.set(1,1,1); setMood('happy'); eyes.forEach(g => g.scale.y = 1);
-    shadow.visible = false; renderer.setSize(180, 180, false); camera.aspect = 1; camera.updateProjectionMatrix();
+    shadow.visible = false; coin.visible = false; camera.clearViewOffset(); renderer.setSize(180, 180, false); camera.aspect = 1; camera.updateProjectionMatrix();
     renderer.render(scene, camera); avatar = canvas.toDataURL('image/png');
-    shadow.visible = true; renderer.setSize(keep.x, keep.y, false); camera.aspect = aspect; camera.updateProjectionMatrix();
+    shadow.visible = true; coin.visible = coinT >= 0; renderer.setSize(keep.x, keep.y, false); camera.aspect = aspect; if(holder){ const h = holder.clientHeight || 120; camera.setViewOffset(keep.x, h, 0, -(keep.y - h), keep.x, keep.y); } else camera.updateProjectionMatrix();
     root.rotation.set(rx, ry, 0); pigG.position.y = py; if(holder) setMood(holder.dataset.mood || 'happy');
     return avatar;
   }
