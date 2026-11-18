@@ -425,7 +425,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 @keyframes stfade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.st-body{animation:stfade .25s ease both}.story{transition:none}}
 @media (max-height:700px){.st-big{font-size:2.5rem}.st-big.m{font-size:2rem}.st-big.s{font-size:1.5rem}.st-sub{font-size:1rem}.st-vis{min-height:110px}.st-foot{min-height:48px;margin-top:8px}.story{padding-bottom:calc(env(safe-area-inset-bottom) + 14px)}.st-rc .r{padding:4px 0;min-height:26px}.st-lg{gap:5px}.st-stw{transform:scale(.85);margin:-10px 0}}
-@media (min-width:760px) and (hover:hover){.phone .story{--sb:56px}}
+@media (min-width:760px) and (hover:hover){.phone .story{--sb:56px}.phone .ff{--sb:56px;--sbb:26px}}
 
 /* ---------- fake iOS notification (for the laptop demo) ---------- */
 .nbanner{position:absolute;left:8px;right:8px;top:calc(var(--top) + 6px);z-index:85;display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:22px;
@@ -443,6 +443,49 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
   background:radial-gradient(120% 70% at 15% 5%,#4F63C9 0%,transparent 60%),radial-gradient(110% 80% at 95% 95%,#2E9E77 0%,transparent 55%),linear-gradient(165deg,#1C2340,#0D1222);
   padding-top:calc(var(--top) + 46px)}
 .lock.on{display:flex}
+/* ---------- demo presentation: Face ID on the lock screen, fast-forward cash flow, the year ---------- */
+.lock .fid{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);display:none;flex-direction:column;align-items:center;gap:10px;font-size:var(--fs-m);font-weight:600}
+.lock.fidon .fid{display:flex}.lock.fidon .lnotes,.lock.fidon .lbot,.lock.fidon .lhint{visibility:hidden}
+.fid svg{overflow:visible}.fid .fid-ok{stroke-dasharray:40;stroke-dashoffset:40;opacity:0}
+.fid.fid-scan .fid-c{animation:fidp .5s ease-in-out infinite alternate;transform-origin:32px 32px}
+@keyframes fidp{to{transform:scale(.9)}}
+.fid.fid-done .fid-face{opacity:0;transition:opacity .15s}.fid.fid-done .fid-c{transform:scale(.82);transform-origin:32px 32px;transition:transform .25s ease-out}
+.fid.fid-done .fid-ok{opacity:1;stroke-dashoffset:0;transition:stroke-dashoffset .35s ease-out .05s}
+.ff{position:absolute;inset:0;z-index:78;display:none;flex-direction:column;color:#fff;--sb:var(--top);--sbb:env(safe-area-inset-bottom);padding:calc(var(--sb) + 18px) 18px calc(var(--sbb) + 18px);
+  background:linear-gradient(170deg,#0F3D1E 0%,#1E5410 100%);touch-action:none}
+.ff.on{display:flex}
+.ff-k{font-size:var(--fs-s);font-weight:600;color:#D4E5CE;letter-spacing:.2px}
+.ff-m{font-size:2rem;font-weight:800;line-height:1.15;margin:2px 0 8px}
+.ff-day{height:4px;border-radius:2px;background:rgba(255,255,255,.25);overflow:hidden}.ff-day i{display:block;height:100%;width:0;background:#fff}
+.ff-svg{width:100%;flex:1 1 auto;min-height:0;max-height:330px;margin:10px 0 4px}
+.ff-n rect{fill:rgba(255,255,255,.12);stroke:rgba(255,255,255,.35)}.ff-n text{fill:#fff;font-size:12.5px;font-weight:700}
+.ff-acc rect{fill:rgba(255,255,255,.2);stroke:#fff}.ff-acc text{font-size:13px}
+.ff-p,.ff-q{fill:none;stroke-linecap:round}.ff-q{stroke-dasharray:1.5 9}
+.ff-sal,.ff-fam{stroke:#fff}.ff-bills{stroke:#B4C3D6}.ff-ess{stroke:#62AEE6}.ff-fun{stroke:#F5913A}.ff-save{stroke:#6FCB4A}.ff-int{stroke:#F2C94C;fill:none;stroke-linecap:round;stroke-dasharray:1.5 7}
+.ff-n.ff-bills rect{stroke:#B4C3D6}.ff-n.ff-ess rect{stroke:#62AEE6}.ff-n.ff-fun rect{stroke:#F5913A}.ff-n.ff-save rect{stroke:#6FCB4A;fill:rgba(111,203,74,.2)}
+.ff-it{fill:#F2C94C;font-size:11px;font-weight:700}
+.ff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ff-grid div{background:rgba(255,255,255,.1);border-radius:12px;padding:8px 10px}.ff-grid small{display:block;font-size:var(--fs-xs);color:#D4E5CE}.ff-grid b{font-size:var(--fs-s);font-weight:700;white-space:nowrap}
+.ff-persi{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:700;font-size:var(--fs-s);min-height:46px}
+.ff.landed .ff-svg,.ff.landed .ff-grid,.ff.landed .ff-persi,.ff.landed .ff-top{opacity:.15;transition:opacity .3s}
+.ff-land{position:absolute;left:16px;right:16px;bottom:calc(var(--sbb) + 18px);animation:pop .4s cubic-bezier(.2,.9,.25,1.15)}
+.ff-card{background:#fff;color:var(--ink);border-radius:22px;padding:18px 18px 16px;box-shadow:0 18px 40px rgba(0,0,0,.3)}
+.ff-ck{font-size:var(--fs-xs);color:var(--muted-t);font-weight:600}.ff-card h3{margin:2px 0 8px;font-size:1.375rem}.ff-card p{margin:0 0 10px;font-size:var(--fs-s);color:var(--ink2);line-height:1.45}
+.ff-rows div,.ff-tot{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:var(--fs-s)}.ff-rows span{color:var(--ink2)}
+.ff-tot{border:0;font-size:var(--fs-m);margin-bottom:10px}.ff-tot b{color:var(--act)}
+.yr-hero{padding:18px}.yr-big{font-size:2.25rem;font-weight:800;margin:4px 0 2px;color:var(--ink)}
+.yr-bars{padding:14px 16px}.yr-b{margin:6px 0 12px}.yr-bl{display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-s)}.yr-b small{font-size:var(--fs-xs);color:var(--muted-t)}
+.yr-bt{height:12px;border-radius:6px;background:#E9ECF1;margin:6px 0 4px;overflow:hidden}.yr-bt i{display:block;height:100%;width:var(--w);border-radius:6px;animation:yrg .9s ease-out}
+.yr-bt i.g{background:var(--green)}.yr-bt i.r{background:#8D96A6}.yr-bt i.l{background:#C9CED7}
+@keyframes yrg{from{width:0}}
+.yr-sav{display:flex;align-items:center;gap:10px;padding:14px 16px}.yr-sav .t{flex:1}.yr-sav b{font-size:var(--fs-m)}.yr-sav small{display:block;font-size:var(--fs-xs);color:var(--muted-t)}
+.yr-sc{padding:14px 16px}.yr-scb{display:flex;align-items:flex-end;gap:6px;height:90px;margin-bottom:8px}
+.yr-scb i{flex:1;height:var(--h);background:var(--green-l);border-radius:6px 6px 2px 2px;position:relative;animation:yrh .8s ease-out}.yr-scb i:last-child{background:var(--green)}
+.yr-scb b{position:absolute;top:-17px;left:0;right:0;text-align:center;font-size:var(--fs-xs);color:var(--ink2)}
+@keyframes yrh{from{height:0}}
+.yr-sc small{font-size:var(--fs-xs);color:var(--muted-t)}
+@media (prefers-reduced-motion:reduce){.yr-bt i,.yr-scb i,.ff-land{animation:none}.fid.fid-scan .fid-c{animation:none}}
+
 .lock.out{transform:translateY(-100%);opacity:.6}
 .lock .ld{font-size:1.1875rem;font-weight:600;opacity:.92}
 .lock .lt{font-size:5.75rem;font-weight:700;line-height:1;letter-spacing:-3px;margin-top:2px}
@@ -453,9 +496,9 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .lock .lbot i{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.18);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center}
 .lock .lbot svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .lock .lhint{position:absolute;bottom:24px;left:0;right:0;text-align:center;font-size:var(--fs-xs);opacity:.7}
-.phone.locked .sbar{color:#fff}
-.phone.locked .sbar svg{fill:#fff}
-.phone.locked .sbar svg rect[stroke]{stroke:#fff}
+.phone.locked .sbar,.phone.ffon .sbar{color:#fff}
+.phone.locked .sbar svg,.phone.ffon .sbar svg{fill:#fff}
+.phone.locked .sbar svg rect[stroke],.phone.ffon .sbar svg rect[stroke]{stroke:#fff}
 .phone.locked .homebar{background:#fff}
 @media (min-width:760px) and (hover:hover){.nbanner{top:54px}.lock{padding-top:84px}.lock .lhint{bottom:22px}}
 
@@ -793,6 +836,7 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
   <div class="wn" id="wn"></div>
   <div class="onb" id="onb"></div>
   <div class="story" id="story"></div>
+  <div class="ff" id="ff"></div>
   <div class="splash" id="splash"><img src="splash-logo-green.png" alt="otpbank"></div>
   <div class="lock" id="lock">
     <div class="ld" id="lockDate"></div>
@@ -1820,6 +1864,9 @@ function nextWeek(){
 }
 // demo: one month passes (salary, rules, card payments with round-ups, interest)
 const MONTH_CARD = 63900, MONTH_ROUND = 3000, MONTH_TX = 30;
+// small month-to-month differences in card spending (index = S.months % 12; index 1 = the first simulated month, kept at 0 for the self-checks). Essentials only go down, so they stay within the split
+const ESS_VAR = [-500, 0, -900, -400, -1600, -200, -1100, -700, -1300, -300, -1000, -600], FUN_VAR = [600, 0, 1800, -1200, 2400, -600, 1500, -1800, 900, -300, 2100, -900];
+const SAV_RATE = 3.5;   // the Savings account's demo rate (shown on its card); interest after tax is credited each simulated month
 function monthStep(quiet){
   const g = ruleGoal(), inc = S.income.amount; let moved = 0, lenBefore = S.tx.length;
   const done = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'});   // the month that just ended
@@ -1834,7 +1881,8 @@ function monthStep(quiet){
   if(S.payday.on){ const v = incomeShare(S.payday.pct); depositTo(g, v, 'junior', `Payday rule: ${S.payday.pct}%`); moved += v; }
   if(S.weekly.on){ const v = S.weekly.amt * 4; depositTo(g, v, 'junior', 'Weekly transfers (4)'); moved += v; }
   S.goals.filter(x => x.weekly).forEach(x => { depositTo(x, x.weekly * 4, 'junior', 'Weekly transfers (4)'); moved += x.weekly * 4; });
-  acc('junior').v -= MONTH_CARD; S.tx.unshift({...stamp(), d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-MONTH_CARD, ic:'cart', parts:{ess:36900, fun:27000}});
+  { const vi = S.months % 12, ev = ESS_VAR[vi], fv = FUN_VAR[vi], card = MONTH_CARD + ev + fv;   // months differ a little, so the fast-forward and the year look real (month 1 is the reference month)
+    acc('junior').v -= card; S.tx.unshift({...stamp(), d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-card, ic:'cart', parts:{ess:36900 + ev, fun:27000 + fv}}); }
   if(S.roundup.on){ depositTo(goalById(S.roundup.goal) || g, MONTH_ROUND, 'junior', `Round-ups (${MONTH_TX} payments)`); S.roundCount += MONTH_TX; S.roundSum += MONTH_ROUND; moved += MONTH_ROUND; }
   // interest after tax, credited to each forint Persely by its share
   const base = total(), net = Math.round(Math.min(base, CAP) * rate() / 100 / 12 * (1 - TAX));
@@ -1845,6 +1893,7 @@ function monthStep(quiet){
     S.interest += net;
   }
   if(!S.insightUsed) S.insight = true;
+  { const sv = acc('megt'); if(sv){ const r = Math.round(sv.v * SAV_RATE / 100 / 12 * (1 - TAX)); sv.v += r; S.savInt = (S.savInt || 0) + r; S._savNow = r; } }
   // section 14: the family transfer on the 1st, and the must-pay bills on their days up to "today" (the phone, on the 20th, is still to come). Paid from the Bills pocket while it has money.
   const mday = S.demoDay || 14, brows = [{...stamp(), day:1, d:'1 ' + S.period, n:'KISS ISTVÁN', s:'Incoming transfer', a:FAMILY_IN, ic:'money', ref:'havi támogatás'}]; acc('junior').v += FAMILY_IN;
   mustBills().filter(b => b.day <= mday).forEach(b => { const fp = pocketBal() >= b.exp, last = S.tx.find(t => t.a < 0 && payeeKey(t) === b.key);
@@ -1852,6 +1901,7 @@ function monthStep(quiet){
     brows.push({...stamp(), day:b.day, d:b.day + ' ' + S.period, n:b.key, s:last ? last.s : 'Transfer out', a:-b.exp, ic:last ? last.ic : 'wallet', ...(last && last.ref ? {ref:refBase(last.ref)} : {}), ...(fp ? {note:'Paid from Bills pocket'} : {})}); });
   { const mine = S.tx.splice(0, S.tx.length - lenBefore).concat(brows); mine.sort((x, y) => y.day - x.day); S.tx.unshift(...mine); }   // newest day first
   S.bfDone = false; S.bfPush = '';
+  S.flowLog = (S.flowLog || []).concat([flowOf(S.tx.slice(0, S.tx.length - lenBefore), net)]).slice(-24);   // what this month moved, for the fast-forward and the year screen
   // health score: log the finished month; reward when the analyst is on and Fun and Essentials stayed within the split
   const oldScore = scoreNow(), u = splitUse(), spent = u.ess + u.fun, a = S.analyst;
   S.scoreHist.push({m:done, earn: spent < inc ? 1 : 0, safe: acc('junior').v >= 0 ? 1 : 0, buf: acc('junior').v >= spent ? 1 : 0, goal: u.save > 0 ? 1 : 0});
@@ -1870,6 +1920,19 @@ function monthStep(quiet){
   return net;
 }
 
+/* ---------- what one simulated month moved (for the fast-forward river and "Your year in Persely") ----------
+   rows = the transactions monthStep added. in = income; bills = must-pay bills paid; ess / fun = card spending; saved = into Persely (rules, round-ups, manual); interest = Persely interest after tax */
+function flowOf(rows, net){
+  const locked = new Set(mustBills().map(b => b.key)), f = {ym:ymAt(S.months), name:S.period, in:0, salary:0, family:0, bills:0, ess:0, fun:0, other:0, saved:0, interest:net || 0, sav:S._savNow || 0, billsN:0};
+  rows.forEach(t => { const ty = txType(t);
+    if(ty === 'in'){ f.in += t.a; if(/SALARY/.test(t.n)) f.salary += t.a; else f.family += t.a; return; }
+    if(t.n === 'PERSELY DEPOSIT'){ f.saved += -t.a; return; }
+    if(ty === 'own') return;
+    if(t.parts){ f.ess += t.parts.ess || 0; f.fun += t.parts.fun || 0; return; }
+    if(t.a < 0 && locked.has(payeeKey(t))){ f.bills += -t.a; f.billsN++; return; }
+    if(t.a < 0) f.other += -t.a; });
+  f.ptotal = total(); return f;
+}
 /* ================= sub pages ================= */
 function nekedCards(compact){
   const art = (bg,icon,col='#fff') => `<div class="im" style="background:${bg};color:${col}">${I(icon,54)}</div>`;
@@ -1942,6 +2005,7 @@ const PAGES = {
     <div class="card u-card-bul"><ul class="bul sm"><li>Your goals, streak and friends stay as they are</li><li>Without a salary at OTP the rate goes back to standard after 30 days' notice</li></ul></div>
     ${pr.on && pr.pct < 20 ? `<div class="note"><b>Tip:</b> most people earn more after 24. Saving ${pr.pct+5}% instead of ${pr.pct}% is about ${ft(incomeShare(5))} more a month. <a class="link" data-raise>Raise to ${pr.pct+5}%</a></div>` : ''}`; },
     foot:()=> S.bridge ? '' : `<button class="btn" data-keeprate>Keep my 3.0%</button>`},
+  year:{title:'Your year in Persely', html:()=>yearHTML(), foot:()=> yearMonths().length ? `<button class="btn" data-yearstory>See your year story</button>` : ''},
   kartyaim:{title:'My cards', html:()=>vKartyaim().replace('<div class="tabtitle">My cards</div>','')},
   szamlaim:{title:'My accounts', html:()=>S.accounts.map(a=>`<div class="card"><b class="u-fs-m">${a.n}</b><div class="u-k-xs">${a.no}</div>
     <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:0.84375rem"><span>${a.id==='persely'?'Balance':'Available balance'}</span><b class="num u-fs-16">${ft(a.v)}</b></div>
@@ -2357,8 +2421,8 @@ document.addEventListener('click', e=>{
     depositTo(g, v); renderAll(); undoable(before, `${ft(v)} moved to ${g.name}`); return; }
   if(d.hintok){ endHint(); return; }
   if(d.goal){ S._detail = d.goal; closeSheet(); pushPage('goal'); return; }
-  if(d.dm){ closeSheet(); ({payday:salaryArrives, coffee, dori:doriJoins, week:nextWeek, month:()=>monthStep(), sem:endSemester, grad:graduation, update:demoUpdateDay,
-    bills:billMissed, reset:()=>{ closeOnb(); closeWhatsNew(); S = fresh(); week8State(); tab('hub'); }})[d.dm](); return; }
+  if(d.dm){ closeSheet(); ({payday:salaryArrives, coffee, dori:doriJoins, week:nextWeek, month:()=>fastForward(1, 'month'), month2:()=>fastForward(2, 'month'), year:()=>fastForward(S.months < 12 ? 12 - S.months : 12, 'year'), sem:endSemester, grad:graduation, update:demoUpdateDay,
+    bills:billMissed, reset:demoStart})[d.dm](); return; }
   // rules from inside one Persely
   if(d.gpay){ const before = snap(); if(S.payday.on && S.ruleGoal === d.gpay) S.payday.on = false; else { S.payday.on = true; S.ruleGoal = d.gpay; } syncSplit(); renderAll(); undoable(before, S.payday.on ? `Payday rule → ${goalById(d.gpay).name}` : 'Payday rule off'); return; }
   if(d.grr){ const before = snap(); if(S.roundup.on && S.roundup.goal === d.grr) S.roundup.on = false; else S.roundup = {on:true, goal:d.grr}; renderAll(); undoable(before, S.roundup.on ? `Round-ups now go to ${goalById(d.grr).name}` : 'Round-ups off'); return; }
@@ -2508,7 +2572,10 @@ document.addEventListener('click', e=>{
   if(d.rrgoal){ S.roundup.goal = d.rrgoal; sheet(SHEETS.roundrule()); return; }
   if('rron' in d){ const before = UNDO.base || snap(); UNDO.base = null; S.roundup.on = true; closeSheet(); renderAll(); undoable(before, `Round-ups on: they go to ${(goalById(S.roundup.goal)||ruleGoal()).name}`); return; }
   if('rroff' in d){ const before = UNDO.base || snap(); UNDO.base = null; S.roundup.on = false; closeSheet(); renderAll(); undoable(before, 'Round-ups off'); return; }
-  if('keeprate' in d){ S.bridge = true; renderAll(); popPage(); tab('hub'); toast('Done. Your 3.0% continues for 12 months once your salary arrives at OTP'); return; }
+  if('keeprate' in d){ S.bridge = true; renderAll(); popPage(); tab('hub'); toast('Done. Your 3.0% continues for 12 months once your salary arrives at OTP');
+    if(S._ffRest){ const r = S._ffRest; S._ffRest = 0; setTimeout(() => fastForward(r, 'year'), 1400); }   // the year jump carries on after the Junior moment
+    return; }
+  if('yearstory' in d){ S._yearStory = true; openStory(); return; }
   if('raise' in d){ const before = snap(); S.payday.pct = Math.min(20, S.payday.pct + 5); syncSplit(); renderAll(); undoable(before, `Payday rule is now ${S.payday.pct}%`); return; }
   if('insyes' in d){ const before = snap(), g = ruleGoal(); g.pace = (g.pace || 0) + (+d.insyes); S.insightUsed = true; renderAll(); undoable(before, `Done: ${ft(+d.insyes)} more a month goes to ${g.name}`); return; }
   if('insno' in d){ S.insightUsed = true; renderAll(); return; }
@@ -3223,7 +3290,10 @@ const stList = a => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' an
 const ST_SEG = {must:['Must-pay', '#B4C3D6'], ess:['Everyday essentials', '#62AEE6'], fun:['Fun', '#F07D19'], other:['Other', '#A7ADB8'], save:['Saving', '#6FCB4A'], left:['Left over', '#E3E8EF']};
 // the months the story covers: this month, or the finished months of the semester (September to now; the month the demo skips is not in S.closedYm)
 function stRange(){
-  const sem = S.period === 'Autumn semester', last = ymAt(S.months || 0);
+  const last = ymAt(S.months || 0);
+  if(S._yearStory){ const ys = (S.closedYm || []).filter(y => y >= ymAt(1) && y <= last).slice(-12), f = ys[0] || last;
+    return {sem:true, year:true, yms:ys.length ? ys : [last], name:`${stShort(f)} ${f.slice(0, 4)} – ${stShort(last)} ${last.slice(0, 4)}`}; }
+  const sem = S.period === 'Autumn semester';
   if(!sem) return {sem, yms:[last], name:S.period};
   const ys = (S.closedYm || []).filter(y => y >= '2026-09' && y <= last).slice(-5);
   return {sem, yms:ys.length ? ys : [last], name:'Autumn semester'};
@@ -3277,7 +3347,7 @@ function stFrame(k, vis, big, sub, note){
 }
 function storySlides(){
   const R = stRange(), A = stAgg(R.yms), sem = R.sem, an = S.analyst.on || !STORY_NEEDS_ANALYST, ym = R.yms[R.yms.length - 1], nm = R.yms.length;
-  const unit = sem ? 'semester' : 'month', over = sem ? `over ${nm} months` : '', ov = over ? ' ' + over : '', out = [];
+  const unit = R.year ? 'year' : sem ? 'semester' : 'month', over = sem ? `over ${nm} months` : '', ov = over ? ' ' + over : '', out = [];
   // 1 title
   out.push({id:'title', say:`Your ${unit}: ${R.name}. Here is how it went, in about thirty seconds.`, fin(T){ this.secs = Math.round(T / 5) * 5; this.say = `Your ${unit}: ${R.name}. Here is how it went, in about ${this.secs} seconds. Tap to start.`; },
     build(){ const small = matchMedia('(max-height:700px)').matches;
@@ -3417,8 +3487,8 @@ function storySlides(){
 // last slide: a card to share, with progress but no amounts
 function shareCard(){
   const goals = S.goals.filter(g => !isEur(g)).map(g => ({g, p:Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100))})).sort((a,b) => b.p - a.p).slice(0, 2);
-  return `<div class="st-share"><div class="st-sub" style="text-align:center;margin-bottom:14px">Share your ${S.period === 'Autumn semester' ? 'semester' : 'month'}. Amounts stay private.</div>
-    <div class="sharec"><span class="k">Anna's ${S.period}</span>
+  return `<div class="st-share"><div class="st-sub" style="text-align:center;margin-bottom:14px">Share your ${S._yearStory ? 'year' : S.period === 'Autumn semester' ? 'semester' : 'month'}. Amounts stay private.</div>
+    <div class="sharec"><span class="k">Anna's ${S._yearStory ? 'first year with Persely' : S.period}</span>
       <div style="display:flex;align-items:center;gap:8px;margin:6px 0 2px">${flame(40)}<b style="font-size:2.5rem;line-height:1;color:var(--ink)">${S.streak}</b></div>
       <div style="font-size:var(--fs-m);font-weight:600;color:var(--ink)">week streak, without a break</div>
       <div style="height:1px;background:var(--line);margin:14px 0"></div>
@@ -3448,6 +3518,7 @@ function openStory(n){
   if(!ST.raf) ST.raf = requestAnimationFrame(stTick);
 }
 function closeStory(){
+  S._yearStory = false;
   const el = $('#story'); ST.on = false; ST.away = false; window.__stAway = false; ST.hold.clear(); cancelAnimationFrame(ST.raf); ST.raf = 0; clearTimeout(ST.pt);
   el.classList.remove('on', 'away', 'held', 'rec'); el.style.transform = ''; el.style.transition = ''; el.innerHTML = ''; mountPig();
 }
@@ -3703,7 +3774,139 @@ function endSemester(){
 // graduation / the Junior package ends: the bridge offer
 function graduation(){ unlockPhone(); closeSheet(); S.juniorDays = 0; renderAll(); tab('hub'); pushPage('grad'); }
 // replay the launch right after the update: splash, then the pop-up
-function demoUpdateDay(){ unlockPhone(); closeOnb(); closeWhatsNew(); S = fresh(); renderAll(); tab('fooldal'); showSplash(1100); launchFlow(1300); }
+function demoUpdateDay(){ demoStart(); }   // U: the presentation start (Face ID, splash, Persi's pop-up)
+/* ================= demo presentation (plan section 16): Face ID start, fast-forward cash-flow river, the year =================
+   U / Reset = demoStart(): fresh data, the lock screen with a Face ID unlock, the splash, then Persi's pop-up. Junior ends in 300 days (month 10 of the year).
+   O = +1 month, Q = +2 months, Y = to month 12: fastForward(n, mode) runs monthStep() for each month first, then plays the months as a time-driven
+   overlay (ffSeek(t) is a pure function of t, like the story), and lands on a summary card. Y stops once when the Junior package ends: the card opens the
+   graduation screen and "Keep my 3.0%" carries on with the rest of the year (S._ffRest). The year ends on PAGES.year ("Your year in Persely"). */
+let fidTimers = [];
+function faceIdUnlock(done){
+  fidTimers.forEach(clearTimeout); fidTimers = [];
+  lockPhone(); const l = $('#lock'); let f = l.querySelector('.fid');
+  if(!f){ f = document.createElement('div'); f.className = 'fid'; f.setAttribute('aria-hidden', 'true');
+    f.innerHTML = `<svg viewBox="0 0 64 64" width="76" height="76" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <g class="fid-c"><path d="M6 20V12a6 6 0 0 1 6-6h8"/><path d="M44 6h8a6 6 0 0 1 6 6v8"/><path d="M58 44v8a6 6 0 0 1-6 6h-8"/><path d="M20 58h-8a6 6 0 0 1-6-6v-8"/></g>
+      <g class="fid-face"><path d="M23 23v5"/><path d="M41 23v5"/><path d="M32 23v11h-3"/><path d="M23 42q9 7 18 0"/></g>
+      <path class="fid-ok" d="M20 33l8 8 16-17"/></svg><span>Face ID</span>`; l.appendChild(f); }
+  l.classList.add('fidon'); f.classList.remove('fid-done'); f.classList.add('fid-scan');
+  fidTimers.push(setTimeout(() => { f.classList.remove('fid-scan'); f.classList.add('fid-done'); }, 1000));
+  fidTimers.push(setTimeout(() => { unlockPhone(); setTimeout(() => l.classList.remove('fidon'), 360); if(done) done(); }, 1600));
+}
+function demoStart(){
+  closeOnb(); closeWhatsNew(); closeStory(); ffClose(true); closeSheet(); while(stack.length) popPage(true);
+  S = fresh(); S.juniorDays = 300; S.flowLog = []; S.savInt = 0; S._ffRest = 0; S.jrShown = false; renderAll(); tab('fooldal');
+  faceIdUnlock(() => { showSplash(900); launchFlow(1100); });
+}
+// ---------- fast forward ----------
+const FF = {on:false, raf:0, t:0, T:0, last:0, months:[], dur:[], mode:'month', rest:0, max:1};
+function fastForward(n, mode){
+  if(FF.on) return;
+  unlockPhone(); closeSheet(); closeOnb(); closeWhatsNew(); closeStory(); hideBanners(); hideToast(true); while(stack.length) popPage(true);
+  const months = []; let stop = false; FF.start = total();
+  for(let i = 0; i < n; i++){
+    monthStep(true); months.push(S.flowLog[S.flowLog.length - 1]);
+    if(mode === 'year' && S.juniorDays === 0 && !S.bridge && !S.jrShown && i < n - 1){ S.jrShown = true; S._ffRest = n - i - 1; stop = true; break; }
+  }
+  if(mode === 'year' && S.juniorDays === 0 && !S.bridge && !S.jrShown){ S.jrShown = true; stop = true; S._ffRest = 0; }
+  save(); ffPlay(months, mode, stop);
+}
+function ffPlay(months, mode, stop){
+  const k = months.length, el = $('#ff');
+  FF.months = months; FF.mode = mode; FF.stop = stop; FF.max = Math.max(1, ...months.map(m => m.in));
+  FF.dur = months.map((_, i) => k === 1 ? 3.4 : k === 2 ? 2.6 : Math.max(.6, 1.5 - i * .13));
+  FF.T = .35 + FF.dur.reduce((a, b) => a + b, 0); FF.t = 0; FF.last = 0; FF.on = true;
+  const node = (x, y, w, h, label, cls) => `<g class="ff-n ${cls || ''}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10"/><text x="${x + w / 2}" y="${y + h / 2 + 5}" text-anchor="middle">${label}</text></g>`;
+  const R = FF_RIGHT.map(([key, label], i) => node(250, FF_Y[i] - 18, 86, 36, label, 'ff-' + key)).join('');
+  el.innerHTML = `<div class="ff-top"><div class="ff-k">Fast forward</div><div class="ff-m num" data-ffm></div><div class="ff-day"><i data-ffday></i></div></div>
+    <svg class="ff-svg" viewBox="0 0 340 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      ${FF_LEFT.map(([key], i) => `<path class="ff-p ff-${key}" data-ffl="${i}" d="M92 ${FF_LY[i]} C110 ${FF_LY[i]} 112 ${150 + (i ? 30 : -30)} 128 ${150 + (i ? 30 : -30)}"/><path class="ff-q ff-${key}" data-ffl2="${i}" d="M92 ${FF_LY[i]} C110 ${FF_LY[i]} 112 ${150 + (i ? 30 : -30)} 128 ${150 + (i ? 30 : -30)}"/>`).join('')}
+      ${FF_RIGHT.map(([key], i) => `<path class="ff-p ff-${key}" data-ffr="${i}" d="M212 ${120 + i * 20} C232 ${120 + i * 20} 232 ${FF_Y[i]} 250 ${FF_Y[i]}"/><path class="ff-q ff-${key}" data-ffr2="${i}" d="M212 ${120 + i * 20} C232 ${120 + i * 20} 232 ${FF_Y[i]} 250 ${FF_Y[i]}"/>`).join('')}
+      <path class="ff-q ff-int" data-ffi d="M293 282 L293 ${FF_Y[3] + 18}"/>
+      ${node(4, FF_LY[0] - 18, 88, 36, 'Salary', 'ff-sal')}${node(4, FF_LY[1] - 18, 88, 36, 'Family', 'ff-fam')}
+      <g class="ff-n ff-acc"><rect x="128" y="96" width="84" height="108" rx="14"/><text x="170" y="142" text-anchor="middle">Junior</text><text x="170" y="160" text-anchor="middle">account</text></g>
+      ${R}<text class="ff-it" x="293" y="296" text-anchor="middle">interest</text>
+    </svg>
+    <div class="ff-grid">${FF_COUNT.map(([key, label]) => `<div><small>${label}</small><b class="num" data-ffc="${key}">0 Ft</b></div>`).join('')}</div>
+    <div class="ff-persi">${pigSvg('happy', 46)}<span data-ffw></span></div>
+    <div class="ff-land" data-ffland hidden></div>`;
+  el.classList.add('on'); $('#phone').classList.add('ffon'); el.onclick = e => { if(e.target.closest('button')) return; if(FF.t < FF.T) { FF.t = FF.T; ffSeek(FF.t); } };
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) FF.t = FF.T;
+  ffSeek(FF.t); if(FF.t < FF.T){ FF.raf = requestAnimationFrame(ffTick); }
+}
+const FF_LEFT = [['sal', 'Salary'], ['fam', 'Family']], FF_LY = [100, 200];
+const FF_RIGHT = [['bills', 'Bills'], ['ess', 'Essentials'], ['fun', 'Fun'], ['save', 'Persely']], FF_Y = [36, 104, 172, 240];
+const FF_COUNT = [['in', 'Money in'], ['bills', 'Bills paid'], ['spent', 'Spent'], ['saved', 'Saved'], ['interest', 'Interest'], ['ptotal', 'In Persely']];
+const ffVal = (m, key) => key === 'spent' ? m.ess + m.fun + m.other : m[key];
+function ffTick(now){ if(!FF.on) return; if(!FF.last) FF.last = now; FF.t = Math.min(FF.T, FF.t + (now - FF.last) / 1000); FF.last = now; ffSeek(FF.t); if(FF.t < FF.T) FF.raf = requestAnimationFrame(ffTick); }
+function ffSeek(t){
+  const el = $('#ff'), q = s => el.querySelector(s), qa = s => el.querySelectorAll(s), M = FF.months; if(!M.length) return;
+  let i = 0, acc0 = .35, p = 0;
+  if(t < .35) p = 0; else { for(i = 0; i < M.length; i++){ if(t < acc0 + FF.dur[i] || i === M.length - 1){ p = Math.min(1, (t - acc0) / FF.dur[i]); break; } acc0 += FF.dur[i]; } }
+  const m = M[i], ez = 1 - Math.pow(1 - p, 3), pulse = .35 + .65 * Math.sin(Math.PI * Math.min(1, p * 1.15)), wOf = v => v > 0 ? Math.max(2.5, 26 * v / FF.max) : 0;
+  q('[data-ffm]').textContent = m.name + ' ' + m.ym.slice(0, 4); q('[data-ffday]').style.width = Math.round(p * 100) + '%';
+  const left = [m.salary, m.family], right = [m.bills, m.ess, m.fun, m.saved], dash = -t * 70;
+  left.forEach((v, k) => { [q(`[data-ffl="${k}"]`), q(`[data-ffl2="${k}"]`)].forEach((pth, z) => { pth.style.strokeWidth = wOf(v); pth.style.opacity = z ? pulse : .22; if(z) pth.style.strokeDashoffset = dash; }); });
+  right.forEach((v, k) => { [q(`[data-ffr="${k}"]`), q(`[data-ffr2="${k}"]`)].forEach((pth, z) => { pth.style.strokeWidth = wOf(v); pth.style.opacity = z ? pulse : .22; if(z) pth.style.strokeDashoffset = dash; }); });
+  const ip = q('[data-ffi]'); ip.style.strokeWidth = m.interest > 0 ? 4 : 0; ip.style.strokeDashoffset = dash * .6; ip.style.opacity = pulse;
+  FF_COUNT.forEach(([key]) => { let v = 0;
+    if(key === 'ptotal'){ const a = i ? M[i - 1].ptotal : FF.start, b = m.ptotal; v = a + (b - a) * (t < .35 ? 0 : ez); }   // the Persely balance, not a sum
+    else { for(let j = 0; j < i; j++) v += ffVal(M[j], key); v += ffVal(m, key) * (t < .35 ? 0 : ez); }
+    q(`[data-ffc="${key}"]`).textContent = ft(v); });
+  q('[data-ffw]').textContent = t < .35 ? 'Off we go' : p < .5 ? (m.billsN ? `${plural(m.billsN, 'bill')} paid` : 'Salary in') : m.saved ? `${ft(m.saved)} saved` : 'Month done';
+  const land = q('[data-ffland]');
+  if(t >= FF.T && land.hidden){ land.innerHTML = ffLandHTML(); land.hidden = false; el.classList.add('landed'); }
+}
+function ffLandHTML(){
+  const M = FF.mode === 'year' ? (S.flowLog || []).slice(-Math.min(12, S.months)) : FF.months, n = M.length, sum = key => M.reduce((a, m) => a + ffVal(m, key), 0), first = M[0], last = M[n - 1];
+  const span = n === 1 ? `${last.name} ${last.ym.slice(0, 4)}` : `${first.name.slice(0, 3)} ${first.ym.slice(0, 4)} – ${last.name.slice(0, 3)} ${last.ym.slice(0, 4)}`;
+  const due = n * dueBills(), paid = M.reduce((a, m) => a + m.billsN, 0);
+  if(FF.mode === 'year'){ const yms = (S.closedYm || []).filter(y => y >= ymAt(1) && y <= ymAt(S.months)), A = stAgg(yms);   // same totals as the year screen and the year story
+    const tot = {in:A.inc, bills:A.must, spent:A.ess + A.fun + A.other, saved:A.save, interest:A.interest}; var sumY = key => tot[key]; }
+  const S2 = FF.mode === 'year' ? sumY : sum;
+  const head = FF.stop ? 'Your Junior package ends' : FF.mode === 'year' && S.months >= 12 ? 'One year with Persely' : `${plural(n, 'month')} later`;
+  const btn = FF.stop ? `<button class="btn" data-ffgrad>See what's next</button>` : FF.mode === 'year' && S.months >= 12 ? `<button class="btn" data-ffyear>See your year</button>` : `<button class="btn" data-ffdone>Continue</button>`;
+  return `<div class="ff-card"><div class="ff-ck">${span}</div><h3>${head}</h3>
+    ${FF.stop ? `<p>Month ${S.months}: have your salary paid into OTP and keep 3.0% for 12 more months.</p>` : ''}
+    <div class="ff-rows"><div><span>Money in</span><b class="num">${ft(S2('in'))}</b></div>
+      <div><span>Bills paid${due ? ` · ${paid} of ${due} on time` : ''}</span><b class="num">${ft(S2('bills'))}</b></div>
+      <div><span>Spent</span><b class="num">${ft(S2('spent'))}</b></div>
+      <div><span>Put aside in Persely</span><b class="num">${ft(S2('saved'))}</b></div>
+      <div><span>Interest at ${rateLabel()}, after tax</span><b class="num">+${ft(S2('interest'))}</b></div></div>
+    <div class="ff-tot"><span>Now in Persely</span><b class="num">${ft(total())}</b></div>${btn}</div>`;
+}
+const dueBills = () => mustBills().filter(b => b.day <= (S.demoDay || 14)).length;   // bills that fall due by the demo "today" (the 14th) of each simulated month
+function ffClose(quiet){
+  cancelAnimationFrame(FF.raf); FF.raf = 0; const was = FF.on; FF.on = false; const el = $('#ff'); el.classList.remove('on', 'landed'); el.innerHTML = ''; $('#phone').classList.remove('ffon');
+  if(!was || quiet) return;
+  renderAll(); mountPig();
+}
+$('#ff').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return; const d = b.dataset;
+  if('ffdone' in d){ ffClose(); tab('fooldal');
+    if(S._rw){ notify({title:'Persi · Persely', persi:true, body:`Reward earned: ${S._rw.rew.title}. ${S._rw.rew.why}.`, url:'hub'}); qSheet(() => SHEETS.reward(), 'reward'); } }
+  else if('ffgrad' in d){ ffClose(); tab('hub'); pushPage('grad'); }
+  else if('ffyear' in d){ ffClose(); tab('hub'); pushPage('year'); }
+});
+function yearMonths(){ return (S.flowLog || []).slice(-Math.min(12, S.months || 0) || -1); }
+function yearHTML(){
+  const M = yearMonths(), n = M.length, sum = key => M.reduce((a, m) => a + ffVal(m, key), 0); if(!n) return '<div class="card" style="padding:18px">Fast-forward a month first (O).</div>';
+  const I0 = sum('interest'), rev = Math.round(I0 * 1.8 / (RATE * (1 - TAX))), low = Math.round(I0 * LOW_RATE / RATE), sav = M.reduce((a, m) => a + (m.sav || 0), 0), mx = Math.max(I0, rev, 1);
+  const bar = (label, v, cls, note) => `<div class="yr-b"><div class="yr-bl"><span>${label}</span><b class="num">+${ft(v)}</b></div><div class="yr-bt"><i class="${cls}" style="--w:${Math.max(1.5, v / mx * 100)}%"></i></div>${note ? `<small>${note}</small>` : ''}</div>`;
+  const due = n * dueBills(), paid = M.reduce((a, m) => a + m.billsN, 0);
+  const yms = (S.closedYm || []).filter(y => y >= ymAt(1) && y <= ymAt(S.months)).slice(-12), A = stAgg(yms);   // the same totals as the year story
+  const sc = []; for(let k = 3; k <= S.scoreHist.length; k++) sc.push(scoreOf(S.scoreHist.slice(0, k)).t); const flat = sc.length && Math.min(...sc) === Math.max(...sc);
+  const goals = S.goals.filter(g => !isEur(g)).map(g => { const p = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100)); return `<div class="li"><span class="t"><b>${esc(g.name)}</b><small>${ft(gSaved(g))} of ${ft(gTarget(g))}</small><span class="prog" style="display:block;margin:6px 0 0"><i style="width:${p}%"></i></span></span><b class="num u-c-gt">${p}%</b></div>`; }).join('');
+  return `<div class="yr-hero card"><div class="u-k-xs">${M[0].name.slice(0, 3)} ${M[0].ym.slice(0, 4)} – ${M[n - 1].name.slice(0, 3)} ${M[n - 1].ym.slice(0, 4)} · ${plural(n, 'month')}</div>
+      <div class="yr-big num">${ft(total())}</div><div class="u-fs-s">in Persely now · ${ft(A.save)} put aside this year</div></div>
+    <div class="sec"><span>What your rate earned</span></div>
+    <div class="card yr-bars">${bar(`Persely at ${rateLabel()}`, I0, 'g', 'After 28% tax, on your first 500 000 Ft')}${bar('Revolut Standard, 1.8% after tax', rev, 'r', 'Same balances, for comparison')}${bar('Persely before, 0.01%', low, 'l', 'What the same money earned until now')}</div>
+    <div class="card yr-sav"><span class="t"><b>Savings account, ${SAV_RATE}%</b><small>${ft(acc('megt').v)} now, after tax</small></span><b class="num u-c-gt">+${ft(sav)}</b></div>
+    <div class="sec"><span>Your money this year</span></div>
+    <div class="card lst">${[['Money in', ft(A.inc)], ['Must-pay bills', `${ft(A.must)}${due ? ` · ${paid} of ${due} on time` : ''}`], ['Everyday essentials', ft(A.ess)], ['Fun', ft(A.fun)], ['Put aside in Persely', ft(A.save)], ['Interest, all accounts', '+' + ft(I0 + sav)]].map(([a, b]) => `<div class="li"><span class="t"><b>${a}</b></span><b class="num">${b}</b></div>`).join('')}</div>
+    <div class="sec"><span>Your goals</span></div><div class="card lst">${goals}</div>
+    ${sc.length ? `<div class="sec"><span>Financial health score</span></div>${flat ? `<div class="card yr-sav"><span class="t"><b>${sc[0]} of 100, every month</b><small>Spending under income, no overdraft, a buffer and regular saving</small></span><b class="num u-c-gt">${sc[0]}</b></div>` : `<div class="card yr-sc"><div class="yr-scb">${sc.map(v => `<i style="--h:${Math.max(6, v)}%"><b>${v}</b></i>`).join('')}</div><small>From ${sc[0]} to ${sc[sc.length - 1]} of 100</small></div>`}` : ''}`;
+}
 function renderDemoPanel(){
   const p = $('#demoPanel');
   p.classList.toggle('hidden', demo.hidden); $('#demoShow').classList.toggle('on', demo.hidden);
@@ -3716,12 +3919,14 @@ function renderDemoPanel(){
     <button data-ddori>👯 Dóri joins<kbd>D</kbd></button>
     <button data-dnext>⏭ Next week<kbd>N</kbd></button>
     <button data-dbill>🧾 Bill missed (rent)<kbd>B</kbd></button>
-    <button data-dmonth>📆 +1 month<kbd>O</kbd></button>
+    <button data-dmonth>⏩ +1 month<kbd>O</kbd></button>
+    <button data-dmonth2>⏩ +2 months<kbd>Q</kbd></button>
+    <button data-dyear>⏩ To month 12<kbd>Y</kbd></button>
     <button data-dsem>🎓 End of semester<kbd>E</kbd></button>
     <button data-dgrad>🎉 Junior ends / graduation<kbd>G</kbd></button>
     <button data-dstory>📊 Story<kbd>M</kbd></button>
     <button data-dtour>💡 Persi hints again<kbd>T</kbd></button>
-    <button data-dupdate>🆕 Update day (pop-up)<kbd>U</kbd></button>
+    <button data-dupdate>▶ Demo start: Face ID<kbd>U</kbd></button>
     <button data-djump>📅 8 weeks later<kbd>J</kbd></button>
     <button data-ddelay>⏱ Delay: ${demo.delay ? demo.delay+' s' : 'none'}</button>
     <button data-dphone class="${demo.phone?'on':''}">📱 Also send to iPhone: ${demo.phone?'on':'off'}</button>
@@ -3739,7 +3944,9 @@ $('#demoPanel').addEventListener('click', e=>{
   else if('dcoffee' in d) coffee();
   else if('ddori' in d) doriJoins();
   else if('dbill' in d) billMissed();
-  else if('dmonth' in d){ unlockPhone(); closeSheet(); monthStep(); }
+  else if('dmonth' in d) fastForward(1, 'month');
+  else if('dmonth2' in d) fastForward(2, 'month');
+  else if('dyear' in d) fastForward(S.months < 12 ? 12 - S.months : 12, 'year');
   else if('dsem' in d) endSemester();
   else if('dgrad' in d) graduation();
   else if('dstory' in d){ unlockPhone(); tab('hub'); openStory(); }
@@ -3749,14 +3956,14 @@ $('#demoPanel').addEventListener('click', e=>{
   else if('ddelay' in d){ demo.delay = {0:3, 3:10, 10:0}[demo.delay]; renderDemoPanel(); }
   else if('dphone' in d){ demo.phone = !demo.phone; renderDemoPanel(); }
   else if('dsound' in d){ demo.sound = !demo.sound; renderDemoPanel(); }
-  else if('dreset' in d){ unlockPhone(); closeOnb(); closeWhatsNew(); S = fresh(); week8State(); tab('fooldal'); showSplash(1100); }
+  else if('dreset' in d) demoStart();   // back to the start of act 1 (logged out, update not seen)
   else if('dhide' in d){ demo.hidden = true; renderDemoPanel(); }
 });
 $('#demoShow').addEventListener('click', ()=>{ demo.hidden = false; renderDemoPanel(); });
 // on the phone itself: long-press Anna's avatar on Home opens the demo controls (idea from the team handoff)
 function demoSheet(){
   const b = (a, e, t, s) => `<button data-dm="${a}">${e} ${t}<small>${s}</small></button>`;
-  return `<h2>Demo controls</h2><div class="dsheet">${b('payday','💰','Payday','Salary, asks 10%')}${b('coffee','☕','Card purchase','Coffee, round-up')}${b('dori','👯','Dóri joins','Shared Persely')}${b('week','⏭','Next week','')}${b('bills','🧾','Bill missed','Rent unpaid, Bills first')}${b('month','📆','+1 month','Rules and interest')}${b('sem','🎓','End of semester','Semester story')}${b('grad','🎉','Junior ends','Keep my 3.0%')}${b('update','🆕','Update day','Pop-up again')}${b('reset','↺','Reset','8 weeks later')}</div>`;
+  return `<h2>Demo controls</h2><div class="dsheet">${b('payday','💰','Payday','Salary, asks 10%')}${b('coffee','☕','Card purchase','Coffee, round-up')}${b('dori','👯','Dóri joins','Shared Persely')}${b('week','⏭','Next week','')}${b('bills','🧾','Bill missed','Rent unpaid, Bills first')}${b('month','⏩','+1 month','Cash flow, rules, interest')}${b('month2','⏩','+2 months','Cash flow')}${b('year','⏩','To month 12','Stops at Junior ends')}${b('sem','🎓','End of semester','Semester story')}${b('grad','🎉','Junior ends','Keep my 3.0%')}${b('update','▶','Demo start','Face ID, pop-up')}${b('reset','↺','Reset','Back to the start')}</div>`;
 }
 let lpTimer = null;
 document.addEventListener('pointerdown', e => { if(!(e.target.closest && e.target.closest('.hhead .avatar'))) return; clearTimeout(lpTimer); lpTimer = setTimeout(() => { lpTimer = null; sheet(demoSheet()); }, 650); });
@@ -3771,7 +3978,9 @@ addEventListener('keydown', e=>{
   else if(k === 'c') coffee();
   else if(k === 'd') doriJoins();
   else if(k === 'b') billMissed();
-  else if(k === 'o'){ unlockPhone(); closeSheet(); monthStep(); }
+  else if(k === 'o') fastForward(1, 'month');
+  else if(k === 'q') fastForward(2, 'month');
+  else if(k === 'y') fastForward(S.months < 12 ? 12 - S.months : 12, 'year');
   else if(k === 'e') endSemester();
   else if(k === 'g') graduation();
   else if(k === 'm'){ unlockPhone(); tab('hub'); openStory(); }

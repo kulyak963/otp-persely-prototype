@@ -48,115 +48,97 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
 <div class="wrap">
   <header>
     <h1>Persely demo script</h1>
-    <p class="lead">Team 3, OTP × Corvinus seminar. One student, Kiss Anna, from the update pop-up to the end of her Junior package. About 6 minutes with both analyst beats (the shorter onboarding saves about 30 seconds against the earlier 6:30 run; see the timing table and the note under the run sheet). Everything runs in our app on the iPhone and on the laptop next to it.</p>
-    <div class="meta"><span class="tag">3.0% with Junior</span><span class="tag">Weekly streak</span><span class="tag">Persi, the Persely piggy</span><span class="tag">Shared Persely</span><span class="tag">Graduation bridge</span><span class="tag">Bills first</span></div>
+    <p class="lead">Team 3, OTP × Corvinus seminar. One year with Kiss Anna: from her first login to the end of her first year with Persely. About 7 minutes of demo inside a 10-minute pitch. Time jumps play as a cash-flow animation on the phone, so the jury sees the money move. Everything runs in our app on the laptop (iPhone frame) and on the iPhone.</p>
+    <div class="meta"><span class="tag">3.0% with Junior</span><span class="tag">Weekly streak</span><span class="tag">Persi, the Persely piggy</span><span class="tag">Shared Persely</span><span class="tag">Graduation bridge</span><span class="tag">Bills first</span><span class="tag">Fast-forward cash flow</span><span class="tag">One year</span></div>
   </header>
 
   <section class="box">
     <h2>Before you start</h2>
     <ol>
-      <li>A minute before: open <b>otp-persely-prototype.onrender.com</b> so the free server wakes up. On the laptop open it once as <b>…/?key=ADMIN_KEY</b> so real pushes work. The demo panel sits to the left of the phone; <kbd>H</kbd> hides it. (Backup: run the server locally and use localhost:8090.)</li>
-      <li>iPhone: open the app from the Home Screen icon. Turn on <b>Also send to iPhone</b> in the panel if pushes should reach the phone too. This includes the "Reward earned" push after <kbd>O</kbd> in step 8.</li>
-      <li>Press <kbd>U</kbd> to start from the update day. If something goes wrong, <b>Reset app</b> in the panel (or <kbd>J</kbd>) jumps to the state "8 weeks later". "Demo: 8 weeks later" is no longer in the More menu.</li>
-      <li>Only one message shows at a time (banner, then sheet, then toast), and every money move or rule change shows <b>Undo</b> for 5 seconds. Do not tap Undo by accident while talking. After step 4, Persi hint strips appear above each block of the Persely tab; tap <b>Got it</b> or ignore them. <kbd>T</kbd> (or "Persi hints again" in the panel) shows them again.</li>
-      <li>Presenting from the iPhone only: long-press Anna's picture on Home to open the same demo controls.</li>
+      <li>Two minutes before: open <b>otp-persely-prototype.onrender.com</b> so the free server wakes up. On the laptop open it once as <b>…/?key=ADMIN_KEY</b> so real pushes work. The demo panel sits to the left of the phone; <kbd>H</kbd> hides it. (Backup: localhost:8090, then the MP4s in <b>media/</b>.)</li>
+      <li>Press <kbd>U</kbd> (or <b>Reset app</b>): fresh data, the lock screen with a Face ID unlock, the splash, then Persi's pop-up. Anna has no First home fund yet and her Junior package ends in 300 days (month 10 of the year).</li>
+      <li>Only one message shows at a time (banner, then sheet, then toast). After a push banner the sheet follows in about 4 seconds; tap the banner to open it at once. Every money move shows <b>Undo</b> for 5 seconds; do not tap it by accident.</li>
+      <li>The fast-forward plays on its own; a tap skips to its summary card. The driver never talks during an animation.</li>
+      <li>Presenting from the iPhone only: long-press Anna's picture on Home for the same controls (+1 month, +2 months, To month 12, Bill missed, Demo start).</li>
     </ol>
   </section>
 
   <section>
     <h2>Run sheet</h2>
     <div class="scenes">
-      <div class="scene"><span class="n">1</span><h3>The update <span class="time">0:00 · 40 s</span></h3>
-        <p class="do">Press <kbd>U</kbd>. The pop-up with Persi asks "What are you saving for?". Tap the first tile, <b>Own home</b> (marked Trending). The other tiles are Travel, Car, Safety net, Studies and Something else (a custom goal). Give the room a second to react.</p>
-        <p class="say">"OTP loses students at 24, when the Junior package ends, and Revolut is close behind: 61% consideration against OTP's 64%. Persely already has more than 340,000 users, but it earns almost nothing, 0.01% a year. Students want to save: 85% say it matters, only 27% use a savings product."</p></div>
+      <div class="scene"><span class="n">0</span><h3>Opening <span class="time">0:00 · 2 min</span></h3>
+        <p class="do">Speaker 1, no app. The opening script (with the fixes from the plan: 0.01% "almost nothing", and OTP's own problem at 24).</p>
+        <p class="say">"…Let me hand over to the others, who'll show you how it actually works."</p></div>
 
-      <div class="scene"><span class="n">2</span><h3>3.0% with Junior <span class="time">0:40 · 20 s</span></h3>
-        <p class="do">Onboarding is now 3 screens. Screen 1 ("Step 1 of 3", Your goal) says "It earns 3.0% a year with your Junior account". Nothing to sign up for: every Junior customer gets it automatically.</p>
-        <p class="say">"<b>3.0%</b> on the first 500,000 Ft for every Junior customer, about 2.2% after tax. Persely pays 0.01% today; Revolut pays 1.8% after tax."</p></div>
+      <div class="scene"><span class="n">1</span><h3>First login <kbd>U</kbd> <span class="time">2:00 · 15 s</span></h3>
+        <p class="do">Lock screen, Face ID scans and unlocks, the OTP splash, Home. Persi's pop-up: "What are you saving for?"</p>
+        <p class="say">"Anna opens the OTP app like every day. Persely is just there."</p></div>
 
-      <div class="scene"><span class="n">3</span><h3>Goal and forecast <span class="time">1:00 · 31 s</span></h3>
-        <p class="do">The Own home preset already holds a goal named First home fund, 500,000 Ft by June 2029 (about 3,800 Ft a week), so there is nothing to pick: just tap <b>Next</b>. Point at the line above the button, "≈ X Ft a week", which shows what the goal costs a week (orange when the rules cannot cover it). If you want to show the controls, tap the amount to type it, drag the slider, or open the "By when?" row for the month sheet; keep it to a few seconds. On screen 2 (money in) the payday rule 10% and round-ups are on. The card says about 319,000 Ft by 1 June 2029, 64% of 500,000 Ft, about 181,000 short. Tap <b>Add 1,500 Ft a week to make it</b>.</p>
-        <p class="say">"Real goals, in students' own words. Every goal has a date, and the app tells you honestly whether you will make it. A late goal always comes with a one-tap fix: '+X Ft a week → on time'."</p></div>
+      <div class="scene"><span class="n">2</span><h3>House plan <span class="time">2:15 · 30 s</span></h3>
+        <p class="do">Tap <b>Own home</b> (Trending). Step 1: First home fund, 500,000 Ft by June 2029; the line above Next says "≈ 3,800 Ft a week". Optional, a few seconds: drag the amount slider (the money stack grows) or open "By when?" for the month sheet. Tap <b>Next</b>.</p>
+        <p class="say">"She picks a real goal: her first home. The app tells her straight away what it takes each week."</p></div>
 
-      <div class="scene"><span class="n">4</span><h3>First deposit <span class="time">1:31 · 20 s</span></h3>
-        <p class="do">Next → screen 3, the summary. The first deposit is right there: 1,000 Ft is preselected (a "change" link switches the account). Tap <b>Create goal</b>. A coin drops into Persi and the goal shows "1,000 Ft in · first step". No Pay-from sheet, no "You're all set" screen and no tour. Instead, Persi hint strips appear on the Persely tab the first time you see each block; skip them with <b>Got it</b>.</p>
-        <p class="say">"The streak starts with any amount. It is weekly, because student income is irregular."</p></div>
+      <div class="scene"><span class="n">3</span><h3>Auto savings <span class="time">2:45 · 30 s</span></h3>
+        <p class="do">Step 2: payday rule 10% and round-ups are on. The card says about 319,000 Ft by 1 June 2029, 181,000 short. Tap <b>Add 1,500 Ft a week to make it</b>: the weekly transfer switches on and the card turns to "on time" (about 517,000 Ft). <b>Next</b> → Check and create, 1,000 Ft first deposit preselected → <b>Create goal</b>. A coin drops into Persi.</p>
+        <p class="say">"Three switches, and saving runs on its own. She never has to remember."</p></div>
 
-      <div class="scene"><span class="n">4b</span><h3>When you are behind <span class="time">1:51 · 15 s</span></h3>
-        <p class="do">Persely tab → Goals. Anna already has <b>PS5 + GTA VI</b>, 46,000 of 230,000 Ft, due 19 November 2026: GTA VI's launch day, tomorrow. The card says "Behind · due tomorrow" and Persi says "PS5 + GTA VI is behind. That is okay, a new date can fix it." Tap the card: "Behind: 184,000 Ft to go by tomorrow", no shaming. Tap <b>New date: Sept 2027 · +2,000 Ft a week</b>. The goal date moves to 1 September 2027 and the page now says "you get there in August 2027". Undo shows for 5 seconds. (The other option on that page is "Add 65,000 Ft from Junior"; do not tap it on stage.) If you press <kbd>O</kbd> without tapping the fix, the goal reads "Goal date passed · about 184,000 Ft to go" and offers the same fix.</p>
-        <p class="say">"Falling behind is normal. The app says it honestly, never in red alarm, and fixes it in one tap with a new date that works with a small weekly top-up. The money stays and keeps earning 3.0%."</p></div>
+      <div class="scene"><span class="n">4</span><h3>Fast forward: 1 month <kbd>O</kbd> <span class="time">3:15 · 15 s</span></h3>
+        <p class="do">The cash-flow river: salary and the family transfer flow into the Junior account, then out to bills, essentials, Fun and Persely, with a gold interest drip. Counters tick. It lands on "December 2026 · 1 month later": in 135,000 Ft, bills 5 of 5 on time, 16,500 Ft put aside, +230 Ft interest, 127,730 Ft in Persely. Tap <b>Continue</b>.</p>
+        <p class="say">"Let's skip a month. Watch where her money goes."</p></div>
 
-      <div class="scene"><span class="n">4a</span><h3>The analyst <span class="time">2:06 · about 30 s</span></h3>
-        <p class="do">The analyst is offered where it helps: on a late or behind goal (the PS5 + GTA VI page has "Or see what the analyst suggests" until the fix is tapped), under My monthly spending on Home ("See how it fits your income"), on Persi's monthly tip, on the Monthly spending page, and still behind the More switch. Use one of these. One sheet opens: what it measures, and the suggested split of Anna's 75,000 Ft salary from her last 3 months: Essentials 50% (37,500 Ft), Fun 40% (30,000 Ft), Saving 10% (7,500 Ft). The Saving share is the payday rule she already has. Tap <b>Turn on and use this split</b> (2 taps in all); <b>My split</b> appears in the Persely tab.</p>
-        <p class="say">"It is opt-in, and it starts from what Anna really spent, not from a textbook. The Saving share is the payday rule she already set, so nothing is duplicated."</p></div>
+      <div class="scene"><span class="n">5</span><h3>New salary <kbd>P</kbd> <span class="time">3:30 · 25 s</span></h3>
+        <p class="do">Persi's push: "Salary's in: +75,000 Ft. Move 7,500 Ft to First home fund?" Tap the banner; the sheet shows the goal before and after. Tap <b>Move 7,500 Ft</b>.</p>
+        <p class="say">"Payday. The app asks first, and the share is gone before it can be spent."</p></div>
 
-      <div class="scene"><span class="n">5</span><h3>Payday <kbd>P</kbd> <span class="time">2:36 · 25 s</span></h3>
-        <p class="do">Persi's push: "Salary's in: +75,000 Ft. Move 7,500 Ft to First home fund?" The sheet shows the goal before and after. Tap <b>Move 7,500 Ft</b>.</p>
-        <p class="say">"The app asks first. The student keeps control, and the share is gone before it can be spent."</p>
-        <p class="do">A toast with Undo shows for 5 seconds after the move; mention it once: every money move can be taken back.</p></div>
+      <div class="scene"><span class="n">6</span><h3>Fast forward: 2 months <kbd>Q</kbd> <span class="time">3:55 · 15 s</span></h3>
+        <p class="do">Two months run in the river and land on "Jan 2027 – Feb 2027 · 2 months later": bills 10 of 10 on time, 33,000 Ft put aside, 168,805 Ft in Persely. <b>Continue</b>.</p>
+        <p class="say">"Two more months. Now the bank has three months of her real money to learn from."</p></div>
 
-      <div class="scene"><span class="n">5b</span><h3>Bills first <kbd>B</kbd> <kbd>P</kbd> <span class="time">3:01 · 28 s</span></h3>
-        <p class="do">Press <kbd>B</kbd> (it also turns the analyst on if it is still off): this month's rent payment is taken back, a push says "Bills first…", and Home shows an orange <b>Bills first</b> card, "Bills first: 47,550 Ft still to pay" (rent 42,000 and the phone 5,550). Press <kbd>P</kbd>: Persi's push says "Salary's in: +75,000 Ft. Bills first: 47,550 Ft still to pay. Then Persely." Tap it. The sheet shows Salary +75,000 Ft, Bills still to pay −47,550 Ft, Saving rule −7,500 Ft and <b>Left for Fun 19,950 Ft</b>. Tap <b>Move 61,000 Ft to Bills pocket</b> (a month of must-pay bills, no goal, no interest). Open the Persely tab: under My split the Fun bar reads "Bills first: 47,550 Ft to pay", and <b>Safe to spend now</b> shows 121,390 Ft: the pocket is held apart, so it is not counted. Tap <b>Pay now</b> on the Bills first card: "Pay Rent share", from Bills pocket (61,000 Ft), 42,000 Ft, then <b>Pay 42,000 Ft</b>. Persi says "Bills paid. Fun is back on."</p>
-        <p class="say">"Before it tells you what is free to spend, the app puts the rent aside. Fun shows what is really free, and when the rent is paid, Fun is back on. It only tells: nothing is blocked and nothing moves without a tap."</p>
-        <p class="do">This is a second payday on top of step 5 (demo money only). If you are short of time, do it <i>instead of</i> the plain payday sheet in step 5: its second button is the same "Move 7,500 Ft to Summer holiday".</p></div>
+      <div class="scene"><span class="n">7</span><h3>Financial analytics <span class="time">4:10 · 50 s</span></h3>
+        <p class="do">Home → <b>See how it fits your income</b>. One sheet: what it measures, the suggested split of her 75,000 Ft (Essentials 50%, Fun 40%, Saving 10% = her payday rule). Tap <b>Turn on</b>. On Home tap <b>Next month</b>: about 135,000 Ft in; Must-pay 45%, everyday essentials 27%, Fun 20%, Saving 6%, left over 2%. Back, tap <b>Must-pay bills</b>: "We found 8 regular payments", rent, utilities, the pass and the phone already ticked → <b>Confirm my must-pay bills</b>; this month 55,450 Ft paid, the phone due in 6 days.</p>
+        <p class="say">"The analyst sorts every payment, locks the bills she must pay and projects next month from her last three."</p></div>
 
-      <div class="scene"><span class="n">6</span><h3>Round-up <kbd>C</kbd> <span class="time">3:29 · 5 s</span></h3>
-        <p class="do">A 1,190 Ft coffee. The toast shows a 20 Ft round-up going to the goal.</p>
-        <p class="say">"Small change, doubled. Persely already rounds up today; we connect it to the goal."</p></div>
+      <div class="scene"><span class="n">8</span><h3>Bill missed <kbd>B</kbd> <span class="time">5:00 · 30 s</span></h3>
+        <p class="do">Home shows the orange <b>Bills first</b> card: "Bills first: 47,550 Ft still to pay. Rent share isn't paid yet." Safe to spend leaves the bills out. Tap <b>Pay now</b> → "Pay Rent share", 42,000 Ft → <b>Pay 42,000 Ft</b>. Persi: "Rent share paid. Fun is back on."</p>
+        <p class="say">"If a bill is not paid, the app says so before Fun eats the rent. It only tells: nothing is blocked."</p></div>
 
-      <div class="scene"><span class="n">7</span><h3>Shared Persely <kbd>D</kbd> <span class="time">3:34 · 23 s</span></h3>
-        <p class="do">Persely tab → Goals → <b>New +</b> → <b>Shared Persely</b> (Shared and Euro Persely now live in that menu) → Create and invite. Press <kbd>D</kbd>: Dóri joins with 15,000 Ft and the Persely screen shows who put in what.</p>
-        <p class="say">"Flatmates save for Balaton together. Everyone can always take back what they put in; paying out the whole pot needs everyone."</p></div>
+      <div class="scene"><span class="n">9</span><h3>Fast forward: to month 12 <kbd>Y</kbd> <span class="time">5:30 · 15 s</span></h3>
+        <p class="do">The year runs, each month faster. It stops at month 10: "Dec 2026 – Sep 2027 · Your Junior package ends".</p>
+        <p class="say">"Now a whole year."</p></div>
 
-      <div class="scene"><span class="n">8</span><h3>A month later <kbd>O</kbd> <span class="time">3:57 · 40 s</span></h3>
-        <p class="do">Salary, rules, card payments and interest run. Open <b>Home</b>: Persi's tip says to move 10% of food and drink (1,100 Ft) to Summer holiday each month, about a week sooner (the same tip closes the story). Tap <b>Move 10% a month</b>.</p>
-        <p class="say">"Insight with one action, not a report to read."</p>
-        <p class="do"><b>Analyst beat (about 20 s):</b> after Persi's food tip, the card reads "You stayed within your split". Messages come one at a time: first Persi's push "Reward earned…" (it also reaches the iPhone if "Also send to iPhone" is on), then the "Reward earned" sheet with boosted partner cashback, then the summary toast. Open the Persely tab: in the <b>Your habits</b> card the score row under the streak has gone up (50 to 75).</p>
-        <p class="say">"The reward is for improving, not for having more money."</p></div>
+      <div class="scene"><span class="n">10</span><h3>Junior ends <span class="time">5:45 · 20 s</span></h3>
+        <p class="do">Tap <b>See what's next</b> → "Congratulations, Anna", three steps → <b>Keep my 3.0%</b>. The badge turns into Graduate 3.0% and the year carries on by itself to month 12: "Dec 2026 – Nov 2027 · One year with Persely", 60 of 60 bills on time, 321,402 Ft in Persely.</p>
+        <p class="say">"This is the moment banks lose students. Anna keeps 3.0% because her salary stays at OTP."</p></div>
 
-      <div class="scene"><span class="n">9</span><h3>Streak reminder <kbd>L</kbd> then <kbd>3</kbd> <span class="time">4:37 · 4 s</span></h3>
-        <p class="do">Lock the phone, send push 3. It lands on the lock screen: "Your 8-week streak ends Sunday." Tap it to open the app.</p>
-        <p class="say">"One reminder a week at most, from Persi, not from 'OTP Bank'."</p></div>
+      <div class="scene"><span class="n">11</span><h3>A year of earnings <span class="time">6:05 · 40 s</span></h3>
+        <p class="do">Tap <b>See your year</b>: 321,402 Ft in Persely, 205,500 Ft put aside this year. What the rate earned: Persely at 3.0% +4,904 Ft, Revolut Standard 1.8% after tax +4,087 Ft, Persely before 0.01% +16 Ft; Savings account 3.5% +3,060 Ft. Scroll: 60 of 60 bills on time, First home fund 40%, health score 100 of 100 every month.</p>
+        <p class="say">"One year: this is what saving with OTP earned her, and what the same money earned at 0.01%."</p></div>
 
-      <div class="scene"><span class="n">10</span><h3>End of semester <kbd>E</kbd> <span class="time">4:41 · 24 s</span></h3>
-        <p class="do">The semester story opens: the same slides over the semester (in and out, where it went, bills paid every month, best and hardest month, what you put aside, goal and score, next month with one tip), then a share card that shows the streak and goal progress without amounts. Hold a slide to pause, swipe down to close.</p>
-        <p class="say">"Something students want to post, and it says Saving with OTP Persely."</p></div>
+      <div class="scene"><span class="n">12</span><h3>Year story <span class="time">6:45 · 40 s</span></h3>
+        <p class="do">Tap <b>See your year story</b>: the 8 slides over 12 months (in and out, where it went, bills, what she put aside, progress, next month), then the share card without amounts. Hold to pause, swipe down to close.</p>
+        <p class="say">"And something she actually wants to share."</p></div>
 
-      <div class="scene"><span class="n">11</span><h3>Junior ends <kbd>G</kbd> <span class="time">5:05 · 45 s</span></h3>
-        <p class="do">"Congratulations, Anna." (In the last 90 days the "Junior ends soon" row also sits at the top of the Persely tab.) Three steps. Tap <b>Keep my 3.0%</b>; the badge turns into Graduate 3.0%.</p>
-        <p class="say">"This is the moment the bank loses students today. The rate continues for 12 months if the first salary comes to OTP."</p></div>
+      <div class="scene"><span class="n">13</span><h3>Business case and close <span class="time">7:25 · 1 min 30 s</span></h3>
+        <p class="do">Speaker 3, one slide: 10,000 users × 100,000 Ft = 1 billion Ft deposits; about 30 million Ft interest, about 20 million Ft funding value, net about 10 million Ft; about 500 extra retained customers break even.</p>
+        <p class="say">"Students choose it because it pays, it builds on Persely, and it keeps them with OTP after the Junior package ends."</p></div>
     </div>
   </section>
 
-  <p class="do warn" style="padding-top:2px;padding-bottom:2px">The run ends at about 6:00 (closing line included). If you run long, shorten step 9 (streak reminder), step 6 (round-up) or step 7 (Shared Persely) first (they are already short; they gave the time to steps 4b and 5b), and skip the amount and month demo in step 3. Step 5b can replace the plain payday sheet in step 5 and save about 20 s. Never shorten step 8 or step 11: they carry the analyst and the retention story.</p>
+  <p class="do warn" style="padding-top:2px;padding-bottom:2px">Figures above come from the app after a run started with <kbd>U</kbd> and the taps shown; they are the same in every run. Extras if the slot is longer (about 20 s each): Shared Persely with Dóri (Persely → New + → Shared Persely, then <kbd>D</kbd>), coffee round-up (<kbd>C</kbd>), streak push on the lock screen (<kbd>L</kbd> then <kbd>3</kbd>). Do them before <kbd>Y</kbd>. If time is short, skip the optional slider in act 2 and the Must-pay bills page in act 7; never skip acts 8, 10 and 11.</p>
 
   <section class="box">
-    <h2>Timing</h2>
+    <h2>Roles</h2>
     <div class="tbl"><table>
-      <thead><tr><th>Step</th><th>Start</th><th>Length</th><th>Earlier run</th></tr></thead>
+      <thead><tr><th>Role</th><th>Does</th></tr></thead>
       <tbody>
-        <tr><td>1 The update</td><td class="num">0:00</td><td class="num">40 s</td><td class="num">0:00 (40 s)</td></tr>
-        <tr><td>2 3.0% with Junior</td><td class="num">0:40</td><td class="num">20 s</td><td class="num">0:40 (30 s)</td></tr>
-        <tr><td>3 Goal and forecast</td><td class="num">1:00</td><td class="num">31 s</td><td class="num">1:10 (40 s)</td></tr>
-        <tr><td>4 First deposit</td><td class="num">1:31</td><td class="num">20 s</td><td class="num">1:50 (30 s)</td></tr>
-        <tr><td>4b When you are behind</td><td class="num">1:51</td><td class="num">15 s</td><td class="num">new</td></tr>
-        <tr><td>4a The analyst</td><td class="num">2:06</td><td class="num">30 s</td><td class="num">2:20 (30 s)</td></tr>
-        <tr><td>5 Payday</td><td class="num">2:36</td><td class="num">25 s</td><td class="num">2:50 (30 s)</td></tr>
-        <tr><td>5b Bills first (B, P)</td><td class="num">3:01</td><td class="num">28 s</td><td class="num">new</td></tr>
-        <tr><td>6 Round-up</td><td class="num">3:29</td><td class="num">5 s</td><td class="num">3:20 (20 s)</td></tr>
-        <tr><td>7 Shared Persely</td><td class="num">3:34</td><td class="num">23 s</td><td class="num">3:40 (30 s)</td></tr>
-        <tr><td>8 A month later (with analyst beat)</td><td class="num">3:57</td><td class="num">40 s</td><td class="num">4:10 (40 s)</td></tr>
-        <tr><td>9 Streak reminder</td><td class="num">4:37</td><td class="num">4 s</td><td class="num">4:50 (20 s)</td></tr>
-        <tr><td>10 End of semester</td><td class="num">4:41</td><td class="num">24 s</td><td class="num">5:10 (40 s)</td></tr>
-        <tr><td>11 Junior ends</td><td class="num">5:05</td><td class="num">45 s</td><td class="num">5:50 (40 s)</td></tr>
-        <tr><td><b>Closing line</b></td><td class="num">5:50</td><td class="num">10 s</td><td class="num">6:30 total</td></tr>
-        <tr><td><b>Total</b></td><td class="num">6:00</td><td></td><td class="num">was 6:30</td></tr>
+        <tr><td>Speaker 1</td><td>Opening (act 0)</td></tr>
+        <tr><td>Driver</td><td>Laptop with the phone frame on the projector, presses the keys, quiet during animations</td></tr>
+        <tr><td>Speaker 2</td><td>Narration lines for acts 1–12</td></tr>
+        <tr><td>Speaker 3</td><td>Business case and close</td></tr>
+        <tr><td>Backup</td><td>iPhone with the app on the Home Screen; plays the MP4s if the laptop fails</td></tr>
       </tbody>
     </table></div>
-    <p class="lead" style="margin-top:12px">The saving comes from the 3-screen onboarding (no Pay-from sheet, no tour), the analyst in one sheet, and shorter steps 5, 6, 9 and 10. Step 4b (a goal that is behind) takes 15 s from steps 6 and 9. Step 5b (Bills first, 28 s) takes its time from step 10 (35 to 24 s), step 7 (30 to 23 s), step 3 (35 to 31 s), step 6 (8 to 5 s) and step 9 (7 to 4 s). Steps 8 and 11 are not shortened.</p>
   </section>
-
-  <p class="close">Closing line: students choose it because it pays, it builds on Persely, and it keeps them with OTP after the Junior package ends.</p>
 
   <section class="box">
     <h2>Numbers to quote</h2>
@@ -178,7 +160,8 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
     <h2>If something breaks</h2>
     <ul>
       <li>The online link is slow or down: wait 50 seconds (it was asleep), or run the server on the laptop and present from localhost:8090.</li>
-      <li>Wrong state on screen: <b>Reset app</b> in the panel, or <kbd>U</kbd> to restart from the update day.</li>
+      <li>Wrong state on screen: <kbd>U</kbd> or <b>Reset app</b> restarts from act 1 (Face ID). <kbd>J</kbd> still gives the old "8 weeks later" state.</li>
+      <li>The app fails: play <b>media/ff-1-month.mp4</b>, <b>ff-2-months.mp4</b>, <b>ff-year-1-to-junior-ends.mp4</b>, <b>ff-year-2-to-month-12.mp4</b> and <b>story-november.mp4</b> in that order and narrate over them.</li>
       <li>A phone held sideways shows a "Turn your phone upright" card with Persi; turn it back. The iPhone frame appears only on a real desktop screen (wide, tall and with a mouse), never on a phone.</li>
       <li>A message seems missing: only one shows at a time; the next one comes when the first is closed.</li>
       <li>No projector cable: the laptop panel and the phone frame work on any screen share.</li>
