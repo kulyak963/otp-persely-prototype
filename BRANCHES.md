@@ -3,4 +3,4 @@
 | Branch | Contents | Status |
 | --- | --- | --- |
 | `main` | Team prototype as deployed on Render (Persely tab, Persi, streaks, stories, graduation bridge, pushes) | Live |
-| `Tamas-branch` | Team plan (`team-plan.md`) and its build: B1 My split card, B2 opt-in financial analyst + recategorising, B3 health score + rewards, B4 score story slide + demo data tuning, B5 sw.js cache bump; demo script and guide updated with the analyst beats | In progress, not merged |
+| `Tamas-branch` | Team plan (`team-plan.md`) and its build: B1 My split card, B2 opt-in financial analyst + recategorising, B3 health score + rewards, B4 score story slide + demo data tuning, B5 sw.js cache bump; demo script and guide updated with the analyst beats. UI plan (team plan sections 10–13) phases 1–7: contrast/type tokens, 44 px targets, zoom, message queue, undo, one switch style, 3-screen onboarding, Persi hints, late-goal fixes, contextual analyst, Persely tab/Home/More layout, responsive + landscape + keyboard-safe, amount and month pickers, test matrix and contrast fixes; docs re-timed to 6:00 | Ready for review, not merged (needs real-iPhone check) |

@@ -25,8 +25,9 @@
   /* colour for TEXT and button fills that carry text (WCAG AA 4.5:1). The bright --green stays for bars, icons and fills. */
   --act:#2F7A1B; --act-d:#286A17; --green-t:var(--act);   /* white on --act 5.36, --act on #fff 5.36 / on --green-l 4.76 / on --bg 4.70 */
   --muted-t:#62676F;                                       /* on --bg 4.99, on #fff 5.8, on chip grey #E9ECF1 4.81 */
+  --green-i:#43982A;   /* green for ICONS and for fills that carry a white glyph: 3.2 on --bg, 3.6 on white, white on it 3.6 (non-text needs 3:1). The bright --green stays for bars and decoration. */
   --orange:#F07D19; --orange-l:#FDEDE0; --orange-t:#A94F08; /* --orange-t on #fff 5.51, on --orange-l 4.82, on --bg 4.84 */
-  --blue:#4D9BD6; --blue-l:#E6F1FA; --blue-t:#2467A0; --yellow-l:#FBF1D2; --yellow:#C9971B; --yellow-t:#7A5A00;
+  --blue:#4D9BD6; --blue-l:#E6F1FA; --blue-t:#2467A0; --blue-i:#3A86C4;   /* icon blue: 3.4 on --bg */ --yellow-l:#FBF1D2; --yellow:#C9971B; --yellow-t:#7A5A00;
   /* type scale (rem: follows the text size setting; nothing below 12px) and spacing */
   --fs-xs:.75rem; --fs-s:.8125rem; --fs-m:.9375rem; --fs-l:1.0625rem; --fs-xl:1.5rem;
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --tap:44px;
@@ -110,11 +111,11 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stro
 /* headers */
 .ph{display:flex;align-items:center;justify-content:center;position:relative;height:56px;flex:none;touch-action:none}
 .ph h1{margin:0;font-size:var(--fs-l);font-weight:600;color:var(--ink)}
-.ph .l,.ph .r{position:absolute;top:50%;transform:translateY(-50%);color:var(--green);display:flex}
+.ph .l,.ph .r{position:absolute;top:50%;transform:translateY(-50%);color:var(--green-i);display:flex}
 .ph .l{left:6px;width:48px;height:48px;align-items:center;justify-content:center;border-radius:50%}
 .ph .l:active{background:rgba(82,174,48,.12)}
 .ph .r{right:16px}
-.round{width:38px;height:38px;border-radius:50%;background:var(--card);box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;color:var(--green)}
+.round{width:38px;height:38px;border-radius:50%;background:var(--card);box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;color:var(--green-i)}
 .tabtitle{text-align:center;font-size:var(--fs-l);font-weight:600;padding:16px 0 18px}
 
 /* section header "— Balance" */
@@ -128,11 +129,11 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stro
 /* cards & rows */
 .card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:16px;margin-bottom:12px}
 .row{display:flex;align-items:center;gap:14px;width:100%;background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:16px;margin-bottom:12px;text-align:left}
-.row .ic{color:var(--green);display:flex}
+.row .ic{color:var(--green-i);display:flex}
 .row .t{flex:1;min-width:0;font-size:var(--fs-m);color:var(--ink2)}
 .row .t small{display:block;font-size:0.78125rem;color:var(--muted-t);margin-top:2px}
 .row .t small.g{color:var(--green-t)}
-.row .chev{color:var(--green);display:flex}
+.row .chev{color:var(--green-i);display:flex}
 .badge{font-size:var(--fs-xs);padding:2px 7px;border-radius:6px;background:var(--orange-l);color:var(--orange-t);font-weight:600}
 
 /* buttons */
@@ -168,7 +169,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .hhead{display:flex;align-items:center;gap:12px;padding:14px 0 4px}
 .avatar{width:44px;height:44px;border-radius:50%;background:var(--orange-t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:var(--fs-m)}
 .hhead b{flex:1;font-size:var(--fs-m)}
-.hhead .mail{color:var(--green);position:relative}
+.hhead .mail{color:var(--green-i);position:relative}
 .hhead .mail::before{content:"";position:absolute;inset:-9px}
 .accs{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:4px 16px 14px;scrollbar-width:none;overscroll-behavior:contain}
 .accs::-webkit-scrollbar{display:none}
@@ -191,7 +192,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .cat{min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column;align-items:center;font-size:var(--fs-xs);color:var(--ink2);cursor:pointer}
 .cat .ic{color:var(--ink2);height:28px}
 .cat .cl{font-size:var(--fs-xs);font-weight:600;color:var(--ink2);margin-top:4px;line-height:1.2}
-.cat.on .ic{color:var(--green)}
+.cat.on .ic{color:var(--green-i)}
 .cat .col{width:2px;height:96px;background:#DDE1E7;border-radius:2px;position:relative;margin:8px 0 6px}
 .cat .col i{position:absolute;bottom:0;left:-4px;width:10px;border-radius:5px;background:var(--green)}
 
@@ -199,7 +200,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .dh{display:flex;align-items:center;gap:8px;color:var(--muted-t);font-size:0.78125rem;margin:16px 0 8px}
 .dh::before{content:"";width:14px;height:1.5px;background:#B9BEC7;margin-left:-16px}
 .tx{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:14px 16px;margin-bottom:10px;width:100%;text-align:left}
-.tx .ic{color:var(--green);display:flex}
+.tx .ic{color:var(--green-i);display:flex}
 .tx .t{flex:1;min-width:0}
 .tx .t b{display:block;font-size:var(--fs-s);font-weight:700;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tx .t span{font-size:var(--fs-s);color:var(--ink2)}
@@ -212,18 +213,18 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* transfer */
 .qa{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:6px 0 18px}
 .qa button{min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:var(--fs-s);color:var(--ink2);text-align:center;line-height:1.3}
-.qa .c{width:clamp(52px,16vw,62px);height:clamp(52px,16vw,62px);border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(82,174,48,.3)}
+.qa .c{width:clamp(52px,16vw,62px);height:clamp(52px,16vw,62px);border-radius:50%;background:var(--green-i);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(82,174,48,.3)}
 .qa .c svg{stroke-width:2;width:28px;height:28px}
 
 /* cards tab */
 .bigcard{text-align:center;padding:22px 16px 24px;border-radius:26px}
-.ccard{width:clamp(220px,70vw,250px);aspect-ratio:250/156;margin:14px auto 16px;border-radius:14px;background:linear-gradient(135deg,#7ACB5B 0%,#3E9A2A 55%,#2C7A21 100%);position:relative;overflow:hidden;color:#fff;text-align:left;padding:16px;box-shadow:0 10px 24px rgba(40,110,30,.35)}
+.ccard{width:clamp(220px,70vw,250px);aspect-ratio:250/156;margin:14px auto 16px;border-radius:14px;background:linear-gradient(135deg,#388523 0%,#2B7219 50%,#276B17 100%);position:relative;overflow:hidden;color:#fff;text-align:left;padding:16px;box-shadow:0 10px 24px rgba(40,110,30,.35)}
 .ccard::before{content:"";position:absolute;right:-40px;top:-50px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.12)}
 .ccard::after{content:"";position:absolute;left:-30px;bottom:-70px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08)}
 .ccard .bn{font-weight:700;font-size:0.875rem;letter-spacing:.2px}
 .ccard .chip2{width:34px;height:26px;border-radius:5px;background:linear-gradient(135deg,#F1D58A,#C9A64A);margin:18px 0 12px}
 .ccard .no{font-size:var(--fs-m);letter-spacing:1.6px}
-.ccard .nm{font-size:var(--fs-xs);opacity:.9;margin-top:6px}
+.ccard .nm{font-size:var(--fs-xs);margin-top:6px}
 .ccard .mc{position:absolute;right:16px;bottom:14px;display:flex}
 .ccard .mc i{width:24px;height:24px;border-radius:50%;background:#EB001B;opacity:.95}
 .ccard .mc i+i{background:#F79E1B;margin-left:-10px;opacity:.9}
@@ -263,7 +264,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .disc .t small{font-size:var(--fs-s);color:var(--muted-t)}
 
 /* persely */
-.pico{width:62px;height:62px;border-radius:50%;background:var(--green-l);border:3px solid #fff;box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;margin:0 auto -31px;position:relative;z-index:1;color:var(--green)}
+.pico{width:62px;height:62px;border-radius:50%;background:var(--green-l);border:3px solid #fff;box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;margin:0 auto -31px;position:relative;z-index:1;color:var(--green-i)}
 .prog{height:8px;border-radius:4px;background:#E4E7EC;overflow:hidden;margin:8px 0 18px}
 .prog i{display:block;height:100%;background:var(--green);border-radius:4px;transition:width .5s}
 
@@ -309,13 +310,13 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .wk{display:flex;justify-content:space-between;margin:14px 0}
 .wk div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--muted-t)}
 .wk i{width:32px;height:32px;border-radius:50%;background:#E9ECF1;display:flex;align-items:center;justify-content:center;font-style:normal;color:#fff;font-weight:700;font-size:0.875rem}
-.wk .on i{background:#FF7A1A}
+.wk .on i{background:#FF7A1A;color:#2B3038}   /* dark check on orange: 5.1 (white was 2.6) */
 .wk .today i{box-shadow:0 0 0 2px #fff,0 0 0 4px #FF7A1A}
 .wk .sk i{background:#FFD3B0;color:var(--orange-t)}
 .wk span{min-height:13px}
 .lvlb{font-size:0.78125rem;font-weight:600;color:var(--green-t);background:var(--green-l);padding:4px 10px;border-radius:12px;white-space:nowrap}
 .goal{display:block;width:100%;text-align:left}
-.gic{width:42px;height:42px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center;flex:none}
+.gic{width:42px;height:42px;border-radius:12px;background:var(--green-l);color:var(--green-i);display:flex;align-items:center;justify-content:center;flex:none}
 .fr{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
 .fr.me b{color:var(--green-t)}
 .fr .rk{width:16px;color:var(--muted-t);font-weight:700;font-size:var(--fs-s)}
@@ -326,7 +327,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .t24d b{font-size:var(--fs-xl);display:block}.t24d small{font-size:var(--fs-xs);color:var(--muted-t)}
 .hubteaser{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin:14px 0 0;padding:12px 16px}
 .hubteaser span{flex:1;min-width:0}.hubteaser b{display:block;font-size:var(--fs-m)}.hubteaser small{font-size:0.78125rem;color:var(--muted-t)}
-.hubteaser>svg.i{color:var(--green)}
+.hubteaser>svg.i{color:var(--green-i)}
 .chip[disabled]{opacity:.4;pointer-events:none}
 .chip.on{background:var(--green-l);color:var(--green-t);box-shadow:inset 0 0 0 1.5px var(--green)}
 .tb{position:relative;font-size:var(--fs-xs)}
@@ -342,7 +343,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .wn-card p{font-size:0.875rem;color:var(--ink2);margin:0 0 14px;line-height:1.45}
 .wn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
 .wn-grid button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;border-radius:16px;background:var(--bg);font-weight:600;font-size:0.875rem;color:var(--ink)}
-.wn-grid button svg{color:var(--green)}
+.wn-grid button svg{color:var(--green-i)}
 .wn-grid button:active{background:var(--green-l)}
 .wn .later{min-height:var(--tap);font-size:0.875rem;color:var(--muted-t);padding:10px;font-weight:600}
 /* ---------- onboarding in the Persely tab ---------- */
@@ -351,7 +352,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 @media (min-width:760px) and (min-height:700px) and (hover:hover){.phone .onb{top:56px;padding-top:0}}
 .onb-top{display:flex;align-items:center;gap:12px;padding:14px 18px 6px;flex:none}
 .onb-skip::before,.onb-back::before{content:"";position:absolute;inset:-12px -8px}
-.onb-back{position:relative;color:var(--green);display:flex}
+.onb-back{position:relative;color:var(--green-i);display:flex}
 .onb-bars{flex:1;display:flex;gap:5px}
 .onb-bars i{flex:1;height:4px;border-radius:3px;background:#D9DDE4}
 .onb-bars i.on{background:var(--green)}
@@ -366,10 +367,10 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh);border:2px solid transparent}
 .opt.on{border-color:var(--green);background:#F7FCF4}
 .opt .t{flex:1;min-width:0}.opt b{display:block;font-size:var(--fs-m)}.opt small{display:block;font-size:0.78125rem;color:var(--muted-t);margin-top:2px}
-.opt .ic{color:var(--green);display:flex}
+.opt .ic{color:var(--green-i);display:flex}
 .opt .sample{display:block;margin-top:8px;font-size:var(--fs-s);color:var(--ink2);background:var(--bg);border-radius:12px 12px 12px 4px;padding:8px 10px}
 .onb-li{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:0.90625rem;color:var(--ink2);text-align:left}
-.onb-li span{width:38px;height:38px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center;flex:none}
+.onb-li span{width:38px;height:38px;border-radius:12px;background:var(--green-l);color:var(--green-i);display:flex;align-items:center;justify-content:center;flex:none}
 .persi-says{display:flex;gap:10px;align-items:flex-end;margin-top:14px;animation:pop .35s cubic-bezier(.2,.9,.25,1.15)}
 .persi-says>span{flex:none}
 .persi-says>div{background:#fff;border-radius:16px 16px 16px 4px;padding:10px 12px;font-size:0.875rem;line-height:1.4;box-shadow:var(--sh)}
@@ -379,7 +380,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* ---------- friends, challenges, monthly story ---------- */
 .nudge{margin-left:8px;width:32px;height:32px;border-radius:50%;background:var(--bg);font-size:var(--fs-m);display:flex;align-items:center;justify-content:center}
 .storycard{display:flex;align-items:center;gap:12px;width:100%;text-align:left}
-.stc-thumb{width:46px;height:60px;border-radius:12px;background:linear-gradient(160deg,#1F6B2A,#52AE30);color:#fff;font-weight:800;font-size:var(--fs-xs);display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 0 0 2px #fff,0 0 0 4px #FF7A1A}
+.stc-thumb{width:46px;height:60px;border-radius:12px;background:linear-gradient(160deg,#1B5E24,#2F7A1B);color:#fff;font-weight:800;font-size:var(--fs-xs);display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 0 0 2px #fff,0 0 0 4px #FF7A1A}
 .storycard b{display:block;font-size:var(--fs-m)}.storycard small{font-size:0.78125rem;color:var(--muted-t)}
 .story{position:absolute;inset:0;z-index:77;display:none;flex-direction:column;color:#fff;padding:calc(var(--top) + 40px) 26px 30px}
 .story.on{display:flex}
@@ -391,9 +392,9 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 @keyframes stbar{from{width:0}to{width:100%}}
 .st-x{position:absolute;right:12px;top:calc(var(--top) + 20px);font-size:1.875rem;line-height:1;color:#fff;width:var(--tap);height:var(--tap)}
 .st-body{flex:1;display:flex;flex-direction:column;justify-content:center}
-.st-k{font-size:1.1875rem;font-weight:600;opacity:.92}
+.st-k{font-size:1.1875rem;font-weight:600}
 .st-big{font-size:3.375rem;font-weight:800;line-height:1.05;letter-spacing:-1.5px;margin:8px 0 14px}
-.st-sub{font-size:1.125rem;line-height:1.42;opacity:.95;max-width:330px}
+.st-sub{font-size:1.125rem;line-height:1.42;max-width:330px}
 .st-body .pig3d{margin:18px 0 0}
 .st-foot .btn+.btn{margin-top:8px}
 @media (min-width:760px) and (min-height:700px) and (hover:hover){.phone .story{padding-top:70px}.phone .st-bars{top:66px}.phone .st-x{top:78px}}
@@ -433,7 +434,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* ---------- small demo panel next to the phone (laptop only) ---------- */
 .demo-panel,.demo-show{display:none}
 @media (min-width:760px) and (min-height:700px) and (hover:hover){
-  .demo-panel{display:flex;flex-direction:column;gap:5px;position:fixed;left:18px;top:50%;transform:translateY(-50%);width:186px;padding:10px;border-radius:16px;
+  .demo-panel{display:flex;flex-direction:column;gap:5px;position:fixed;left:18px;top:50%;transform:translateY(-50%);width:186px;padding:10px;border-radius:16px;max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;
     background:rgba(255,255,255,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 6px 24px rgba(30,40,60,.12);z-index:200}
   .demo-panel.hidden{display:none}
   .demo-panel h4{margin:2px 4px 3px;font-size:var(--fs-xs);font-weight:700;color:#565B65;display:flex;justify-content:space-between}
@@ -456,7 +457,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .hero-btns .btn{flex:1;height:44px}
 .trust{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:var(--fs-xs);color:var(--muted-t)}
 .trust span{display:inline-flex;align-items:center;gap:4px}
-.trust svg{color:var(--green)}
+.trust svg{color:var(--green-i)}
 .setupc{border:1.5px solid var(--green);box-shadow:none;background:#F7FCF4}
 .hrow{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .big{display:block;font-size:1.25rem;font-weight:700;margin-top:2px}
@@ -504,9 +505,9 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .btn[disabled]{opacity:.45;pointer-events:none}
 .btn.ghost{background:none;box-shadow:none;color:var(--green-t);margin-top:8px}
 .onb-step{font-size:0.78125rem;font-weight:700;color:var(--green-t);margin-top:6px}
-.done-ic{width:72px;height:72px;border-radius:50%;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center;margin:22px auto 6px}
+.done-ic{width:72px;height:72px;border-radius:50%;background:var(--green-l);color:var(--green-i);display:flex;align-items:center;justify-content:center;margin:22px auto 6px}
 .sumcard{padding:2px 16px}
-.wn-ic{width:56px;height:56px;border-radius:50%;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center;margin:16px auto 10px}
+.wn-ic{width:56px;height:56px;border-radius:50%;background:var(--green-l);color:var(--green-i);display:flex;align-items:center;justify-content:center;margin:16px auto 10px}
 .wn-grid.three{grid-template-columns:repeat(3,1fr);gap:8px}
 .wn-grid.three button{padding:12px 4px;font-size:0.78125rem}
 .fr .nudge::after{content:"";position:absolute;inset:-7px -3px}
@@ -523,12 +524,12 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* story ring at the top of the Persely tab (Instagram-style: bright ring = not watched yet) */
 .sring{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px}
 .sring-in{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:var(--fs-s);color:#fff;letter-spacing:.3px;
-  background:linear-gradient(160deg,#1F6B2A,#52AE30);box-shadow:0 0 0 2.5px var(--bg),0 0 0 5px #FF7A1A}
+  background:linear-gradient(160deg,#1B5E24,#2F7A1B);box-shadow:0 0 0 2.5px var(--bg),0 0 0 5px #FF7A1A}
 .sring.seen .sring-in{box-shadow:0 0 0 2.5px var(--bg),0 0 0 4px #C9CED6}
 .sring small{font-size:var(--fs-xs);font-weight:600;color:var(--orange-t)}
 .sring.seen small{color:var(--muted-t);font-weight:500}
 .wn-grid button.hot{position:relative;background:var(--green-l);box-shadow:inset 0 0 0 1.5px var(--green);color:var(--green-t)}
-.hotb{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:var(--fs-xs);font-weight:800;letter-spacing:.3px;background:#FF7A1A;color:#fff;padding:2px 7px;border-radius:8px;white-space:nowrap}
+.hotb{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:var(--fs-xs);font-weight:800;letter-spacing:.3px;background:#FF7A1A;color:#2B3038;padding:2px 7px;border-radius:8px;white-space:nowrap}
 .addbtn{height:44px;font-size:0.875rem;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:inset 0 0 0 1.5px var(--green-l),var(--sh)}
 .lst .li b.num{font-size:0.875rem;white-space:nowrap}
 .lst .li b.pos{color:var(--green-t)}
@@ -546,7 +547,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .lst{padding:2px 0}
 .lst .li{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;text-align:left;border-bottom:1px solid var(--line)}
 .lst .li:last-child{border-bottom:0}
-.lst .li .ic{color:var(--green);display:flex}
+.lst .li .ic{color:var(--green-i);display:flex}
 .lst .li .t{flex:1;min-width:0}
 .lst .li .t b{display:block;font-size:0.90625rem;font-weight:600;color:var(--ink)}
 .lst .li .t small{display:block;font-size:0.78125rem;color:var(--muted-t);margin-top:2px;line-height:1.35}
@@ -583,7 +584,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .hab-score{display:flex;align-items:center;gap:14px;width:100%;min-height:var(--tap);padding:10px 0;margin-top:2px;border-top:1px solid var(--line);text-align:left}
 .hab-score .t{flex:1;min-width:0;font-size:var(--fs-m);color:var(--ink2)}
 .hab-score .t small{display:block;font-size:0.78125rem;margin-top:2px}
-.hab-score .chev{color:var(--green);display:flex}
+.hab-score .chev{color:var(--green-i);display:flex}
 .hab-score .t24d{width:46px}
 .frhead .chev{transition:transform .2s}.frchev.open{transform:rotate(90deg)}
 .frfoot{display:flex;justify-content:center;border-top:1px solid var(--line);padding:2px 0}
@@ -597,7 +598,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .u-sheet-sub.u-sheet-sub{text-align:center;margin:-8px 0 12px}
 .u-m0.u-m0{margin:0}
 .u-note-b14.u-note-b14{margin:0 2px 14px}
-.u-ico-g.u-ico-g{color:var(--green);display:flex}
+.u-ico-g.u-ico-g{color:var(--green-i);display:flex}
 .u-card-bul.u-card-bul{padding:4px 16px 10px}
 .u-mb4.u-mb4{margin:0 0 4px}
 .u-note-t6.u-note-t6{margin:6px 2px 14px}
@@ -613,7 +614,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .u-rowc.u-rowc{display:flex;align-items:center;gap:12px}
 .u-bk-m.u-bk-m{display:block;font-size:var(--fs-m)}
 .u-c-muted.u-c-muted{color:var(--muted-t)}
-.u-c-g.u-c-g{color:var(--green)}
+.u-c-g.u-c-g{color:var(--green-i)}
 .u-p18.u-p18{padding:18px}
 .u-card-offer.u-card-offer{padding:12px 16px;display:flex;gap:12px;align-items:center}
 .u-p10v.u-p10v{padding:10px 0}
@@ -638,6 +639,8 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .u-bk-title.u-bk-title{display:block;color:var(--ink);font-weight:600}
 .u-c-gt.u-c-gt{color:var(--green-t)}
 @media (prefers-reduced-motion:reduce){.page,.page.out,.sheet{animation:none}.splash{transition:none}.nbanner,.lock{transition:none}.lcard{animation:none}}
+/* reduced motion, the rest: toast, switches, bars and pop-ins stop moving; the flame stops pulsing. The story progress bar stays (it shows the time left). */
+@media (prefers-reduced-motion:reduce){.toast,.tg,.tg::after,.prog i,.opt .rd,.frhead .chev{transition:none}.snote,.wn-card,.persi-says{animation:none}.fw.open svg{animation:none}}
 
 /* ---------- phone sideways: the app is portrait only ---------- */
 .rotate{display:none}
@@ -676,7 +679,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .pkd .fld{cursor:pointer;margin-bottom:8px}
 .pkd .fld .pkl{display:block;font-size:0.78125rem;color:var(--muted-t)}
 .pkd .fld .pks{font-weight:400;color:var(--muted-t);font-size:var(--fs-s)}
-.pkd .fld .chev{color:var(--green);display:flex}
+.pkd .fld .chev{color:var(--green-i);display:flex}
 .pkdc{margin:0 0 10px}
 @media (max-width:340px){.pkdc{flex-wrap:wrap}}
 .pkreal{margin:0 0 12px}
@@ -704,12 +707,11 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
   .onb-body h2{margin:2px 0 4px}
   .onb-body .lead{margin:0 0 6px;font-size:var(--fs-s)}
   .onb-body .flabel{margin:8px 2px 4px}
-  .onb-body .fld{margin-bottom:6px;padding:2px 16px}
+  .onb-body .fld{margin-bottom:6px;padding:2px 16px;min-height:var(--tap)}
   .onb-body .card{padding:8px 16px;margin-bottom:6px}
   .onb-body .pk{padding:6px 16px 8px}
-  .onb-body .pkfld input{font-size:1.5rem;min-height:40px}
+  .onb-body .pkfld input{font-size:1.5rem}
   .onb-body .pkstack{height:50px;--st:3px}
-  .onb-body .pksl{height:40px}
   .onb-body .pkd .fld{margin-bottom:4px}
   .onb-body .pkdc{margin:0 0 6px}
   .onb-body .pkreal{margin:0}
@@ -1074,7 +1076,9 @@ const plural = (n, w) => `${n} ${w}${n===1?'':'s'}`;
 // streak flame (lit = orange, unlit = grey)
 const flame = (s=22, lit=true) => `<svg class="flame" width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true" style="flex:none"><path fill="${lit?'#FF7A1A':'#D5D9DF'}" d="M12 2c1 4 5.2 5.6 5.2 11.2a5.2 5.2 0 0 1-10.4 0c0-2.1 1-3.6 2-4.6 0 2 1 3 2.1 3 0-3-1-5.2 1.1-9.6z"/><path fill="${lit?'#FFC23A':'#EEF0F3'}" d="M12 12.5c.6 1.6 2.4 2.2 2.4 4.3a2.4 2.4 0 0 1-4.8 0c0-1.2.8-2 1.5-2.4 0 .8.4 1.2.9 1.2 0-1.2-.4-2 0-3.1z"/></svg>`;
 const fromName = id => acc(id).n;
-const avatar = (m, s=26) => `<span class="fav" style="background:${m.c};width:${s}px;height:${s}px;font-size:${Math.round(s*.42)}px">${m.me ? 'KA' : m.n[0]}</span>`;
+const avBg = c => { const m = /^#([0-9a-f]{6})$/i.exec(c || ''); if(!m) return c; let v = [0,2,4].map(i => parseInt(m[1].substr(i,2),16)); const L = a => { const f = x => { x /= 255; return x <= .03928 ? x/12.92 : Math.pow((x+.055)/1.055, 2.4); }; return .2126*f(a[0]) + .7152*f(a[1]) + .0722*f(a[2]); };
+  for(let i = 0; i < 40 && 1.05/(L(v)+.05) < 4.6; i++) v = v.map(x => Math.round(x*.95)); return '#' + v.map(x => x.toString(16).padStart(2,'0')).join(''); };   // white initials on an avatar need 4.5:1
+const avatar = (m, s=26) => `<span class="fav" style="background:${avBg(m.c)};width:${s}px;height:${s}px;font-size:${Math.round(s*.42)}px">${m.me ? 'KA' : m.n[0]}</span>`;
 const forecast = g => { if(isEur(g)) return 'Euro · no 3.0% rate'; if(g.shared) return `With ${g.members.filter(m=>!m.me).map(m=>m.n).join(', ') || 'nobody yet'} · you put in ${ft(mine(g))}`;
   const m = gMonths(g); return m === 0 ? 'Goal reached' : m < 0 ? 'Add a rule to see the date' : isLate(g) ? `<span class="late">${inMonths(m)} · late</span>` : inMonths(m); };
 
@@ -1305,8 +1309,8 @@ function monthStep(quiet){
 function nekedCards(compact){
   const art = (bg,icon,col='#fff') => `<div class="im" style="background:${bg};color:${col}">${I(icon,54)}</div>`;
   return `<div class="hcar">
-    <button class="nk" data-toast="New features – details">${art('linear-gradient(135deg,#4E9C86,#7CC0A8)','cards')}<div class="tx2"><b>New features in MobilBank</b><p>Check out our latest features!</p><span class="tag new"><span>New</span></span></div></button>
-    <button class="nk" data-toast="Fraud quiz – details">${art('linear-gradient(135deg,#2E6FA6,#5FA6D8)','lock')}<div class="tx2"><b>How well prepared are you against fraud?</b><p>Test your knowledge!</p><span class="tag tip"><span>Tip</span></span></div></button>
+    <button class="nk" data-toast="New features – details">${art('linear-gradient(135deg,#2F7D69,#4B9A84)','cards')}<div class="tx2"><b>New features in MobilBank</b><p>Check out our latest features!</p><span class="tag new"><span>New</span></span></div></button>
+    <button class="nk" data-toast="Fraud quiz – details">${art('linear-gradient(135deg,#2E6FA6,#3F8AC2)','lock')}<div class="tx2"><b>How well prepared are you against fraud?</b><p>Test your knowledge!</p><span class="tag tip"><span>Tip</span></span></div></button>
   </div>
   ${compact?'':'<div class="dots" style="margin-bottom:14px"><i class="on"></i><i></i><i></i></div>'}
   ${S.goals.length ? '' : `<button class="card offer" data-go="persely" style="width:100%;text-align:left"><div class="tx2"><b class="u-fs-m">Start saving efficiently!</b><p style="margin:6px 0 10px;font-size:var(--fs-s);color:var(--muted-t)">Create your Persely and save for your goals free of charge.</p><span class="tag off"><span>Offer</span></span></div><div class="im" style="background:linear-gradient(135deg,#6C79D8,#9AA6EE);color:#BFF0A8">${I('piggy',56)}</div></button>`}`;
@@ -1386,7 +1390,7 @@ const PAGES = {
       <button class="btn" data-sheet="befizet">Add money</button>
       <button class="btn w u-mt12" data-sheet="kivesz">Take money out</button></div>
     <div class="sec"><span>Automatic transfer</span></div>
-    <button class="row" data-go="rendszeres"><span class="t">Recurring transfer<small class="g">${p.auto?`${p.freq}, ${ft(p.amt)}`:'Off'}</small></span><span style="color:var(--blue);display:flex">${I('info',20)}</span><span class="chev">${I('chev',20)}</span></button>
+    <button class="row" data-go="rendszeres"><span class="t">Recurring transfer<small class="g">${p.auto?`${p.freq}, ${ft(p.amt)}`:'Off'}</small></span><span style="color:var(--blue-i);display:flex">${I('info',20)}</span><span class="chev">${I('chev',20)}</span></button>
     <div class="sec"><span>Other actions</span></div>
     <button class="row" data-tab="tranzakciok"><span class="ic">${I('list')}</span><span class="t">Related transactions</span><span class="chev">${I('chev',20)}</span></button></div>`;}},
   rendszeres:{title:'Recurring transfer', foot:()=>`<button class="btn" data-savereg>${S.persely.auto?'Save':'Next'}</button>`, html:()=>{
@@ -1411,7 +1415,7 @@ const PAGES = {
     const list = DISC.filter(d=> discTab===0 ? !S.disc.activated.includes(d.id) : S.disc.activated.includes(d.id));
     return `<div class="seg"><button class="${discTab===0?'on':''}" data-disctab="0">Waiting for activation</button><button class="${discTab===1?'on':''}" data-disctab="1">Activated</button></div>
     ${list.length?list.map(d=>`<button class="card disc" data-act1="${d.id}"><span class="t"><span class="u-rowc"><span class="lg" style="background:${d.bg};color:${d.c}">${d.lg}</span><b>${d.n}</b></span><p>${d.t}</p><small>Valid until 31 December 2026</small></span><span class="u-c-g">${discTab===0?I('chev',20):I('check',22)}</span></button>`).join(''):`<div class="card" style="text-align:center;color:var(--muted-t);padding:28px">${discTab===0?'You have activated every offer.':'No activated discounts yet.'}</div>`}`;}},
-  neked:{title:'For you', right:`<span style="display:flex;color:var(--blue)">${I('info',24)}</span>`, html:()=>`
+  neked:{title:'For you', right:`<span style="display:flex;color:var(--blue-i)">${I('info',24)}</span>`, html:()=>`
     <div class="utabs">${['All','Tips','News','Offers'].map((t,i)=>`<button class="${nekTab===i?'on':''}" data-nektab="${i}">${t}</button>`).join('')}</div>
     <div class="sec u-mt6"><span>Featured</span></div>${nekedCards(false)}`},
   ertesitesek:{title:'Notifications', html:()=>{
@@ -1438,7 +1442,7 @@ const PAGES = {
   challenges:{title:'Weekly challenges', html:()=>`<div class="card" style="padding:4px 16px 10px;margin-top:6px"><ul class="bul sm"><li>New challenges every Monday, the week ends on Sunday</li><li>Progress is checked automatically from your card payments</li><li>Join as many as you like</li></ul></div>${CH_DEFS.map(chCard).join('')}`},
   kiadas:{title:'Monthly spending', right:`<span class="u-df">${I('gear',22)}</span>`, html:()=>{
     const spent=CATS.reduce((a,c)=>a+c[2],0), max=Math.max(...CATS.map(c=>c[2]));
-    return `<div style="margin:18px auto 24px;width:230px;padding:18px;border-radius:40px;text-align:center;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff"><b class="num u-fs-22">${ft(spent)}</b><div style="color:var(--green-t);font-size:var(--fs-s)">November</div></div>
+    return `<div style="margin:18px auto 24px;width:230px;padding:18px;border-radius:40px;text-align:center;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff"><b class="num u-fs-22">${ft(spent)}</b><div style="color:var(--act-d);font-size:var(--fs-s)">November</div></div>
     <div class="cats">${CATS.map((c,i)=>`<div class="cat ${i===0?'on':''}"><span class="ic">${I(c[0],26)}</span><span style="font-size:var(--fs-xs);color:${i===0?'var(--green-t)':'var(--muted-t)'}">${c[1]}</span><span class="col"><i style="height:${c[2]/max*100}%"></i></span><span class="num">${ft(c[2])}</span></div>`).join('')}</div>
     <div class="sec"><span>Food – Saturday, 8 November</span></div>
     <div class="tx"><span class="ic">${I('food')}</span><span class="t"><b>WOLT HUNGARY</b><span>Card payment</span><em>${I('food',15)} Food</em></span><span class="a num">${sft(-4690)}</span></div>
@@ -1446,10 +1450,10 @@ const PAGES = {
 };
 let discTab = 0;
 const DISC = [
-  {id:'d1',lg:'PZ',n:'Pizzeria Roma',t:'15% instant discount. Tap for details!',bg:'#FDE3E1',c:'#C8312A'},
+  {id:'d1',lg:'PZ',n:'Pizzeria Roma',t:'15% instant discount. Tap for details!',bg:'#FDE3E1',c:'#B02A24'},
   {id:'d2',lg:'TH',n:'Theatre (junior offer)',t:'10% off every purchase. Tap for details!',bg:'#F8E0EA',c:'#B0234F'},
   {id:'d3',lg:'SP',n:'Sport Outlet',t:'10% off every purchase over 25,000 Ft.',bg:'#E7ECF3',c:'#3B4A63'},
-  {id:'d4',lg:'CR',n:'Car rental',t:'12% off weekend rentals.',bg:'#FFF0D8',c:'#C77A0B'},
+  {id:'d4',lg:'CR',n:'Car rental',t:'12% off weekend rentals.',bg:'#FFF0D8',c:'#8F5600'},
   {id:'d5',lg:'CF',n:'Coffee chain',t:'Every 5th coffee is free when you pay by card.',bg:'#EFE6DD',c:'#6E4B2E'}
 ];
 
@@ -1684,7 +1688,7 @@ const SHEETS = {
     <button class="row" data-invite><span class="ic">${I('invite')}</span><span class="t">Invite with a link<small>Send it in any chat app</small></span><span class="chev">${I('chev',20)}</span></button>
     <div class="sec"><span>People you may know</span></div>
     ${SUGGEST.map(p=>{ const added = S.friends.some(f=>f.n===p.n);
-      return `<div class="row" style="padding:10px 14px"><span class="fav" style="background:${p.c}">${p.n[0]}</span><span class="t">${p.n}<small>OTP customer · in your contacts</small></span>${added ? `<span style="color:var(--green-t);font-weight:700;font-size:var(--fs-s)">Added</span>` : `<button class="btn sm" data-addfriend="${p.n}">Add</button>`}</div>`; }).join('')}`,
+      return `<div class="row" style="padding:10px 14px"><span class="fav" style="background:${avBg(p.c)}">${p.n[0]}</span><span class="t">${p.n}<small>OTP customer · in your contacts</small></span>${added ? `<span style="color:var(--green-t);font-weight:700;font-size:var(--fs-s)">Added</span>` : `<button class="btn sm" data-addfriend="${p.n}">Add</button>`}</div>`; }).join('')}`,
   newgoal:()=>{ const hasShared = S.goals.some(g=>g.shared), hasEur = S.goals.some(isEur);
     return `<h2>New goal</h2><div class="u-sheet-sub2">Up to 5 Perselys.</div>
     ${hasShared ? '' : `<button class="row" data-sheet="newshared"><span class="ic">${I('user')}</span><span class="t">Shared Persely<small>Save together with friends or flatmates</small></span><span class="chev">${I('chev',20)}</span></button>`}
@@ -2266,11 +2270,11 @@ const pig3d = (() => {
     renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
   }
 
-  const clock = new T.Clock();
+  const clock = new T.Clock(), PIG_RM = matchMedia('(prefers-reduced-motion:reduce)');
   function frame(){
     requestAnimationFrame(frame);
     if(!holder || !document.body.contains(canvas) || document.hidden) return;
-    const t = clock.getElapsedTime();
+    const t = PIG_RM.matches ? 0 : clock.getElapsedTime();   // reduced motion: the piggy holds still (taps still make it jump)
     const calm = mood === 'concerned' || mood === 'sleepy';
     // turn: momentum while free, then ease back to the three-quarter view
     if(!dragging){
@@ -2564,7 +2568,7 @@ function friendsCard(){   // collapsed and opt-in: nothing is compared until the
   return `<div data-tour="friends">${head}
   <div class="card" style="padding:4px 16px 4px;margin-top:-4px">
     ${S.friends.length
-      ? rows.map((f,i)=>`<div class="fr ${f.me?'me':''}"><span class="rk">${i+1}</span><span class="fav" style="background:${f.c}">${f.n[0]}</span><b>${f.n}</b><span class="fs num">${flame(16, f.s > 0)}${f.s}</span>${f.me ? '<span style="width:68px"></span>' : `<button class="nudge" data-nudge="${f.n}">Remind</button>`}</div>`).join('')
+      ? rows.map((f,i)=>`<div class="fr ${f.me?'me':''}"><span class="rk">${i+1}</span><span class="fav" style="background:${avBg(f.c)}">${f.n[0]}</span><b>${f.n}</b><span class="fs num">${flame(16, f.s > 0)}${f.s}</span>${f.me ? '<span style="width:68px"></span>' : `<button class="nudge" data-nudge="${f.n}">Remind</button>`}</div>`).join('')
       : `<div style="text-align:center;padding:14px 0 6px"><b>Saving is easier with friends</b><div style="font-size:0.78125rem;color:var(--muted-t);margin:4px 0 12px">Compare weekly streaks. Nobody sees your balance.</div></div>`}
     <div class="frfoot"><button class="link lnk44" data-sheet="addfriend">Add friends ${I('plus',16)}</button></div></div></div>`;
 }
@@ -2576,7 +2580,7 @@ function scoreSlide(){
   const n = scoreNow(), pv = scorePrev(), d = n.t - pv.t, names = c => SCORE_IND.filter(([k]) => c(n.p[k] - pv.p[k])).map(x => x[3]);
   const up = names(x => x > 0), down = names(x => x < 0), rw = S.rewards[0] && S.rewards[0].id === 'r' + S.months ? S.rewards[0] : null;
   const sub = d > 0 ? `Improved: ${up.join(', ').toLowerCase()}.${rw ? ` Reward: ${rw.title.toLowerCase()} in ${nextMonthName()}.` : ''}` : d < 0 ? `Dropped: ${down.join(', ').toLowerCase()}. It recovers as the 3 month window moves on.` : 'Same as last month. Nothing lost, nothing to claim.';
-  return [{bg:'linear-gradient(160deg,#0E5E4E,#22A38A)', k:'Your health score', big: d ? `${pv.t} → ${n.t}` : `${n.t}`, sub}];
+  return [{bg:'linear-gradient(160deg,#0E5E4E,#0F7A66)', k:'Your health score', big: d ? `${pv.t} → ${n.t}` : `${n.t}`, sub}];
 }
 function storySlides(){
   const g = S.goals[0], pct = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100));
@@ -2584,19 +2588,19 @@ function storySlides(){
   const rows = [...S.friends, {n:'You', s:S.streak, me:true}].sort((a,b) => b.s - a.s);
   const rank = rows.findIndex(r => r.me) + 1, ahead = rank > 1 ? rows[rank-2] : null;
   return [
-    {bg:'linear-gradient(160deg,#1F6B2A,#52AE30)', k: S.period === 'Autumn semester' ? 'Your semester' : 'Your month', big:S.period, sub:"Here's how it went. Tap to keep going.", pig:'proud'},
+    {bg:'linear-gradient(160deg,#1B5E24,#2F7A1B)', k: S.period === 'Autumn semester' ? 'Your semester' : 'Your month', big:S.period, sub:"Here's how it went. Tap to keep going.", pig:'proud'},
     {bg:'linear-gradient(160deg,#0F3B25,#2C7A3C)', k:'You spent', big:ft(spent), sub:'That is 13% less than in October. Nice control.'},
-    {bg:'linear-gradient(160deg,#C2410C,#F97316)', k:'Food took the biggest bite', big:'43%', sub:'Including 6 Wolt orders for 28 140 Ft. That is GTA 6 on release day.'},
-    {bg:'linear-gradient(160deg,#6B2D7A,#B45FB0)', k:'Fun fact', big:'14 coffees', sub:'9 800 Ft on coffee this month. Exactly 3 cinema tickets.'},
-    {bg:'linear-gradient(160deg,#0E5E4E,#22A38A)', k:'You saved', big:ft(S.monthSaved), sub:'Three times more than last month. Persi is proud of you.', pig:'proud'},
-    ...(S.roundCount ? [{bg:'linear-gradient(160deg,#5B21B6,#8B5CF6)', k:'Small change adds up', big:`${S.roundCount} round-ups`, sub:`They put ${ft(S.roundSum)} into your savings without you noticing.`}] : []),
+    {bg:'linear-gradient(160deg,#9A3412,#C2410C)', k:'Food took the biggest bite', big:'43%', sub:'Including 6 Wolt orders for 28 140 Ft. That is GTA 6 on release day.'},
+    {bg:'linear-gradient(160deg,#6B2D7A,#A0407B)', k:'Fun fact', big:'14 coffees', sub:'9 800 Ft on coffee this month. Exactly 3 cinema tickets.'},
+    {bg:'linear-gradient(160deg,#0E5E4E,#0F7A66)', k:'You saved', big:ft(S.monthSaved), sub:'Three times more than last month. Persi is proud of you.', pig:'proud'},
+    ...(S.roundCount ? [{bg:'linear-gradient(160deg,#5B21B6,#7C3AED)', k:'Small change adds up', big:`${S.roundCount} round-ups`, sub:`They put ${ft(S.roundSum)} into your savings without you noticing.`}] : []),
     ...scoreSlide(),
-    {bg:'linear-gradient(160deg,#9A3412,#FB923C)', k:'Your streak', big:`${Math.max(S.streak,1)} weeks`, sub:'You saved every single week. That is how habits are made.'},
-    {bg:'linear-gradient(160deg,#1E3A8A,#3B82F6)', k:esc(g.name), big:`${pct}%`, sub:`At this pace you get there in ${inMonths(gMonths(g))}.`},
-    {bg:'linear-gradient(160deg,#7C2D12,#D97706)', k:'Among your friends', big:`#${rank}`, sub: !S.friends.length ? 'Add friends and compare next month.' : ahead ? `${ahead.n} is ${plural(ahead.s - S.streak,'week')} ahead. Catch up in December?` : 'You lead your crew. Keep it up.'},
-    {bg:'linear-gradient(160deg,#14532D,#16A34A)', k: S.interest ? 'Interest earned' : 'Your Junior rate', big: S.interest ? ft(S.interest) : rateLabel(), sub: S.interest ? `Your ${rateLabel()} Junior rate at work, after tax. At 0.01% it would be a few forints.` : `On ${ft(total())} that is about ${ft(yearNet())} a year after tax.`},
-    {bg:'linear-gradient(160deg,#1F6B2A,#52AE30)', k:'Your tip for next month', big:'2 deliveries less a week', sub:`About 9 000 Ft more saved. ${esc(g.name)} arrives a month sooner.`, pig:'happy'},
-    {bg:'linear-gradient(160deg,#1F6B2A,#52AE30)', share:true, end:true}
+    {bg:'linear-gradient(160deg,#92400E,#B45309)', k:'Your streak', big:`${Math.max(S.streak,1)} weeks`, sub:'You saved every single week. That is how habits are made.'},
+    {bg:'linear-gradient(160deg,#1E3A8A,#2563EB)', k:esc(g.name), big:`${pct}%`, sub:`At this pace you get there in ${inMonths(gMonths(g))}.`},
+    {bg:'linear-gradient(160deg,#7C2D12,#A16207)', k:'Among your friends', big:`#${rank}`, sub: !S.friends.length ? 'Add friends and compare next month.' : ahead ? `${ahead.n} is ${plural(ahead.s - S.streak,'week')} ahead. Catch up in December?` : 'You lead your crew. Keep it up.'},
+    {bg:'linear-gradient(160deg,#14532D,#15803D)', k: S.interest ? 'Interest earned' : 'Your Junior rate', big: S.interest ? ft(S.interest) : rateLabel(), sub: S.interest ? `Your ${rateLabel()} Junior rate at work, after tax. At 0.01% it would be a few forints.` : `On ${ft(total())} that is about ${ft(yearNet())} a year after tax.`},
+    {bg:'linear-gradient(160deg,#1B5E24,#2F7A1B)', k:'Your tip for next month', big:'2 deliveries less a week', sub:`About 9 000 Ft more saved. ${esc(g.name)} arrives a month sooner.`, pig:'happy'},
+    {bg:'linear-gradient(160deg,#1B5E24,#2F7A1B)', share:true, end:true}
   ];
 }
 // last slide: a card to share, with progress but no amounts
@@ -2679,7 +2683,7 @@ function showBanner(n){
   b.getBoundingClientRect();                 // let the start position apply, then slide in
   setTimeout(()=>b.classList.add('in'), 20);
   clearTimeout(bannerTimer);
-  bannerTimer = setTimeout(()=>{ b.classList.remove('in'); setTimeout(()=>b.remove(), 500); MQ.banner = false; mqPump(); }, BANNER_MS);
+  bannerTimer = setTimeout(()=>{ b.classList.remove('in'); setTimeout(()=>{ if(!b.isConnected) return; b.remove(); MQ.banner = false; mqPump(); }, 500); }, BANNER_MS);   // the next sheet or toast waits until the banner has slid away
 }
 function addLockCard(n){
   const c = document.createElement('div'); c.className = 'lcard'; c.innerHTML = noteHTML(n);
