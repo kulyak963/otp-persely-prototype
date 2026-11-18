@@ -1287,23 +1287,29 @@ function vFooldal(){
   <div class="sec"><span>For you</span><a data-go="neked">All ${I('chev',16)}</a></div>
   ${nekedCards(true)}`;
 }
-// monthly insight on Home: the biggest category and what 10% of it does to the goal date
+// the monthly tip (Home card and story slide 8 use this one): 10% of the biggest Fun category (from project()) moves to the goal every month
+function tipOf(){
+  const g = ruleGoal(), tc = project().cats.filter(c => c.group === 'fun' && !/^mix_/.test(c.cat)).sort((a, b) => b.amt - a.amt)[0], rem = g ? gTarget(g) - gSaved(g) : 0;
+  if(!g || !tc || rem <= 0) return null;
+  const ten = Math.max(100, Math.round(tc.amt / 10 / 100) * 100), p = paceOf(g), wk = p ? Math.round((rem / p - rem / (p + ten)) * 4.345) : 0;
+  return {g, label:tc.label.toLowerCase(), amt:tc.amt, ten, wk};
+}
+// monthly insight on Home: the tip above, one action (same rule as the story's Set it up)
 function insightCard(){
   if(!S.insight || S.insightUsed) return '';
-  const g = ruleGoal(), food = CATS[0][2], ten = Math.round(food / 10 / 100) * 100, rem = gTarget(g) - gSaved(g), p = paceOf(g);
-  if(rem <= 0) return '';
-  const wk = p ? Math.round((rem / p - rem / (p + ten)) * 4.345) : 0, a = S.analyst;
+  const t = tipOf(); if(!t) return '';
+  const a = S.analyst, line = `Move 10% of ${t.label} (${ft(t.ten)}) to ${esc(t.g.name)} each month${t.wk >= 1 ? ` and get there <b>${plural(t.wk,'week')} sooner</b>` : ''}.`;
   if(a.on && a.accepted){   // analyst on: one headline from the split and exactly one action
     const use = splitUse(), pc = k => { const b = splitAmt(a.split[k]); return b ? Math.round(use[k] / b * 100) : 0; };
     const over = ['ess','fun'].filter(k => pc(k) > 100).map(bucketName);
     const head = over.length ? `${over.join(' and ')} went over your split` : `You stayed within your split: Essentials ${pc('ess')}%, Fun ${pc('fun')}% used`;
     return `<div class="card insight"><div class="hrow"><span class="pill ok">Analyst</span><span class="k">This month</span></div>
-    <div class="u-tip-p"><b>${head}.</b> Food was your biggest category: ${ft(food)}. Move 10% (${ft(ten)}) to ${esc(g.name)} each month${wk >= 1 ? ` and get there <b>${plural(wk,'week')} sooner</b>` : ''}.</div>
-    <div class="hero-btns u-m0"><button class="btn" data-insyes="${ten}">Move 10% a month</button></div></div>`;
+    <div class="u-tip-p"><b>${head}.</b> ${line}</div>
+    <div class="hero-btns u-m0"><button class="btn" data-insyes="${t.ten}">Move 10% a month</button></div></div>`;
   }
   return `<div class="card insight"><div class="hrow"><span class="pill ok">Persi's tip</span><span class="k">This month</span></div>
-    <div class="u-tip-p">Food was your biggest category: <b>${ft(food)}</b>. Move 10% (${ft(ten)}) to ${esc(g.name)} each month${wk >= 1 ? ` and get there <b>${plural(wk,'week')} sooner</b>` : ''}.</div>
-    <div class="hero-btns u-m0"><button class="btn" data-insyes="${ten}">Move 10% a month</button><button class="btn w" data-insno>Not now</button></div>
+    <div class="u-tip-p">${line}</div>
+    <div class="hero-btns u-m0"><button class="btn" data-insyes="${t.ten}">Move 10% a month</button><button class="btn w" data-insno>Not now</button></div>
     <button class="btn ghost" data-sheet="analyst">${a.on ? 'See your suggested split' : 'See how this fits your split'}</button></div>`;
 }
 
@@ -3270,9 +3276,9 @@ function storySlides(){
   const R = stRange(), A = stAgg(R.yms), sem = R.sem, an = S.analyst.on || !STORY_NEEDS_ANALYST, ym = R.yms[R.yms.length - 1], nm = R.yms.length;
   const unit = sem ? 'semester' : 'month', over = sem ? `over ${nm} months` : '', ov = over ? ' ' + over : '', out = [];
   // 1 title
-  out.push({id:'title', say:`Your ${unit}: ${R.name}. Here is how it went, in about thirty seconds.`, fin(T){ this.secs = Math.round(T / 5) * 5; this.say = `Your ${unit}: ${R.name}. Here is how it went, in about ${this.secs} seconds.`; },
+  out.push({id:'title', say:`Your ${unit}: ${R.name}. Here is how it went, in about thirty seconds.`, fin(T){ this.secs = Math.round(T / 5) * 5; this.say = `Your ${unit}: ${R.name}. Here is how it went, in about ${this.secs} seconds. Tap to start.`; },
     build(){ const small = matchMedia('(max-height:700px)').matches;
-      return `<div class="st-k">Your ${unit}</div><div class="st-vis st-c">${pig('proud', small ? 120 : 164)}</div><div class="st-big ${R.name.length > 9 ? 'm' : ''}">${R.name}</div><div class="st-sub">${sem ? `${plural(nm, 'month')}` : 'The month'}, in about ${this.secs} seconds. Tap to keep going.</div>`; },
+      return `<div class="st-k">Your ${unit}</div><div class="st-vis st-c">${pig('proud', small ? 120 : 164)}</div><div class="st-big ${R.name.length > 9 ? 'm' : ''}">${R.name}</div><div class="st-sub">${sem ? `${plural(nm, 'month')}, in` : 'In'} about ${this.secs} seconds. Tap to start.</div>`; },
     seek(){ } });
   // 2 in vs out
   if(A.inc > 0 || A.out > 0){
@@ -3284,7 +3290,7 @@ function storySlides(){
         <rect data-r="in" x="40" width="96" rx="6" fill="#fff"/><rect data-r="out" x="184" width="96" rx="6" fill="#8DB4DB"/>
         <text x="88" y="170" text-anchor="middle" fill="#D4E5CE" font-size="14" font-weight="600">In</text><text data-t="in" x="88" y="191" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">${ft(A.inc)}</text>
         <text x="232" y="170" text-anchor="middle" fill="#D4E5CE" font-size="14" font-weight="600">Out</text><text data-t="out" x="232" y="191" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">${ft(A.out)}</text></svg>`,
-        gap ? ft(A.left) : ft(-A.left), gap ? `left over. In ${ft(A.inc)}, out ${ft(A.out)}${sem ? `, over ${nm} months` : ''}.` : `more went out than came in. That happens: next month can fix it.`),
+        gap ? ft(A.left) : ft(-A.left), gap ? `left over this ${unit}.` : `more went out than came in.`),
       seek(r, t){ const u1 = stEz(stPh(t, 0, .9)), u2 = stEz(stPh(t, .15, 1.05)), u3 = stEz(stPh(t, .9, 1.5)), q = s => r.querySelector(s),
           h1 = hi * u1, h2 = ho * u2, g = Math.abs(hi - ho) * u3;
         stSet(q('[data-r=in]'), {y:B - h1, height:h1}); stSet(q('[data-r=out]'), {y:B - h2, height:h2});
@@ -3313,7 +3319,7 @@ function storySlides(){
     if(!sem){
       const bf = billsFirst(), rows = bf.rows, open = bf.count, tot = rows.reduce((a, r) => a + r.bill.exp, 0), pk = S.billsPocket && S.billsPocket.on ? S.billsPocket.bal : 0, paidTot = rows.reduce((a, r) => a + r.s.paid, 0);
       const big = !open ? `All ${n} bills paid` : bf.on ? bf.text : `${n - open} of ${n} bills paid`, names = stList(bf.rows.filter(r => r.s.left > 0).map(r => r.bill.name));
-      const sub = (!open ? `${ft(paidTot)} went to rent, utilities, the pass and the phone.` : bf.on ? `${names} still open. Bills come before Fun.` : `${names} ${open > 1 ? 'are' : 'is'} due later this month: ${ft(bf.total)}.`) + (S.billsPocket && S.billsPocket.on ? ` Bills pocket: ${ft(pk)}.` : '');
+      const sub = (!open ? `${ft(paidTot)} went to bills.` : bf.on ? `${names} still open. Bills first.` : `${names} ${open > 1 ? 'are' : 'is'} due later: ${ft(bf.total)}.`) + (S.billsPocket && S.billsPocket.on ? ` Bills pocket: ${ft(pk)}.` : '');
       const shown = rows.slice(0, 6), more = rows.length - shown.length;
       out.push({id:'bills', say:`Bills. ${big}. ${sub}`, btn:bf.on ? {label:'Pay now', attr:`data-stpay="${bf.urgent[0].bill.id}"`} : null,
         build:() => stFrame('Must-pay bills', `<div class="st-rc" data-rc><b class="st-rh">${I('lock', 14)} Must-pay bills</b>${shown.map(r => { const s = r.s, ok = s.st === 'paid' || s.st === 'skipped';
@@ -3343,7 +3349,7 @@ function storySlides(){
           <path d="${path}" data-line pathLength="1" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 1" stroke-dashoffset="1"/>
           ${d.pts.map((v, i) => `<circle data-dot="${i}" cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${i === d.pts.length - 1 ? 7 : 4}" fill="${i === d.pts.length - 1 ? '#F5913A' : '#fff'}" ${i === d.pts.length - 1 ? 'stroke="#fff" stroke-width="2.5"' : ''}/>`).join('')}
           ${d.names.map((n, i) => `<text x="${X(i).toFixed(1)}" y="152" text-anchor="middle" fill="#D4E5CE" font-size="13">${n}</text>`).join('')}</svg>`,
-          `+${d.up}%`, `${esc(d.label)} is ${ft(d.amt)}, up from ${ft(Math.round(d.avg))}.${worth ? ` That is ${worth}.` : ''}`),
+          `+${d.up}%`, worth ? `That is ${worth}.` : `Up from ${ft(Math.round(d.avg))}.`),
         seek(r, t){ const u = stEz(stPh(t, 0, 1.2)), n = d.pts.length; stSet(r.querySelector('[data-line]'), {'stroke-dashoffset':1 - u});
           r.querySelectorAll('[data-dot]').forEach(c => { const i = +c.dataset.dot, last = i === n - 1; c.style.opacity = last ? stPh(t, 1.1, 1.3) : stPh(u, i / (n - 1) - .05, i / (n - 1)); });
           const co = r.querySelector('[data-co]'), k = stBack(stPh(t, 1.3, 1.9)); co.style.opacity = stPh(t, 1.3, 1.5); co.style.transform = `scale(${.7 + .3 * k})`;
@@ -3367,7 +3373,7 @@ function storySlides(){
     out.push({id:'put', say:put > 0 ? `What you put aside${ov}. ${ft(put)}. ${by > 0 ? `${ft(by)} came from your rules and round-ups. ` : ''}${A.interest > 0 ? `${ft(A.interest)} is interest.` : ''}` : `What you put aside${ov}. Nothing yet.`,
       build:() => stFrame('What you put aside', `<div class="st-pt"><div class="st-stw"><span class="pkstack st-stk" style="--L:${L};--st:5px">${Array.from({length:L}, (_, i) => `<i class="${i < 2 ? 'c' : 'n'}" style="--k:${i}" data-ly="${i}"></i>`).join('')}</span></div>
         <ul class="st-cn">${rows.map(([l, v], i) => `<li data-cn="${i}"><small>${l}</small><b class="num">${ft(0)}</b></li>`).join('')}</ul></div>`,
-        ft(put), put > 0 ? `${by > 0 ? `${ft(by)} moved by your rules and round-ups.` : 'All of it was added by you.'}${A.interest > 0 ? ` ${ft(A.interest)} is interest.` : ''}` : 'No money moved to a goal. Even 500 Ft starts a streak.'),
+        ft(put), put > 0 ? `${by > 0 ? `Rules and round-ups moved ${ft(by)}.` : 'All of it was added by you.'}${A.interest > 0 ? ` Interest added ${ft(A.interest)}.` : ''}` : 'No money moved to a goal. Even 500 Ft starts a streak.'),
       seek(r, t){ r.querySelectorAll('[data-ly]').forEach(e => { const i = +e.dataset.ly, u = stEz(stPh(t, .1 + i * .07, .4 + i * .07)); e.style.opacity = u; e.style.transform = `translateY(${-(1 - u) * 30}px)`; });
         rows.forEach(([, v], i) => { const e = r.querySelector(`[data-cn="${i}"] b`); e.textContent = ft(Math.round(v * stEz(stPh(t, .3 + i * .15, 1.4 + i * .15)))); });
         r.querySelector('[data-big]').textContent = ft(Math.round(put * stEz(stPh(t, .2, 1.5)))); } }); }
@@ -3376,9 +3382,9 @@ function storySlides(){
     if(g){
       const pc = pctOf(g).p, sc = S.analyst.on && S.analyst.accepted && S.scoreHist.length ? {n:scoreNow().t, p:scorePrev().t} : null, tight = S.goals.filter(isTight)[0], fix = tight ? behindFix(tight) : null,
         rw = S.rewards[0] && S.rewards[0].id === 'r' + S.months ? S.rewards[0] : null, gm = gMonths(g), R2 = 46, C2 = 2 * Math.PI * R2;
-      const when = gm > 0 ? `At this pace you get there in ${inMonths(gm)}.` : gm === 0 ? 'You reached it.' : 'Add a rule to see the date.';
-      const note = [tight ? `${esc(tight.name)}: ${daysTo(tight) < 0 ? 'goal date passed' : 'behind'}, ${ft(toGo(tight))} to go. Your ${ft(gSaved(tight))} is safe.${fix ? ` A new date, like ${pkMonthShort(fix.date)}, fixes it.` : ' Pick a new date to fix it.'}` : '', rw ? `Reward earned: ${esc(rw.title.toLowerCase())}.` : ''].filter(Boolean).join(' ');
-      out.push({id:'progress', say:`Your progress. ${g.name} is ${pc} percent. ${when} Streak: ${plural(S.streak, 'week')}.${sc ? ` Health score ${sc.n} of 100${sc.n !== sc.p ? `, was ${sc.p}` : ''}.` : ''} ${note.replace(/<[^>]+>/g, '')}`,
+      const when = gm > 0 ? `On pace for ${inMonths(gm)}.` : gm === 0 ? 'You reached it.' : 'Add a rule to see the date.';
+      const note = tight ? `${esc(tight.name)}: ${daysTo(tight) < 0 ? 'date passed' : 'behind'}, ${ft(toGo(tight))} to go.` : rw ? `Reward earned: ${esc(rw.title.toLowerCase())}.` : '', noteSay = [tight ? `${esc(tight.name)}: ${daysTo(tight) < 0 ? 'goal date passed' : 'behind'}, ${ft(toGo(tight))} to go. Your ${ft(gSaved(tight))} is safe.${fix ? ` A new date, like ${pkMonthShort(fix.date)}, fixes it.` : ' Pick a new date to fix it.'}` : '', rw ? `Reward earned: ${esc(rw.title.toLowerCase())}.` : ''].filter(Boolean).join(' ');
+      out.push({id:'progress', say:`Your progress. ${g.name} is ${pc} percent. ${when} Streak: ${plural(S.streak, 'week')}.${sc ? ` Health score ${sc.n} of 100${sc.n !== sc.p ? `, was ${sc.p}` : ''}.` : ''} ${noteSay.replace(/<[^>]+>/g, '')}`,
         build:() => stFrame(esc(g.name), `<div class="st-pr"><div class="st-rg"><svg viewBox="0 0 120 120" width="120" height="120"><circle cx="60" cy="60" r="${R2}" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="14"/><circle data-ring cx="60" cy="60" r="${R2}" fill="none" stroke="#6FCB4A" stroke-width="14" stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="0 ${C2}"/></svg><span class="st-rc2">${I('piggy', 34)}</span></div>
           <ul class="st-cn"><li><small>Streak</small><b class="num"><span class="st-fl">${flame(22, S.streak > 0)}</span><span data-sk>0</span> <span class="st-u">${S.streak === 1 ? 'week' : 'weeks'}</span></b></li>${sc ? `<li><small>Health score</small><b class="num"><span data-sc>${sc.p}</span> <span class="st-u">of 100${sc.n !== sc.p ? ` · ${sc.n > sc.p ? '▲' : '▼'} ${Math.abs(sc.n - sc.p)}` : ''}</span></b></li>` : ''}</ul></div>`,
           `${pc}%`, when, note),
@@ -3387,13 +3393,12 @@ function storySlides(){
           const e = r.querySelector('[data-sc]'); if(e) e.textContent = Math.round(sc.p + (sc.n - sc.p) * stEz(stPh(t, .4, 1.4))); } });
     } }
   // 8 next month and one tip (the projection is the analyst's; the tip button sets a real rule: 10% of the biggest Fun category moves to the goal every month)
-  { const g = ruleGoal(), PP = project(), P = an ? PP : null, tc = PP.cats.filter(c => c.group === 'fun' && !/^mix_/.test(c.cat)).sort((a, b) => b.amt - a.amt)[0] || null,
-      rem = g ? gTarget(g) - gSaved(g) : 0, ten = tc ? Math.max(100, Math.round(tc.amt / 10 / 100) * 100) : 0, pace = g ? paceOf(g) : 0, wk = pace && rem > 0 ? Math.round((rem / pace - rem / (pace + ten)) * 4.345) : 0,
-      tip = !!(g && tc && rem > 0 && !S.insightUsed), done = !!(g && S.insightUsed), mn = P ? monthOf(P.ym) : monthOf(ymAt((S.months || 0) + 1));
+  { const g = ruleGoal(), P = an ? project() : null, T = tipOf(), ten = T ? T.ten : 0, wk = T ? T.wk : 0,
+      tip = !!(T && !S.insightUsed), done = !!(g && S.insightUsed), mn = P ? monthOf(P.ym) : monthOf(ymAt((S.months || 0) + 1));
     if(P || tip || done){
       const keys = P ? ['must', 'everyday', 'fun', 'other', 'saving', 'left'].filter(k => P.pct[k] > 0) : [], sg = {must:'must', everyday:'ess', fun:'fun', other:'other', saving:'save', left:'left'}, nameOf = k => ST_SEG[sg[k]][0];
       const lead = P ? `About ${ft(P.income.total)} in` : '';
-      const big = tip ? `Move ${ft(ten)}` : done ? 'Tip is on' : P ? `${P.pct.left}% left over` : '', sub = tip ? `That is 10% of ${esc(tc.label.toLowerCase())}, each month, to ${esc(g.name)}.${wk >= 1 ? ` You get there ${plural(wk, 'week')} sooner.` : ''}` : done ? `Your monthly tip is on. It moves to ${esc(g.name)} every month.` : `${mn}, if it goes like the last months. Tips only: nothing moves by itself.`;
+      const big = tip ? `Move ${ft(ten)}` : done ? 'Tip is on' : P ? `${P.pct.left}% left over` : '', sub = tip ? `10% of ${T.label} each month to ${esc(T.g.name)}${wk >= 1 ? `: ${plural(wk, 'week')} sooner` : ''}.` : done ? `Your monthly tip is on. It moves to ${esc(g.name)} every month.` : `${mn}, if it goes like the last months. Tips only: nothing moves by itself.`;
       out.push({id:'next', say:`Next month, ${mn}. ${P ? `${lead}. ${stList(keys.map(k => `${nameOf(k).toLowerCase()} ${P.pct[k]} percent`))}. ` : ''}${big.replace(/%/, ' percent')}. ${sub.replace(/<[^>]+>/g, '')}`, btn:tip ? {label:'Set it up', attr:`data-stinsight="${ten}"`} : null,
         build:() => stFrame(`Next month · ${mn}`, P ? `<div class="st-pj"><b class="st-ph">${lead}</b><div class="st-pb" data-pb role="presentation">${keys.map(k => `<i style="width:${P.pct[k]}%;background:${ST_SEG[sg[k]][1]}"></i>`).join('')}</div>
           <ul class="st-lg two">${keys.map((k, i) => `<li data-l="${i}"><i style="background:${ST_SEG[sg[k]][1]}"></i><span>${k === 'must' ? I('lock', 14) : ''}${nameOf(k)}</span><b>${P.pct[k]}%</b></li>`).join('')}</ul></div>` : `<div class="st-c">${pig('happy', 140)}</div>`,
@@ -3419,11 +3424,11 @@ function shareCard(){
 }
 /* ---------- the story engine ----------
    ST.t is the time in the slide (s). Every frame: advance (unless held, paused, away or in manual mode), seek the slide to min(t, ST_END), update the bars.
-   Slide length = 4 s + 0.25 s per word of its sentence, at most 8 s. Hold (press 220 ms) pauses; tap left/right = back/next; swipe down closes.
+   Slide length = 2.5 s + 0.2 s per word on screen, at most 5 s (so keep a slide to about 12 words). Hold (press 220 ms) pauses; tap left/right = back/next; swipe down closes.
    Reasons to pause are kept in ST.hold (touch, btn, user, api, hidden): the story runs when it is empty. */
 const ST = {on:false, i:0, t:0, slides:[], total:0, hold:new Set(), raf:0, last:0, manual:false, away:false, down:null, settled:false};
 const stWords = s => { const d = document.createElement('div'); d.innerHTML = s.build(); return [...d.querySelectorAll('.st-big,.st-sub,.st-n')].map(e => e.textContent).join(' ').split(/\s+/).filter(Boolean).length; };   // the words on screen
-const stDur = s => s.end ? 0 : Math.min(8, 4 + .25 * stWords(s));
+const stDur = s => s.end ? 0 : Math.min(5, 2.5 + .2 * stWords(s));
 function stBuild(){
   ST.slides = storySlides(); ST.slides.forEach(s => s.dur = stDur(s)); ST.total = ST.slides.reduce((a, s) => a + s.dur, 0);
   ST.slides.forEach(s => s.fin && s.fin(ST.total));
