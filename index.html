@@ -299,6 +299,7 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stro
 .hubteaser{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin:14px 0 0;padding:12px 16px}
 .hubteaser span{flex:1;min-width:0}.hubteaser b{display:block;font-size:15px}.hubteaser small{font-size:12.5px;color:var(--muted)}
 .hubteaser>svg.i{color:var(--green)}
+.chip[disabled]{opacity:.4;pointer-events:none}
 .chip.on{background:var(--green-l);color:var(--green-t);box-shadow:inset 0 0 0 1.5px var(--green)}
 .tb{position:relative;font-size:10px}
 .tb .nd{position:absolute;top:5px;left:calc(50% + 7px);width:9px;height:9px;border-radius:50%;background:#FF7A1A;border:2px solid #fff}
@@ -668,6 +669,8 @@ const fresh = () => ({
   income:{amount:75000, day:5},        // money the bank sees coming in around the 5th (salary, scholarship, family)
   // money in: payday rule (share of each payment of 10 000 Ft or more, asks first), weekly transfer, round-ups
   payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday',
+  // financial analyst (opt-in, off by default). split.save is the payday rule share (one setting, kept in sync with payday.pct)
+  analyst:{on:false, accepted:false, split:{ess:50, fun:40, save:10}}, txMark:0,   // txMark: how many transactions existed when this month began; this month = S.tx.slice(0, S.tx.length - S.txMark)
   // weekly streak: any amount once a week keeps it (automatic savings count too); it never changes the rate
   week:40, streak:8, best:8, savedWeek:false, skips:1, juniorDays:41, remind:true,
   history:[32,33,34,35,36,37,38,39], skipped:[],
@@ -697,6 +700,8 @@ const fresh = () => ({
   ]
 });
 let S; try{ S = JSON.parse(localStorage.getItem(KEY)) || fresh(); }catch(e){ S = fresh(); }
+if(!S.analyst) S.analyst = fresh().analyst;   // state saved before the analyst existed
+if(S.txMark === undefined) S.txMark = 0;
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
 const CATS = [['food','Food',38200],['cart','Shopping',21400],['bus','Transport',9500],['fun','Fun',14300],['edu','Education',6000]];
 const acc = id => S.accounts.find(a=>a.id===id);
@@ -735,7 +740,15 @@ function insightCard(){
   if(!S.insight || S.insightUsed) return '';
   const g = ruleGoal(), food = CATS[0][2], ten = Math.round(food / 10 / 100) * 100, rem = gTarget(g) - gSaved(g), p = paceOf(g);
   if(rem <= 0) return '';
-  const wk = p ? Math.round((rem / p - rem / (p + ten)) * 4.345) : 0;
+  const wk = p ? Math.round((rem / p - rem / (p + ten)) * 4.345) : 0, a = S.analyst;
+  if(a.on && a.accepted){   // analyst on: one headline from the split and exactly one action
+    const use = splitUse(), pc = k => { const b = splitAmt(a.split[k]); return b ? Math.round(use[k] / b * 100) : 0; };
+    const over = ['ess','fun'].filter(k => pc(k) > 100).map(bucketName);
+    const head = over.length ? `${over.join(' and ')} went over your split` : `You stayed within your split: Essentials ${pc('ess')}%, Fun ${pc('fun')}% used`;
+    return `<div class="card insight"><div class="hrow"><span class="pill ok">Analyst</span><span class="k">This month</span></div>
+    <div style="font-size:14.5px;line-height:1.45;margin:10px 0 12px"><b>${head}.</b> Food was your biggest category: ${ft(food)}. Move 10% (${ft(ten)}) to ${esc(g.name)} each month${wk >= 1 ? ` and get there <b>${plural(wk,'week')} sooner</b>` : ''}.</div>
+    <div class="hero-btns" style="margin:0"><button class="btn" data-insyes="${ten}">Move 10% a month</button></div></div>`;
+  }
   return `<div class="card insight"><div class="hrow"><span class="pill ok">Persi's tip</span><span class="k">This month</span></div>
     <div style="font-size:14.5px;line-height:1.45;margin:10px 0 12px">Food was your biggest category: <b>${ft(food)}</b>. Move 10% (${ft(ten)}) to ${esc(g.name)} each month${wk >= 1 ? ` and get there <b>${plural(wk,'week')} sooner</b>` : ''}.</div>
     <div class="hero-btns" style="margin:0"><button class="btn" data-insyes="${ten}">Move 10% a month</button><button class="btn w" data-insno>Not now</button></div></div>`;
@@ -759,9 +772,10 @@ let txMode = 0;
 function vTranz(){
   let last='', html='';
   if(txMode===0){
-    S.tx.forEach(t=>{
+    S.tx.forEach((t,i)=>{
       if(t.d!==last){ html+=`<div class="dh">${t.d}</div>`; last=t.d; }
-      html+=`<div class="tx"><span class="ic">${I(t.ic)}</span><span class="t"><b>${t.n}</b><span>${t.s}</span>${t.note?`<em>${I('piggy',15)} ${t.note}</em>`:''}</span><span class="a num ${t.a>0?'p':''}">${sft(t.a)}</span></div>`;
+      const tap = S.analyst.on && isCardTx(t) && !t.parts, c = tap ? SPLIT_CATS[txCat(t)] : null;   // analyst on: card payments can be recategorised
+      html+=`<${tap?'button':'div'} class="tx" ${tap?`data-txcat="${i}"`:''}><span class="ic">${I(t.ic)}</span><span class="t"><b>${t.n}</b><span>${t.s}</span>${t.note?`<em>${I('piggy',15)} ${t.note}</em>`:''}${tap?`<em>${I('chart',15)} ${c[0]} · ${bucketName(c[1])}</em>`:''}</span><span class="a num ${t.a>0?'p':''}">${sft(t.a)}</span>${tap?`<span class="chev">${I('chev',18)}</span>`:''}</${tap?'button':'div'}>`;
     });
   } else html = `<div class="card" style="text-align:center;color:var(--muted);padding:28px 16px">No pending transactions.</div>`;
   return `<div class="tabtitle">Transactions</div>
@@ -791,6 +805,7 @@ function vTovabbiak(){
   <div class="sec"><span>My finances</span></div>
   ${it('cards','My cards','data-go="kartyaim"')}
   ${it('bell','Notifications','data-go="ertesitesek"')}
+  <button class="mi" data-sheet="analyst">${I('chart')}<span>Financial analyst</span><span class="pill ${S.analyst.on?'ok':''}" style="margin-left:auto">${S.analyst.on?'On':'Off'}</span></button>
   ${it('wallet','My accounts','data-go="szamlaim"')}
   ${it('piggy','Persely','data-go="persely"')}
   ${it('chart','Savings options','data-go="megtakaritas"')}
@@ -905,6 +920,49 @@ function persiSays(){
   if(!S.savedWeek) return {mood:'happy', text:'Any amount this week starts your streak.'};
   return {mood:'proud', text:`Week done. ${g.name}: ${pct}%.`};
 }
+/* ---------- financial analyst: monthly split Essentials / Fun / Saving ----------
+   State: S.analyst = {on, accepted, split:{ess, fun, save}} (percent of the monthly income, sums to 100).
+   split.save IS the payday rule share (S.payday.pct): one setting, kept in sync by syncSplit().
+   Use this month is computed from S.tx (card payments by category; Persely deposits count as Saving). */
+const SPLIT_BUCKETS = [['ess','Essentials'], ['fun','Fun'], ['save','Saving']];
+const SPLIT_SUGGEST_ESS = 50;
+// spending categories a card payment can have, and the bucket each one belongs to
+const SPLIT_CATS = {groceries:['Groceries','ess'], transport:['Transport','ess'], edu:['Education','ess'], food:['Food and drink','fun'], shopping:['Shopping','fun'], fun:['Entertainment','fun']};
+const IC_CAT = {cart:'groceries', bus:'transport', edu:'edu', food:'food', fun:'fun'};
+const isCardTx = t => t.a < 0 && t.s === 'Card payment';
+const txCat = t => t.cat || IC_CAT[t.ic] || 'shopping';
+const bucketName = k => SPLIT_BUCKETS.find(b => b[0] === k)[1];
+function syncSplit(){   // the payday rule share is the master; the other two buckets absorb a change
+  const sp = S.analyst && S.analyst.split; if(!sp || sp.save === S.payday.pct) return;
+  sp.save = S.payday.pct; sp.fun = Math.max(0, 100 - sp.ess - sp.save); sp.ess = 100 - sp.save - sp.fun;
+}
+// the suggested starting point: Essentials 50%, Saving = the payday rule, Fun the rest (50 / 40 / 10 with a 10% rule)
+function suggestSplit(){ const save = S.payday.on ? S.payday.pct : 10; return {ess:SPLIT_SUGGEST_ESS, fun:Math.max(0, 100 - SPLIT_SUGGEST_ESS - save), save}; }
+const splitAmt = pct => Math.round(S.income.amount * pct / 100);
+// what this month's transactions add up to per bucket
+function splitUse(){
+  const u = {ess:0, fun:0, save:0};
+  S.tx.slice(0, Math.max(0, S.tx.length - (S.txMark || 0))).forEach(t => {
+    if(t.parts){ u.ess += t.parts.ess || 0; u.fun += t.parts.fun || 0; return; }
+    if(t.a < 0 && t.n === 'PERSELY DEPOSIT'){ u.save -= t.a; return; }
+    if(isCardTx(t)) u[SPLIT_CATS[txCat(t)][1]] -= t.a;
+  });
+  return u;
+}
+function daysLeftInMonth(){ if(S.months > 0) return null; const d = new Date(); return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate() - d.getDate(); }
+function splitCard(){
+  const a = S.analyst; if(!a.on) return '';
+  const head = `<div class="sec" data-tour="split"><span>My split</span>${a.accepted ? `<a data-splitopen>Edit ${I('chev',16)}</a>` : ''}</div>`;
+  if(!a.accepted) return `${head}<div class="card" style="padding:16px"><b style="font-size:15px">Choose your monthly split</b><div class="fine" style="margin:4px 0 12px">The analyst suggests Essentials, Fun and Saving from your last 3 months.</div><button class="btn" data-sheet="analyst">See the suggestion</button></div>`;
+  syncSplit();
+  const use = splitUse(), left = daysLeftInMonth(), dl = left === null ? '' : left === 0 ? ' · last day' : ` · ${plural(left,'day')} left`;
+  const rows = SPLIT_BUCKETS.map(([k, label]) => { const budget = splitAmt(a.split[k]), used = use[k], p = budget ? Math.round(used / budget * 100) : 0, over = k !== 'save' && p > 100;
+    return `<div style="padding:10px 0"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b style="font-size:14.5px">${label} · ${a.split[k]}%</b><span class="num" style="font-size:12.5px;color:${over ? 'var(--orange)' : 'var(--muted)'}">${ft(used)} of ${ft(budget)}</span></div>
+      <div class="prog" style="margin:7px 0 5px"><i style="width:${Math.min(100,p)}%;${over ? 'background:var(--orange)' : ''}"></i></div>
+      <div class="k" style="font-size:12.5px">${k === 'save' ? `${p}% moved to Persely` : `${p}% used${k === 'fun' ? dl : ''}`}${over ? ' · over your split' : ''}</div></div>`; }).join('');
+  return `${head}<div class="card" style="padding:6px 16px 14px">${rows}
+    <div class="fine" style="border-top:1px solid var(--line);padding-top:10px">${S.payday.on ? 'Your payday rule moves this to Persely.' : 'Your payday rule is off, so Saving does not move by itself. Turn it on in Money in.'} The Saving share is the same setting as the payday rule, so changing one changes the other. Based on a ${ft(S.income.amount)} income.</div></div>`;
+}
 function vHub(){
   const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
   const weeks = Array.from({length:8}, (_,i) => S.week - 7 + i);
@@ -941,6 +999,8 @@ function vHub(){
     return `<button class="card goal" ${attr}><div style="display:flex;align-items:center;gap:12px"><span class="gic">${I(g.shared ? 'user' : isEur(g) ? 'euro' : g.ic,22)}</span><span style="flex:1;min-width:0"><b style="display:block;font-size:15px">${esc(g.name)}</b><span class="num" style="font-size:12.5px;color:var(--muted)">${money(g,s)} of ${money(g,t)} · ${forecast(g)}</span></span>${right}</div><div class="prog" style="margin:10px 0 0"><i style="width:${p}%"></i></div></button>`; }).join('')}
   ${S.goals.some(g=>g.shared) && S.goals.some(isEur) ? '' : `<div class="hero-btns" style="margin:2px 0 4px">${S.goals.some(g=>g.shared) ? '' : `<button class="btn w addbtn" data-sheet="newshared">${I('user',18)} Shared Persely</button>`}${S.goals.some(isEur) ? '' : `<button class="btn w addbtn" data-neweur>${I('euro',18)} Euro Persely</button>`}</div>`}
 
+  ${splitCard()}
+
   <div class="sec" data-tour="auto"><span>Money in</span></div>
   <div class="card lst">
     ${li('money', 'Payday rule', S.payday.on ? `${S.payday.pct}% of each salary → ${esc(rg.name)} · ${S.payday.ask ? 'asks first' : 'automatic'}` : 'Move a share of each salary or scholarship', 'data-sheet="payrule"', S.payday.on)}
@@ -972,6 +1032,7 @@ function nextWeek(){
 const MONTH_CARD = 65400, MONTH_ROUND = 3000, MONTH_TX = 30;
 function monthStep(quiet){
   const g = ruleGoal(), inc = S.income.amount; let moved = 0;
+  S.txMark = S.tx.length;   // a new month starts: the split use counts from here
   S.months++; S.period = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'}); S.storySeen = false;
   // four weeks pass; the rules keep the streak alive
   const ran = S.payday.on || S.weekly.on || S.roundup.on || S.goals.some(x => x.weekly);
@@ -981,7 +1042,7 @@ function monthStep(quiet){
   if(S.payday.on){ const v = incomeShare(S.payday.pct); depositTo(g, v, 'junior', `Payday rule: ${S.payday.pct}%`); moved += v; }
   if(S.weekly.on){ const v = S.weekly.amt * 4; depositTo(g, v, 'junior', 'Weekly transfers (4)'); moved += v; }
   S.goals.filter(x => x.weekly).forEach(x => { depositTo(x, x.weekly * 4, 'junior', 'Weekly transfers (4)'); moved += x.weekly * 4; });
-  acc('junior').v -= MONTH_CARD; S.tx.unshift({d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-MONTH_CARD, ic:'cart'});
+  acc('junior').v -= MONTH_CARD; S.tx.unshift({d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-MONTH_CARD, ic:'cart', parts:{ess:38400, fun:27000}});
   if(S.roundup.on){ depositTo(goalById(S.roundup.goal) || g, MONTH_ROUND, 'junior', `Round-ups (${MONTH_TX} payments)`); S.roundCount += MONTH_TX; S.roundSum += MONTH_ROUND; moved += MONTH_ROUND; }
   // interest after tax, credited to each forint Persely by its share
   const base = total(), net = Math.round(Math.min(base, CAP) * rate() / 100 / 12 * (1 - TAX));
@@ -1154,7 +1215,7 @@ let cur = 'fooldal';
 // orange dot on the Persely tab while today's saving is still open
 function renderTabs(){ $('#tabbar').innerHTML = TABS.map(([id,ic,l])=>`<button class="tb ${id===cur?'on':''}" data-tab="${id}">${I(ic)}${id==='hub' && !S.savedWeek && S.streak>0 ? '<i class="nd"></i>' : ''}${l}</button>`).join(''); }
 function renderView(id){ const t=TABS.find(x=>x[0]===id); $('#v-'+id).innerHTML = t[3](); }
-function renderAll(){ TABS.forEach(t=>renderView(t[0])); renderTabs(); refreshPages(); save(); if(typeof mountPig==='function') mountPig(); }
+function renderAll(){ syncSplit(); TABS.forEach(t=>renderView(t[0])); renderTabs(); refreshPages(); save(); if(typeof mountPig==='function') mountPig(); }
 function tab(id){
   cur=id; document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on', v.id==='v-'+id));
   while(stack.length) popPage(true);
@@ -1229,8 +1290,41 @@ const SHEETS = {
     <div class="chips" style="margin:0 0 8px">${S.goals.filter(g=>!g.shared && !isEur(g)).map(g=>`<button class="chip ${S.ruleGoal===g.id?'on':''}" style="font-size:13.5px;padding:7px 11px" data-rulegoal="${g.id}">${esc(g.name)}</button>`).join('')}</div>
     <button class="opt slim ${p.ask?'on':''}" data-prask><span class="t"><b style="font-size:14px">Ask me each time</b><small>Off: moves automatically</small></span><span class="tg ${p.ask?'on':''}"></span></button>
     <button class="opt slim ${p.floor?'on':''}" data-prfloor><span class="t"><b style="font-size:14px">Always keep 20 000 Ft on my account</b><small>If money is tight, less or nothing moves</small></span><span class="tg ${p.floor?'on':''}"></span></button>
-    <div class="fine" style="margin:6px 2px 14px">From a ${ft(S.income.amount)} salary: ${ft(incomeShare(p.pct))}.</div>
+    <div class="fine" style="margin:6px 2px 14px">From a ${ft(S.income.amount)} salary: ${ft(incomeShare(p.pct))}.${S.analyst.on ? ' This is also the Saving share of your monthly split.' : ''}</div>
     <button class="btn" data-pron>${p.on ? 'Save' : 'Turn on'}</button>${p.on ? '<button class="btn ghost" data-proff>Turn off</button>' : ''}`; },
+  // financial analyst: opt-in, says what it measures, shows the suggested split and lets the user accept it
+  analyst:()=>{ const a = S.analyst, sg = suggestSplit(), sp = a.accepted ? a.split : sg;
+    const splitRows = `<div class="card lst">${SPLIT_BUCKETS.map(([k,l]) => `<div class="li"><span class="t"><b>${l}</b></span><b class="num">${sp[k]}% · ${ft(splitAmt(sp[k]))}</b></div>`).join('')}</div>`;
+    if(!a.on) return `<h2>Financial analyst</h2><div class="fine" style="text-align:center;margin:-8px 0 12px">Optional. Off unless you turn it on.</div>
+    <div class="flabel">What it measures</div>
+    <div class="card" style="padding:4px 16px 10px"><ul class="bul sm"><li>Your spending categories, from your card payments</li><li>Your monthly split: Essentials, Fun and Saving</li><li>One insight a month, with one action you can take or ignore</li></ul></div>
+    <div class="fine" style="margin:0 2px 14px">You can turn it off any time. Your data is not shared with anyone outside OTP, and nothing moves unless you agree to it.</div>
+    <button class="btn" data-anon>Turn on the analyst</button><button class="btn ghost" data-closesheet>Not now</button>`;
+    if(!a.accepted) return `<h2>Your suggested split</h2><div style="text-align:center;margin:-8px 0 12px"><span class="pill ok">Suggested from your last 3 months</span></div>
+    ${splitRows}
+    <div class="fine" style="margin:0 2px 14px">Based on your ${ft(S.income.amount)} salary. The Saving share is your payday rule: ${S.payday.on ? `you already move ${sg.save}% of each salary to ${esc(ruleGoal().name)}.` : `accepting turns the payday rule on at ${sg.save}% and it asks you first each time.`} It is one setting, so changing it in either place changes both.</div>
+    <button class="btn" data-anaccept>Accept this split</button><button class="btn ghost" data-splitopen>Change the percentages</button><button class="btn ghost" data-anoff>Turn off the analyst</button>`;
+    return `<h2>Financial analyst</h2><div style="text-align:center;margin:-8px 0 12px"><span class="pill ok">On</span></div>
+    ${splitRows}
+    <div class="fine" style="margin:0 2px 14px">It reads your card payment categories, builds your split and gives one insight a month. You can change a payment's category in Transactions. Turn it off and the split and the tip go away. Nothing is shared.</div>
+    <button class="btn w" data-splitopen>Edit my split</button><button class="btn ghost" data-anoff>Turn off the analyst</button>`; },
+  // edit the split: the three shares must add up to 100%; Saving is the payday rule (5-20%)
+  splitedit:()=>{ const d = S._split || S.analyst.split, sum = d.ess + d.fun + d.save, ok = sum === 100;
+    const row = (k, l, lo, hi) => `<div class="li" style="padding:10px 0"><span class="t"><b>${l}</b><small class="num">${ft(splitAmt(d[k]))} a month</small></span>
+      <button class="chip" style="font-size:18px;padding:4px 14px" data-splitstep="${k}:-5" ${d[k] <= lo ? 'disabled' : ''} aria-label="Less ${l}">−</button><b class="num" style="min-width:48px;text-align:center;font-size:16px">${d[k]}%</b>
+      <button class="chip" style="font-size:18px;padding:4px 14px" data-splitstep="${k}:5" ${d[k] >= hi ? 'disabled' : ''} aria-label="More ${l}">+</button></div>`;
+    return `<h2>My split</h2><div class="fine" style="text-align:center;margin:-8px 0 8px">Share of your ${ft(S.income.amount)} monthly income. It must add up to 100%.</div>
+    <div class="card" style="padding:4px 16px">${row('ess','Essentials',0,100)}${row('fun','Fun',0,100)}${row('save','Saving',5,20)}</div>
+    <div class="fine" style="margin:2px 2px 6px;color:${ok ? 'var(--muted)' : 'var(--orange)'}"><b>Total ${sum}%</b>${ok ? '' : sum > 100 ? ` · take off ${sum-100}%` : ` · add ${100-sum}%`}</div>
+    <div class="fine" style="margin:0 2px 14px">Saving is your payday rule: ${d.save}% of each salary is ${ft(splitAmt(d.save))}. Changing it here changes the payday rule too.</div>
+    <button class="btn" data-splitsave ${ok ? '' : 'disabled'}>Save my split</button><button class="btn ghost" data-splitsuggest>Use the suggestion: ${suggestSplit().ess} / ${suggestSplit().fun} / ${suggestSplit().save}</button>`; },
+  // recategorise one card payment
+  txcat:()=>{ const t = S.tx[S._txi]; if(!t) return '';
+    const cur = txCat(t);
+    return `<h2>Category</h2><div style="text-align:center;margin:-8px 0 12px"><b style="text-transform:uppercase;font-size:13px">${esc(t.n)}</b> <span class="num k">${sft(t.a)}</span></div>
+    ${SPLIT_BUCKETS.filter(b => b[0] !== 'save').map(([k,l]) => `<div class="flabel">${l}</div><div class="chips" style="margin:0 0 4px">${Object.entries(SPLIT_CATS).filter(([,v]) => v[1] === k).map(([c,v]) => `<button class="chip ${cur === c ? 'on' : ''}" style="font-size:14px;padding:7px 12px" data-setcat="${c}">${v[0]}</button>`).join('')}</div>`).join('')}
+    <div class="fine" style="margin:8px 2px 14px">Your split uses the category. Changing it moves this payment between Essentials and Fun.</div>
+    <button class="btn ghost" data-closesheet>Close</button>`; },
   weeklyrule:()=>{ const w = S.weekly;
     return `<h2>Weekly transfer</h2><div class="fine" style="text-align:center;margin:-8px 0 12px">The same amount moves every Monday to ${esc(ruleGoal().name)}.</div>
     <div class="chips" style="justify-content:center;margin-top:0">${[1000,2000,5000].map(x=>`<button class="chip ${w.amt===x?'on':''}" style="font-size:15px;padding:9px 14px" data-wkamt="${x}">${ft(x)}</button>`).join('')}</div>
@@ -1420,6 +1514,23 @@ document.addEventListener('click', e=>{
     S.goals.push({id:'g'+Date.now(), name:n, ic, target:+t, saved:0, pace:0, date:'2028-06-01'});
     closeSheet(); renderAll(); toast(`${n} added`); return;
   }
+  /* financial analyst */
+  if('anon' in d){ S.analyst.on = true; renderAll(); sheet(SHEETS.analyst()); toast('Analyst on'); return; }
+  if('anoff' in d){ S.analyst.on = false; closeSheet(); renderAll(); toast('Analyst off. Your split and tips are hidden'); return; }
+  if('anaccept' in d){ const sg = suggestSplit(), turnedOn = !S.payday.on;
+    S.analyst.split = sg; S.analyst.accepted = true; S.payday.pct = sg.save; if(turnedOn) S.payday.on = true;
+    closeSheet(); renderAll(); toast(`Split saved: ${sg.ess} / ${sg.fun} / ${sg.save}. Saving is your payday rule${turnedOn ? ', now on' : ''}`); return; }
+  if('splitopen' in d){ S._split = {...S.analyst.split}; sheet(SHEETS.splitedit()); return; }
+  if(d.splitstep){ const [k, n] = d.splitstep.split(':'); const lim = {ess:[0,100], fun:[0,100], save:[5,20]}[k];
+    S._split = S._split || {...S.analyst.split}; S._split[k] = Math.min(lim[1], Math.max(lim[0], S._split[k] + +n)); sheet(SHEETS.splitedit()); return; }
+  if('splitsuggest' in d){ S._split = suggestSplit(); sheet(SHEETS.splitedit()); return; }
+  if('splitsave' in d){ const sp = S._split; if(!sp || sp.ess + sp.fun + sp.save !== 100) return;
+    S.analyst.split = {...sp}; S.analyst.accepted = true; S.payday.pct = sp.save; S._split = null;
+    closeSheet(); renderAll(); toast(`Split saved: ${sp.ess} / ${sp.fun} / ${sp.save}. Payday rule is now ${sp.save}%`); return; }
+  if(d.txcat !== undefined){ S._txi = +d.txcat; sheet(SHEETS.txcat()); return; }
+  if(d.setcat){ const t = S.tx[S._txi]; if(!t) return; t.cat = d.setcat; closeSheet(); renderAll();
+    const u = splitUse(), b = SPLIT_CATS[d.setcat][1], pc = splitAmt(S.analyst.split[b]) ? Math.round(u[b] / splitAmt(S.analyst.split[b]) * 100) : 0;
+    toast(`Moved to ${bucketName(b)}${S.analyst.accepted ? `. ${bucketName(b)}: ${pc}% used` : ''}`); return; }
   /* money in: payday rule, weekly transfer, round-ups */
   if('paymove' in d){
     const g = ruleGoal(), v = incomeShare(S.payday.pct);
@@ -1428,7 +1539,7 @@ document.addEventListener('click', e=>{
     closeSheet(); renderAll(); if(pig3d && cur === 'hub') setTimeout(() => pig3d.celebrate(), 250);
     toast(`${ft(v)} moved to ${g.name}.${counted ? ` 🔥 ${S.streak}-week streak` : ''}`); return;
   }
-  if(d.prpct){ S.payday.pct = +d.prpct; sheet(SHEETS.payrule()); return; }
+  if(d.prpct){ S.payday.pct = +d.prpct; syncSplit(); sheet(SHEETS.payrule()); return; }
   if(d.rulegoal){ S.ruleGoal = d.rulegoal; sheet(SHEETS.payrule()); return; }
   if('prask' in d){ S.payday.ask = !S.payday.ask; sheet(SHEETS.payrule()); return; }
   if('prfloor' in d){ S.payday.floor = !S.payday.floor; sheet(SHEETS.payrule()); return; }
@@ -1441,7 +1552,7 @@ document.addEventListener('click', e=>{
   if('rron' in d){ S.roundup.on = true; closeSheet(); renderAll(); toast(`Round-ups on: they go to ${(goalById(S.roundup.goal)||ruleGoal()).name}`); return; }
   if('rroff' in d){ S.roundup.on = false; closeSheet(); renderAll(); toast('Round-ups off'); return; }
   if('keeprate' in d){ S.bridge = true; renderAll(); popPage(); tab('hub'); toast('Done. Your 3.0% continues for 12 months once your salary arrives at OTP'); return; }
-  if('raise' in d){ S.payday.pct = Math.min(20, S.payday.pct + 5); renderAll(); toast(`Payday rule is now ${S.payday.pct}%`); return; }
+  if('raise' in d){ S.payday.pct = Math.min(20, S.payday.pct + 5); syncSplit(); renderAll(); toast(`Payday rule is now ${S.payday.pct}%`); return; }
   if('insyes' in d){ const g = ruleGoal(); g.pace = (g.pace || 0) + (+d.insyes); S.insightUsed = true; renderAll(); toast(`Done: ${ft(+d.insyes)} more a month goes to ${g.name}`); return; }
   if('insno' in d){ S.insightUsed = true; renderAll(); return; }
   if('remindtg' in d){ S.remind = !S.remind; renderAll(); toast(S.remind ? 'Weekly reminder on: Sunday 18:00' : 'Weekly reminder off'); return; }
