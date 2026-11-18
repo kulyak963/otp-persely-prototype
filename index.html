@@ -188,6 +188,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .cats{display:flex;justify-content:space-between;padding:6px 4px 0;text-align:center}
 .cat{width:19%;display:flex;flex-direction:column;align-items:center;font-size:var(--fs-xs);color:var(--ink2);cursor:pointer}
 .cat .ic{color:var(--ink2);height:28px}
+.cat .cl{font-size:var(--fs-xs);font-weight:600;color:var(--ink2);margin-top:4px;line-height:1.2}
 .cat.on .ic{color:var(--green)}
 .cat .col{width:2px;height:96px;background:#DDE1E7;border-radius:2px;position:relative;margin:8px 0 6px}
 .cat .col i{position:absolute;bottom:0;left:-4px;width:10px;border-radius:5px;background:var(--green)}
@@ -573,6 +574,19 @@ input[type=range].rng{width:100%;accent-color:var(--green);height:30px}
 .fs .flame{margin-right:2px}
 /* Persi: small, one line, no cartoon speech bubble */
 .persi{display:flex;align-items:center;gap:10px;margin:-6px 0 10px}
+.hero .persi{margin:0 0 12px}
+.hero .sring-in{width:44px;height:44px;font-size:var(--fs-xs);box-shadow:0 0 0 2px #fff,0 0 0 4px #FF7A1A}
+.hero .sring.seen .sring-in{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #C9CED6}
+.hero .sring{gap:5px}
+/* Your habits: streak and health score in one card */
+.hab{padding-bottom:6px}
+.hab-score{display:flex;align-items:center;gap:14px;width:100%;min-height:var(--tap);padding:10px 0;margin-top:2px;border-top:1px solid var(--line);text-align:left}
+.hab-score .t{flex:1;min-width:0;font-size:var(--fs-m);color:var(--ink2)}
+.hab-score .t small{display:block;font-size:0.78125rem;margin-top:2px}
+.hab-score .chev{color:var(--green);display:flex}
+.hab-score .t24d{width:46px}
+.frhead .chev{transition:transform .2s}.frchev.open{transform:rotate(90deg)}
+.frfoot{display:flex;justify-content:center;border-top:1px solid var(--line);padding:2px 0}
 .persi .pig{flex:none}
 .persi-t{flex:1;min-width:0;font-size:0.875rem;line-height:1.4;color:var(--ink2)}
 .persi-t b{display:block;font-size:0.78125rem;color:var(--green-t);margin-bottom:1px}
@@ -798,11 +812,14 @@ function vFooldal(){
   return `
   <div class="hhead"><div class="avatar">${S.ini}</div><b>${S.name}</b><button class="mail" data-go="neked" aria-label="Messages">${I('mail',26)}</button></div>
   <div class="sec"><span>Balance</span><a data-go="szamlaim">All accounts ${I('chev',16)}</a></div>
-  <div class="accs" id="accs">${S.accounts.map(a=>`<button class="acc" data-go="${a.id==='persely'?'persely':'szamlaim'}"><div class="n">${a.n}</div><div class="v num">${ft(a.v)}</div><div class="h">${a.h}</div></button>`).join('')}</div>
+  <div class="accs" id="accs">${S.accounts.map(a => a.id === 'persely'
+    ? `<button class="acc" data-tab="hub"><div class="n">Persely · total</div><div class="v num">${ft(total())}</div><div class="h">${plural(S.goals.filter(g => !isEur(g)).length,'goal')}${eurTotal() ? ` + ${eur(eurTotal())}` : ''}</div></button>`
+    : `<button class="acc" data-go="szamlaim"><div class="n">${a.n}</div><div class="v num">${ft(a.v)}</div><div class="h">${a.h}</div></button>`).join('')}</div>
   <div class="dots">${S.accounts.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>
   <button class="card hubteaser" data-tab="hub">${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.onboarded && S.streak === 0
     ? `<b>New in Persely: goals with bonus interest</b><small>Set up in 1 minute</small>`
     : `<b style="display:flex;align-items:center;gap:4px">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Safe this week' : 'Ends Sunday. Any amount keeps it going'}</small>`}</span>${I('chev',20)}</button>
+  ${insightCard()}
   <div class="sec"><span>My monthly spending</span><a data-go="kiadas">Details ${I('chev',16)}</a></div>
   <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">1 November – 30 November</div>
   <div class="gauge">
@@ -815,8 +832,7 @@ function vFooldal(){
   <div class="avg">Average monthly spending: <span class="num">${ft(avg)}</span></div>
   ${S.analyst.on && S.analyst.accepted ? '' : `<button class="link lnk44" data-sheet="analyst" style="margin:0 0 0 10px">See how it fits your income ${I('chev',16)}</button>`}
   <div class="sec"><span>What did I spend on this month?</span></div>
-  <div class="cats">${CATS.map((c,i)=>`<div class="cat ${i===0?'on':''}"><span class="ic">${I(c[0],26)}</span><span class="col"><i style="height:${c[2]/max*100}%"></i></span><span class="num">${ft(c[2])}</span></div>`).join('')}</div>
-  ${insightCard()}
+  <div class="cats">${CATS.map((c,i)=>`<div class="cat ${i===0?'on':''}"><span class="ic">${I(c[0],26)}</span><span class="cl">${c[1]}</span><span class="col"><i style="height:${c[2]/max*100}%"></i></span><span class="num">${ft(c[2])}</span></div>`).join('')}</div>
   <div class="sec"><span>For you</span><a data-go="neked">All ${I('chev',16)}</a></div>
   ${nekedCards(true)}`;
 }
@@ -899,7 +915,6 @@ function vTovabbiak(){
   ${it('tag','Discounts','data-go="kedvezmenyek"')}
   ${it('star','For you','data-go="neked"')}
   <div class="sec"><span>Other</span></div>
-  ${it('cal','Demo: 8 weeks later','data-jump8')}
   ${it('gear','Settings')}${it('user','My partners')}${it('phone','Mobile top-up')}${it('ctp','Click to Pay')}
   ${it('road','Motorway vignette')}${it('doc','Documents')}${it('invite','Invite a friend!')}
   ${it('mapq','OTP branches and ATMs in Hungary')}${it('mapp','ATMs abroad')}${it('rate','Exchange rates')}
@@ -1019,9 +1034,9 @@ function depositTo(g, v, fromId='junior', how='Between my accounts'){
    One hint at a time, shown above its block on a visit to the Persely tab. It counts as shown when the user taps Got it or leaves the tab.
    S.hints remembers which were shown (reset in fresh()). Nothing shows before onboarding is done. */
 const HINTS = [['total','Your savings','3.0% a year with your Junior account. Add or withdraw any time, no fees.'],
-  ['week','Your streak','Save any amount once a week to keep it going. Automatic savings count too.'],
   ['goals','Your goals','Each goal shows the month you get there.'],
-  ['auto','Money in','Payday rule, weekly transfer and round-ups. Change them here.']];
+  ['auto','Money in','Payday rule, weekly transfer and round-ups. Change them here.'],
+  ['week','Your habits','Save any amount once a week to keep your streak going. Automatic savings count too.']];
 let HINT_NOW = null;
 function pickHint(force){ if(HINT_NOW && !S.hints[HINT_NOW]) return; const h = (S.onboarded || force) ? HINTS.find(x => !S.hints[x[0]]) : null; HINT_NOW = h ? h[0] : null; }
 function endHint(){ if(!HINT_NOW) return; S.hints[HINT_NOW] = 1; HINT_NOW = null; save(); renderView('hub'); }
@@ -1090,10 +1105,10 @@ const scoreNow = () => scoreOf(S.scoreHist), scorePrev = () => scoreOf(S.scoreHi
 const deltaTxt = d => d > 0 ? `▲ +${d}` : d < 0 ? `▼ −${-d}` : 'No change';
 const deltaCol = d => d > 0 ? 'var(--green-t)' : d < 0 ? 'var(--orange-t)' : 'var(--muted-t)';
 const nextMonthName = () => new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'});
-function scoreRow(){
+function scoreRow(){   // the score part of the "Your habits" card (analyst on only)
   if(!S.analyst.on) return '';
   const n = scoreNow(), d = n.t - scorePrev().t;
-  return `<button class="row" data-sheet="score" data-tour="score"><span class="t24d"><b class="num">${n.t}</b><small>of 100</small></span><span class="t"><b class="u-bk-title">Financial health score</b><small style="color:${deltaCol(d)}">${deltaTxt(d)} since last month</small></span><span class="chev">${I('chev',20)}</span></button>`;
+  return `<button class="hab-score" data-sheet="score" data-tour="score"><span class="t24d"><b class="num">${n.t}</b><small>of 100</small></span><span class="t"><b class="u-bk-title">Financial health score</b><small style="color:${deltaCol(d)}">${deltaTxt(d)} since last month</small></span><span class="chev">${I('chev',20)}</span></button>`;
 }
 function vHub(){
   const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
@@ -1101,13 +1116,13 @@ function vHub(){
   const chev = `<span class="chev">${I('chev',20)}</span>`;
   const rg = ruleGoal(), rgr = goalById(S.roundup.goal) || rg;
   const li = (ic, title, sub, sheetKey, swKey, on) => `<div class="li sw"><button class="li-main" data-sheet="${sheetKey}"><span class="ic">${I(ic)}</span><span class="t"><b>${title}</b><small>${sub}</small></span></button>${swBtn(on, `data-sw="${swKey}"`, title)}</div>`;
+  const junior = `<button class="row" data-go="grad"><span class="t24d"><b class="num">${S.juniorDays}</b><small>days</small></span><span class="t"><b class="u-bk-title">${S.bridge ? '3.0% for 12 more months' : 'Junior ends soon'}</b><small>${S.bridge ? 'While your salary comes to OTP' : 'Keep 3.0% for 12 more months'}</small></span>${chev}</button>`;
+  const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
   return `<div class="tabtitle">Persely</div>
-
-  <div class="persi" data-tour="persi">${pig(ps.mood, 84)}<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>
-    <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
-
-
+  ${juniorTop ? junior : ''}
   ${hintHTML('total')}<div class="card hero" data-tour="total">
+    <div class="persi" data-tour="persi">${pig(ps.mood, 48)}<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>
+      <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
     <div class="hrow"><span class="k">Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Junior 3.0%' : 'Standard rate'}</span></div>
     <div class="hero-v num">${ft(tot)}${et ? ` <small class="k" style="font-size:var(--fs-m);font-weight:600">+ ${eur(et)}</small>` : ''}</div>
     <div class="hero-r">${st ? `<b>${rateLabel()}</b> a year · about <b>${ft(yearNet())}</b> a year after tax` : `0.01% a year · about ${ft(yearNet())} a year`}</div>
@@ -1118,23 +1133,12 @@ function vHub(){
 
   ${S.onboarded ? '' : `<button class="setup" data-onbstart><span class="u-ico-g">${I('star',24)}</span><span class="u-fx1"><b>Set a goal and a saving rule</b><small>Takes 1 minute</small></span><span class="u-ico-g">${I('chev',20)}</span></button>`}
 
-  ${hintHTML('week')}<div class="card" data-tour="week" style="${!S.savedWeek && S.streak ? 'box-shadow:inset 0 0 0 1.5px #FFB27A,var(--sh)' : ''}">
-    <div class="u-rowc">${flame(36, S.streak > 0)}<div class="u-fx1"><div style="font-size:1.375rem;font-weight:700">${S.streak}-week streak</div><div class="u-k-sm">Best: ${S.best} · ${plural(S.skips,'skip')} left</div></div>${S.savedWeek ? '<span class="pill ok">Saved</span>' : S.streak ? '<span class="pill open">Ends Sunday</span>' : ''}</div>
-    <div class="wk">${weeks.map(w=>{ const on = S.history.includes(w), sk = (S.skipped||[]).includes(w);
-      return `<div class="${on?'on':''} ${sk?'sk':''} ${w===S.week?'today':''}"><i>${on ? '✓' : sk ? '–' : ''}</i><span>${w===S.week ? 'Now' : ''}</span></div>`; }).join('')}</div>
-  </div>
-
-  ${scoreRow()}
-
   ${hintHTML('goals')}<div class="sec" data-tour="goals"><span>Goals</span><a data-sheet="newgoal">New ${I('plus',16)}</a></div>
   ${S.goals.map(g=>{ const s=gSaved(g), t=gTarget(g), pc=pctOf(g), fx=lateFix(g);
     const attr = `data-goal="${g.id}"`;
     const right = g.shared ? `<span class="avs">${g.members.map(m=>avatar(m,24)).join('')}</span>` : `<b class="u-c-gt">${pc.txt}</b>`;
     const sub = pc.first && !g.shared ? `${money(g,s)} in · first step · ${forecast(g)}` : `${money(g,s)} of ${money(g,t)} · ${forecast(g)}`;
     return `<div class="gwrap ${fx ? 'fx' : ''}"><button class="card goal" ${attr}><div class="u-rowc"><span class="gic">${I(g.shared ? 'user' : isEur(g) ? 'euro' : g.ic,22)}</span><span class="u-fx0"><b class="u-bk-m">${esc(g.name)}</b><span class="num u-k-sm">${sub}</span></span>${right}</div><div class="prog" style="margin:10px 0 0"><i style="width:${pc.w}%"></i></div></button>${fx ? `<button class="gfix" data-latefix="${g.id}">${fixLabel(fx)}</button>` : ''}</div>`; }).join('')}
-  ${S.goals.some(g=>g.shared) && S.goals.some(isEur) ? '' : `<div class="hero-btns" style="margin:2px 0 4px">${S.goals.some(g=>g.shared) ? '' : `<button class="btn w addbtn" data-sheet="newshared">${I('user',18)} Shared Persely</button>`}${S.goals.some(isEur) ? '' : `<button class="btn w addbtn" data-neweur>${I('euro',18)} Euro Persely</button>`}</div>`}
-
-  ${splitCard()}
 
   ${hintHTML('auto')}<div class="sec" data-tour="auto"><span>Money in</span></div>
   <div class="card lst">
@@ -1143,7 +1147,17 @@ function vHub(){
     ${li('limit', 'Round-ups', S.roundup.on ? `Next 100 Ft, ×2 → ${esc(rgr.name)} · about ${ft(ROUND_EST)} a month` : 'Save the change from card payments', 'roundrule', 'round', S.roundup.on)}
   </div>
 
-  <button class="row" data-go="grad"><span class="t24d"><b class="num">${S.juniorDays}</b><small>days</small></span><span class="t"><b class="u-bk-title">${S.bridge ? '3.0% for 12 more months' : 'Junior ends soon'}</b><small>${S.bridge ? 'While your salary comes to OTP' : 'Keep 3.0% for 12 more months'}</small></span>${chev}</button>
+  ${splitCard()}
+
+  ${hintHTML('week')}<div class="sec"><span>Your habits</span></div>
+  <div class="card hab" data-tour="week" style="${!S.savedWeek && S.streak ? 'box-shadow:inset 0 0 0 1.5px #FFB27A,var(--sh)' : ''}">
+    <div class="u-rowc">${flame(36, S.streak > 0)}<div class="u-fx1"><div style="font-size:1.375rem;font-weight:700">${S.streak}-week streak</div><div class="u-k-sm">Best: ${S.best} · ${plural(S.skips,'skip')} left</div></div>${S.savedWeek ? '<span class="pill ok">Saved</span>' : S.streak ? '<span class="pill open">Ends Sunday</span>' : ''}</div>
+    <div class="wk">${weeks.map(w=>{ const on = S.history.includes(w), sk = (S.skipped||[]).includes(w);
+      return `<div class="${on?'on':''} ${sk?'sk':''} ${w===S.week?'today':''}"><i>${on ? '✓' : sk ? '–' : ''}</i><span>${w===S.week ? 'Now' : ''}</span></div>`; }).join('')}</div>
+    ${scoreRow()}
+  </div>
+
+  ${juniorTop ? '' : junior}
 
   ${friendsCard()}
   <div style="text-align:center;margin:14px 0 6px"><a class="link" data-sheet="how">How Persely works ${I('chev',16)}</a></div>`;
@@ -1215,7 +1229,7 @@ function nekedCards(compact){
     <button class="nk" data-toast="Fraud quiz – details">${art('linear-gradient(135deg,#2E6FA6,#5FA6D8)','lock')}<div class="tx2"><b>How well prepared are you against fraud?</b><p>Test your knowledge!</p><span class="tag tip"><span>Tip</span></span></div></button>
   </div>
   ${compact?'':'<div class="dots" style="margin-bottom:14px"><i class="on"></i><i></i><i></i></div>'}
-  <button class="card offer" data-go="persely" style="width:100%;text-align:left"><div class="tx2"><b class="u-fs-m">Start saving efficiently!</b><p style="margin:6px 0 10px;font-size:var(--fs-s);color:var(--muted-t)">Create your Persely and save for your goals free of charge.</p><span class="tag off"><span>Offer</span></span></div><div class="im" style="background:linear-gradient(135deg,#6C79D8,#9AA6EE);color:#BFF0A8">${I('piggy',56)}</div></button>`;
+  ${S.goals.length ? '' : `<button class="card offer" data-go="persely" style="width:100%;text-align:left"><div class="tx2"><b class="u-fs-m">Start saving efficiently!</b><p style="margin:6px 0 10px;font-size:var(--fs-s);color:var(--muted-t)">Create your Persely and save for your goals free of charge.</p><span class="tag off"><span>Offer</span></span></div><div class="im" style="background:linear-gradient(135deg,#6C79D8,#9AA6EE);color:#BFF0A8">${I('piggy',56)}</div></button>`}`;
 }
 
 let nekTab = 0;
@@ -1800,7 +1814,7 @@ document.addEventListener('click', e=>{
   if('insno' in d){ S.insightUsed = true; renderAll(); return; }
   if('remindtg' in d){ S.remind = !S.remind; renderAll(); toast(S.remind ? 'Weekly reminder on: Sunday 18:00' : 'Weekly reminder off'); return; }
   /* friends */
-  if(d.rankby){ S.rankBy = d.rankby; renderAll(); return; }
+  if('frtoggle' in d){ S.friendsOpen = !S.friendsOpen; save(); renderAll(); return; }
   if(d.nudge){ toast(`Reminder sent to ${d.nudge}`); return; }
   if('invite' in d){ toast('Invite link copied. Send it in any chat'); return; }
   if(d.addfriend){
@@ -1844,7 +1858,6 @@ document.addEventListener('click', e=>{
     if(O.first && pig3d) setTimeout(() => pig3d.celebrate(), 400);   // the first coin drops in
     return;
   }
-  if('jump8' in d){ week8State(); return; }
 });
 const amt = () => parseFloat((($('#mv') && $('#mv').value) || '').replace(/[^\d.]/g,'')) || 0;
 const keepAmt = () => { if($('#mv')) S._amt = amt(); };
@@ -2309,17 +2322,17 @@ function chCard(c, compact){
 
 /* ================= friends: compare habits, never money ================= */
 const SUGGEST = [{n:'Dóra',c:'#E06C75',s:2,g:22},{n:'Ádám',c:'#2BA3A3',s:9,g:54},{n:'Zsófi',c:'#2F9A3F',s:1,g:12},{n:'Gergő',c:'#7A6FD8',s:5,g:40}];
-function friendsCard(){
-  const g0 = S.goals[0], myG = Math.min(100, Math.round(gSaved(g0) / gTarget(g0) * 100));
-  const byGoal = S.rankBy === 'goal';
-  const rows = [...S.friends.map(f => ({...f})), {n:'You', c:'#F07D19', s:S.streak, g:myG, me:true}].sort((a,b) => byGoal ? b.g - a.g : b.s - a.s);
-  return `<div class="sec" data-tour="friends"><span>Friends</span><a data-sheet="addfriend">Add ${I('plus',16)}</a></div>
-  <div class="card" style="padding:12px 16px 4px">
-    <div class="seg" style="margin-bottom:6px">${[['streak','Streak'],['goal','Goal progress']].map(([k,l])=>`<button class="${(S.rankBy||'streak')===k?'on':''}" data-rankby="${k}">${l}</button>`).join('')}</div>
+function friendsCard(){   // collapsed and opt-in: nothing is compared until the user opens it; ranked by streak only
+  const open = !!S.friendsOpen;
+  const head = `<button class="row frhead" data-frtoggle aria-expanded="${open}"><span class="ic">${I('user')}</span><span class="t"><b>Friends</b><small>${open ? 'Compared by weekly streak only. Nobody sees your balance' : 'Compare weekly streaks. Nobody sees your balance'}</small></span><span class="chev frchev ${open ? 'open' : ''}">${I('chev',20)}</span></button>`;
+  if(!open) return `<div data-tour="friends">${head}</div>`;
+  const rows = [...S.friends.map(f => ({...f})), {n:'You', c:'#F07D19', s:S.streak, g:0, me:true}].sort((a,b) => b.s - a.s);
+  return `<div data-tour="friends">${head}
+  <div class="card" style="padding:4px 16px 4px;margin-top:-4px">
     ${S.friends.length
-      ? rows.map((f,i)=>`<div class="fr ${f.me?'me':''}"><span class="rk">${i+1}</span><span class="fav" style="background:${f.c}">${f.n[0]}</span><b>${f.n}</b><span class="fs num">${byGoal ? `${f.g}%` : `${flame(16, f.s > 0)}${f.s}`}</span>${f.me ? '<span style="width:68px"></span>' : `<button class="nudge" data-nudge="${f.n}">Remind</button>`}</div>`).join('')
-      : `<div style="text-align:center;padding:14px 0 6px"><b>Saving is easier with friends</b><div style="font-size:0.78125rem;color:var(--muted-t);margin:4px 0 12px">Compare weekly streaks. Nobody sees your balance.</div><button class="btn sm" data-sheet="addfriend">Add friends</button></div>`}
-    <div style="height:8px"></div></div>`;
+      ? rows.map((f,i)=>`<div class="fr ${f.me?'me':''}"><span class="rk">${i+1}</span><span class="fav" style="background:${f.c}">${f.n[0]}</span><b>${f.n}</b><span class="fs num">${flame(16, f.s > 0)}${f.s}</span>${f.me ? '<span style="width:68px"></span>' : `<button class="nudge" data-nudge="${f.n}">Remind</button>`}</div>`).join('')
+      : `<div style="text-align:center;padding:14px 0 6px"><b>Saving is easier with friends</b><div style="font-size:0.78125rem;color:var(--muted-t);margin:4px 0 12px">Compare weekly streaks. Nobody sees your balance.</div></div>`}
+    <div class="frfoot"><button class="link lnk44" data-sheet="addfriend">Add friends ${I('plus',16)}</button></div></div></div>`;
 }
 
 /* ================= monthly story (reels format, the original design) ================= */
