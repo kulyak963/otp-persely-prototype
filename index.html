@@ -510,6 +510,9 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .wn-ic{width:56px;height:56px;border-radius:50%;background:var(--green-l);color:var(--green-i);display:flex;align-items:center;justify-content:center;margin:16px auto 10px}
 .wn-grid.three{grid-template-columns:repeat(3,1fr);gap:8px}
 .wn-grid.three button{padding:12px 4px;font-size:0.78125rem}
+.wn-grid + .wn-else{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;margin-bottom:2px;border-radius:16px;background:var(--bg);font-weight:600;font-size:0.875rem;color:var(--ink)}
+.wn-else svg{color:var(--green-i)}
+.wn-else:active{background:var(--green-l)}
 .fr .nudge::after{content:"";position:absolute;inset:-7px -3px}
 .fr .nudge{position:relative;width:auto;height:30px;padding:0 12px;border-radius:15px;font-size:0.78125rem;font-weight:600;color:var(--green-t);background:var(--green-l)}
 /* merged savings features: money-in list, verification, shared goals, share card */
@@ -1351,7 +1354,7 @@ const PAGES = {
   create:{title:'New Persely', html:()=>{
     const d = S._draft, steps = `<div class="onb-step u-mt6">Step ${d.step} of 3</div>`;
     if(d.step === 1) return `${steps}<h2 class="u-mt4-b12">What are you saving for?</h2>
-      <div class="flabel">Name</div><div class="fld"><span class="t"><input id="cgName" maxlength="30" value="${esc(d.name)}" aria-label="Goal name"></span></div>
+      <div class="flabel">Name</div><div class="fld"><span class="t"><input id="cgName" maxlength="30" value="${esc(d.name)}" placeholder="e.g. New laptop" autocomplete="off" enterkeyhint="done" aria-label="Goal name"></span></div>
       <div class="flabel">Amount</div>${amountPicker('cg')}
       ${monthPicker('cg')}`;
     if(d.step === 2) return `${steps}<h2 class="u-mt4-b12">How should money get in?</h2>
@@ -1366,7 +1369,7 @@ const PAGES = {
         ${extra ? `<button class="btn w u-mt12" data-cgboost="${d.weekly + extra}">Make it ${ft(d.weekly + extra)} a week</button>` : ''}</div>
       <p class="fine" style="margin:0 2px">Earns ${(S.verified||S.bridge) ? '3.0% with your Junior account' : '0.01% (standard rate)'}.</p>`; },
     foot:()=>{ const d = S._draft; if(!d) return '';
-      return d.step < 3 ? `<div class="hero-btns u-m0">${d.step > 1 ? '<button class="btn w" data-cgstep="-1">Back</button>' : ''}<button class="btn" data-cgstep="1">Next</button></div>`
+      return d.step < 3 ? `<div class="hero-btns u-m0">${d.step > 1 ? '<button class="btn w" data-cgstep="-1">Back</button>' : ''}<button class="btn" data-cgstep="1" ${d.step === 1 && !cleanName(d.name) ? 'disabled' : ''}>Next</button></div>`
         : `<div class="hero-btns u-m0"><button class="btn w" data-cgstep="-1">Back</button><button class="btn" data-cgcreate>Create Persely</button></div>`; }},
   // graduation bridge: the retention moment, the 3.0% rate continues if the salary comes to OTP
   grad:{title:'Your 3.0% rate', html:()=>{ const pr = S.payday;
@@ -1785,11 +1788,14 @@ document.addEventListener('click', e=>{
     renderAll(); undoable(before, g.weekly || (S.weekly.on && S.ruleGoal === g.id) ? `${ft(g.weekly || S.weekly.amt)} every Monday → ${g.name}` : 'Weekly transfer off'); return; }
   // create a goal: 3 steps with a live projection
   if(d.cgpreset !== undefined || 'cgnew' in d){
-    const [n, ic, t] = (d.cgpreset || 'Erasmus in Lisbon|plane|150000').split('|');
-    S._draft = {step:1, name:n, ic, target:+t, typeAmt:+t, date:pkIdxDate(pkNow() + 10), weekly:2000, round:true};
-    closeSheet(); pushPage('create'); return; }
+    const custom = d.cgpreset === undefined, [n, ic, t] = custom ? [] : d.cgpreset.split('|'), c = customGoal();
+    S._draft = custom ? {step:1, name:'', ic:c.ic, target:c.target, typeAmt:0, date:c.date, weekly:2000, round:true, focusName:true}
+      : {step:1, name:n, ic, target:+t, typeAmt:+t, date:pkIdxDate(pkNow() + 10), weekly:2000, round:true};
+    closeSheet(); pushPage('create');
+    if(custom){ const f = $('#cgName'); if(f){ S._draft.focusName = false; f.focus({preventScroll:true}); } }
+    return; }
   if(d.cgstep){ keepCgName(); const dr = S._draft;
-    if(dr.step === 1 && !dr.name.trim()){ toast('Give your goal a name'); return; }
+    if(dr.step === 1 && !cleanName(dr.name)){ toast('Give your goal a name'); return; }
     if(dr.step === 1 && dr.target < PK_MIN) pkSet('cg', PK_MIN);
     dr.step = Math.max(1, Math.min(3, dr.step + (+d.cgstep))); refreshPages(); return; }
   // amount and month pickers (shared by onboarding and New Persely)
@@ -1805,7 +1811,7 @@ document.addEventListener('click', e=>{
   if(d.cgboost){ S._draft.weekly = +d.cgboost; refreshPages(); toast(`Weekly transfer set to ${ft(+d.cgboost)}`); return; }
   if('cgcreate' in d){
     if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
-    const dr = S._draft, g = {id:'g'+Date.now(), name:dr.name.trim().slice(0,30), ic:dr.ic || 'star', saved:0, target:dr.target, pace:0, date:dr.date, weekly:dr.weekly};
+    const dr = S._draft, g = {id:'g'+Date.now(), name:cleanName(dr.name), ic:dr.ic || 'star', saved:0, target:dr.target, pace:0, date:dr.date, weekly:dr.weekly};
     S.goals.push(g); if(dr.round) S.roundup = {on:true, goal:g.id};
     S._draft = null; popPage(true); renderAll(); S._detail = g.id; pushPage('goal');
     toast(`${g.name} created.${g.weekly ? ' First transfer next Monday.' : ''}`); return; }
@@ -1925,7 +1931,7 @@ document.addEventListener('click', e=>{
   if('wnlater' in d){ S.updateSeen = true; save(); closeWhatsNew(); toast('You can set it up any time in the Persely tab'); return; }
   if('onbstart' in d){ startOnb('travel'); return; }
   if('onbnext' in d){
-    if(STEPS[O.i] === 'goal'){ keepOnbName(); if(!O.name.trim()){ toast('Give your goal a name'); return; } if(O.target < PK_MIN) pkSet('onb', PK_MIN); }
+    if(STEPS[O.i] === 'goal'){ keepOnbName(); if(!cleanName(O.name)){ toast('Give your goal a name'); return; } if(O.target < PK_MIN) pkSet('onb', PK_MIN); }
     O.i = Math.min(STEPS.length - 1, O.i + 1); renderOnb(); return;
   }
   if('onbback' in d){ keepOnbName(); O.i = Math.max(0, O.i - 1); renderOnb(); return; }
@@ -1999,6 +2005,10 @@ document.addEventListener('focusout', e => {
 const amt = () => parseFloat((($('#mv') && $('#mv').value) || '').replace(/[^\d.]/g,'')) || 0;
 const keepAmt = () => { if($('#mv')) S._amt = amt(); };
 const keepOnbName = () => { if($('#onbName')) O.name = $('#onbName').value; };
+document.addEventListener('input', e => {   // New Persely: Next stays off until the name has a letter in it
+  if(e.target.id !== 'cgName' || !S._draft) return;
+  S._draft.name = e.target.value; const b = e.target.closest('.page').querySelector('[data-cgstep="1"]'); if(b) b.disabled = !cleanName(S._draft.name);
+});
 const keepCgName = () => { if($('#cgName') && S._draft) S._draft.name = $('#cgName').value; };
 let shNameKeep = '';
 const keepShName = () => { if($('#shName')) shNameKeep = $('#shName').value; };
@@ -2337,6 +2347,8 @@ function mountPig(){ if(pig3d) pig3d.mount(); }
 /* ================= update pop-up + onboarding =================
    Pop-up: one question ("What are you saving for?"). Then: goal with a date → how money gets in
    (with a live projection) → summary with an optional first deposit and one Create goal button. No tour: Persi shows a hint per block instead. */
+const cleanName = s => String(s || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 30);   // custom names are typed by the user: no markup, one line, 30 characters
+const customGoal = () => ({ic:'star', name:'', target:100000, date:pkIdxDate(pkNow() + 12)});   // "Something else": own name, 100 000 Ft, 12 months ahead
 const GOAL_PRESETS = {
   ps5:{label:'PS5 + GTA 6', ic:'game', name:'PS5 + GTA 6', target:230000, date:'2027-12-01', hot:true},
   travel:{label:'Travel', ic:'plane', name:'Erasmus in Lisbon', target:150000, date:'2027-09-01'},
@@ -2470,6 +2482,7 @@ function showWhatsNew(){
     <h2>What are you saving for?</h2>
     <ul class="bul left"><li>3.0% a year with your Junior account</li><li>See the month you reach your goal</li><li>Save a little from every salary</li></ul>
     <div class="wn-grid three">${Object.entries(GOAL_PRESETS).map(([k,g])=>`<button class="${g.hot?'hot':''}" data-wnpick="${k}">${g.hot ? '<span class="hotb">Trending</span>' : ''}${I(g.ic,24)}${g.label}</button>`).join('')}</div>
+    <button class="wn-else" data-wnpick="custom">${I('plus',20)}Something else</button>
     <button class="later" data-wnlater>Not now</button></div>`;
   w.classList.add('on'); mountPig();
 }
@@ -2479,8 +2492,8 @@ function launchFlow(delay=1500){
   setTimeout(()=>{ if(S.updateSeen) return; updateDayState(); renderAll(); tab('fooldal'); showWhatsNew(); }, delay);
 }
 function startOnb(key){
-  const g = GOAL_PRESETS[key] || GOAL_PRESETS.travel;
-  Object.assign(O, {i: 0, key, name:g.name, target:g.target, typeAmt:g.target, date:g.date,
+  const custom = key === 'custom', g = custom ? customGoal() : (GOAL_PRESETS[key] || GOAL_PRESETS.travel);
+  Object.assign(O, {i: 0, key, ic:g.ic, name:g.name, target:g.target, typeAmt:custom ? 0 : g.target, date:g.date, focusName:custom,
     payOn:true, pct:10, weeklyOn:false, weekly:2000, roundOn:true, first:1000, from:'junior', deposited:0, remind:true, coinShown:false});
   tab('hub'); $('#onb').classList.add('on'); renderOnb();
 }
@@ -2489,11 +2502,11 @@ function renderOnb(){
   const i = O.i, step = STEPS[i], n = STEPS.length;
   const bars = STEPS.map((_,k) => `<i class="${k<=i?'on':''}"></i>`).join('');
   const tg = (on, attr, title, sub, extra='') => `<button class="opt slim ${on?'on':''}" ${attr}><span class="t"><b>${title}</b><small>${sub}</small></span><span class="tg ${on?'on':''}"></span></button>${on && extra ? `<div class="subopts">${extra}</div>` : ''}`;
-  let body = '', foot = `<button class="btn" data-onbnext>Next</button>`;
+  let body = '', foot = `<button class="btn" data-onbnext ${step === 'goal' && !cleanName(O.name) ? 'disabled' : ''}>Next</button>`;
   if(step === 'goal'){
     body = `<div class="onb-step">Step 1 of ${n}</div><h2>Your goal</h2><p class="lead">It earns 3.0% a year with your Junior account. You can change it later.</p>
       <div class="flabel">Name</div>
-      <div class="fld"><span class="t"><input id="onbName" maxlength="30" value="${esc(O.name)}" aria-label="Goal name"></span></div>
+      <div class="fld"><span class="t"><input id="onbName" maxlength="30" value="${esc(O.name)}" placeholder="e.g. New laptop" autocomplete="off" enterkeyhint="done" aria-label="Goal name"></span></div>
       <div class="flabel">Amount</div>
       ${amountPicker('onb')}
       ${monthPicker('onb')}`;
@@ -2527,14 +2540,17 @@ function renderOnb(){
   $('#onb').innerHTML = `<div class="onb-top">${i>0 ?`<button class="onb-back" data-onbback aria-label="Back">${I('back',22)}</button>`:''}<div class="onb-bars">${bars}</div><button class="onb-skip" data-onbquit>Not now</button></div>
     <div class="onb-body">${body}</div><div class="onb-foot">${foot}</div>`;
   if(step === 'goal'){
-    $('#onbName').addEventListener('input', e => { O.name = e.target.value; });
+    const nm = $('#onbName');
+    nm.addEventListener('input', e => { O.name = e.target.value; const b = $('#onb [data-onbnext]'); if(b) b.disabled = !cleanName(O.name); });
+    nm.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); nm.blur(); } });
+    if(O.focusName){ O.focusName = false; nm.focus({preventScroll:true}); }   // custom goal: the keypad opens on the empty name
   }
   mountPig();
 }
 // save what the user chose: the new goal comes first and the rules point at it
 function applyOnb(){
   if(!goalById('onb')){
-    S.goals.unshift({id:'onb', name:(O.name || 'My goal').trim().slice(0,30) || 'My goal', ic:(GOAL_PRESETS[O.key] || GOAL_PRESETS.travel).ic, saved:0, target:O.target, pace:0, date:O.date});
+    S.goals.unshift({id:'onb', name:cleanName(O.name) || 'My goal', ic:O.ic || (GOAL_PRESETS[O.key] || GOAL_PRESETS.travel).ic, saved:0, target:O.target, pace:0, date:O.date});
   }
   S.ruleGoal = 'onb';
   S.payday = {on:O.payOn, pct:O.pct, ask:true, floor:true};
