@@ -95,23 +95,22 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
     <h2>Open the prototype</h2>
     <div class="box"><h3>Online, for everyone</h3><p><a href="https://otp-persely-prototype.onrender.com">otp-persely-prototype.onrender.com</a> — the same app, hosted on Render, updated automatically from the GitHub repository <a href="https://github.com/kulyak963/otp-persely-prototype">kulyak963/otp-persely-prototype</a>. On an iPhone: open it in Safari → Share → Add to Home Screen. The free server sleeps after 15 idle minutes, so open the link a minute before presenting. Presenter tools online need the presenter key: <code>…/?key=ADMIN_KEY</code> once on the laptop, and <code>…/push.html?key=ADMIN_KEY</code> for the push panel (ask Denis for the key).</p></div>
     <div class="grid">
-      <div class="box"><h3>On the laptop</h3><ol><li>Start the server: <code>node server.js</code> in the project folder (port 8090).</li><li>Open <code>http://localhost:8090</code>. On a wide screen the app sits in an iPhone frame, and the demo panel is on the left.</li><li>Presenter panel for real pushes: <code>http://localhost:8090/push.html</code> (only works on this laptop).</li></ol></div>
+      <div class="box"><h3>On the laptop</h3><ol><li>Start the server: <code>node server.js</code> in the project folder (port 8090).</li><li>Open <code>http://localhost:8090</code>. On a real desktop screen (wide, tall, with a mouse) the app sits in an iPhone frame, and the demo panel is on the left. On any phone, also in landscape, there is no frame; a phone held sideways shows a "Turn your phone upright" card with Persi.</li><li>Presenter panel for real pushes: <code>http://localhost:8090/push.html</code> (only works on this laptop).</li></ol></div>
       <div class="box"><h3>On an iPhone</h3><ol><li>Run the tunnel: <code>cloudflared tunnel --url http://localhost:8090</code>. It prints an https address like <code>…trycloudflare.com</code>.</li><li>Open that address in Safari → Share → Add to Home Screen.</li><li>Open the app from the icon → More → Notifications → Turn on notifications.</li></ol><p class="muted">The free tunnel gets a new address every time it restarts. Then the app has to be added to the Home Screen again.</p></div>
     </div>
   </section>
 
   <section id="journey">
     <h2>User journey</h2>
-    <div class="flow"><span>Update pop-up</span><i>→</i><span>Goal + date</span><i>→</i><span>Money in + forecast</span><i>→</i><span>First deposit</span><i>→</i><span>Summary</span><i>→</i><span>Tour</span><i>→</i><span>Weekly life</span><i>→</i><span>Monthly story</span><i>→</i><span>Junior ends: keep 3.0%</span></div>
+    <div class="flow"><span>Update pop-up</span><i>→</i><span>Goal + date</span><i>→</i><span>Money in + forecast</span><i>→</i><span>Summary + first deposit</span><i>→</i><span>Persi hints</span><i>→</i><span>Weekly life</span><i>→</i><span>Monthly story</span><i>→</i><span>Junior ends: keep 3.0%</span></div>
     <div class="tbl"><table>
       <thead><tr><th>Step</th><th>What the user sees</th><th>Why</th></tr></thead>
       <tbody>
         <tr><td>Update pop-up</td><td>Persi and "What are you saving for?" with 6 tiles. First tile: <b>PS5 + GTA 6</b> (Trending), then Travel, Car, Own home, Safety net, Studies. "Not now" closes it.</td><td>One tap to start; goals are the main savings goals from the research.</td></tr>
-        <tr><td>1. Goal</td><td>Name, amount (slider and chips), "By when?" (June 2027 to June 2028). The step says it earns 3.0% with the Junior account.</td><td>Every goal has a date, so we can forecast.</td></tr>
+        <tr><td>1. Goal ("Step 1 of 3")</td><td>Name, amount, "By when?". Says it earns 3.0% with the Junior account. <b>Amount:</b> tap the number to type it (numeric keypad), or drag the slider (5,000 to 300,000 Ft on 70% of the track, up to 1,000,000 Ft; higher only by typing), or tap a chip (goal-type amount plus round ones). A small money stack beside the amount grows with the slider. <b>Date:</b> a "By when? · December 2027 · in 13 months" row opens a month sheet (year tabs, 3 × 4 month grid, up to 3 years ahead, Done); chips In 6 months, Next summer, In a year. A live line "≈ X Ft a week" sits directly above Next and turns orange when the rules cannot cover it.</td><td>Every goal has a date, so we can forecast. The weekly cost is shown before the user decides.</td></tr>
         <tr><td>2. Money in</td><td>Switches: payday rule (5–20%, recommended), weekly transfer, round-ups. Live card: "About 131,000 Ft by 1 December 2027, 99,000 short" and <b>Add 2,000 Ft a week to make it</b>.</td><td>Honest forecast with a one-tap fix.</td></tr>
-        <tr><td>3. First deposit</td><td>Amount chips → Continue → <b>Pay from</b> sheet: choose Junior or Savings account, see To, Amount, Fee 0 Ft, what is left → Confirm. Or Skip.</td><td>No surprises about where money comes from.</td></tr>
-        <tr><td>Summary</td><td>Persi with a coin dropping in, a summary table, weekly reminder switch (Sunday 18:00), Go to Persely.</td><td>Confirms what was set up.</td></tr>
-        <tr><td>Tour</td><td>5 highlighted spots: Persi, savings card, streak, goals, money in. Skip any time.</td><td>Shows what is where, once.</td></tr>
+        <tr><td>3. Summary + first deposit</td><td>Summary table, then the first deposit inline: 1,000 Ft preselected (chips 0 to 5,000 Ft), "From Junior account · change" link for the account, weekly reminder switch (Sunday 18:00), one <b>Create goal</b> button. A coin drops into Persi. No Pay-from sheet, no "You're all set" screen.</td><td>About 4 taps from tile to finished goal. The streak starts with the first deposit.</td></tr>
+        <tr><td>First visit to the tab</td><td>No tour. <b>Persi hint strips</b> show one at a time above each block (savings, goals, money in, your habits); <b>Got it</b> or leaving the tab marks it as seen. <kbd>T</kbd> or "Persi hints again" in the panel shows them again.</td><td>Shows what is where, without blocking the screen.</td></tr>
       </tbody>
     </table></div>
   </section>
@@ -121,48 +120,46 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
     <div class="tbl"><table>
       <thead><tr><th>Block</th><th>What it shows and does</th></tr></thead>
       <tbody>
-        <tr><td>Persi + story ring</td><td>3D piggy (drag to turn, tap to jump) with one short line, e.g. "Any amount by Sunday keeps your streak." On the right an Instagram-style ring "NOV": orange = new story, grey = watched. Tap opens the monthly story.</td></tr>
-        <tr><td>Savings card</td><td>Total in Persely (forints, plus euros if any), badge Junior 3.0% / Graduate 3.0%, yearly interest after tax in Ft, <b>Add money</b> and <b>Withdraw</b>, trust line "Withdraw any time · No fees · Insured", "Included in your Junior package. Nothing to sign up for".</td></tr>
-        <tr><td>Streak</td><td>Flame, "8-week streak", best and skip weeks left, 8 orange check circles (one per week, current one ringed "Now"). Pill "Ends Sunday" with orange outline while the week is open, "Saved" when done.</td></tr>
-        <tr><td>Health score <span class="muted">(analyst on)</span></td><td>Row directly under the streak card: "75 of 100 · Financial health score · ▲ +25 since last month". Tap for the four indicators and the Rewards list. Hidden when the analyst is off.</td></tr>
-        <tr><td>Goals</td><td>One card per Persely: name, saved of target, forecast month (orange "late" if after the goal date), progress bar. Shared goals show member avatars. Buttons <b>Shared Persely</b> and <b>Euro Persely</b> under the list; <b>New</b> opens all goal options. Up to 5.</td></tr>
-        <tr><td>My split <span class="muted">(analyst on)</span></td><td>Card after Goals with the Essentials, Fun and Saving buckets and live use. Before the split is accepted it offers "See the suggestion". Details in the next section.</td></tr>
-        <tr><td>Money in</td><td>Payday rule, weekly transfer, round-ups with On/Off. Each opens a sheet to change it.</td></tr>
-        <tr><td>Junior ends soon</td><td>Days left and "Keep 3.0% for 12 more months". Opens the graduation screen.</td></tr>
-        <tr><td>Friends</td><td>Ranking by streak or goal progress, never by money. "Remind" button, Add friends (invite link, people you may know).</td></tr>
-        <tr><td>How Persely works</td><td>Short explanation of rate, money in and streak, with "Show me around" (tour).</td></tr>
+        <tr><td>Junior ends soon <span class="muted">(last 90 days)</span></td><td>Days left and "Keep 3.0% for 12 more months". Opens the graduation screen. At 90 days or fewer it sits at the <b>top</b> of the tab (as in the seed data); otherwise it sits after Your habits.</td></tr>
+        <tr><td>Savings card</td><td>Persi (small 3D piggy, drag to turn, tap to jump) with one short line in the card header, e.g. "Any amount by Sunday keeps your streak.", and the Instagram-style story ring on the right (orange = new story, grey = watched; tap opens the monthly story). Below: total in Persely (forints, plus euros if any), badge Junior 3.0% / Graduate 3.0%, yearly interest after tax in Ft, <b>Add money</b> and <b>Withdraw</b>, trust line "Withdraw any time · No fees · Insured", "Included in your Junior package. Nothing to sign up for".</td></tr>
+        <tr><td>Goals</td><td>One card per Persely: name, saved of target, forecast month, progress bar (always a visible bar; a new goal reads "1,000 Ft in · first step", not 0%). A late goal carries a one-tap fix button, "+X Ft a week → on time". Shared goals show member avatars. <b>New +</b> opens all goal options, including <b>Shared Persely</b> and <b>Euro Persely</b> (no separate buttons under the list). Up to 5.</td></tr>
+        <tr><td>Money in</td><td>Payday rule, weekly transfer, round-ups. One switch style everywhere: the <b>switch</b> toggles the rule (with Undo), tapping the <b>row</b> opens its settings sheet.</td></tr>
+        <tr><td>My split <span class="muted">(analyst on)</span></td><td>Card after Money in with the Essentials, Fun and Saving buckets and live use. Before the split is accepted it offers "See the suggestion". Details in the next section.</td></tr>
+        <tr><td>Your habits</td><td>Streak and score in one card. Flame, "8-week streak", best and skip weeks left, 8 orange check circles (one per week, current one ringed "Now"), pill "Ends Sunday" while the week is open, "Saved" when done. With the analyst on, the health score row sits at the bottom of the same card: "75 of 100 · Financial health score · ▲ +25 since last month"; tap for the four indicators and the Rewards list.</td></tr>
+        <tr><td>Friends</td><td>Collapsed and opt-in: one row until the user opens it. Ranked by weekly streak only, never by money or goal progress. "Remind" button, Add friends (invite link, people you may know).</td></tr>
+        <tr><td>How Persely works</td><td>A link at the bottom: short explanation of rate, money in and streak.</td></tr>
       </tbody>
     </table></div>
 
     <div class="grid">
-      <div class="box"><h3>One Persely screen</h3><p class="muted">Tap any goal.</p><ul><li>Balance, progress, goal date</li><li>"At your pace you get there in April 2027" or "after your goal date"</li><li>Add money / Take out</li><li>Rate on this goal in Ft per year</li><li>Switches: payday rule, round-ups, weekly transfer go to this goal</li><li>Shared: who put in what, rules, Invite a friend</li><li>Euro: "buy euros bit by bit"</li><li>Last 5 activity lines</li></ul></div>
-      <div class="box"><h3>Create a goal (3 steps)</h3><p class="muted">New → Your own goal, or a preset.</p><ol><li>Name, amount, date</li><li>Weekly transfer and round-ups</li><li>Check: "With these rules: about 111,000 Ft by 1 September", short by X, <b>Make it 3,000 Ft a week</b>, Create</li></ol></div>
-      <div class="box"><h3>Sheets</h3><ul><li><b>Add money</b>: goal chips, amount, from Junior or Savings account, streak hint</li><li><b>Withdraw</b>: instant, no fee, streak not affected; shared = only your part</li><li><b>Payday</b>: "+75,000 Ft arrived. Move 10% (7,500 Ft)?" with before → after</li><li><b>Payday rule / Weekly / Round-ups</b> settings</li></ul></div>
+      <div class="box"><h3>One Persely screen</h3><p class="muted">Tap any goal.</p><ul><li>Balance, progress, goal date</li><li>"At your pace you get there in April 2027" or "after your goal date", with the one-tap fix and, if the analyst is off, an offer to see how it fits your income</li><li>Add money / Take out</li><li>Rate on this goal in Ft per year</li><li>Switches: payday rule, round-ups, weekly transfer go to this goal (same switch style, with Undo)</li><li>Shared: who put in what, rules, Invite a friend</li><li>Euro: "buy euros bit by bit"</li><li>Last 5 activity lines</li></ul></div>
+      <div class="box"><h3>Create a goal (3 steps)</h3><p class="muted">Goals → New + → Your own goal, or a preset. Same amount and date controls as onboarding step 1 (typed amount, non-linear slider, month sheet); default date 10 months ahead.</p><ol><li>Name, amount, date</li><li>Weekly transfer and round-ups</li><li>Check: "With these rules: about 111,000 Ft by 1 September", short by X, <b>Make it 3,000 Ft a week</b>, Create</li></ol></div>
+      <div class="box"><h3>Sheets</h3><ul><li><b>Add money</b>: goal chips, amount, from Junior or Savings account, streak hint</li><li><b>Withdraw</b>: instant, no fee, streak not affected; shared = only your part</li><li><b>Payday</b>: "+75,000 Ft arrived. Move 10% (7,500 Ft)?" with before → after</li><li><b>Payday rule / Weekly / Round-ups</b> settings</li><li><b>Month picker</b>: year tabs and a 3 × 4 month grid</li></ul><p class="muted">One message at a time: banner, then sheet, then toast; no toast over a sheet or a button. Add money, Withdraw, payday Move, Accept split, rule changes and switches show <b>Undo</b> for 5 seconds; it puts back balances, streak, score and rules together.</p></div>
       <div class="box"><h3>Graduation screen</h3><p>"Congratulations, Anna" (or "Your Junior package ends soon"). Three steps: give employer your OTP account number, first salary arrives at OTP within 6 months, Perselys keep 3.0% for 12 months. Tip to raise the payday rule. <b>Keep my 3.0%</b> turns the badge into Graduate 3.0%.</p></div>
     </div>
   </section>
 
   <section id="analyst">
     <h2>Analyst and health score</h2>
-    <p>New in the next version of the prototype. It answers the analyst promise in the opening script: Persi stops being only a tip card and helps the student plan the month.</p>
+    <p>It answers the analyst promise in the opening script: Persi stops being only a tip card and helps the student plan the month.</p>
     <div class="tbl"><table>
       <thead><tr><th>Feature</th><th>What it does</th></tr></thead>
       <tbody>
-        <tr><td>Analyst switch</td><td>In <b>More</b>, a "Financial analyst" row with an On/Off pill, directly below Notifications. Off by default (opt-in). Turning it on opens a sheet that suggests Essentials 50% / Fun 40% / Saving 10% (37,500 / 30,000 / 7,500 Ft) from the last 3 months of card payments and income. Accept it, or change the percentages.</td></tr>
+        <tr><td>Analyst, offered in context</td><td>Off by default (opt-in). It is offered where it helps: on a late goal's page, on Persi's monthly tip on Home, under My monthly spending on Home ("See how it fits your income"), on the Monthly spending page, and with a switch in <b>More</b> (the switch turns it off in one tap). Every entry opens <b>one sheet</b>: what it measures, and the suggested Essentials 50% / Fun 40% / Saving 10% (37,500 / 30,000 / 7,500 Ft) from the last 3 months of card payments and income. <b>Turn on and use this split</b> (2 taps in all), or "Only turn it on, I will choose later", or change the percentages. Undo for 5 seconds.</td></tr>
         <tr><td>My split</td><td>A card in the Persely tab, shown only when the analyst is on. Three buckets with live use, e.g. "Fun: 70% used, 12 days left". An edit sheet starts from the suggestion: Essentials 50% (37,500 Ft), Fun 40% (30,000 Ft), Saving 10% (7,500 Ft) of a 75,000 Ft salary. The <b>Saving bucket is the payday rule</b>, so the two always show the same number.</td></tr>
         <tr><td>Recategorise</td><td>With the analyst on, card payments in Transactions are tappable. The student can move one to another category, and the split and Persi's tips follow.</td></tr>
-        <tr><td>Financial health score</td><td>0–100, shown as a row directly under the streak card ("N of 100 · Financial health score · ▲ +N since last month"); tap it for the four indicators and the Rewards list. Four indicators, 25 points each, over a rolling 3 months: spends less than earns; no overdraft or failed payment; a buffer of about one month of spending; saves regularly toward a named goal.</td></tr>
+        <tr><td>Financial health score</td><td>0–100, shown as the bottom row of the Your habits card ("N of 100 · Financial health score · ▲ +N since last month"); tap it for the four indicators and the Rewards list. Four indicators, 25 points each, over a rolling 3 months: spends less than earns; no overdraft or failed payment; a buffer of about one month of spending; saves regularly toward a named goal.</td></tr>
         <tr><td>Rewards</td><td>Earned on improvement or on staying within the split, never on balance size. For students: boosted partner cashback (5% next month, up to 2,000 Ft) and goal-linked partner offers (reaching Summer holiday: travel partner, 8% back on one booking, up to 10,000 Ft; any other goal: 5% boosted cashback, up to 2,000 Ft) (a fee waiver would only make sense for OTP GO customers, 24–28, because Junior accounts are already free).</td></tr>
         <tr><td>Score-change story</td><td>A slide in the monthly story (analyst on and split accepted): score last month, score now, what moved it.</td></tr>
       </tbody>
     </table></div>
-    <p class="note"><b>Proposal only:</b> the split percentages, the score design, the rewards and all rates are team proposals, not OTP facts. Demo order: switch on the analyst after the first deposit, then press <kbd>O</kbd> a month later. With the split accepted, Anna lands Essentials 36,900 of 37,500 Ft and Fun 27,000 of 30,000 Ft, a "Reward earned" sheet appears (score 50 → 75, 5% partner cashback next month), and the monthly story gets a score slide.</p>
+    <p class="note"><b>Proposal only:</b> the split percentages, the score design, the rewards and all rates are team proposals, not OTP facts. Demo order: turn on the analyst after the first deposit, then press <kbd>O</kbd> a month later. With the split accepted, Anna lands Essentials 36,900 of 37,500 Ft and Fun 27,000 of 30,000 Ft. Messages come one at a time: Persi's push "Reward earned…" (it also goes to the iPhone if <b>Also send to iPhone</b> is on), then the "Reward earned" sheet (score 50 → 75, 5% partner cashback next month), then the summary toast. The monthly story gets a score slide.</p>
   </section>
 
   <section id="screens">
     <h2>Other screens</h2>
     <div class="grid">
-      <div class="box"><h3>Home</h3><ul><li>Accounts carousel (Junior, Persely, Savings)</li><li>Persely card: streak or "set up in 1 minute"</li><li>Monthly spending gauge and categories</li><li><b>Persi's tip</b>: "Food was your biggest category: 38,200 Ft. Move 10% … and get there 6 weeks sooner", Move 10% a month / Not now</li><li>Long-press Anna's avatar: demo controls on the phone</li></ul></div>
+      <div class="box"><h3>Home</h3><ul><li>Accounts carousel (Junior, one "Persely · total" card for all goals, Savings); no "Create your Persely" offer once a goal exists</li><li><b>Persi's tip</b> above the gauge: "Food was your biggest category: 38,200 Ft. Move 10% … and get there 6 weeks sooner", Move 10% a month / Not now, plus a link to see how it fits the analyst split</li><li>Monthly spending gauge and labelled categories</li><li>Long-press Anna's avatar: demo controls on the phone</li><li>More: each item once; "Demo: 8 weeks later" is gone from the menu (use <kbd>J</kbd>, the panel, or long-press the avatar → Reset)</li></ul></div>
       <div class="box"><h3>Monthly story</h3><p>Colourful full-screen slides, auto-advance every 5 seconds, tap left to go back. Month title with Persi, spent (−13%), food 43% ("6 Wolt orders = GTA 6 on release day"), 14 coffees = 3 cinema tickets, saved, round-ups, streak, goal %, rank among friends, interest earned, tip for next month, and a <b>share card without amounts</b>. After "End of semester" it becomes the semester story.</p></div>
       <div class="box"><h3>Copied OTP screens</h3><ul><li>Transfer (new transfer works with demo money)</li><li>Transactions, completed and pending</li><li>More: My cards (moved from the tab bar), Notifications, My accounts, Persely details, Savings options, Spending, Discounts, For you</li><li>My cards: temporary block, limits, discounts</li></ul></div>
     </div>
@@ -192,7 +189,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
 
   <section id="persi">
     <h2>Persi and notifications</h2>
-    <p>Persi is our own 3D version of the green Persely piggy (three.js). It appears in the tab header, the update pop-up, the onboarding summary (a coin drops in), the graduation screen, the story and the Home card. It speaks in one short, friendly line, without slang. Persely notifications are signed "Persi · Persely". On the laptop the banner shows Persi's portrait; a real iPhone always shows the app icon.</p>
+    <p>Persi is our own 3D version of the green Persely piggy (three.js). It appears in the tab header, the update pop-up, the onboarding summary (a coin drops in), the hint strips on the Persely tab, the graduation screen, the story and the Home card. It speaks in one short, friendly line, without slang. Persely notifications are signed "Persi · Persely". The +1 month push "Reward earned: …" comes before the reward sheet and reaches the iPhone if <b>Also send to iPhone</b> is on. On the laptop the banner shows Persi's portrait; a real iPhone always shows the app icon.</p>
     <div class="tbl"><table>
       <thead><tr><th>Key</th><th>Notification</th><th>Opens</th></tr></thead>
       <tbody>
@@ -219,11 +216,11 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
         <tr><td><kbd>D</kbd></td><td>Dóri joins the shared Persely</td><td><kbd>N</kbd></td><td>Next week (uses a skip if the week was open)</td></tr>
         <tr><td><kbd>O</kbd></td><td>+1 month: salary, rules, round-ups, interest, Home tip. Analyst on and split accepted: "Reward earned" sheet (score 50 → 75, 5% partner cashback next month, up to 2,000 Ft) and a score slide in the story</td><td><kbd>E</kbd></td><td>End of semester: 2 months, semester story</td></tr>
         <tr><td><kbd>G</kbd></td><td>Junior ends / graduation screen</td><td><kbd>M</kbd></td><td>Open the story</td></tr>
-        <tr><td><kbd>T</kbd></td><td>Tab tour</td><td><kbd>L</kbd></td><td>Lock / unlock phone (pushes land on the lock screen)</td></tr>
+        <tr><td><kbd>T</kbd></td><td>Persi hints again (button "Persi hints again")</td><td><kbd>L</kbd></td><td>Lock / unlock phone (pushes land on the lock screen)</td></tr>
         <tr><td><kbd>H</kbd></td><td>Hide the panel</td><td><kbd>1–8</kbd></td><td>Notifications (see above)</td></tr>
       </tbody>
     </table></div>
-    <p>The panel also has Delay (0/3/10 s), <b>Also send to iPhone</b> (real push), Sound and <b>Reset app</b> (back to "8 weeks later"). The analyst is switched on in <b>More</b>, not with a key. With it on, reaching a goal opens a goal-linked partner offer (Summer holiday: travel partner, 8% back on one booking, up to 10,000 Ft; other goals: 5% boosted cashback, up to 2,000 Ft). On the phone: long-press Anna's picture on Home for the same controls. The step-by-step presentation is in the <a href="https://claude.ai/artifact/WnAXG26ZGs2F1NbKHHckYc">Persely demo script</a>.</p>
+    <p>The panel also has Delay (0/3/10 s), <b>Also send to iPhone</b> (real push), Sound and <b>Reset app</b> (back to "8 weeks later"); "Demo: 8 weeks later" lives here and on <kbd>J</kbd>, no longer in More. The analyst is switched on from its offers (late goal, Home, Monthly spending, More), not with a key. With it on, reaching a goal opens a goal-linked partner offer (Summer holiday: travel partner, 8% back on one booking, up to 10,000 Ft; other goals: 5% boosted cashback, up to 2,000 Ft). On the phone: long-press Anna's picture on Home for the same controls. The step-by-step presentation (about 6 minutes) is in the <a href="https://claude.ai/artifact/WnAXG26ZGs2F1NbKHHckYc">Persely demo script</a>.</p>
   </section>
 
   <section id="build">
@@ -249,7 +246,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
       <li><code>sheets &amp; toast</code>: <code>SHEETS</code> (add money, withdraw, payday, rules, new goal…)</li>
       <li><code>events</code>: what every button does</li>
       <li><code>3D piggy</code>: Persi</li>
-      <li><code>update pop-up + onboarding</code>: <code>GOAL_PRESETS</code>, <code>renderOnb()</code>, <code>week8State()</code></li>
+      <li><code>update pop-up + onboarding</code>: <code>GOAL_PRESETS</code>, <code>renderOnb()</code> (3 screens), <code>amountPicker()</code> and <code>monthPicker()</code>, <code>week8State()</code>; hints in <code>HINTS</code></li>
       <li><code>friends</code>, <code>monthly story</code>: <code>storySlides()</code></li>
       <li><code>laptop demo</code>: <code>DEMO</code> pushes, payday, coffee, Dóri, semester, graduation, panel keys</li>
     </ul></div>
@@ -276,10 +273,12 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
     <h2>Limits to know</h2>
     <ul>
       <li>Demo only: no real accounts, money or bank backend.</li>
+      <li>Phone layout for every touch screen; the iPhone frame only on a real desktop (min 760 × 700 px with a mouse). The app is portrait only: sideways it shows "Turn your phone upright". Pinch zoom and larger text sizes work, and forms lift above the keypad (keyboard-safe sticky buttons, inputs at 16 px).</li>
       <li>The free tunnel can stop and changes its address; the laptop alone always works.</li>
       <li>iPhone notifications need the app on the Home Screen and notifications turned on inside the app.</li>
       <li>Interest is credited monthly in the demo; in the proposal it accrues daily.</li>
       <li>Weekly challenges exist in the code but are hidden from the tab to keep it short.</li>
+      <li>Undo restores the whole state saved before the action, so anything else changed in those 5 seconds is undone too; a push already sent cannot be taken back.</li>
       <li>Persi is our own model; for the real app OTP's official artwork should replace it.</li>
       <li>English UI; the real app is Hungarian.</li>
     </ul>
