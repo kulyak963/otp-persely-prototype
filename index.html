@@ -57,7 +57,7 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stro
 .safe-top{padding-top:env(safe-area-inset-top)}
 
 /* ---------- desktop: realistic iPhone body ---------- */
-@media (min-width:760px){
+@media (min-width:760px) and (min-height:700px) and (hover:hover){
   body{background:radial-gradient(ellipse at 50% 35%,#F7F8FA 0%,#E2E5EB 55%,#C9CED7 100%)}
   .stage{height:100vh;flex-direction:column}
   .device{display:block;position:relative;flex:none;width:450px;height:952px;padding:4px;border-radius:78px;
@@ -89,7 +89,7 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stro
 :root{--top:env(safe-area-inset-top,0px)}
 .safe-top{padding-top:var(--top)}
 .page{padding-top:var(--top)}
-@media (min-width:760px){.safe-top,.page{padding-top:0}}
+@media (min-width:760px) and (min-height:700px) and (hover:hover){.safe-top,.page{padding-top:0}}
 
 /* layers */
 .body{flex:1;position:relative;min-height:0}
@@ -172,21 +172,23 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .hhead .mail::before{content:"";position:absolute;inset:-9px}
 .accs{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:4px 16px 14px;scrollbar-width:none;overscroll-behavior:contain}
 .accs::-webkit-scrollbar{display:none}
-.acc{flex:none;width:186px;scroll-snap-align:center;background:var(--card);border-radius:24px;box-shadow:var(--sh);padding:14px 18px;text-align:left}
+.acc{flex:none;width:clamp(150px,50vw,186px);scroll-snap-align:center;background:var(--card);border-radius:24px;box-shadow:var(--sh);padding:14px 18px;text-align:left}
 .acc .n{font-size:var(--fs-s);color:var(--ink2)}
 .acc .v{font-size:1.3125rem;font-weight:700;margin:2px 0}
 .acc .h{font-size:var(--fs-xs);color:var(--muted-t)}
 .dots{display:flex;justify-content:center;gap:6px}
 .dots i{width:6px;height:6px;border-radius:50%;background:#C9CED6}
 .dots i.on{background:var(--green)}
-.gauge{position:relative;width:250px;height:250px;margin:6px auto 0}
-.gauge .core{position:absolute;inset:42px;border-radius:50%;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge{position:relative;width:clamp(200px,64vw,250px);aspect-ratio:1;margin:6px auto 0}
+.gauge>svg{display:block;width:100%;height:100%}
+.gauge .core{position:absolute;inset:16.8%;border-radius:50%;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .gauge .core small{font-size:0.84375rem;color:var(--ink2)}
 .gauge .core b{font-size:1.5625rem;color:var(--green-t);font-weight:700}
 .avg{display:flex;align-items:center;justify-content:center;gap:8px;font-size:0.84375rem;color:var(--ink2);margin:6px 0 4px}
 .avg::before{content:"";border-left:11px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent}
-.cats{display:flex;justify-content:space-between;padding:6px 4px 0;text-align:center}
-.cat{width:19%;display:flex;flex-direction:column;align-items:center;font-size:var(--fs-xs);color:var(--ink2);cursor:pointer}
+.cats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:6px 0 0;text-align:center}
+@media (max-width:359px){.cats{grid-template-columns:repeat(4,minmax(0,1fr));row-gap:12px}}
+.cat{min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column;align-items:center;font-size:var(--fs-xs);color:var(--ink2);cursor:pointer}
 .cat .ic{color:var(--ink2);height:28px}
 .cat .cl{font-size:var(--fs-xs);font-weight:600;color:var(--ink2);margin-top:4px;line-height:1.2}
 .cat.on .ic{color:var(--green)}
@@ -208,14 +210,14 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .filter svg{width:16px;height:16px}
 
 /* transfer */
-.qa{display:flex;justify-content:space-between;margin:6px 0 18px}
-.qa button{width:24%;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:var(--fs-s);color:var(--ink2);text-align:center;line-height:1.3}
-.qa .c{width:62px;height:62px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(82,174,48,.3)}
+.qa{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:6px 0 18px}
+.qa button{min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:var(--fs-s);color:var(--ink2);text-align:center;line-height:1.3}
+.qa .c{width:clamp(52px,16vw,62px);height:clamp(52px,16vw,62px);border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(82,174,48,.3)}
 .qa .c svg{stroke-width:2;width:28px;height:28px}
 
 /* cards tab */
 .bigcard{text-align:center;padding:22px 16px 24px;border-radius:26px}
-.ccard{width:250px;height:156px;margin:14px auto 16px;border-radius:14px;background:linear-gradient(135deg,#7ACB5B 0%,#3E9A2A 55%,#2C7A21 100%);position:relative;overflow:hidden;color:#fff;text-align:left;padding:16px;box-shadow:0 10px 24px rgba(40,110,30,.35)}
+.ccard{width:clamp(220px,70vw,250px);aspect-ratio:250/156;margin:14px auto 16px;border-radius:14px;background:linear-gradient(135deg,#7ACB5B 0%,#3E9A2A 55%,#2C7A21 100%);position:relative;overflow:hidden;color:#fff;text-align:left;padding:16px;box-shadow:0 10px 24px rgba(40,110,30,.35)}
 .ccard::before{content:"";position:absolute;right:-40px;top:-50px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.12)}
 .ccard::after{content:"";position:absolute;left:-30px;bottom:-70px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08)}
 .ccard .bn{font-weight:700;font-size:0.875rem;letter-spacing:.2px}
@@ -236,7 +238,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* for you */
 .hcar{display:flex;gap:12px;overflow-x:auto;margin:0 -16px;padding:4px 16px 12px;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior:contain}
 .hcar::-webkit-scrollbar{display:none}
-.nk{flex:none;width:240px;scroll-snap-align:start;background:var(--card);border-radius:16px;box-shadow:var(--sh);overflow:hidden;text-align:left}
+.nk{flex:none;width:clamp(200px,66vw,240px);scroll-snap-align:start;background:var(--card);border-radius:16px;box-shadow:var(--sh);overflow:hidden;text-align:left}
 .nk .im{height:118px;display:flex;align-items:center;justify-content:center}
 .nk .tx2{padding:12px 14px 14px}
 .nk b{display:block;font-size:var(--fs-m);line-height:1.3}
@@ -346,7 +348,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* ---------- onboarding in the Persely tab ---------- */
 .onb{position:absolute;inset:0;z-index:72;background:var(--bg);display:none;flex-direction:column;padding-top:var(--top)}
 .onb.on{display:flex}
-@media (min-width:760px){.phone .onb{top:56px;padding-top:0}}
+@media (min-width:760px) and (min-height:700px) and (hover:hover){.phone .onb{top:56px;padding-top:0}}
 .onb-top{display:flex;align-items:center;gap:12px;padding:14px 18px 6px;flex:none}
 .onb-skip::before,.onb-back::before{content:"";position:absolute;inset:-12px -8px}
 .onb-back{position:relative;color:var(--green);display:flex}
@@ -359,7 +361,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .onb-body h2{font-size:var(--fs-xl);margin:6px 0 8px;letter-spacing:-.3px;line-height:1.2}
 .onb-body .lead{font-size:var(--fs-m);color:var(--ink2);line-height:1.5;margin:0 0 16px}
 .onb-foot{padding:10px 20px calc(env(safe-area-inset-bottom) + 16px);flex:none}
-@media (min-width:760px){.onb-foot{padding-bottom:34px}}
+@media (min-width:760px) and (min-height:700px) and (hover:hover){.onb-foot{padding-bottom:34px}}
 .onb .pig3d{margin:0 auto}
 .opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh);border:2px solid transparent}
 .opt.on{border-color:var(--green);background:#F7FCF4}
@@ -396,7 +398,7 @@ input[type=range].rng{width:100%;accent-color:var(--green);height:30px}
 .st-sub{font-size:1.125rem;line-height:1.42;opacity:.95;max-width:330px}
 .st-body .pig3d{margin:18px 0 0}
 .st-foot .btn+.btn{margin-top:8px}
-@media (min-width:760px){.phone .story{padding-top:70px}.phone .st-bars{top:66px}.phone .st-x{top:78px}}
+@media (min-width:760px) and (min-height:700px) and (hover:hover){.phone .story{padding-top:70px}.phone .st-bars{top:66px}.phone .st-x{top:78px}}
 
 /* ---------- fake iOS notification (for the laptop demo) ---------- */
 .nbanner{position:absolute;left:8px;right:8px;top:calc(var(--top) + 6px);z-index:85;display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:22px;
@@ -428,11 +430,11 @@ input[type=range].rng{width:100%;accent-color:var(--green);height:30px}
 .phone.locked .sbar svg{fill:#fff}
 .phone.locked .sbar svg rect[stroke]{stroke:#fff}
 .phone.locked .homebar{background:#fff}
-@media (min-width:760px){.nbanner{top:54px}.lock{padding-top:84px}.lock .lhint{bottom:22px}}
+@media (min-width:760px) and (min-height:700px) and (hover:hover){.nbanner{top:54px}.lock{padding-top:84px}.lock .lhint{bottom:22px}}
 
 /* ---------- small demo panel next to the phone (laptop only) ---------- */
 .demo-panel,.demo-show{display:none}
-@media (min-width:760px){
+@media (min-width:760px) and (min-height:700px) and (hover:hover){
   .demo-panel{display:flex;flex-direction:column;gap:5px;position:fixed;left:18px;top:50%;transform:translateY(-50%);width:186px;padding:10px;border-radius:16px;
     background:rgba(255,255,255,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 6px 24px rgba(30,40,60,.12);z-index:200}
   .demo-panel.hidden{display:none}
@@ -638,6 +640,35 @@ input[type=range].rng{width:100%;accent-color:var(--green);height:30px}
 .u-bk-title.u-bk-title{display:block;color:var(--ink);font-weight:600}
 .u-c-gt.u-c-gt{color:var(--green-t)}
 @media (prefers-reduced-motion:reduce){.page,.page.out,.sheet{animation:none}.splash{transition:none}.nbanner,.lock{transition:none}.lcard{animation:none}}
+
+/* ---------- phone sideways: the app is portrait only ---------- */
+.rotate{display:none}
+@media (orientation:landscape) and (max-height:500px) and (pointer:coarse){
+  .rotate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;gap:20px;background:var(--bg);padding:12px 24px;text-align:left}
+  .rotate .rb{display:flex;flex-direction:column;gap:6px}
+  .rotate b{font-size:var(--fs-l)}
+  .rotate span{font-size:var(--fs-s);color:var(--ink2);max-width:240px;line-height:1.4}
+}
+/* ---------- keyboard: JS sets --app-h to the visible height and body top to the visual viewport offset, so the sticky footers and sheet buttons sit just above the keypad ---------- */
+body{top:var(--vv-top,0px)}
+html.kb .tabbar{display:none}
+html.kb .onb-foot,html.kb .page .foot{padding-bottom:10px}
+html.kb .sheet{padding-bottom:14px}
+html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
+/* short screens (iPhone SE): onboarding step 1 must show name, amount and date with the button */
+@media (max-height:700px){
+  .onb-top{padding-top:8px}
+  .onb-body{padding-top:2px;padding-bottom:8px}
+  .onb-body h2{margin:2px 0 4px}
+  .onb-body .lead{margin:0 0 6px;font-size:var(--fs-s)}
+  .onb-body .flabel{margin:8px 2px 4px}
+  .onb-body .fld{margin-bottom:6px;padding:2px 16px}
+  .onb-body .card{padding:8px 16px;margin-bottom:6px}
+  .onb-body .amt{font-size:1.5rem;margin:0}
+  .onb-body .chips{margin:4px 0 0;gap:6px}
+  .onb-body .note{padding:8px 12px;margin-bottom:0}
+  .onb-foot{padding-top:6px;padding-bottom:calc(env(safe-area-inset-bottom) + 10px)}
+}
 </style>
 </head>
 <body>
@@ -684,6 +715,7 @@ input[type=range].rng{width:100%;accent-color:var(--green);height:30px}
 </div>
 </div>
 <div class="caption">Prototype · demo data</div>
+<div class="rotate" id="rotate" role="alert"></div>
 <script src="three.min.js"></script>
 <aside class="demo-panel" id="demoPanel"></aside>
 <button class="demo-show" id="demoShow" aria-label="Show demo panel"></button>
@@ -823,7 +855,7 @@ function vFooldal(){
   <div class="sec"><span>My monthly spending</span><a data-go="kiadas">Details ${I('chev',16)}</a></div>
   <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">1 November – 30 November</div>
   <div class="gauge">
-    <svg width="250" height="250" viewBox="0 0 250 250" style="transform:rotate(135deg)">
+    <svg viewBox="0 0 250 250" style="transform:rotate(135deg)">
       <circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>
       <circle cx="125" cy="125" r="${R}" fill="none" stroke="#52AE30" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc*p} ${C}"/>
     </svg>
@@ -1950,7 +1982,7 @@ function setTop(){
   probe.style.cssText = 'position:fixed;top:0;left:0;width:1px;visibility:hidden;height:env(safe-area-inset-top,0px)';
   document.body.appendChild(probe);
   const env = probe.offsetHeight; probe.remove();
-  const iphone = /iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1 && innerWidth<760);
+  const iphone = /iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1 && !matchMedia('(min-width:760px) and (min-height:700px) and (hover:hover)').matches);
   const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
   // normal mode: iOS itself keeps the page below the clock, so only the real safe area is used
   document.documentElement.style.setProperty('--top', env + 'px');
@@ -1958,13 +1990,29 @@ function setTop(){
 setTop(); addEventListener('resize', setTop); addEventListener('orientationchange', ()=>setTimeout(setTop,300));
 
 /* app height = the area the phone really gives the app (keeps the tab bar on the bottom edge) */
+/* the iPhone frame shows only on a real desktop: wide, tall and with a mouse (same query as the CSS) */
+const DESK = matchMedia('(min-width:760px) and (min-height:700px) and (hover:hover)');
+const isTyping = () => { const a = document.activeElement; return !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA') && !/^(range|checkbox|radio|button)$/.test(a.type); };
 function setAppH(){
-  document.documentElement.style.setProperty('--app-h', window.innerHeight + 'px');
+  const R = document.documentElement, vv = window.visualViewport;
+  // keypad open (iOS: visual viewport shrinks, window.innerHeight does not): fit the app to the visible part and lift it by the scroll offset
+  const kb = vv && !DESK.matches && vv.scale <= 1.01 && isTyping() && (window.innerHeight - vv.height - vv.offsetTop > 100 || window.innerHeight - vv.height > 100);
+  R.classList.toggle('kb', !!kb);
+  R.style.setProperty('--app-h', (kb ? vv.height : window.innerHeight) + 'px');
+  R.style.setProperty('--vv-top', (kb ? vv.offsetTop : 0) + 'px');
+  if(kb) keepFieldVisible();
+}
+let kvT = 0;
+function keepFieldVisible(){
+  clearTimeout(kvT);
+  kvT = setTimeout(() => { const a = document.activeElement; if(a && isTyping()) a.scrollIntoView({block:'center', behavior:'smooth'}); }, 60);
 }
 setAppH(); addEventListener('resize', setAppH); addEventListener('orientationchange', ()=>setTimeout(setAppH,300));
+if(window.visualViewport){ visualViewport.addEventListener('resize', setAppH); visualViewport.addEventListener('scroll', setAppH); }
+addEventListener('focusin', () => { setTimeout(setAppH, 50); setTimeout(setAppH, 350); });   // keypad animation takes ~250ms
+addEventListener('focusout', () => setTimeout(setAppH, 80));
 
 /* ================= iPhone body: fit to window, live clock ================= */
-const DESK = matchMedia('(min-width:760px)');
 function fit(){
   const d = $('#device');
   if(!DESK.matches){ d.style.transform=''; d.style.margin=''; return; }
@@ -1972,7 +2020,8 @@ function fit(){
   d.style.transform = `scale(${s})`;
   d.style.margin = `${-(952*(1-s))/2}px 0`; // remove empty space left by scaling
 }
-addEventListener('resize', fit); DESK.addEventListener?.('change', fit); fit();
+addEventListener('resize', fit); DESK.addEventListener?.('change', fit); DESK.addEventListener?.('change', setAppH); fit();
+$('#rotate').innerHTML = `${pigSvg('happy',72)}<div class="rb"><b>Turn your phone upright</b><span>Persely works in portrait, like the OTP app.</span></div>`;
 function clock(){ const n=new Date(); $('#clock').textContent = n.getHours()+':'+String(n.getMinutes()).padStart(2,'0'); }
 clock(); setInterval(clock, 15000);
 
