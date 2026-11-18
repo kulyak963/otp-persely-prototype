@@ -2510,6 +2510,7 @@ function showWhatsNew(){
     <ul class="bul left"><li>3.0% a year with your Junior account</li><li>See the month you reach your goal</li><li>Save a little from every salary</li></ul>
     <div class="wn-grid three">${Object.entries(GOAL_PRESETS).map(([k,g])=>`<button class="${g.hot?'hot':''}" data-wnpick="${k}">${g.hot ? '<span class="hotb">Trending</span>' : ''}${I(g.ic,24)}${g.label}</button>`).join('')}<button data-wnpick="custom">${I('plus',24)}Something else</button></div>
     <button class="later" data-wnlater>Not now</button></div>`;
+  w.onclick = e => { if(e.target === w){ S.updateSeen = true; save(); closeWhatsNew(); toast('You can set it up any time in the Persely tab'); } };   // tap outside the card = Not now
   w.classList.add('on'); mountPig();
 }
 function closeWhatsNew(){ const w = $('#wn'); w.classList.remove('on'); w.innerHTML = ''; mountPig(); }
