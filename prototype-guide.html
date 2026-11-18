@@ -124,7 +124,9 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
         <tr><td>Persi + story ring</td><td>3D piggy (drag to turn, tap to jump) with one short line, e.g. "Any amount by Sunday keeps your streak." On the right an Instagram-style ring "NOV": orange = new story, grey = watched. Tap opens the monthly story.</td></tr>
         <tr><td>Savings card</td><td>Total in Persely (forints, plus euros if any), badge Junior 3.0% / Graduate 3.0%, yearly interest after tax in Ft, <b>Add money</b> and <b>Withdraw</b>, trust line "Withdraw any time · No fees · Insured", "Included in your Junior package. Nothing to sign up for".</td></tr>
         <tr><td>Streak</td><td>Flame, "8-week streak", best and skip weeks left, 8 orange check circles (one per week, current one ringed "Now"). Pill "Ends Sunday" with orange outline while the week is open, "Saved" when done.</td></tr>
+        <tr><td>Health score <span class="muted">(analyst on)</span></td><td>Row directly under the streak card: "75 of 100 · Financial health score · ▲ +25 since last month". Tap for the four indicators and the Rewards list. Hidden when the analyst is off.</td></tr>
         <tr><td>Goals</td><td>One card per Persely: name, saved of target, forecast month (orange "late" if after the goal date), progress bar. Shared goals show member avatars. Buttons <b>Shared Persely</b> and <b>Euro Persely</b> under the list; <b>New</b> opens all goal options. Up to 5.</td></tr>
+        <tr><td>My split <span class="muted">(analyst on)</span></td><td>Card after Goals with the Essentials, Fun and Saving buckets and live use. Before the split is accepted it offers "See the suggestion". Details in the next section.</td></tr>
         <tr><td>Money in</td><td>Payday rule, weekly transfer, round-ups with On/Off. Each opens a sheet to change it.</td></tr>
         <tr><td>Junior ends soon</td><td>Days left and "Keep 3.0% for 12 more months". Opens the graduation screen.</td></tr>
         <tr><td>Friends</td><td>Ranking by streak or goal progress, never by money. "Remind" button, Add friends (invite link, people you may know).</td></tr>
@@ -146,15 +148,15 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
     <div class="tbl"><table>
       <thead><tr><th>Feature</th><th>What it does</th></tr></thead>
       <tbody>
-        <tr><td>Analyst switch</td><td>In <b>More</b>, next to Notifications. Off by default (opt-in). When on, the analyst reads the last 3 months of card payments and income.</td></tr>
+        <tr><td>Analyst switch</td><td>In <b>More</b>, a "Financial analyst" row with an On/Off pill, directly below Notifications. Off by default (opt-in). Turning it on opens a sheet that suggests Essentials 50% / Fun 40% / Saving 10% (37,500 / 30,000 / 7,500 Ft) from the last 3 months of card payments and income. Accept it, or change the percentages.</td></tr>
         <tr><td>My split</td><td>A card in the Persely tab, shown only when the analyst is on. Three buckets with live use, e.g. "Fun: 70% used, 12 days left". An edit sheet starts from the suggestion: Essentials 50% (37,500 Ft), Fun 40% (30,000 Ft), Saving 10% (7,500 Ft) of a 75,000 Ft salary. The <b>Saving bucket is the payday rule</b>, so the two always show the same number.</td></tr>
-        <tr><td>Recategorise</td><td>The student can move a transaction to another category, and the split and Persi's tips follow.</td></tr>
-        <tr><td>Financial health score</td><td>0–100, shown beside the streak with the change since last month. Four indicators, 25 points each, over a rolling 3 months: spends less than earns; no overdraft or failed payment; a buffer of about one month of spending; saves regularly toward a named goal.</td></tr>
-        <tr><td>Rewards</td><td>Earned on improvement or on staying within the split, never on balance size. For students: boosted partner cashback and goal-linked partner offers (a fee waiver would only make sense for OTP GO customers, 24–28, because Junior accounts are already free).</td></tr>
-        <tr><td>Score-change story</td><td>A slide in the monthly story: score last month, score now, what moved it.</td></tr>
+        <tr><td>Recategorise</td><td>With the analyst on, card payments in Transactions are tappable. The student can move one to another category, and the split and Persi's tips follow.</td></tr>
+        <tr><td>Financial health score</td><td>0–100, shown as a row directly under the streak card ("N of 100 · Financial health score · ▲ +N since last month"); tap it for the four indicators and the Rewards list. Four indicators, 25 points each, over a rolling 3 months: spends less than earns; no overdraft or failed payment; a buffer of about one month of spending; saves regularly toward a named goal.</td></tr>
+        <tr><td>Rewards</td><td>Earned on improvement or on staying within the split, never on balance size. For students: boosted partner cashback (5% next month, up to 2,000 Ft) and goal-linked partner offers (reaching Summer holiday: travel partner, 8% back on one booking, up to 10,000 Ft; any other goal: 5% boosted cashback, up to 2,000 Ft) (a fee waiver would only make sense for OTP GO customers, 24–28, because Junior accounts are already free).</td></tr>
+        <tr><td>Score-change story</td><td>A slide in the monthly story (analyst on and split accepted): score last month, score now, what moved it.</td></tr>
       </tbody>
     </table></div>
-    <p class="note"><b>Proposal only:</b> the split percentages, the score design, the rewards and all rates are team proposals, not OTP facts. Demo order: switch on the analyst after the first deposit, then press <kbd>O</kbd> a month later to see the score and the reward.</p>
+    <p class="note"><b>Proposal only:</b> the split percentages, the score design, the rewards and all rates are team proposals, not OTP facts. Demo order: switch on the analyst after the first deposit, then press <kbd>O</kbd> a month later. With the split accepted, Anna lands Essentials 36,900 of 37,500 Ft and Fun 27,000 of 30,000 Ft, a "Reward earned" sheet appears (score 50 → 75, 5% partner cashback next month), and the monthly story gets a score slide.</p>
   </section>
 
   <section id="screens">
@@ -215,13 +217,13 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
         <tr><td><kbd>U</kbd></td><td>Update day: pop-up and onboarding from zero</td><td><kbd>J</kbd></td><td>8 weeks later: payday rule on, streak 8, friends</td></tr>
         <tr><td><kbd>P</kbd></td><td>Payday with the 10% question</td><td><kbd>C</kbd></td><td>Card purchase: coffee with round-up</td></tr>
         <tr><td><kbd>D</kbd></td><td>Dóri joins the shared Persely</td><td><kbd>N</kbd></td><td>Next week (uses a skip if the week was open)</td></tr>
-        <tr><td><kbd>O</kbd></td><td>+1 month: salary, rules, round-ups, interest, Home tip</td><td><kbd>E</kbd></td><td>End of semester: 2 months, semester story</td></tr>
+        <tr><td><kbd>O</kbd></td><td>+1 month: salary, rules, round-ups, interest, Home tip. Analyst on and split accepted: "Reward earned" sheet (score 50 → 75, 5% partner cashback next month, up to 2,000 Ft) and a score slide in the story</td><td><kbd>E</kbd></td><td>End of semester: 2 months, semester story</td></tr>
         <tr><td><kbd>G</kbd></td><td>Junior ends / graduation screen</td><td><kbd>M</kbd></td><td>Open the story</td></tr>
         <tr><td><kbd>T</kbd></td><td>Tab tour</td><td><kbd>L</kbd></td><td>Lock / unlock phone (pushes land on the lock screen)</td></tr>
         <tr><td><kbd>H</kbd></td><td>Hide the panel</td><td><kbd>1–8</kbd></td><td>Notifications (see above)</td></tr>
       </tbody>
     </table></div>
-    <p>The panel also has Delay (0/3/10 s), <b>Also send to iPhone</b> (real push), Sound and <b>Reset app</b> (back to "8 weeks later"). On the phone: long-press Anna's picture on Home for the same controls. The step-by-step presentation is in the <a href="https://claude.ai/artifact/WnAXG26ZGs2F1NbKHHckYc">Persely demo script</a>.</p>
+    <p>The panel also has Delay (0/3/10 s), <b>Also send to iPhone</b> (real push), Sound and <b>Reset app</b> (back to "8 weeks later"). The analyst is switched on in <b>More</b>, not with a key. With it on, reaching a goal opens a goal-linked partner offer (Summer holiday: travel partner, 8% back on one booking, up to 10,000 Ft; other goals: 5% boosted cashback, up to 2,000 Ft). On the phone: long-press Anna's picture on Home for the same controls. The step-by-step presentation is in the <a href="https://claude.ai/artifact/WnAXG26ZGs2F1NbKHHckYc">Persely demo script</a>.</p>
   </section>
 
   <section id="build">
