@@ -835,9 +835,290 @@ const $ = s => document.querySelector(s);
 const swBtn = (on, attr, label) => `<button class="tg ${on ? 'on' : ''}" role="switch" aria-checked="${on ? 'true' : 'false'}" aria-label="${label}" ${attr}></button>`;
 const NA = 'not available in the demo';
 
+/* ================= financial analytics: history, categories, bills, projection (plan section 14, steps 1-5) =================
+   Pure functions (they take the state as an optional last argument, default S). Screens and alerts are built on these later.
+   Month keys are 'YYYY-MM' anchored on November 2026 + S.months (like the story and the goal dates). Every transaction has
+   ym + day (legacy ones are read from t.d). Transaction types (txType): in, card, refund, out, debit, own, cash, topup. */
+const MONTHN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const ymAt = n => { const d = new Date(2026, 10 + n, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+const billToday = (st = S) => ({ym: ymAt(st.months || 0), day: st.demoDay || 14});   // the demo "today" is the 14th (same in every run)
+const stamp = () => ({ym: ymAt(S.months || 0), day: S.demoDay || 14});             // spread into every new transaction
+// category: [label, split bucket (ess / fun / null), group]. Groups: must (locked by default), flex, fun, subs, save, other, in
+const CATEGORY = {
+  groceries:['Groceries','ess','flex'], transport:['Transport','ess','flex'], edu:['Education','ess','flex'], health:['Health and pharmacy','ess','flex'],
+  food:['Food and drink','fun','fun'], shopping:['Shopping','fun','fun'], fun:['Entertainment','fun','fun'], travel:['Travel','fun','fun'], subs:['Subscriptions','fun','subs'],
+  housing:['Housing','ess','must'], utilities:['Utilities','ess','must'], pass:['Transport pass','ess','must'], phone:['Phone','ess','must'], insurance:['Insurance, loan, tuition','ess','must'],
+  mix_ess:['Everyday essentials','ess','flex'], mix_fun:['Everyday fun','fun','fun'],   // monthStep's one-line "card payments" row (t.parts)
+  saving:['Saving',null,'save'], other:['Other',null,'other'], income:['Income',null,'in']
+};
+// categories a card payment can be moved to in the recategorise sheet
+const SPLIT_CATS = {}; ['groceries','transport','edu','health','food','shopping','fun','travel','subs'].forEach(k => SPLIT_CATS[k] = [CATEGORY[k][0], CATEGORY[k][1]]);
+const payeeKey = t => (t.n || '').toUpperCase().replace(/\s+/g, ' ').trim();
+function txWhen(t, st = S){
+  if(t.ym) return {ym:t.ym, day:t.day || 1};
+  const m = /^(\d+) (\w+)/.exec(t.d || ''), i = m ? MONTHN.indexOf(m[2]) : -1;
+  return i >= 0 ? {ym:'2026-' + String(i + 1).padStart(2, '0'), day:+m[1]} : billToday(st);
+}
+function txType(t){
+  const n = (t.n || '').toUpperCase(), s = t.s || '';
+  if(/^(PERSELY|CURRENCY EXCHANGE|INTEREST|BILLS POCKET)|SAVINGS ACCOUNT/.test(n) || s === 'Between my accounts') return 'own';   // own-account moves: never income, never spending
+  if(/card refund/i.test(s)) return 'refund';
+  if(t.parts || s === 'Card payment') return 'card';
+  if(s === 'Cash withdrawal') return 'cash';
+  if(s === 'Top-up to another app') return 'topup';
+  if(s === 'Direct debit' || s === 'Standing order') return 'debit';
+  return t.a > 0 ? 'in' : 'out';
+}
+// category rules, in order: the student's own choice (t.cat) -> a remembered rule for the payee (S.catRules) -> merchant name -> card category (icon) -> transfer reference text -> Other
+const PAYEE_RULES = [
+  [/MVM|ÁRAMSZOLG|FŐGÁZ|\bGÁZ\b|DIGI|VÍZMŰ|KÖZÖS KÖLTSÉG/, 'utilities'], [/BKK.*(BÉRLET|PASS)/, 'pass'], [/YETTEL|VODAFONE|TELEKOM|TELENOR/, 'phone'],
+  [/BIZTOSÍT|ALLIANZ|GENERALI|HITEL|TÖRLESZT|TANDÍJ/, 'insurance'], [/NETFLIX|SPOTIFY|HBO|DISNEY|YOUTUBE|ICLOUD/, 'subs'],
+  [/LIDL|\bSPAR\b|ALDI|PENNY|TESCO|AUCHAN|\bCOOP\b/, 'groceries'], [/BKK|\bBOLT\b|UBER|^MOL\b|TAXI/, 'transport'], [/MÁV|FLIXBUS|RYANAIR|WIZZ/, 'travel'],
+  [/^DM\b|BENU|GYÓGYSZER|ROSSMANN|PATIKA/, 'health'], [/LIBRI|JEGYZET|KÖNYV|COPY/, 'edu'], [/WOLT|FOODPANDA|MCDONALD|\bKFC\b|STARBUCKS|CAFE|PIZZA|BURGER|ESPRESSO/, 'food'],
+  [/CINEMA|STEAM|PLAYSTATION|SZÍNHÁZ|BOWLING/, 'fun'], [/H&M|ZARA|DECATHLON|MEDIAMARKT|IKEA|NEW YORKER/, 'shopping']
+];
+const REF_RULES = [[/albérlet|lakbér|\brent\b|közös költség/i, 'housing'], [/rezsi|áram|gáz|\bvíz\b|internet/i, 'utilities'], [/bérlet/i, 'pass'], [/telefon|mobil/i, 'phone'], [/biztosít|hitel|részlet|tandíj/i, 'insurance']];
+const CARD_IC = {cart:'groceries', bus:'transport', edu:'edu', food:'food', fun:'fun'};   // card category from the icon (older rows)
+function classify(t, st = S){
+  if(t.cat && CATEGORY[t.cat]) return t.cat;
+  const ty = txType(t);
+  if(ty === 'own') return 'saving';
+  if(ty === 'in') return 'income';
+  if(t.parts) return 'mix_ess';
+  const k = payeeKey(t), r = st.catRules && st.catRules[k]; if(r && CATEGORY[r]) return r;
+  for(const [re, c] of PAYEE_RULES) if(re.test(k)) return c;
+  if(CARD_IC[t.ic] && (ty === 'card' || ty === 'refund')) return CARD_IC[t.ic];
+  for(const [re, c] of REF_RULES) if(re.test(t.ref || '')) return c;
+  return ty === 'card' || ty === 'refund' ? 'shopping' : 'other';   // unknown card payments stay "Shopping" as before; transfers, cash and top-ups are "Other"
+}
+/* ---------- demo history: fixed list, same in every reset ----------
+   August-October (about 60 rows a month) plus the existing November seed and the November bills/income. Newest first.
+   Per month: salary 75 000 (5th) + family transfer 60 000 (1st), rent share 42 000, utilities 10 000, BKK pass 3 450, phone 5 550 (= 61 000 of bills),
+   everyday essentials 36 900 and Fun (food, fun, shopping, travel + 2 subscriptions) 27 000 on the card. */
+function demoHistory(){
+  let seed = 20261118; const rnd = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
+  const MN = {'2026-08':'August', '2026-09':'September', '2026-10':'October', '2026-11':'November'};
+  const mk = (ym, day, n, s, a, ic, ref) => ({ym, day, d:day + ' ' + MN[ym], n, s, a, ic, ...(ref ? {ref} : {})});
+  const hist = [];
+  const spread = (ym, total, count, payees, ic) => {
+    const w = Array.from({length:count}, () => 0.6 + rnd() * 0.8), sw = w.reduce((a,b) => a + b, 0); let left = total;
+    w.forEach((x, i) => { const a = i === count - 1 ? left : Math.round(total * x / sw / 10) * 10; left -= a;
+      hist.push(mk(ym, 1 + Math.floor(rnd() * 28), payees[Math.floor(rnd() * payees.length)], 'Card payment', -a, ic)); });
+  };
+  // [payees, icon, count, [Aug, Sep, Oct totals]]. Essentials add up to 36 900 and Fun to 21 720 every month
+  const SPEC = [
+    [['LIDL MAGYARORSZÁG','SPAR MAGYARORSZÁG','ALDI','PENNY MARKET'], 'cart', 12, [25400, 23800, 24600]],
+    [['BKK BUDAPEST','BOLT'], 'bus', 8, [6800, 7500, 7100]],
+    [['BENU GYÓGYSZERTÁR'], 'shield', 2, [2700, 3200, 2900]],
+    [['LIBRI KÖNYVESBOLT'], 'edu', 2, [2000, 2400, 2300]],
+    [['WOLT HUNGARY',"MCDONALD'S",'STARBUCKS','KFC'], 'food', 14, [11200, 12400, 10800]],
+    [['CINEMA CITY'], 'fun', 2, [4600, 3200, 5000]],
+    [['H&M'], 'tag', 3, [4120, 5820, 3120]],
+    [['MÁV-START'], 'plane', 2, [1800, 1800, 2800]]
+  ];
+  const BILL = {elec:[3400, 3700, 3600], gas:[2300, 2400, 2400], phone:[5490, 5550, 5550]};
+  ['2026-08', '2026-09', '2026-10'].forEach((ym, i) => {
+    const mn = MN[ym].toLowerCase();
+    SPEC.forEach(([p, ic, c, tot]) => spread(ym, tot[i], c, p, ic));
+    hist.push(mk(ym, 21, 'NETFLIX', 'Card payment', -3490, 'fun'), mk(ym, 26, 'SPOTIFY', 'Card payment', -1790, 'fun'));
+    hist.push(mk(ym, 1, 'KISS ISTVÁN', 'Incoming transfer', 60000, 'money', 'havi támogatás'), mk(ym, 5, 'SALARY', 'Incoming transfer', 75000, 'money'));
+    hist.push(mk(ym, 1, 'BKK ZRT. DIÁKBÉRLET', 'Direct debit', -3450, 'bus', 'bérlet ' + mn), mk(ym, 2, 'SZABÓ DÓRA', 'Transfer out', -42000, 'wallet', 'albérlet ' + mn),
+      mk(ym, 9, 'DIGI KFT.', 'Direct debit', -4000, 'wallet', 'internet'), mk(ym, 12, 'MVM NEXT ENERGIAKERESKEDŐ', 'Direct debit', -BILL.elec[i], 'wallet', 'áram'),
+      mk(ym, 13, 'FŐGÁZ ZRT.', 'Direct debit', -BILL.gas[i], 'wallet', 'gáz'), mk(ym, 20, 'YETTEL MAGYARORSZÁG', 'Direct debit', -BILL.phone[i], 'wallet', 'telefon'));
+    hist.push(mk(ym, 10, 'PERSELY DEPOSIT', 'Between my accounts', -4000, 'piggy'), mk(ym, 7, 'ATM WITHDRAWAL OTP', 'Cash withdrawal', -2000, 'money'), mk(ym, 24, 'ATM WITHDRAWAL OTP', 'Cash withdrawal', -1000, 'money'));
+  });
+  hist.push(mk('2026-08', 6, 'TRANSFER TO SAVINGS ACCOUNT', 'Between my accounts', -5000, 'piggy'), mk('2026-08', 17, 'KOVÁCS BENCE', 'Instant transfer', 3000, 'money', 'vacsora'),
+    mk('2026-08', 19, 'TÓTH LILI', 'Instant transfer', -2000, 'money', 'mozi'),
+    mk('2026-09', 22, 'FEKETE MÁRK', 'Instant transfer', 5000, 'money', 'jegy'), mk('2026-09', 11, 'SZŐKE ANNA', 'Instant transfer', -2000, 'money', 'ebéd'),
+    mk('2026-09', 8, 'REVOLUT TOP-UP', 'Top-up to another app', -1500, 'money'), mk('2026-09', 15, 'H&M REFUND', 'Card refund', 1500, 'tag'), mk('2026-09', 18, 'MEDIAMARKT', 'Card payment', -24900, 'tag'),
+    mk('2026-10', 9, 'NAGY DÓRI', 'Instant transfer', 4000, 'money', 'kávé'), mk('2026-10', 23, 'TÓTH LILI', 'Instant transfer', -2000, 'money', 'taxi'), mk('2026-10', 8, 'REVOLUT TOP-UP', 'Top-up to another app', -1500, 'money'));
+  hist.forEach((t, i) => t.i = i);
+  hist.sort((a, b) => b.ym < a.ym ? -1 : b.ym > a.ym ? 1 : b.day - a.day || a.i - b.i);
+  hist.forEach(t => delete t.i);
+  // November so far: the original seed rows plus the bills and the family transfer (x = added with the history)
+  const nov = [
+    {d:'13 November', n:'LIDL MAGYARORSZÁG', s:'Card payment', a:-5240, ic:'cart', day:13},
+    {d:'12 November', n:'NAGY PÉTER', s:'Instant transfer', a:20000, ic:'money', day:12},
+    {d:'12 November', n:'BKK BUDAPEST', s:'Card payment', a:-1350, ic:'bus', day:12},
+    {d:'10 November', n:'PERSELY DEPOSIT', s:'Between my accounts', a:-4000, ic:'piggy', note:'Summer holiday', day:10},
+    {d:'8 November', n:'WOLT HUNGARY', s:'Card payment', a:-4690, ic:'food', day:8},
+    {d:'5 November', n:'SALARY', s:'Incoming transfer', a:75000, ic:'money', day:5},
+    {d:'3 November', n:'CINEMA CITY', s:'Card payment', a:-3200, ic:'fun', day:3}
+  ].concat([mk('2026-11', 13, 'FŐGÁZ ZRT.', 'Direct debit', -2400, 'wallet', 'gáz'), mk('2026-11', 12, 'MVM NEXT ENERGIAKERESKEDŐ', 'Direct debit', -3600, 'wallet', 'áram'),
+    mk('2026-11', 9, 'DIGI KFT.', 'Direct debit', -4000, 'wallet', 'internet'), mk('2026-11', 2, 'SZABÓ DÓRA', 'Transfer out', -42000, 'wallet', 'albérlet november'),
+    mk('2026-11', 1, 'KISS ISTVÁN', 'Incoming transfer', 60000, 'money', 'havi támogatás'), mk('2026-11', 1, 'BKK ZRT. DIÁKBÉRLET', 'Direct debit', -3450, 'bus', 'bérlet november')].map(t => ({...t, x:1})));
+  nov.forEach((t, i) => { t.ym = '2026-11'; t.i = i; });
+  nov.sort((a, b) => b.day - a.day || a.i - b.i); nov.forEach(t => delete t.i);
+  return {tx:nov.concat(hist), old:hist.length, nov:nov.filter(t => t.x), hist};
+}
+/* ---------- recurring payments and bills ---------- */
+const absDay = (ym, day) => new Date(+ym.slice(0, 4), +ym.slice(5) - 1, day).getTime() / 864e5;
+const titleCase = s => s.toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
+const BILL_LABELS = [[/MVM|ÁRAM/, 'Electricity'], [/FŐGÁZ|\bGÁZ\b/, 'Gas'], [/DIGI|INTERNET/, 'Internet'], [/BKK/, 'BKK student pass'], [/YETTEL|VODAFONE|TELEKOM|TELENOR/, 'Phone'], [/NETFLIX/, 'Netflix'], [/SPOTIFY/, 'Spotify']];
+function billName(cat, key, kind){
+  if(kind === 'in') return key === 'SALARY' ? 'Salary' : 'Transfer from ' + titleCase(key);
+  for(const [re, l] of BILL_LABELS) if(re.test(key)) return l;
+  return cat === 'housing' ? 'Rent share' : titleCase(key);
+}
+// a payment is recurring when the same payee has exactly one payment in each month it appears, in at least 2 months, 25-35 days apart, amounts within 15% of the latest.
+// Looks at the last 3 finished months (S.closedYm) plus the current month so far. Returns {bills:[outgoing], income:[incoming]}, each {id,key,kind,cat,name,exp,day,win,months,last}
+function detectRecurring(st = S){
+  const cur = billToday(st).ym, closed = (st.closedYm || []).slice(-3), months = closed.includes(cur) ? closed : closed.concat(cur), G = {};
+  st.tx.forEach(t => {
+    const ty = txType(t); if(t.parts || !['card', 'debit', 'out', 'in'].includes(ty)) return;
+    const w = txWhen(t, st); if(!months.includes(w.ym)) return;
+    const gk = (ty === 'in' ? 'in' : 'out') + '|' + payeeKey(t); (G[gk] = G[gk] || []).push({t, w});
+  });
+  const res = {bills:[], income:[]};
+  Object.entries(G).forEach(([gk, arr]) => {
+    if(new Set(arr.map(x => x.w.ym)).size !== arr.length) return;   // two payments in one month: shopping, not a bill
+    arr.sort((a, b) => absDay(b.w.ym, b.w.day) - absDay(a.w.ym, a.w.day));
+    const L = Math.abs(arr[0].t.a); let n = 1, prev = arr[0];
+    for(let i = 1; i < arr.length; i++){ const e = arr[i], gap = absDay(prev.w.ym, prev.w.day) - absDay(e.w.ym, e.w.day);
+      if(gap < 25 || gap > 35 || Math.abs(Math.abs(e.t.a) - L) / L > .15) break; n++; prev = e; }
+    if(n < 2) return;
+    const kind = gk.slice(0, 2) === 'in' ? 'in' : 'out', key = gk.slice(gk.indexOf('|') + 1), days = arr.slice(0, n).map(x => x.w.day).sort((a, b) => a - b), cat = classify(arr[0].t, st);
+    (kind === 'in' ? res.income : res.bills).push({id:key.toLowerCase().replace(/[^a-z0-9]+/g, '-'), key, kind, cat, name:billName(cat, key, kind), exp:L, day:days[Math.floor(days.length / 2)], win:5, months:n, last:arr[0].w});
+  });
+  res.bills.sort((a, b) => a.day - b.day); res.income.sort((a, b) => a.day - b.day);
+  return res;
+}
+// S.bills = the bill list the student sees: detected payments plus their choices (locked / ignored) that survive a refresh
+function mergeBills(old, found){
+  const res = (old || []).filter(b => b.src === 'user');
+  found.forEach(f => { const o = (old || []).find(b => b.key === f.key && b.src !== 'user');
+    res.push({id:f.id, key:f.key, name:o ? o.name : f.name, cat:f.cat, exp:f.exp, day:f.day, win:f.win, months:f.months,
+      locked:o ? o.locked : CATEGORY[f.cat][2] === 'must', ignored:o ? !!o.ignored : false, src:'auto'}); });
+  return res.sort((a, b) => a.day - b.day);
+}
+const refreshBills = (st = S) => { st.bills = mergeBills(st.bills, detectRecurring(st).bills); return st.bills; };
+const mustBills = (st = S) => (st.bills || []).filter(b => b.locked && !b.ignored);
+/* ---------- one month, every transaction counted once ----------
+   monthUse(ym) = {income, spend:{cat:amt}, spendTotal, own, cash, topup, sumA}: in -> income; card/debit/out/refund -> spend by category (refunds net against it);
+   own-account moves (Persely, Savings, Bills pocket, interest) -> own (net outflow, never income or spending); cash and top-ups -> their own lines. income - spendTotal - own - cash - topup === sumA */
+function monthUse(ym, st = S){
+  const u = {income:0, spend:{}, spendTotal:0, own:0, cash:0, topup:0, sumA:0, count:0};
+  const sp = (c, v) => { u.spend[c] = (u.spend[c] || 0) + v; u.spendTotal += v; };
+  st.tx.forEach(t => { if(txWhen(t, st).ym !== ym) return; u.count++; u.sumA += t.a; const ty = txType(t);
+    if(ty === 'in') u.income += t.a; else if(ty === 'own') u.own -= t.a; else if(ty === 'cash') u.cash -= t.a; else if(ty === 'topup') u.topup -= t.a;
+    else if(t.parts){ const f = t.parts.fun || 0; sp('mix_ess', -t.a - f); sp('mix_fun', f); }
+    else sp(classify(t, st), -t.a); });
+  return u;
+}
+/* ---------- next-month projection ---------- */
+const lrPct = (vals, total) => { const raw = vals.map(v => v / total * 100), fl = raw.map(Math.floor); let rest = 100 - fl.reduce((a, b) => a + b, 0);
+  raw.map((r, i) => [r - fl[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if(rest > 0){ fl[i]++; rest--; } }); return fl; };
+// project() -> {ym (next month), months, confidence:{months,label}, income:{recurring,irregular,total}, mustPay, everyday, fun, other, saving, spend, left, deficit,
+//   pct:{must,everyday,fun,other,saving,left} (whole numbers, sum 100), cats:[{cat,label,bucket,group,amt,hist:[oldest..newest]}], oneOffs:[{cat,label,name,amt,ym}], suggest:{ess,fun,save} (sum 100)}
+function project(st = S){
+  const closed = (st.closedYm || []).slice(-3), n = closed.length, rec = detectRecurring(st), locked = new Set(mustBills(st).map(b => b.key));
+  const W = n === 3 ? [.2, .3, .5] : n === 2 ? [.375, .625] : n === 1 ? [1] : [], avg = a => a.reduce((s, v, i) => s + v * W[i], 0);
+  const recKeys = new Set(rec.income.map(i => i.key)), per = {}, items = {}, inc = closed.map(() => 0), sav = closed.map(() => 0);
+  st.tx.forEach(t => {
+    const mi = closed.indexOf(txWhen(t, st).ym); if(mi < 0) return; const ty = txType(t);
+    if(ty === 'in'){ if(!recKeys.has(payeeKey(t))) inc[mi] += t.a; return; }
+    if(ty === 'own'){ if(!/^INTEREST/i.test(t.n)) sav[mi] -= t.a; return; }
+    if(t.a < 0 && locked.has(payeeKey(t))) return;   // locked bills enter at their expected amount below
+    const add = (cat, amt) => { (per[cat] = per[cat] || closed.map(() => 0))[mi] += amt; if(amt > 0 && CATEGORY[cat][2] !== 'other') (items[cat] = items[cat] || []).push({t, amt, mi}); };
+    if(t.parts){ const f = t.parts.fun || 0; add('mix_ess', -t.a - f); add('mix_fun', f); return; }
+    add(classify(t, st), -t.a);
+  });
+  const oneOffs = [];   // one big payment (> 3 x the category's median) is left out and listed
+  Object.entries(items).forEach(([cat, arr]) => { if(arr.length < 4) return;
+    const s = arr.map(x => x.amt).sort((a, b) => a - b), med = s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
+    arr.forEach(x => { if(x.amt > 3 * med){ per[cat][x.mi] -= x.amt; oneOffs.push({cat, label:CATEGORY[cat][0], name:x.t.n, amt:x.amt, ym:closed[x.mi]}); } }); });
+  const cats = Object.entries(per).map(([cat, h]) => ({cat, label:CATEGORY[cat][0], bucket:CATEGORY[cat][1], group:CATEGORY[cat][2], amt:Math.max(0, Math.round(avg(h))), hist:h.map(Math.round)}));
+  const g = k => cats.filter(c => k.includes(c.group)).reduce((s, c) => s + c.amt, 0);
+  const mustPay = mustBills(st).reduce((s, b) => s + b.exp, 0), everyday = g(['flex']), fun = g(['fun', 'subs']), other = g(['other']);
+  const saving = st.payday.on ? Math.round(st.income.amount * st.payday.pct / 100) : Math.round(avg(sav.map(x => Math.max(0, x))));
+  const recurring = rec.income.reduce((s, i) => s + i.exp, 0), irregular = n ? Math.max(0, Math.min(...inc)) : 0, income = recurring + irregular;
+  const spend = mustPay + everyday + fun + other + saving, left = Math.max(0, income - spend), deficit = Math.max(0, spend - income), base = Math.max(income, spend) || 1;
+  const p = lrPct([mustPay, everyday, fun, other, saving, left], base);
+  const free = income - mustPay, save = st.payday.on ? st.payday.pct : 10;
+  let ess = free > 0 ? Math.min(80, Math.max(20, Math.round(everyday / free * 20) * 5)) : 50; ess = Math.min(ess, 100 - save);
+  return {ym:ymAt((st.months || 0) + 1), months:n, confidence:{months:n, label:n >= 3 ? 'Based on 3 months' : 'Rough estimate, gets better each month'},
+    income:{recurring, irregular, total:income}, mustPay, everyday, fun, other, saving, spend, left, deficit,
+    pct:{must:p[0], everyday:p[1], fun:p[2], other:p[3], saving:p[4], left:p[5]}, cats:cats.sort((a, b) => b.amt - a.amt), oneOffs, suggest:{ess, fun:100 - ess - save, save}};
+}
+/* ---------- bill status, bills first, safe to spend ---------- */
+const balanceOf = (st = S) => st.accounts.find(a => a.id === 'junior').v;
+// billStatus(bill) -> {id, st:'paid'|'less'|'due'|'late'|'skipped', paid, left, days (to the due day, negative = past), over (window passed), label}
+function billStatus(b, st = S){
+  const now = billToday(st); let paid = 0;
+  st.tx.forEach(t => { if(t.a < 0 && ['card', 'debit', 'out'].includes(txType(t)) && payeeKey(t) === b.key && txWhen(t, st).ym === now.ym) paid -= t.a; });
+  const days = b.day - now.day, over = now.day > b.day + b.win, o = {id:b.id, paid, days, over, left:b.exp};
+  if(st.billSkip && st.billSkip[b.id] === now.ym) return {...o, st:'skipped', left:0, label:'Not due this month'};
+  if(paid >= b.exp * .85) return {...o, st:'paid', left:0, label:'Paid'};
+  if(paid > 0) return {...o, st:'less', left:b.exp - paid, label:'Paid less than usual'};
+  return {...o, st:over ? 'late' : 'due', label:over || days < 0 ? 'Not paid yet' : days === 0 ? 'Due today' : `Due in ${days} day${days === 1 ? '' : 's'}`};
+}
+// billsFirst() -> {on, total (every unpaid must-pay bill this month), count, rows:[{bill, s}], urgent:[...], text}
+// on = a bill is not paid and its window has passed, or one is due within 7 days and the balance does not cover the urgent ones
+function billsFirst(st = S){
+  const rows = mustBills(st).map(b => ({bill:b, s:billStatus(b, st)})), open = rows.filter(r => r.s.left > 0);
+  const late = open.filter(r => r.s.over), soon = open.filter(r => !r.s.over && r.s.days <= 7), total = open.reduce((s, r) => s + r.s.left, 0);
+  const need = late.concat(soon).reduce((s, r) => s + r.s.left, 0), on = late.length > 0 || (soon.length > 0 && balanceOf(st) < need);
+  return {on, total, count:open.length, rows, urgent:late.concat(soon), text:on ? `Bills first: ${ft(total)} still to pay` : ''};
+}
+// groceries are not a bill: the lowest of the last 3 finished months' grocery spending is protected
+function groceriesOf(ym, st = S){ let v = 0; st.tx.forEach(t => { if(txWhen(t, st).ym !== ym) return; const ty = txType(t);
+  if(t.parts) v += -t.a - (t.parts.fun || 0); else if((ty === 'card' || ty === 'refund') && classify(t, st) === 'groceries') v -= t.a; }); return v; }
+const groceriesProtected = (st = S) => { const m = (st.closedYm || []).slice(-3).map(y => groceriesOf(y, st)); return m.length ? Math.max(0, Math.min(...m)) : 0; };
+// safeToSpend() -> {safe, balance, unpaidBills, savingRule, groceries (protected amount still to be spent this month), pocket (held outside the balance, never counted)}
+// safe = Junior balance - unpaid must-pay bills (less what the Bills pocket covers) - the saving rule not yet moved this month - groceries still protected
+function safeToSpend(st = S){
+  const now = billToday(st), bal = balanceOf(st), bf = billsFirst(st), pocket = st.billsPocket && st.billsPocket.on ? st.billsPocket.bal : 0;
+  let rule = 0; if(st.payday.on){ let moved = 0; st.tx.forEach(t => { if(txType(t) === 'own' && t.a < 0 && /^PERSELY DEPOSIT/.test(t.n) && txWhen(t, st).ym === now.ym) moved -= t.a; });
+    rule = Math.max(0, Math.round(st.income.amount * st.payday.pct / 100) - moved); }
+  const groceries = Math.max(0, groceriesProtected(st) - groceriesOf(now.ym, st)), unpaid = Math.max(0, bf.total - pocket);
+  return {safe:bal - unpaid - rule - groceries, balance:bal, unpaidBills:unpaid, savingRule:rule, groceries, pocket};
+}
+/* ---------- console self-checks: window.__checkAnalytics() ---------- */
+function __checkAnalytics(){
+  const out = [], ok = (name, cond, info) => { out.push({name, pass:!!cond, info}); };
+  const F = fresh(), clone = () => JSON.parse(JSON.stringify(F));
+  const det = detectRecurring(F), keys = det.bills.map(b => b.key), want = {'SZABÓ DÓRA':42000, 'MVM NEXT ENERGIAKERESKEDŐ':3600, 'FŐGÁZ ZRT.':2400, 'DIGI KFT.':4000, 'BKK ZRT. DIÁKBÉRLET':3450, 'YETTEL MAGYARORSZÁG':5550, 'NETFLIX':3490, 'SPOTIFY':1790};
+  Object.entries(want).forEach(([k, v]) => { const b = det.bills.find(x => x.key === k); ok('bill found: ' + k, b && b.exp === v, b && b.exp); });
+  ok('no other recurring payments (groceries, food, transport are not bills)', keys.length === Object.keys(want).length, keys);
+  ok('income found: salary 75 000 and family 60 000', det.income.length === 2 && det.income.some(i => i.key === 'SALARY' && i.exp === 75000 && i.day === 5) && det.income.some(i => i.key === 'KISS ISTVÁN' && i.exp === 60000 && i.day === 1), det.income.map(i => i.key));
+  ok('locked by default: 6 must-pay bills, subscriptions not', F.bills.filter(b => b.locked).length === 6 && F.bills.filter(b => !b.locked).every(b => CATEGORY[b.cat][2] === 'subs'));
+  const p = project(F), sum = o => Object.values(o).reduce((a, b) => a + b, 0);
+  ok('projection proportions add to 100%', sum(p.pct) === 100, p.pct);
+  ok('suggested split adds to 100% and is 50/40/10', sum(p.suggest) === 100 && p.suggest.ess === 50 && p.suggest.fun === 40 && p.suggest.save === 10, p.suggest);
+  ok('projection: must-pay 61 000, everyday essentials 36 900, Fun 27 000', p.mustPay === 61000 && p.everyday === 36900 && p.fun === 27000, [p.mustPay, p.everyday, p.fun]);
+  ok('projection: income 138 000, confidence 3 months, no deficit', p.income.total === 138000 && p.months === 3 && p.confidence.label === 'Based on 3 months' && p.deficit === 0, p.income);
+  ok('one-off listed and left out (MEDIAMARKT)', p.oneOffs.length === 1 && p.oneOffs[0].name === 'MEDIAMARKT', p.oneOffs);
+  const few = clone(); few.closedYm = ['2026-10']; ok('less history: rough estimate', project(few).confidence.label === 'Rough estimate, gets better each month' && sum(project(few).pct) === 100);
+  ['2026-08', '2026-09', '2026-10', '2026-11'].forEach(ym => { const u = monthUse(ym, F), all = F.tx.filter(t => txWhen(t, F).ym === ym), s = all.reduce((a, t) => a + t.a, 0);
+    ok('nothing counted twice ' + ym, u.count === all.length && u.income - u.spendTotal - u.own - u.cash - u.topup === s && u.sumA === s, [u.count, all.length]);
+    ok('own-account moves are not spending or income ' + ym, u.own >= 4000 && !u.spend.saving && !u.spend.income && !u.spend.other_own); });
+  ok('Persely/Savings rows never reach the projection categories', !p.cats.some(c => c.cat === 'saving' || c.cat === 'income'));
+  const b0 = billsFirst(F); ok('bills first OFF by default (phone due in 6 days, balance covers it)', !b0.on && b0.total === 5550 && b0.count === 1, b0.text);
+  const c1 = clone(); c1.tx = c1.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); const b1 = billsFirst(c1);
+  ok('bills first ON when rent is not paid (window passed)', b1.on && b1.total === 47550 && b1.text === 'Bills first: ' + ft(47550) + ' still to pay', b1.text);
+  const c2 = clone(); c2.accounts.find(a => a.id === 'junior').v = 3000; ok('bills first ON when a bill is due within 7 days and the balance does not cover it', billsFirst(c2).on);
+  const c3 = clone(); c3.billSkip = {'szab-d-ra':'2026-11'}; c3.tx = c3.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); ok('"Not due this month" clears the card', !billsFirst(c3).on);
+  const c4 = clone(); c4.tx = c4.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); c4.tx.unshift({ym:'2026-11', day:14, d:'14 November', n:'SZABÓ DÓRA', s:'Transfer out', a:-42000, ic:'wallet'}); ok('paying the rent turns it off again', !billsFirst(c4).on);
+  const c5 = clone(); c5.tx.unshift({ym:'2026-11', day:14, d:'14 November', n:'YETTEL MAGYARORSZÁG', s:'Direct debit', a:-2000, ic:'wallet'}); ok('paid less than usual', billStatus(c5.bills.find(b => b.id === 'yettel-magyarorsz-g'), c5).st === 'less');
+  const g = groceriesProtected(F); ok('groceries protected = lowest of 3 months (23 800)', g === 23800, g);
+  const s0 = safeToSpend(F); ok('safe to spend = balance - unpaid bills - groceries left', s0.safe === 87450 - 5550 - (23800 - 5240) && s0.pocket === 0, s0);
+  const c6 = clone(); c6.billsPocket = {on:true, bal:10000}; const s6 = safeToSpend(c6);
+  ok('Bills pocket balance is excluded from safe to spend (it only covers bills)', s6.safe === s0.safe + 5550 && s6.pocket === 10000 && s6.safe < s6.balance, s6);
+  const c7 = clone(); c7.payday.on = true; ok('saving rule (7 500) less the 4 000 already moved to Persely this month is taken out of safe to spend', safeToSpend(c7).savingRule === 3500 && safeToSpend(c7).safe === s0.safe - 3500, safeToSpend(c7));
+  const T = (t, c) => classify(t, F) === c;
+  ok('classify: merchant, card icon, reference text, Other', T({n:'LIDL MAGYARORSZÁG', s:'Card payment', a:-1, ic:'cart'}, 'groceries') && T({n:'SZABÓ DÓRA', s:'Transfer out', a:-1, ref:'albérlet'}, 'housing') && T({n:'XYZ BOLT', s:'Card payment', a:-1, ic:'food'}, 'transport') && T({n:'X', s:'Card payment', a:-1, ic:'food'}, 'food') && T({n:'TÓTH LILI', s:'Instant transfer', a:-1, ref:'mozi'}, 'other') && T({n:'PERSELY DEPOSIT', s:'Between my accounts', a:-1}, 'saving'));
+  const c8 = clone(); c8.catRules = {'WOLT HUNGARY':'groceries'}; const w = {n:'WOLT HUNGARY', s:'Card payment', a:-1, ic:'food'};
+  ok('classify: payee rule beats merchant, own choice beats payee rule', classify(w, c8) === 'groceries' && classify({...w, cat:'fun'}, c8) === 'fun');
+  const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
+  const bad = out.filter(r => !r.pass);
+  console.log(`__checkAnalytics: ${out.length - bad.length}/${out.length} passed`); bad.forEach(r => console.log('FAIL', r.name, r.info));
+  return {passed:out.length - bad.length, total:out.length, failed:bad, results:out};
+}
+window.__checkAnalytics = __checkAnalytics;
+
 /* ================= demo data ================= */
 const KEY='otp-clone-en-v5';
-const fresh = () => ({
+const fresh = () => { const H = demoHistory(); const o = ({
   name:'Kiss Anna', ini:'KA',
   updateSeen:false, onboarded:false,   // pop-up after the update, then onboarding
   verified:true, bridge:false,         // Junior customers get 3.0% automatically; bridge = 3.0% for 12 more months after Junior ends
@@ -845,7 +1126,9 @@ const fresh = () => ({
   // money in: payday rule (share of each payment of 10 000 Ft or more, asks first), weekly transfer, round-ups
   payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday',
   // financial analyst (opt-in, off by default). split.save is the payday rule share (one setting, kept in sync with payday.pct)
-  analyst:{on:false, accepted:false, split:{ess:50, fun:40, save:10}}, txMark:0,
+  analyst:{on:false, accepted:false, split:{ess:50, fun:40, save:10}}, txMark:H.old,   // txMark = rows before this month (the Aug-Oct history)
+  // analytics (section 14): finished months, bill list (detected, locks kept), Bills pocket (built later; its balance is held outside the Junior balance), remembered categories, bills dismissed for a month, demo "today"
+  closedYm:['2026-08','2026-09','2026-10'], bills:[], billsConfirmed:false, billsPocket:{on:false, bal:0}, catRules:{}, billSkip:{}, demoDay:14, histV:1,
   // health score history: one entry per finished month, 1 = the indicator held that month. Score = 25 points per indicator x share of the last 3 months. Rewards earned / goal offers already used
   scoreHist:[{m:'July',earn:1,safe:1,buf:0,goal:0},{m:'August',earn:0,safe:1,buf:0,goal:0},{m:'September',earn:0,safe:1,buf:0,goal:1},{m:'October',earn:1,safe:1,buf:0,goal:1}], rewards:[], goalRewarded:[],   // txMark: how many transactions existed when this month began; this month = S.tx.slice(0, S.tx.length - S.txMark)
   // weekly streak: any amount once a week keeps it (automatic savings count too); it never changes the rate
@@ -866,16 +1149,9 @@ const fresh = () => ({
   ],
   persely:{name:'Summer holiday', target:134000, auto:false, freq:'Monthly', day:'On the 1st of the month', amt:4000},
   disc:{activated:[]},
-  tx:[
-    {d:'13 November', n:'LIDL MAGYARORSZÁG', s:'Card payment', a:-5240, ic:'cart'},
-    {d:'12 November', n:'NAGY PÉTER', s:'Instant transfer', a:20000, ic:'money'},
-    {d:'12 November', n:'BKK BUDAPEST', s:'Card payment', a:-1350, ic:'bus'},
-    {d:'10 November', n:'PERSELY DEPOSIT', s:'Between my accounts', a:-4000, ic:'piggy', note:'Summer holiday'},
-    {d:'8 November', n:'WOLT HUNGARY', s:'Card payment', a:-4690, ic:'food'},
-    {d:'5 November', n:'SALARY', s:'Incoming transfer', a:75000, ic:'money'},
-    {d:'3 November', n:'CINEMA CITY', s:'Card payment', a:-3200, ic:'fun'}
-  ]
+  tx:H.tx
 });
+  o.bills = mergeBills([], detectRecurring(o).bills); return o; };
 let S; try{ S = JSON.parse(localStorage.getItem(KEY)) || fresh(); }catch(e){ S = fresh(); }
 try{ (S.goals || []).forEach(g => { if(g.id === 'ps5' && g.name === 'PS5 + GTA 6'){ g.name = 'PS5 + GTA VI'; g.date = '2026-11-19'; } }); }catch(e){}   // older saved demo state
 if(!S.analyst) S.analyst = fresh().analyst;   // state saved before the analyst existed
@@ -884,6 +1160,21 @@ if(!S.scoreHist) S.scoreHist = fresh().scoreHist;   // state saved before the he
 if(!S.rewards) S.rewards = [];
 if(!S.hints) S.hints = {};   // Persi's one-time hints already shown
 if(!S.goalRewarded) S.goalRewarded = [];
+// state saved before the 3-month history: tag old rows with month + day, add the history behind them (older = further down, so txMark grows by the same number), then find the bills
+if(S.histV !== 1){ try{
+  const H = demoHistory(); S.tx.forEach(t => { if(!t.ym){ const w = txWhen(t); t.ym = w.ym; t.day = w.day; } });
+  if(S.months > 0) S.tx = S.tx.concat(H.nov, H.hist), S.txMark = (S.txMark || 0) + H.nov.length + H.hist.length;
+  else { H.nov.forEach(e => { const k = e.ym.replace('-', '') * 100 + e.day, at = S.tx.findIndex(t => t.ym.replace('-', '') * 100 + t.day <= k); if(at < 0) S.tx.push(e); else S.tx.splice(at, 0, e); });
+    S.tx = S.tx.concat(H.hist); S.txMark = (S.txMark || 0) + H.hist.length; }
+  S.closedYm = ['2026-08','2026-09','2026-10'].concat(S.months > 0 ? [ymAt(S.months)] : []);
+  S.histV = 1;
+}catch(e){ S.histV = 1; } }
+if(!S.closedYm) S.closedYm = ['2026-08','2026-09','2026-10'];
+if(!S.catRules) S.catRules = {};
+if(!S.billSkip) S.billSkip = {};
+if(!S.billsPocket) S.billsPocket = {on:false, bal:0};
+if(!S.demoDay) S.demoDay = 14;
+if(!S.bills || !S.bills.length){ try{ refreshBills(S); }catch(e){ S.bills = []; } }
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
 const CATS = [['food','Food',38200],['cart','Shopping',21400],['bus','Transport',9500],['fun','Fun',14300],['edu','Education',6000]];
 const acc = id => S.accounts.find(a=>a.id===id);
@@ -960,7 +1251,7 @@ function vTranz(){
   if(txMode===0){
     S.tx.forEach((t,i)=>{
       if(t.d!==last){ html+=`<div class="dh">${t.d}</div>`; last=t.d; }
-      const tap = S.analyst.on && isCardTx(t) && !t.parts, c = tap ? SPLIT_CATS[txCat(t)] : null;   // analyst on: card payments can be recategorised
+      const tap = S.analyst.on && isCardTx(t) && !t.parts, c = tap ? CATEGORY[classify(t)] : null;   // analyst on: card payments can be recategorised
       html+=`<${tap?'button':'div'} class="tx" ${tap?`data-txcat="${i}"`:''}><span class="ic">${I(t.ic)}</span><span class="t"><b>${t.n}</b><span>${t.s}</span>${t.note?`<em>${I('piggy',15)} ${t.note}</em>`:''}${tap?`<em>${I('chart',15)} ${c[0]} · ${bucketName(c[1])}</em>`:''}</span><span class="a num ${t.a>0?'p':''}">${sft(t.a)}</span>${tap?`<span class="chev">${I('chev',18)}</span>`:''}</${tap?'button':'div'}>`;
     });
   } else html = `<div class="card" style="text-align:center;color:var(--muted-t);padding:28px 16px">No pending transactions.</div>`;
@@ -1135,7 +1426,7 @@ function depositTo(g, v, fromId='junior', how='Between my accounts'){
   acc(fromId).v -= v;
   if(g.id==='holiday') acc('persely').v += v; else if(g.shared) g.members.find(m => m.me).amt += v; else g.saved += v;
   S.monthSaved = (S.monthSaved || 0) + v;
-  S.tx.unshift({d:'Today', n:'PERSELY DEPOSIT', s:how, a:-v, ic:'piggy', note:g.name});
+  S.tx.unshift({...stamp(), d:'Today', n:'PERSELY DEPOSIT', s:how, a:-v, ic:'piggy', note:g.name});
   if(!wasDone && gSaved(g) >= gTarget(g) && S.analyst && S.analyst.on && !S.goalRewarded.includes(g.id)){   // goal reached: offer a goal-linked partner offer
     S.goalRewarded.push(g.id); S._offer = g.id; qSheet(() => S._offer ? SHEETS.goaloffer() : '', 'goaloffer', true);
   }
@@ -1170,10 +1461,7 @@ function persiSays(){
 const SPLIT_BUCKETS = [['ess','Essentials'], ['fun','Fun'], ['save','Saving']];
 const SPLIT_SUGGEST_ESS = 50;
 // spending categories a card payment can have, and the bucket each one belongs to
-const SPLIT_CATS = {groceries:['Groceries','ess'], transport:['Transport','ess'], edu:['Education','ess'], food:['Food and drink','fun'], shopping:['Shopping','fun'], fun:['Entertainment','fun']};
-const IC_CAT = {cart:'groceries', bus:'transport', edu:'edu', food:'food', fun:'fun'};
 const isCardTx = t => t.a < 0 && t.s === 'Card payment';
-const txCat = t => t.cat || IC_CAT[t.ic] || 'shopping';
 const bucketName = k => SPLIT_BUCKETS.find(b => b[0] === k)[1];
 function syncSplit(){   // the payday rule share is the master; the other two buckets absorb a change
   const sp = S.analyst && S.analyst.split; if(!sp || sp.save === S.payday.pct) return;
@@ -1188,7 +1476,7 @@ function splitUse(){
   S.tx.slice(0, Math.max(0, S.tx.length - (S.txMark || 0))).forEach(t => {
     if(t.parts){ u.ess += t.parts.ess || 0; u.fun += t.parts.fun || 0; return; }
     if(t.a < 0 && t.n === 'PERSELY DEPOSIT'){ u.save -= t.a; return; }
-    if(isCardTx(t)) u[SPLIT_CATS[txCat(t)][1]] -= t.a;
+    if(isCardTx(t)){ const c = CATEGORY[classify(t)]; if(c && (c[1] === 'ess' || c[1] === 'fun')) u[c[1]] -= t.a; }
   });
   return u;
 }
@@ -1295,23 +1583,24 @@ function monthStep(quiet){
   const g = ruleGoal(), inc = S.income.amount; let moved = 0;
   const done = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'});   // the month that just ended
   S.txMark = S.tx.length;   // a new month starts: the split use counts from here
-  S.months++; S.period = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'}); S.storySeen = false;
+  S.months++; if(!S.closedYm.includes(ymAt(S.months))) S.closedYm.push(ymAt(S.months));   // the simulated month is a full month for the projection
+  S.period = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'}); S.storySeen = false;
   // four weeks pass; the rules keep the streak alive
   const ran = S.payday.on || S.weekly.on || S.roundup.on || S.goals.some(x => x.weekly);
   for(let i = 0; i < 4; i++){ S.week++; if(ran){ S.streak++; S.best = Math.max(S.best, S.streak); S.history.push(S.week); } else S.streak = 0; }
   S.savedWeek = ran; S.monthSaved = 0; S.juniorDays = Math.max(0, S.juniorDays - 30);
-  acc('junior').v += inc; S.tx.unshift({d:'Today', n:'SALARY', s:'Incoming transfer', a:inc, ic:'money'});
+  acc('junior').v += inc; S.tx.unshift({...stamp(), d:'Today', n:'SALARY', s:'Incoming transfer', a:inc, ic:'money'});
   if(S.payday.on){ const v = incomeShare(S.payday.pct); depositTo(g, v, 'junior', `Payday rule: ${S.payday.pct}%`); moved += v; }
   if(S.weekly.on){ const v = S.weekly.amt * 4; depositTo(g, v, 'junior', 'Weekly transfers (4)'); moved += v; }
   S.goals.filter(x => x.weekly).forEach(x => { depositTo(x, x.weekly * 4, 'junior', 'Weekly transfers (4)'); moved += x.weekly * 4; });
-  acc('junior').v -= MONTH_CARD; S.tx.unshift({d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-MONTH_CARD, ic:'cart', parts:{ess:36900, fun:27000}});
+  acc('junior').v -= MONTH_CARD; S.tx.unshift({...stamp(), d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-MONTH_CARD, ic:'cart', parts:{ess:36900, fun:27000}});
   if(S.roundup.on){ depositTo(goalById(S.roundup.goal) || g, MONTH_ROUND, 'junior', `Round-ups (${MONTH_TX} payments)`); S.roundCount += MONTH_TX; S.roundSum += MONTH_ROUND; moved += MONTH_ROUND; }
   // interest after tax, credited to each forint Persely by its share
   const base = total(), net = Math.round(Math.min(base, CAP) * rate() / 100 / 12 * (1 - TAX));
   if(net > 0 && base > 0){
     S.goals.filter(x => !isEur(x)).forEach(x => { const part = Math.round(net * mine(x) / base); if(part <= 0) return;
       if(x.id==='holiday') acc('persely').v += part; else if(x.shared) x.members.find(m=>m.me).amt += part; else x.saved += part; });
-    S.tx.unshift({d:'Today', n:'INTEREST', s:`Persely · ${rateLabel()}, after tax`, a:net, ic:'piggy'});
+    S.tx.unshift({...stamp(), d:'Today', n:'INTEREST', s:`Persely · ${rateLabel()}, after tax`, a:net, ic:'piggy'});
     S.interest += net;
   }
   if(!S.insightUsed) S.insight = true;
@@ -1681,7 +1970,7 @@ const SHEETS = {
     <button class="btn" data-splitsave ${ok ? '' : 'disabled'}>Save my split</button><button class="btn ghost" data-splitsuggest>Use the suggestion: ${suggestSplit().ess} / ${suggestSplit().fun} / ${suggestSplit().save}</button>`; },
   // recategorise one card payment
   txcat:()=>{ const t = S.tx[S._txi]; if(!t) return '';
-    const cur = txCat(t);
+    const cur = classify(t);
     return `<h2>Category</h2><div class="u-sheet-sub"><b style="text-transform:uppercase;font-size:var(--fs-s)">${esc(t.n)}</b> <span class="num k">${sft(t.a)}</span></div>
     ${SPLIT_BUCKETS.filter(b => b[0] !== 'save').map(([k,l]) => `<div class="flabel">${l}</div><div class="chips u-mb4">${Object.entries(SPLIT_CATS).filter(([,v]) => v[1] === k).map(([c,v]) => `<button class="chip ${cur === c ? 'on' : ''}" data-setcat="${c}">${v[0]}</button>`).join('')}</div>`).join('')}
     <div class="fine u-note-t8">Your split uses the category. Changing it moves this payment between Essentials and Fun.</div>
@@ -1766,14 +2055,14 @@ document.addEventListener('click', e=>{
     const from = d.dmove==='kivesz' ? acc('persely') : acc('junior'), to = d.dmove==='kivesz' ? acc('junior') : acc('persely');
     if(from.v < v){ toast('Not enough money on the account'); return; }
     const before = snap();
-    if(d.dmove==='kivesz'){ from.v -= v; to.v += v; S.tx.unshift({d:'Today', n:'PERSELY WITHDRAWAL', s:'Between my accounts', a:v, ic:'piggy', note:S.persely.name}); }
+    if(d.dmove==='kivesz'){ from.v -= v; to.v += v; S.tx.unshift({...stamp(), d:'Today', n:'PERSELY WITHDRAWAL', s:'Between my accounts', a:v, ic:'piggy', note:S.persely.name}); }
     else depositTo(S.goals.find(g => g.id === 'holiday') || S.goals[0], v);
     closeSheet(); renderAll(); undoable(before, d.dmove==='kivesz'?`Taken out: ${ft(v)}`:`Added to Persely: ${ft(v)}`); return;
   }
   if('dout' in d){
     const v = parseInt(($('#uv').value||'0').replace(/\D/g,''))||0, n=($('#un').value||'').toUpperCase();
     if(!v){ return; } if(acc('junior').v < v){ toast('Not enough money on the account'); return; }
-    acc('junior').v -= v; S.tx.unshift({d:'13 November', n, s:'Instant transfer', a:-v, ic:'money'});
+    acc('junior').v -= v; S.tx.unshift({...stamp(), d:'13 November', n, s:'Instant transfer', a:-v, ic:'money'});
     closeSheet(); renderAll(); toast(`Transfer sent: ${ft(v)}`); return;
   }
   if(d.txmode){ txMode=+d.txmode; renderView('tranzakciok'); return; }
@@ -1850,7 +2139,7 @@ document.addEventListener('click', e=>{
     const before = snap(); let counted;
     if(isEur(g)){
       const huf = v * EUR_RATE; if(acc(from).v < huf){ toast(`Not enough money on ${fromName(from)}`); return; }
-      acc(from).v -= huf; g.saved += v; S.tx.unshift({d:'Today', n:'CURRENCY EXCHANGE', s:`${eur(v)} for ${g.name}`, a:-huf, ic:'euro', note:g.name}); counted = markSaved();
+      acc(from).v -= huf; g.saved += v; S.tx.unshift({...stamp(), d:'Today', n:'CURRENCY EXCHANGE', s:`${eur(v)} for ${g.name}`, a:-huf, ic:'euro', note:g.name}); counted = markSaved();
     } else {
       if(acc(from).v < v){ toast(`Not enough money on ${fromName(from)}`); return; }
       counted = depositTo(g, v, from);
@@ -1867,7 +2156,7 @@ document.addEventListener('click', e=>{
     const huf = isEur(g) ? v * EUR_RATE : v, before = snap();
     if(g.id === 'holiday') acc('persely').v -= v; else if(g.shared) g.members.find(m => m.me).amt -= v; else g.saved -= v;
     acc('junior').v += huf;
-    S.tx.unshift({d:'Today', n: isEur(g) ? 'CURRENCY EXCHANGE' : 'PERSELY WITHDRAWAL', s:'Between my accounts', a:huf, ic:'piggy', note:g.name});
+    S.tx.unshift({...stamp(), d:'Today', n: isEur(g) ? 'CURRENCY EXCHANGE' : 'PERSELY WITHDRAWAL', s:'Between my accounts', a:huf, ic:'piggy', note:g.name});
     closeSheet(); renderAll(); undoable(before, `${ft(huf)} is on your Junior account. No fee`); return;
   }
   if(d.sharedgoal){ S._shared = d.sharedgoal; sheet(SHEETS.sharedgoal()); return; }
@@ -1912,7 +2201,7 @@ document.addEventListener('click', e=>{
     S.analyst.split = {...sp}; S.analyst.accepted = true; S.payday.pct = sp.save; S._split = null;
     closeSheet(); renderAll(); undoable(before, `Split saved: ${sp.ess} / ${sp.fun} / ${sp.save}. Payday rule is now ${sp.save}%`); return; }
   if(d.txcat !== undefined){ S._txi = +d.txcat; sheet(SHEETS.txcat()); return; }
-  if(d.setcat){ const t = S.tx[S._txi]; if(!t) return; t.cat = d.setcat; closeSheet(); renderAll();
+  if(d.setcat){ const t = S.tx[S._txi]; if(!t) return; t.cat = d.setcat; S.catRules[payeeKey(t)] = d.setcat; closeSheet(); renderAll();
     const u = splitUse(), b = SPLIT_CATS[d.setcat][1], pc = splitAmt(S.analyst.split[b]) ? Math.round(u[b] / splitAmt(S.analyst.split[b]) * 100) : 0;
     toast(`Moved to ${bucketName(b)}${S.analyst.accepted ? `. ${bucketName(b)}: ${pc}% used` : ''}`); return; }
   /* money in: payday rule, weekly transfer, round-ups */
@@ -2790,7 +3079,7 @@ function notify(n){
 // salary arrives: the payday rule asks first (or moves automatically if the user chose that)
 function salaryArrives(){
   const inc = S.income.amount; acc('junior').v += inc;
-  S.tx.unshift({d:'Today', n:'SALARY', s:'Incoming transfer', a:inc, ic:'money'});
+  S.tx.unshift({...stamp(), d:'Today', n:'SALARY', s:'Incoming transfer', a:inc, ic:'money'});
   const g = ruleGoal(), share = incomeShare(S.payday.pct);
   if(S.payday.on && S.payday.ask){
     renderAll();
@@ -2808,7 +3097,7 @@ function salaryArrives(){
 }
 // card purchase: a 1 190 Ft coffee, the round-up (×2) goes to its Persely
 function coffee(){
-  unlockPhone(); acc('junior').v -= 1190; S.tx.unshift({d:'Today', n:'ESPRESSO BAR', s:'Card payment', a:-1190, ic:'food'});
+  unlockPhone(); acc('junior').v -= 1190; S.tx.unshift({...stamp(), d:'Today', n:'ESPRESSO BAR', s:'Card payment', a:-1190, ic:'food'});
   if(S.roundup.on){
     const g = goalById(S.roundup.goal) || ruleGoal(), r = ((100 - 1190 % 100) % 100) * 2;
     const counted = depositTo(g, r, 'junior', 'Round-up ×2'); S.roundCount++; S.roundSum += r; renderAll();
