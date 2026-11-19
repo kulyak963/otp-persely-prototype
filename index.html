@@ -1554,7 +1554,8 @@ const fresh = () => { const H = demoHistory(); const o = ({
   goals:[
     {id:'holiday', name:'Summer holiday', ic:'plane', pace:6000, date:'2027-06-01'},
     {id:'ps5', name:'PS5 + GTA VI', ic:'game', saved:46000, target:230000, pace:12000, date:inDays(7)},
-    {id:'fest', name:'Festival ticket', ic:'fun', saved:30000, target:45000, pace:5000, date:'2027-07-01'}
+    {id:'fest', name:'Festival ticket', ic:'fun', saved:30000, target:45000, pace:5000, date:'2027-07-01'},
+    {id:'balaton', name:'Balaton trip', ic:'user', shared:true, target:120000, date:'2027-06-30', members:[{n:'Anna', me:true, amt:20000, c:'#F07D19'}]}
   ],
   accounts:[
     {id:'junior', n:'Junior account', no:'11773119 - 10066592', v:87450, h:'Credit limit: 0 Ft'},
@@ -1943,8 +1944,8 @@ function persiSays(){
   const g = ruleGoal(), pct = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100));
   if(!S.onboarded) return {mood:'happy', text:"Hi, I'm Persi. Let's pick a goal."};
   const bf = bfNow(); if(bf.on) return {mood:'concerned', text:`${bf.text}.`};   // late bills only
-  if(S.analyst.on && S.bfDone) return {mood:'proud', text:'Bills paid. Fun is back on.'};
-  if(!S.savedWeek && S.streak > 0) return {mood:'happy', text:'Any amount by Sunday keeps your streak.'};   // a nudge, not a worry
+  if(S.analyst.on && S.bfDone) return {mood:'proud', text:'Bills paid. You are all set this month.'};
+  if(!S.savedWeek && S.streak > 0){ const m = g ? gMonths(g) : -1; return {mood:'happy', text: !g ? 'Any amount by Sunday keeps your streak.' : m > 0 ? `${g.name}: ${pct}%. ${inMonths(m)} at this pace.` : `${g.name}: ${pct}%.`}; }   // the streak card already says "Ends Sunday"
   if(!S.savedWeek) return {mood:'happy', text:'Any amount this week starts your streak.'};
   const bh = S.goals.find(isTight); if(bh) return {mood:'concerned', text:`${bh.name} is behind. That is okay, a new date can fix it.`};
   if(pctOf(g).first) return {mood:'proud', text:`First ${money(g, gSaved(g))} is in. ${money(g, gTarget(g) - gSaved(g))} to go.`};
@@ -2373,7 +2374,7 @@ function vHub(){
     <div class="hero-r">${st ? `<b>${rateLabel()}</b> a year · about <b>${ft(yearNet())}</b> a year after tax` : `0.01% a year · about ${ft(yearNet())} a year`}</div>
     <div class="hero-btns"><button class="btn" data-sheet="hubsave">Add money</button><button class="btn w" data-sheet="hubout">Withdraw</button></div>
     <div class="trust"><span>${I('check',15)} Withdraw any time</span><span>${I('check',15)} No fees</span><span>${I('shield',15)} Insured</span></div>
-    ${st ? `<div class="fine" style="margin-top:8px">${S.bridge ? 'Graduate: 3.0% for 12 months while your salary comes to OTP' : 'Included in your Junior package. Nothing to sign up for'}</div>` : ''}
+    ${S.bridge ? `<div class="fine" style="margin-top:8px">Graduate: 3.0% for 12 months while your salary comes to OTP</div>` : ''}
   </div>
 
 
@@ -3143,10 +3144,10 @@ document.addEventListener('click', e=>{
   if(d.billopen){ S._bill = d.billopen; sheet(SHEETS.bill()); return; }
   if(d.paybill){ S._bill = d.paybill; sheet(SHEETS.paybill()); return; }
   if(d.dopay){ const was = bfNow().on, before = snap(), r = payBill(d.dopay); if(r.err){ toast(r.err); return; }
-    const off = billsDone(was); closeSheet(); renderAll(); undoable(before, `${r.name} paid: ${ft(r.amt)}${r.fromPocket ? ' from your Bills pocket' : ''}.${off ? ' Fun is back on.' : ''}`); return; }
+    const off = billsDone(was); closeSheet(); renderAll(); undoable(before, `${r.name} paid: ${ft(r.amt)}${r.fromPocket ? ' from your Bills pocket' : ''}.`); return; }
   if(d.billskip){ const [id, why] = d.billskip.split(':'), b = billById(id); if(!b) return; const was = bfNow().on, before = snap();
     S.billSkip[id] = billToday().ym; S.billSkipWhy = S.billSkipWhy || {}; S.billSkipWhy[id] = why; const off = billsDone(was); closeSheet(); renderAll();
-    undoable(before, `${b.name}: ${why === 'paid' ? 'already paid elsewhere' : 'not due this month'}.${off ? ' Fun is back on.' : ''}`); return; }
+    undoable(before, `${b.name}: ${why === 'paid' ? 'already paid elsewhere' : 'not due this month'}.`); return; }
   if(d.billunskip){ const before = snap(); delete S.billSkip[d.billunskip]; closeSheet(); renderAll(); undoable(before, 'Back on the list for this month'); return; }
   if(d.lockbill){ const b = billById(d.lockbill); if(!b) return; const before = snap(), was = bfNow().on; b.locked = !b.locked; billsDone(was); renderAll();
     if(d.resheet) sheet(SHEETS[d.resheet]()); undoable(before, b.locked ? `${b.name} is now a must-pay bill` : `${b.name} is not locked any more`); return; }
@@ -3807,7 +3808,7 @@ function updateDayState(){
   Object.assign(S, {streak:0, best:0, history:[], skipped:[], savedWeek:false, skips:0, challenges:{}, friends:[], friendsOptIn:false, friendsOpen:false, toured:false, hints:{}, monthSaved:4000,
     verified:true, bridge:false, payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday',
     insight:false, insightUsed:false});
-  S.goals = S.goals.filter(g => g.id === 'holiday' || g.id === 'ps5');
+  S.goals = S.goals.filter(g => g.id === 'holiday' || g.id === 'ps5' || g.id === 'balaton');   // the shared Balaton trip waits for Dóri (key D)
 }
 // 8 weeks later: Junior customer, payday rule on, habit formed (the state used for the main demo)
 function week8State(){
@@ -4054,7 +4055,7 @@ function stFacts(R){
   const subsLast = {}; tx.filter(sub).forEach(t => { if(!subsLast[t.n]) subsLast[t.n] = -t.a; });   // S.tx is newest first: the latest amount of each subscription
   const subsM = Object.values(subsLast).reduce((x, y) => x + y, 0), subsN = Object.keys(subsLast).map(shopName);
   const wolt = tx.filter(t => /WOLT|FOODPANDA/i.test(t.n));
-  return {yms, label, top, weekday:tot ? {name:WEEKDAY[wi], pct:Math.round(wd[wi] / tot * 100)} : null, quiet, days, big, subsM, subsN, wolt:{n:wolt.length, perWeek:days ? wolt.length / (days / 7) : 0, perMonth:days ? Math.round(wolt.length / (days / 30.4)) : 0}};
+  return {yms, label, top, weekday:tot ? {name:WEEKDAY[wi], pct:Math.round(wd[wi] / tot * 100)} : null, quiet, days, big, subsM, subsN, wolt:{n:wolt.length, perWeek:days ? wolt.length / (days / 7) : 0, perMonth:days ? Math.round(wolt.length / (days / 30.4)) : 0, avg:wolt.length ? Math.round(wolt.reduce((x, t) => x - t.a, 0) / wolt.length / 100) * 100 : 0}};
 }
 function storySlides(){
   const R = stRange(), A = stAgg(R.yms), unit = R.year ? 'year' : R.sem ? 'semester' : 'month', out = [], F = stFacts(R), k = t => `${t} · ${F.label}`;
@@ -4249,7 +4250,7 @@ const DEMO = [
   {e:'🎓', label:'Junior ends',       title:'Persi · Persely', persi:true, body:'Your Junior package ends in 30 days. Get your salary paid to OTP and keep 3.0% for 12 more months.', url:'grad'},
   {e:'📊', label:'Monthly story',     title:'Persi · Persely', persi:true, body:()=>`Your ${S.period} story is ready. Take a look.`, url:'story'},
   {e:'🏷️', label:'New discount',      title:'New discount',            body:'15% instant discount at Pizzeria Roma. Activate it now!', url:'kedvezmenyek'},
-  {e:'🧾', label:'Bill late',         title:'Persi · Persely', persi:true, body:()=>{ const bf = billsFirst(); return bf.on ? `${bf.text}. Left to spend this month: ${ft(safeToSpend().safe)}.` : bf.total ? `Nothing is late. Left to spend this month: ${ft(safeToSpend().safe)}.` : 'All your must-pay bills are paid. Fun is back on.'; }, url:'mymoney'}
+  {e:'🧾', label:'Bill late',         title:'Persi · Persely', persi:true, body:()=>{ const bf = billsFirst(); return bf.on ? `${bf.text}. Left to spend this month: ${ft(safeToSpend().safe)}.` : bf.total ? `Nothing is late. Left to spend this month: ${ft(safeToSpend().safe)}.` : 'All your must-pay bills are paid. You are all set this month.'; }, url:'mymoney'}
 ];
 const demo = { delay:0, sound:true, phone:false, locked:false, hidden:false };
 let audioCtx;

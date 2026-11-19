@@ -124,7 +124,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
       <tbody>
         <tr><td>Persi and the savings card</td><td>At the top: Persi (3D piggy, drag to turn, tap to jump) with one short line, e.g. "Any amount by Sunday keeps your streak.", and the green story circle on the right (orange ring = new story, grey = watched). Below it a white card: the total in Persely (plus euros if any), badge Junior 3.0% / Graduate 3.0%, yearly interest after tax in Ft, <b>Add money</b> and <b>Withdraw</b>, trust line "Withdraw any time · No fees · Insured", "Included in your Junior package. Nothing to sign up for".</td></tr>
         <tr><td>Your streak</td><td>Flame, "8-week streak", best and skip weeks left, 8 orange check circles (one per week, current one ringed "Now"), pill "Ends Sunday" while the week is open, "Saved" when done.</td></tr>
-        <tr><td>Goals</td><td>One card per Persely: name, saved of target, forecast month ("November 2030 · ahead" when that is 6 or more months before the goal date), progress bar (always a visible bar; a new goal reads "1,000 Ft in · first step", not 0%). A late goal carries a one-tap fix button, "+X Ft a week → on time". A goal with an exact goal date close to today or past (Anna's PS5 + GTA VI, due 19 November 2026) is <b>behind</b>: "Behind · due tomorrow" / "Goal date passed · X Ft to go", a supportive note, a one-tap new date with a small weekly top-up (at most 2,000 Ft a week) and, if Junior can spare it, "Add X Ft from Junior"; both undoable. Persi mentions it. Shared goals show member avatars. <b>New +</b> opens all goal options, including <b>Shared Persely</b> and <b>Euro Persely</b> (no separate buttons under the list). Up to 5.</td></tr>
+        <tr><td>Goals</td><td>One card per Persely: name, saved of target, forecast month ("November 2030 · ahead" when that is 6 or more months before the goal date), progress bar (always a visible bar; a new goal reads "1,000 Ft in · first step", not 0%). A late goal carries a one-tap fix button, "+X Ft a week → on time". A goal with an exact goal date close to today or past (Anna's PS5 + GTA VI, due 7 days from today) is <b>behind</b>: "Behind · due in 7 days" / "Goal date passed · X Ft to go", a supportive note, a one-tap new date with a small weekly top-up (at most 2,000 Ft a week) and, if Junior can spare it, "Add X Ft from Junior"; both undoable. Persi mentions it. Shared goals show member avatars. <b>New +</b> opens all goal options, including <b>Shared Persely</b> and <b>Euro Persely</b> (no separate buttons under the list). Up to 5.</td></tr>
         <tr><td>Money in <span class="muted">(one row)</span></td><td>One plain row under the goals: what the rules move into Persely each month ("10,500 Ft a month") and which rules are on ("Payday rule, round-ups · payday asks first"). With every rule off: "Automatic saving is off". Tap it for a sheet that lists each goal with its own rules and amount. <b>There are no switches on the tab:</b> the three rules (payday rule, round-ups, weekly transfer) switch on each goal's own page, with Undo.</td></tr>
         <tr><td>Junior ends soon</td><td>Days left and "Keep 3.0% for 12 more months". Opens the graduation screen.</td></tr>
         <tr><td>Friends</td><td>Off until the student taps <b>Add friends +</b> at the bottom of the tab (or a friend joins a shared Persely; key <kbd>D</kbd> turns the opt-in on). Then one collapsed row, ranked by weekly streak only, never by money or goal progress. "Remind" button, Add friends (invite link, people you may know). Never shown on a first visit.</td></tr>
@@ -170,6 +170,31 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
 <li><b>Into Persely</b> (saved plus interest, Persi catches a coin), <b>the goal</b> (one bar, "On pace for April 2027"), <b>your streak</b>: unchanged.</li>
 <li><b>Share card</b> without amounts.</li></ul>
 <p>Semester (key E) and year stories use the same slides over more months. Tap right or left to move, press and hold to pause, swipe down to close. Code: <code>storySlides()</code>, facts in <code>stFacts()</code>.</p>
+</div>
+      <div class="box"><h3>Copied OTP screens</h3><ul><li>Transfer (new transfer works with demo money)</li><li>Transactions, completed and pending</li><li>More: My cards (moved from the tab bar), Notifications, My accounts, Persely details, Savings options, Spending, Discounts, For you</li><li>My cards: temporary block, limits, discounts</li></ul></div>
+    </div>
+  </section>
+
+  <section id="rules">
+    <h2>Rules and numbers</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Rule</th><th>Value in the prototype</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Junior rate</td><td class="num">3.0% a year</td><td>Every Junior customer, automatically, no sign-up. First 500,000 Ft across all forint Perselys. Others 0.01%.</td></tr>
+        <tr><td>Tax on interest</td><td class="num">28%</td><td>About 2.2% net. Interest is credited monthly (demo: "+1 month").</td></tr>
+        <tr><td>Payday rule</td><td class="num">5 / 10 / 15 / 20%</td><td>Of each incoming payment of 10,000 Ft or more. Asks first by default. Optional floor: always keep 20,000 Ft.</td></tr>
+        <tr><td>Weekly transfer</td><td class="num">1,000–5,000 Ft</td><td>Every Monday. Can be global or per goal.</td></tr>
+        <tr><td>Round-ups</td><td class="num">next 100 Ft × 2</td><td>1,190 Ft coffee → 20 Ft. Estimated 3,000 Ft a month. Goes to one chosen goal.</td></tr>
+        <tr><td>Streak</td><td class="num">1 per week</td><td>Any deposit Monday–Sunday counts, automatic ones too. Never changes the rate.</td></tr>
+        <tr><td>Skip weeks</td><td class="num">1 per 4 weeks</td><td>Max 2. A missed week uses one; without one the streak restarts.</td></tr>
+        <tr><td>Shared Persely</td><td class="num">2–5 people</td><td>Each can take out what they put in; paying out the whole pot needs everyone. Each share has its own 500,000 Ft limit.</td></tr>
+        <tr><td>Euro Persely</td><td class="num">1 € = 390 Ft (demo)</td><td>No 3.0% rate.</td></tr>
+        <tr><td>Graduation bridge</td><td class="num">12 months at 3.0%</td><td>If the first salary is paid into OTP within 6 months.</td></tr>
+        <tr><td>Goals</td><td class="num">max 5</td><td>Forecast = remaining ÷ monthly pace from the goal's rules.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box"><h3>Persona and demo data</h3><p>Kiss Anna. Junior account 87,450 Ft, Savings account 120,000 Ft, salary 75,000 Ft around the 5th, a regular family transfer of 67,000 Ft on the 1st (from Kiss István, a family rent contribution). Goals: Summer holiday 64,000 of 134,000 Ft, PS5 + GTA VI 46,000 of 230,000 Ft, due 7 days from the day the demo runs (so it always shows as behind), Festival ticket 30,000 of 45,000 Ft. Friends: Bence, Lili, Márk; suggestions Dóra, Ádám, Zsófi, Gergő. Shared Persely example: Balaton in July with Dóri. A shared Persely, <b>Balaton trip</b> (Anna 20,000 Ft of 120,000 Ft), waits for Dóri; key <kbd>D</kbd>: she joins with 15,000 Ft.</p></div>
+    <p class="note"><b>Important:</b> the rates are the team's proposal, not current OTP terms. Quote the research numbers as OTP's own data.</p>
   </section>
 
   <section id="persi">
