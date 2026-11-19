@@ -688,6 +688,16 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .li-safe span{flex:1}.li-safe svg{color:var(--green-i)}
 .pbar{display:flex;gap:2px;height:16px;border-radius:8px;overflow:hidden;margin:14px 0 10px}.pbar i{display:block;min-width:3px}
 .dotc{width:12px;height:12px;border-radius:4px;flex:none}
+/* monthly plan on the Monthly spending page */
+.mp-top{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.mp-top svg{flex:none;width:132px;height:132px}
+.mp-g{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:14px 0 2px;padding-top:12px;border-top:1px solid var(--line)}
+.mp-g b{display:flex;align-items:center;gap:7px;font-size:var(--fs-m)}
+.mp-g span{font-size:0.78125rem;color:var(--muted-t);white-space:nowrap}
+.mp-r{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:9px;font-size:0.875rem}
+.mp-r .num{white-space:nowrap}.mp-r small{color:var(--muted-t);font-size:0.78125rem}
+.mp-score .hab-score{border-top:0}
+.mp-bar{height:6px;border-radius:3px;background:#E3E6EC;margin-top:4px;overflow:hidden}.mp-bar i{display:block;height:100%;border-radius:3px}
 .spk{display:flex;align-items:flex-end;gap:2px;height:24px;width:34px;flex:none}.spk i{flex:1;background:#C9CED6;border-radius:2px}.spk i:last-child{background:var(--green)}
 /* ---- utilities (replace repeated inline styles; keep these LAST; the doubled class name makes them win over rules like ".opt b", as the inline styles did) ---- */
 .u-sheet-sub.u-sheet-sub{text-align:center;margin:-8px 0 12px}
@@ -1117,6 +1127,57 @@ function monthUse(ym, st = S){
     else sp(classify(t, st), -t.a); });
   return u;
 }
+/* ---------- card spending per category, for any month (Home, Monthly spending page, the monthly plan) ----------
+   Card payments only: bills, transfers, cash and own-account moves are not "spending" here. A fast-forwarded month books its card
+   payments as one row with parts {ess, fun}; monthStep also stores parts.cats (the same totals spread like Anna's August-October history),
+   so the categories work in every month. Rows from before parts.cats existed fall back to two lines: Everyday / Fun card payments. */
+const SPEND_CATS = ['groceries','transport','health','edu','food','shopping','fun','travel','subs'];
+const SPEND_IC = {groceries:'cart', transport:'bus', health:'shield', edu:'edu', food:'food', shopping:'tag', fun:'fun', travel:'plane', subs:'fun', mix_ess:'cart', mix_fun:'food'};
+const SPEND_SHORT = {groceries:'Groceries', transport:'Transport', health:'Health', edu:'Education', food:'Food', shopping:'Shopping', fun:'Entertainment', travel:'Travel', subs:'Streaming', mix_ess:'Everyday', mix_fun:'Fun'};
+const HIST_YM = ['2026-08','2026-09','2026-10'];   // the real demo history the category shares come from
+function catSpend(ym, st = S){
+  const out = {};
+  st.tx.forEach(t => { if(txWhen(t, st).ym !== ym) return;
+    if(t.parts){ if(t.parts.cats) Object.entries(t.parts.cats).forEach(([c, v]) => out[c] = (out[c] || 0) + v);
+      else { out.mix_ess = (out.mix_ess || 0) + (t.parts.ess || 0); out.mix_fun = (out.mix_fun || 0) + (t.parts.fun || 0); } return; }
+    const ty = txType(t); if(ty !== 'card' && ty !== 'refund') return;
+    const c = classify(t, st); if(SPEND_CATS.includes(c)) out[c] = (out[c] || 0) - t.a; });
+  Object.keys(out).forEach(c => { if(out[c] <= 0) delete out[c]; });
+  return out;
+}
+const sumVals = o => Object.values(o).reduce((a, b) => a + b, 0);
+// each category's share of its bucket (Everyday essentials or Fun) in the August-October history
+function catShares(bucket, st = S){
+  const tot = {}; HIST_YM.forEach(ym => Object.entries(catSpend(ym, st)).forEach(([c, v]) => { if(CATEGORY[c] && CATEGORY[c][1] === bucket) tot[c] = (tot[c] || 0) + v; }));
+  const all = sumVals(tot); return all ? Object.fromEntries(Object.entries(tot).map(([c, v]) => [c, v / all])) : {};
+}
+// spread an amount over a bucket's categories by those shares, in whole 10 Ft, adding up exactly
+function spreadCats(amount, bucket, st = S){
+  // subscriptions are fixed amounts (Netflix + Spotify): they keep their usual total, and the rest of Fun is spread over the other categories
+  const subs = bucket === 'fun' ? Math.round(HIST_YM.reduce((a, ym) => a + (catSpend(ym, st).subs || 0), 0) / HIST_YM.length / 10) * 10 : 0, fixed = subs && amount > subs ? subs : 0;
+  const sh = Object.entries(catShares(bucket, st)).filter(([c]) => !(fixed && c === 'subs')), w = sh.reduce((a, x) => a + x[1], 0), left = amount - fixed;
+  if(!sh.length || left <= 0) return fixed ? {subs:fixed} : {};
+  const units = Math.round(left / 10), raw = sh.map(([, x]) => units * x / w), fl = raw.map(Math.floor); let rest = units - fl.reduce((a, b) => a + b, 0);
+  raw.map((r, i) => [r - fl[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if(rest > 0){ fl[i]++; rest--; } });
+  const out = {}; sh.forEach(([c], i) => { if(fl[i] > 0) out[c] = fl[i] * 10; }); out[sh[0][0]] = (out[sh[0][0]] || 0) + (left - units * 10);
+  if(fixed) out.subs = fixed; return out;
+}
+// the month on screen: its name, first and last day, and the demo "today" (the 14th)
+function shownMonth(){
+  const n = S.months || 0, d = new Date(2026, 10 + n, 1), name = MONTHN[d.getMonth()], last = new Date(2026, 11 + n, 0).getDate(), today = S.demoDay || 14;
+  return {ym:ymAt(n), name, year:d.getFullYear(), last, today, left:Math.max(0, last - today), label:`1 ${name} – ${last} ${name}`};
+}
+// average card spending of the last 3 finished months before the one on screen
+function avgSpend(){
+  const ym = ymAt(S.months || 0), yms = (S.closedYm || []).filter(y => y < ym).slice(-3);
+  return yms.length ? Math.round(yms.reduce((a, y) => a + sumVals(catSpend(y)), 0) / yms.length / 100) * 100 : 0;
+}
+// category bars ("What did I spend on this month?"): the five biggest this month
+function catBars(sp){
+  const rows = Object.entries(sp).sort((a, b) => b[1] - a[1]).slice(0, 5), max = Math.max(1, ...rows.map(r => r[1]));
+  if(!rows.length) return `<div class="card fine" style="padding:14px 16px">No card payments yet this month.</div>`;
+  return `<div class="cats">${rows.map(([c, v], i) => `<div class="cat ${i === 0 ? 'on' : ''}"><span class="ic">${I(SPEND_IC[c] || 'tag', 26)}</span><span class="cl">${SPEND_SHORT[c] || CATEGORY[c][0]}</span><span class="col"><i style="height:${v / max * 100}%"></i></span><span class="num">${ft(v)}</span></div>`).join('')}</div>`;
+}
 /* ---------- next-month projection ---------- */
 const lrPct = (vals, total) => { const raw = vals.map(v => v / total * 100), fl = raw.map(Math.floor); let rest = 100 - fl.reduce((a, b) => a + b, 0);
   raw.map((r, i) => [r - fl[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if(rest > 0){ fl[i]++; rest--; } }); return fl; };
@@ -1470,7 +1531,6 @@ if(!S.billsPocket) S.billsPocket = {on:false, bal:0};
 if(!S.demoDay) S.demoDay = 14;
 if(!S.bills || !S.bills.length){ try{ refreshBills(S); }catch(e){ S.bills = []; } }
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
-const CATS = [['food','Food',38200],['cart','Shopping',21400],['bus','Transport',9500],['fun','Fun',14300],['edu','Education',6000]];
 const acc = id => S.accounts.find(a=>a.id===id);
 
 /* ================= tab screens ================= */
@@ -1478,7 +1538,7 @@ const acc = id => S.accounts.find(a=>a.id===id);
    false: the old layout (My split, Bills and next month and Friends in the tab, Next month and Must-pay bills linked from Home). Kept until the run-through. */
 const NEW_PERSELY_IA = true;
 function vFooldal(){
-  const spent = CATS.reduce((a,c)=>a+c[2],0), avg = 102400, max = Math.max(...CATS.map(c=>c[2]));
+  const mo = shownMonth(), sp = catSpend(mo.ym), spent = sumVals(sp), avg = avgSpend() || spent;
   // gauge: 270° arc, gap at the bottom
   const R=104, C=2*Math.PI*R, arc=C*.75, p=Math.min(1,spent/ (avg*1.15));
   return `
@@ -1495,7 +1555,7 @@ function vFooldal(){
     : `<b style="display:flex;align-items:center;gap:4px">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Safe this week' : 'Ends Sunday. Any amount keeps it going'}</small>`}</span>${I('chev',20)}</button>
   ${insightCard()}
   <div class="sec"><span>My monthly spending</span><a data-go="kiadas">Details ${I('chev',16)}</a></div>
-  <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">1 November – 30 November</div>
+  <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${mo.label}</div>
   <div class="gauge">
     <svg viewBox="0 0 250 250" style="transform:rotate(135deg)">
       <circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>
@@ -1507,7 +1567,7 @@ function vFooldal(){
   ${S.analyst.on && !NEW_PERSELY_IA ? `<div class="lrow"><button class="link lnk44" data-go="nextmonth">Next month ${I('chev',16)}</button><button class="link lnk44" data-go="bills">Must-pay bills ${I('chev',16)}</button></div>` : ''}
   ${S.analyst.on && S.analyst.accepted ? '' : `<button class="link lnk44" data-sheet="analyst" style="margin:0 0 0 10px">See how it fits your income ${I('chev',16)}</button>`}
   <div class="sec"><span>What did I spend on this month?</span></div>
-  <div class="cats">${CATS.map((c,i)=>`<div class="cat ${i===0?'on':''}"><span class="ic">${I(c[0],26)}</span><span class="cl">${c[1]}</span><span class="col"><i style="height:${c[2]/max*100}%"></i></span><span class="num">${ft(c[2])}</span></div>`).join('')}</div>
+  ${catBars(sp)}
   <div class="sec"><span>For you</span><a data-go="neked">All ${I('chev',16)}</a></div>
   ${nekedCards(true)}`;
 }
@@ -2087,6 +2147,69 @@ const SHEETS_BILLS = {
     ${ty === 'cash' || ty === 'topup' ? `<div class="fine u-note-b12">${ty === 'cash' ? 'Cash is unknown: the app cannot see what you buy with it.' : 'Money moved to another app is unknown, so it is shown apart.'}</div>` : ''}
     ${canCat ? `<button class="btn" data-txcat2>Change category</button>` : ''}<button class="btn ghost" data-closesheet>Close</button>`; }
 };
+/* ---------- the monthly plan on the Monthly spending page (Kriszti's idea): one page with the split by category, progress, score and tips ----------
+   Built on the analyst's split, so every screen shows the same numbers: Must-pay, Everyday essentials, Fun and Saving come from splitView();
+   inside Everyday essentials and Fun, each category gets the share it had in the August-October history. Investing is the part of Saving
+   the student plans to invest (S.analyst.invest, set in the split editor); the rest is Persely. A plan, not a limit: nothing is blocked. */
+const tint = (hex, k) => { const n = parseInt(hex.slice(1), 16), m = c => Math.round(c + (255 - c) * k); return `rgb(${m(n >> 16)},${m((n >> 8) & 255)},${m(n & 255)})`; };
+function planModel(){
+  syncSplit();
+  const v = splitView(), mo = shownMonth(), sp = catSpend(mo.ym), use = splitUse(), inv = Math.min(S.analyst.invest || 0, v.by.save.amt);
+  const cats = b => { const pl = spreadCats(v.by[b].amt, b), keys = [...new Set([...Object.keys(pl), ...Object.keys(sp).filter(c => (CATEGORY[c] && CATEGORY[c][1] === b) || c === 'mix_' + b)])];
+    return keys.map((c, i) => ({c, name:SPEND_SHORT[c] || CATEGORY[c][0], plan:pl[c] || 0, spent:sp[c] || 0, col:tint(BKT_COL[b], Math.min(.6, i * .14))})).sort((x, y) => y.plan - x.plan); };
+  const groups = [
+    {k:'must', name:'Must-pay bills', plan:v.by.must.amt, spent:mustPaid(), rows:[], note:'paid'},
+    {k:'ess', name:'Everyday essentials', plan:v.by.ess.amt, spent:0, rows:cats('ess'), note:'spent'},
+    {k:'fun', name:'Fun', plan:v.by.fun.amt, spent:0, rows:cats('fun'), note:'spent'},
+    {k:'save', name:'Saving', plan:v.by.save.amt, spent:use.save, note:'saved', rows:[{c:'persely', name:'Persely', plan:v.by.save.amt - inv, spent:use.save, col:BKT_COL.save}].concat(inv ? [{c:'invest', name:'Investing', plan:inv, spent:null, col:'#7A6FD8'}] : [])}
+  ];
+  groups.forEach(g => { if(g.k === 'ess' || g.k === 'fun') g.spent = g.rows.reduce((a, r) => a + r.spent, 0); });
+  return {v, mo, groups, inv};
+}
+function planDonut(m){
+  const segs = []; m.groups.forEach(g => g.rows.length ? g.rows.forEach(r => r.plan > 0 && segs.push([r.plan, r.col])) : g.plan > 0 && segs.push([g.plan, BKT_COL[g.k]]));
+  const tot = segs.reduce((a, x) => a + x[0], 0) || 1, R = 70, C = 2 * Math.PI * R; let off = 0;
+  const arcs = segs.map(([a, col]) => { const len = C * a / tot, el = `<circle cx="100" cy="100" r="${R}" fill="none" stroke="${col}" stroke-width="26" stroke-dasharray="${Math.max(0, len - 1.2)} ${C}" stroke-dashoffset="${-off}"/>`; off += len; return el; }).join('');
+  const lbl = m.groups.map(g => `${g.name} ${ft(g.plan)}`).join(', ');
+  return `<svg viewBox="0 0 200 200" role="img" aria-label="Your plan for ${m.mo.name}: ${lbl}"><g transform="rotate(-90 100 100)">${arcs}</g>
+    <text x="100" y="94" text-anchor="middle" font-size="13" fill="#6B7383">Money in</text><text x="100" y="117" text-anchor="middle" font-size="18" font-weight="700" fill="#2B3040">${ft(m.v.B).replace(/\s*Ft$/, '')}</text><text x="100" y="136" text-anchor="middle" font-size="12" fill="#6B7383">Ft a month</text></svg>`;
+}
+function planTips(m){
+  const tips = [], pace = m.mo.today / m.mo.last, rows = m.groups.filter(g => g.k === 'ess' || g.k === 'fun').flatMap(g => g.rows).filter(r => r.plan > 0);
+  const over = rows.filter(r => r.spent > r.plan).sort((a, b) => (b.spent - b.plan) - (a.spent - a.plan))[0];
+  if(over) tips.push(`${over.name} is ${ft(over.spent - over.plan)} over its share this month. Going easy there for ${plural(m.mo.left, 'day')} keeps the rest of the plan on track.`);
+  const fast = rows.filter(r => r.spent <= r.plan && r.spent / r.plan > pace + .25 && r.spent / r.plan >= .6).sort((a, b) => b.spent / b.plan - a.spent / a.plan)[0];
+  if(fast) tips.push(`${fast.name} is at ${Math.round(fast.spent / fast.plan * 100)}% with ${plural(m.mo.left, 'day')} left: ${ft(fast.plan - fast.spent)} of its share remains.`);
+  const t = tipOf();
+  if(t && t.kind === 'tip') tips.push(`Move 10% of ${t.label} (${ft(t.ten)}) to ${esc(t.g.name)} each month${t.wk >= 1 ? ` and get there ${plural(t.wk, 'week')} sooner` : ''}.`);
+  else if(t && t.kind === 'bill') tips.push(`A must-pay bill is late (${ft(t.total)}). Pay it first: bills come before saving.`);
+  else if(t && t.kind === 'short') tips.push(`More went out than came in this month (${ft(t.over)}). Saving tips wait until that is fixed.`);
+  if(!tips.length) tips.push('Everything is within your plan so far.');
+  return tips.slice(0, 3);
+}
+function planHTML(){
+  const m = planModel(), mo = m.mo;
+  const bar = (spent, plan, col, k) => { const p = plan ? Math.min(100, spent / plan * 100) : 0, over = k !== 'save' && spent > plan; return `<div class="mp-bar"><i style="width:${p}%;background:${over ? 'var(--orange)' : col}"></i></div>`; };
+  const grp = g => `<div class="mp-g"><b><span class="dotc" style="background:${BKT_COL[g.k]}"></span>${g.k === 'must' ? I('lock', 14) : ''}${g.name}</b><span class="num">${ft(g.spent)} ${g.note} of ${ft(g.plan)}</span></div>
+    ${g.rows.length ? g.rows.map(r => `<div class="mp-r"><span style="display:flex;align-items:center;gap:7px"><span class="dotc" style="background:${r.col};width:9px;height:9px"></span>${r.name}</span><span class="num">${r.spent === null ? `${ft(r.plan)} <small>planned, not tracked here</small>` : `${ft(r.spent)} <small>of ${ft(r.plan)}</small>`}</span></div>${r.spent === null ? '' : bar(r.spent, r.plan, r.col, g.k)}`).join('') : bar(g.spent, g.plan, BKT_COL[g.k], g.k)}`;
+  return `<div class="sec"><span>My plan for ${mo.name}</span><a data-plangear>Edit ${I('chev',16)}</a></div>
+  <div class="card" style="padding:16px">
+    <div class="mp-top">${planDonut(m)}<div style="min-width:0"><div class="k">${plural(mo.left, 'day')} left in ${mo.name}</div>
+      <div class="num" style="font-size:1.25rem;font-weight:700;margin:4px 0">${ft(m.groups[1].spent + m.groups[2].spent)}</div><div class="k">spent of ${ft(m.groups[1].plan + m.groups[2].plan)} planned for everyday and fun</div></div></div>
+    ${m.groups.map(grp).join('')}
+    <div class="fine" style="margin:14px 0 0"><b>A plan, not a limit.</b> Nothing is blocked and no money moves between categories. It is a reminder to help you manage your month.</div>
+  </div>
+  <div class="card mp-score" style="padding:4px 16px;margin-top:14px">${scoreRow()}</div>
+  <div class="sec"><span>Persi's tips for ${mo.name}</span></div>
+  <div class="card lst">${planTips(m).map(t => `<div class="li"><span class="t" style="line-height:1.45;font-size:0.875rem">${t}</span></div>`).join('')}</div>`;
+}
+// the latest card payments of the month on screen
+function recentCards(n = 3){
+  const ym = shownMonth().ym, rows = S.tx.filter(t => txWhen(t).ym === ym && (t.parts || txType(t) === 'card' || txType(t) === 'refund')).slice(0, n);
+  if(!rows.length) return '';
+  return `<div class="sec"><span>Latest card payments</span><a data-tab="tranzakciok">All ${I('chev',16)}</a></div><div class="card lst">${rows.map(t => { const c = t.parts ? null : classify(t);
+    return `<div class="tx"><span class="ic">${I(t.ic)}</span><span class="t"><b>${esc(t.n)}</b><span>${t.d === 'Today' ? 'Today' : esc(t.d || '')}</span>${c ? `<em>${I(SPEND_IC[c] || 'tag',15)} ${SPEND_SHORT[c] || CATEGORY[c][0]}</em>` : ''}</span><span class="a num">${sft(t.a)}</span></div>`; }).join('')}</div>`;
+}
 /* ---------- financial health score (0-100), shown only when the analyst is on ----------
    Four indicators, 25 points each, over the last 3 finished months (S.scoreHist). Rewards trigger on improvement
    or on staying within the split, never on balance size. Neither the score nor the streak changes the rate. */
@@ -2194,7 +2317,7 @@ function monthStep(quiet){
   if(S.weekly.on){ const v = S.weekly.amt * 4; depositTo(g, v, 'junior', 'Weekly transfers (4)'); moved += v; }
   S.goals.filter(x => x.weekly).forEach(x => { depositTo(x, x.weekly * 4, 'junior', 'Weekly transfers (4)'); moved += x.weekly * 4; });
   { const vi = S.months % 12, ev = ESS_VAR[vi], fv = FUN_VAR[vi], card = MONTH_CARD + ev + fv;   // months differ a little, so the fast-forward and the year look real (month 1 is the reference month)
-    acc('junior').v -= card; S.tx.unshift({...stamp(), d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-card, ic:'cart', parts:{ess:36900 + ev, fun:27000 + fv}}); }
+    acc('junior').v -= card; S.tx.unshift({...stamp(), d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-card, ic:'cart', parts:{ess:36900 + ev, fun:27000 + fv, cats:{...spreadCats(36900 + ev, 'ess'), ...spreadCats(27000 + fv, 'fun')}}}); }
   if(S.roundup.on){ depositTo(goalById(S.roundup.goal) || g, MONTH_ROUND, 'junior', `Round-ups (${MONTH_TX} payments)`); S.roundCount += MONTH_TX; S.roundSum += MONTH_ROUND; moved += MONTH_ROUND; }
   // interest after tax, credited to each forint Persely by its share
   const base = total(), net = Math.round(Math.min(base, CAP) * rate() / 100 / 12 * (1 - TAX));
@@ -2394,13 +2517,11 @@ const PAGES = {
       <div class="row"><span class="ic">${I('money')}</span><span class="t">Incoming transfers</span><span class="tg on"></span></div>
       <div class="row"><span class="ic">${I('piggy')}</span><span class="t">Persely weekly reminder<small class="g">Sunday 18:00, only if the week is still open</small></span><span class="tg ${S.remind?'on':''}"></span></div>`;}},
   challenges:{title:'Weekly challenges', html:()=>`<div class="card" style="padding:4px 16px 10px;margin-top:6px"><ul class="bul sm"><li>New challenges every Monday, the week ends on Sunday</li><li>Progress is checked automatically from your card payments</li><li>Join as many as you like</li></ul></div>${CH_DEFS.map(chCard).join('')}`},
-  kiadas:{title:'Monthly spending', right:`<span class="u-df">${I('gear',22)}</span>`, html:()=>{
-    const spent=CATS.reduce((a,c)=>a+c[2],0), max=Math.max(...CATS.map(c=>c[2]));
-    return `<div style="margin:18px auto 24px;width:230px;padding:18px;border-radius:40px;text-align:center;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff"><b class="num u-fs-22">${ft(spent)}</b><div style="color:var(--act-d);font-size:var(--fs-s)">November</div></div>
-    <div class="cats">${CATS.map((c,i)=>`<div class="cat ${i===0?'on':''}"><span class="ic">${I(c[0],26)}</span><span style="font-size:var(--fs-xs);color:${i===0?'var(--green-t)':'var(--muted-t)'}">${c[1]}</span><span class="col"><i style="height:${c[2]/max*100}%"></i></span><span class="num">${ft(c[2])}</span></div>`).join('')}</div>
-    <div class="sec"><span>Food – Saturday, 8 November</span></div>
-    <div class="tx"><span class="ic">${I('food')}</span><span class="t"><b>WOLT HUNGARY</b><span>Card payment</span><em>${I('food',15)} Food</em></span><span class="a num">${sft(-4690)}</span></div>
-    ${S.analyst.on && S.analyst.accepted ? '' : `<div class="card"><b class="u-bk-m14">How does this fit your income?</b><div class="fine u-mt4-b12">The analyst shows how your ${ft(S.income.amount)} splits into Essentials, Fun and Saving.</div><button class="btn" data-sheet="analyst">See the suggested split</button></div>`}`;}},
+  kiadas:{title:'Monthly spending', right:`<button data-plangear aria-label="Edit my monthly plan" style="display:flex;color:inherit">${I('gear',22)}</button>`, html:()=>{
+    const mo = shownMonth(), sp = catSpend(mo.ym), on = S.analyst.on && S.analyst.accepted;
+    return `<div style="margin:18px auto 24px;width:230px;padding:18px;border-radius:40px;text-align:center;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff"><b class="num u-fs-22">${ft(sumVals(sp))}</b><div style="color:var(--act-d);font-size:var(--fs-s)">${mo.name}${mo.year !== 2026 ? ' ' + mo.year : ''} · card spending</div></div>
+    ${on ? planHTML() : `${catBars(sp)}<div class="card"><b class="u-bk-m14">Plan your month</b><div class="fine u-mt4-b12">The analyst shows how your money splits into bills, everyday essentials, fun and saving, with progress for each category, a health score and tips. It is optional.</div><button class="btn" data-sheet="analyst">See the suggested split</button></div>`}
+    ${recentCards()}`;}},
   mymoney:{title:'My money', html:() => myMoneyHTML()},
   nextmonth:{title:'Next month', html:() => nextMonthHTML()},
   bills:{title:'Must-pay bills', html:() => billsHTML()}
@@ -2648,6 +2769,9 @@ const SHEETS = {
     return `<h2>My split</h2><div class="fine" style="text-align:center;margin:-8px 0 8px"><b>${v.base}</b></div>
     <div class="card" style="padding:4px 16px">${blk('must', 'locked bills, at their usual amounts')}${blk('ess', 'what is left, with other payments')}${blk('fun', 'your choice: a share of the base', stp('fun', d.fun, 0, funMax, 'of the base'))}${blk('save', `${saveNote(v)}`, stp('save', d.rule, 5, 20, 'of your salary'))}</div>
     <div class="fine u-note-b14">The four add up to 100%. Fun is your choice; Everyday essentials is what is left. Saving here is the payday rule${v.plan.weekly || v.plan.round ? ' plus your weekly transfer and round-ups' : ''}: the % on its row is the share of your salary, and Saving is ${bPct(v, 'save') || ft(by.save.amt)} of the base. Changing it here changes the payday rule too.</div>
+    ${(() => { const inv = Math.min(d.inv !== undefined ? d.inv : (S.analyst.invest || 0), by.save.amt); return `<div class="card" style="padding:12px 16px"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b style="display:flex;align-items:center;gap:7px"><span class="dotc" style="background:#7A6FD8"></span>Of Saving, for investing</b><span class="k num">${ft(by.save.amt - inv)} stays in Persely</span></div>
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:6px"><button class="chip sq" data-splitinv="-1000" ${inv <= 0 ? 'disabled' : ''} aria-label="Less for investing">−</button><b class="num" style="min-width:92px;text-align:center;font-size:1rem">${ft(inv)}</b><button class="chip sq" data-splitinv="1000" ${inv + 1000 > by.save.amt ? 'disabled' : ''} aria-label="More for investing">+</button></div>
+      <div class="fine" style="margin-top:6px">A plan only: nothing is bought for you. It shows on your monthly plan.</div></div>`; })()}
     <button class="btn" data-splitsave>Save my split</button><button class="btn ghost" data-splitsuggest>Use the suggestion: Fun ${suggestSplit().fun}%</button>`; },
   // recategorise one card payment
   txcat:()=>{ const t = S.tx[S._txi]; if(!t) return '';
@@ -2921,15 +3045,18 @@ document.addEventListener('click', e=>{
     closeSheet(); renderAll(); undoable(before, `Split saved: Fun ${sg.fun}%, Saving ${sg.save}%. Saving is your payday rule${turnedOn ? ', now on' : ''}`);
     if(!S.billsConfirmed){ const n0 = NAVC.n; let tries = 0, go = () => { if(NAVC.n !== n0 || ++tries > 20) return; if(MQ.toast || sheetOpen()) return setTimeout(go, 400);
       if(S.analyst.on && !S.billsConfirmed && !stack.length) pushPage('bills'); }; setTimeout(go, 400); } return; }   // then one screen: what it found, lock the bills you must pay. It opens after the Undo toast is gone, so the toast never covers it
-  if('splitopen' in d){ UNDO.base = snap(); S._split = {fun:splitView(S, {forceRule:!S.analyst.accepted}).funPct, rule:S.payday.pct}; sheet(SHEETS.splitedit()); return; }
+  if('splitopen' in d || ('plangear' in d && S.analyst.on && S.analyst.accepted)){ UNDO.base = snap(); S._split = {fun:splitView(S, {forceRule:!S.analyst.accepted}).funPct, rule:S.payday.pct, inv:S.analyst.invest || 0}; sheet(SHEETS.splitedit()); return; }
+  if('plangear' in d){ sheet(SHEETS.analyst()); return; }   // analyst off or split not chosen yet: the opt-in first
+  if(d.splitinv){ S._split = S._split || {fun:S.analyst.split.fun, rule:S.payday.pct, inv:S.analyst.invest || 0};
+    const v = splitView(S, {fun:S._split.fun, rule:S._split.rule, forceRule:!S.analyst.accepted}); S._split.inv = Math.max(0, Math.min(v.by.save.amt, (S._split.inv || 0) + +d.splitinv)); sheet(SHEETS.splitedit()); return; }
   if(d.splitstep){ const [k, n] = d.splitstep.split(':'); S._split = S._split || {fun:S.analyst.split.fun, rule:S.payday.pct};
     if(k === 'fun'){ const v = splitView(S, {fun:S._split.fun, rule:S._split.rule, forceRule:!S.analyst.accepted}), hi = Math.floor((v.by.fun.pct + v.by.ess.pct) / 5) * 5; S._split.fun = Math.min(hi, Math.max(0, S._split.fun + +n)); }
     else S._split.rule = Math.min(20, Math.max(5, S._split.rule + +n));
     sheet(SHEETS.splitedit()); return; }
-  if('splitsuggest' in d){ S._split = {fun:suggestSplit().fun, rule:S._split ? S._split.rule : S.payday.pct}; sheet(SHEETS.splitedit()); return; }
+  if('splitsuggest' in d){ S._split = {fun:suggestSplit().fun, rule:S._split ? S._split.rule : S.payday.pct, inv:S._split ? S._split.inv : (S.analyst.invest || 0)}; sheet(SHEETS.splitedit()); return; }
   if('splitsave' in d){ const sp = S._split; if(!sp) return; const before = UNDO.base || snap(), turnedOn = !S.analyst.accepted && !S.payday.on; UNDO.base = null;
     S.payday.pct = sp.rule; if(turnedOn) S.payday.on = true; S.analyst.split = {...S.analyst.split, fun:sp.fun}; S.analyst.accepted = true; S._split = null; syncSplit();
-    const sv = splitView();
+    const sv = splitView(); S.analyst.invest = Math.min(sp.inv !== undefined ? sp.inv : (S.analyst.invest || 0), sv.by.save.amt);
     closeSheet(); renderAll(); undoable(before, `Split saved: Fun ${sv.by.fun.pct}%, Saving ${sv.by.save.pct}%. Payday rule is now ${sp.rule}% of each salary`); return; }
   if(d.txcat !== undefined){ S._txi = +d.txcat; sheet(SHEETS.txcat()); return; }
   if(d.setcat){ const t = S.tx[S._txi]; if(!t) return; t.cat = d.setcat; S.catRules[payeeKey(t)] = d.setcat; closeSheet(); renderAll();
