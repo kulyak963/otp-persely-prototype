@@ -991,9 +991,10 @@ function classify(t, st = S){
   for(const [re, c] of REF_RULES) if(re.test(t.ref || '')) return c;
   return ty === 'card' || ty === 'refund' ? 'shopping' : 'other';   // unknown card payments stay "Shopping" as before; transfers, cash and top-ups are "Other"
 }
+const FAMILY_AMT = 67000;   // Anna's regular family transfer on the 1st (parental rent contribution), used by the demo history and every simulated month
 /* ---------- demo history: fixed list, same in every reset ----------
    August-October (about 60 rows a month) plus the existing November seed and the November bills/income. Newest first.
-   Per month: salary 75 000 (5th) + family transfer 60 000 (1st), rent share 42 000, utilities 10 000, BKK pass 3 450, phone 5 550 (= 61 000 of bills),
+   Per month: salary 75 000 (5th) + family transfer 67 000 (1st), rent share 42 000, utilities 10 000, BKK pass 3 450, phone 5 550 (= 61 000 of bills),
    everyday essentials 36 900 and Fun (food, fun, shopping, travel + 2 subscriptions) 27 000 on the card. */
 function demoHistory(){
   let seed = 20261118; const rnd = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
@@ -1021,7 +1022,7 @@ function demoHistory(){
     const mn = MN[ym].toLowerCase();
     SPEC.forEach(([p, ic, c, tot]) => spread(ym, tot[i], c, p, ic));
     hist.push(mk(ym, 21, 'NETFLIX', 'Card payment', -3490, 'fun'), mk(ym, 26, 'SPOTIFY', 'Card payment', -1790, 'fun'));
-    hist.push(mk(ym, 1, 'KISS ISTVÁN', 'Incoming transfer', 60000, 'money', 'havi támogatás'), mk(ym, 5, 'SALARY', 'Incoming transfer', 75000, 'money'));
+    hist.push(mk(ym, 1, 'KISS ISTVÁN', 'Incoming transfer', FAMILY_AMT, 'money', 'havi támogatás'), mk(ym, 5, 'SALARY', 'Incoming transfer', 75000, 'money'));
     hist.push(mk(ym, 1, 'BKK ZRT. DIÁKBÉRLET', 'Direct debit', -3450, 'bus', 'bérlet ' + mn), mk(ym, 2, 'SZABÓ DÓRA', 'Transfer out', -42000, 'wallet', 'albérlet ' + mn),
       mk(ym, 9, 'DIGI KFT.', 'Direct debit', -4000, 'wallet', 'internet'), mk(ym, 12, 'MVM NEXT ENERGIAKERESKEDŐ', 'Direct debit', -BILL.elec[i], 'wallet', 'áram'),
       mk(ym, 13, 'FŐGÁZ ZRT.', 'Direct debit', -BILL.gas[i], 'wallet', 'gáz'), mk(ym, 20, 'YETTEL MAGYARORSZÁG', 'Direct debit', -BILL.phone[i], 'wallet', 'telefon'));
@@ -1047,7 +1048,7 @@ function demoHistory(){
     {d:'3 November', n:'CINEMA CITY', s:'Card payment', a:-3200, ic:'fun', day:3}
   ].concat([mk('2026-11', 13, 'FŐGÁZ ZRT.', 'Direct debit', -2400, 'wallet', 'gáz'), mk('2026-11', 12, 'MVM NEXT ENERGIAKERESKEDŐ', 'Direct debit', -3600, 'wallet', 'áram'),
     mk('2026-11', 9, 'DIGI KFT.', 'Direct debit', -4000, 'wallet', 'internet'), mk('2026-11', 2, 'SZABÓ DÓRA', 'Transfer out', -42000, 'wallet', 'albérlet november'),
-    mk('2026-11', 1, 'KISS ISTVÁN', 'Incoming transfer', 60000, 'money', 'havi támogatás'), mk('2026-11', 1, 'BKK ZRT. DIÁKBÉRLET', 'Direct debit', -3450, 'bus', 'bérlet november')].map(t => ({...t, x:1})));
+    mk('2026-11', 1, 'KISS ISTVÁN', 'Incoming transfer', FAMILY_AMT, 'money', 'havi támogatás'), mk('2026-11', 1, 'BKK ZRT. DIÁKBÉRLET', 'Direct debit', -3450, 'bus', 'bérlet november')].map(t => ({...t, x:1})));
   nov.forEach((t, i) => { t.ym = '2026-11'; t.i = i; });
   nov.sort((a, b) => b.day - a.day || a.i - b.i); nov.forEach(t => delete t.i);
   return {tx:nov.concat(hist), old:hist.length, nov:nov.filter(t => t.x), hist};
@@ -1188,14 +1189,14 @@ function __checkAnalytics(){
   const det = detectRecurring(F), keys = det.bills.map(b => b.key), want = {'SZABÓ DÓRA':42000, 'MVM NEXT ENERGIAKERESKEDŐ':3600, 'FŐGÁZ ZRT.':2400, 'DIGI KFT.':4000, 'BKK ZRT. DIÁKBÉRLET':3450, 'YETTEL MAGYARORSZÁG':5550, 'NETFLIX':3490, 'SPOTIFY':1790};
   Object.entries(want).forEach(([k, v]) => { const b = det.bills.find(x => x.key === k); ok('bill found: ' + k, b && b.exp === v, b && b.exp); });
   ok('no other recurring payments (groceries, food, transport are not bills)', keys.length === Object.keys(want).length, keys);
-  ok('income found: salary 75 000 and family 60 000', det.income.length === 2 && det.income.some(i => i.key === 'SALARY' && i.exp === 75000 && i.day === 5) && det.income.some(i => i.key === 'KISS ISTVÁN' && i.exp === 60000 && i.day === 1), det.income.map(i => i.key));
+  ok('income found: salary 75 000 and family 67 000', det.income.length === 2 && det.income.some(i => i.key === 'SALARY' && i.exp === 75000 && i.day === 5) && det.income.some(i => i.key === 'KISS ISTVÁN' && i.exp === FAMILY_AMT && i.day === 1), det.income.map(i => i.key));
   ok('locked by default: 6 must-pay bills, subscriptions not', F.bills.filter(b => b.locked).length === 6 && F.bills.filter(b => !b.locked).every(b => CATEGORY[b.cat][2] === 'subs'));
   const p = project(F), sum = o => Object.values(o).reduce((a, b) => a + b, 0);
   ok('projection proportions add to 100%', sum(p.pct) === 100, p.pct);
   const sv0 = splitView(F, {forceRule:true}), pcs = k => sv0.by[k].pct;
-  ok('one base, four buckets: suggested split is Must-pay 44 / Everyday essentials 31 / Fun 20 / Saving 5, adds to 100%, amounts add to the base 138 000', pcs('must') === 44 && pcs('ess') === 31 && pcs('fun') === 20 && pcs('save') === 5 && sum({a:pcs('must'), b:pcs('ess'), c:pcs('fun'), d:pcs('save')}) === 100 && sv0.rows.reduce((a, r) => a + r.amt, 0) === sv0.B && sv0.B === 138000 && sv0.by.must.amt === 61000 && sv0.by.save.amt === 7500, sv0.rows.map(r => [r.k, r.pct, r.amt]));
+  ok('one base, four buckets: suggested split is Must-pay 42 / Everyday essentials 33 / Fun 20 / Saving 5, adds to 100%, amounts add to the base 145 000', pcs('must') === 42 && pcs('ess') === 33 && pcs('fun') === 20 && pcs('save') === 5 && sum({a:pcs('must'), b:pcs('ess'), c:pcs('fun'), d:pcs('save')}) === 100 && sv0.rows.reduce((a, r) => a + r.amt, 0) === sv0.B && sv0.B === 145000 && sv0.by.must.amt === 61000 && sv0.by.save.amt === 7500, sv0.rows.map(r => [r.k, r.pct, r.amt]));
   ok('projection: must-pay 61 000, everyday essentials 36 900, Fun 27 000', p.mustPay === 61000 && p.everyday === 36900 && p.fun === 27000, [p.mustPay, p.everyday, p.fun]);
-  ok('projection: income 138 000, confidence 3 months, no deficit', p.income.total === 138000 && p.months === 3 && p.confidence.label === 'Based on 3 months' && p.deficit === 0, p.income);
+  ok('projection: income 145 000, confidence 3 months, no deficit', p.income.total === 145000 && p.months === 3 && p.confidence.label === 'Based on 3 months' && p.deficit === 0, p.income);
   ok('one-off listed and left out (MEDIAMARKT)', p.oneOffs.length === 1 && p.oneOffs[0].name === 'MEDIAMARKT', p.oneOffs);
   const few = clone(); few.closedYm = ['2026-10']; ok('less history: "Based on 1 month, a rough guess", no percentages, amounts still add to the base', project(few).confidence.label === 'Based on 1 month, a rough guess' && sum(project(few).pct) === 100 && splitView(few).rough && bPct(splitView(few), 'fun') === '' && splitView(few).rows.reduce((a, r) => a + r.amt, 0) === splitView(few).B);
   ['2026-08', '2026-09', '2026-10', '2026-11'].forEach(ym => { const u = monthUse(ym, F), all = F.tx.filter(t => txWhen(t, F).ym === ym), s = all.reduce((a, t) => a + t.a, 0);
@@ -1224,8 +1225,8 @@ function __checkAnalytics(){
   ok('proportions add to 100% in the default state and after key B (rent not paid)', sum(project(F).pct) === 100 && sum(project(sB).pct) === 100 && project(sB).pct.left >= 0, [project(F).pct, project(sB).pct]);
   const pd = clone(); pd.payday.on = true; const pdp = project(pd);
   const pdr = clone(); pdr.payday.on = true; pdr.roundup.on = true; const pdrp = project(pdr), p0 = project(F);
-  ok('payday rule on: small positive amount left, no deficit', pdp.deficit === 0 && pdp.left >= 2000 && pdp.left <= 5000 && pdp.saving === 7500 && sum(pdp.pct) === 100, [pdp.left, pdp.deficit, pdp.pct]);
-  ok('main demo state (payday rule and round-ups on, saving 10 500): 1 000 to 4 000 Ft left, no deficit; default state stays positive', pdrp.deficit === 0 && pdrp.left >= 1000 && pdrp.left <= 4000 && pdrp.saving === 7500 + ROUND_EST && p0.deficit === 0 && p0.left > 0 && sum(pdrp.pct) === 100, [pdrp.left, pdrp.deficit, p0.left]);
+  ok('payday rule on: small positive amount left, no deficit', pdp.deficit === 0 && pdp.left >= 2000 && pdp.left <= 12000 && pdp.saving === 7500 && sum(pdp.pct) === 100, [pdp.left, pdp.deficit, pdp.pct]);
+  ok('main demo state (payday rule and round-ups on, saving 10 500): 1 000 to 10 000 Ft left, no deficit; default state stays positive', pdrp.deficit === 0 && pdrp.left >= 1000 && pdrp.left <= 10000 && pdrp.saving === 7500 + ROUND_EST && p0.deficit === 0 && p0.left > 0 && sum(pdrp.pct) === 100, [pdrp.left, pdrp.deficit, p0.left]);
   const detB = detectRecurring(sB); ok('after key B: all 8 demo bills and both income lines are still found', Object.keys(want).every(k => detB.bills.some(b => b.key === k && b.exp === want[k])) && detB.income.length === 2, detB.bills.map(b => b.key));
   ok('alert: default OFF, after key B ON, after paying the rent OFF', !billsFirst(F).on && billsFirst(sB).on && (() => { const x = JSON.parse(JSON.stringify(sB)); x.tx.unshift({ym:'2026-11', day:14, d:'14 November', n:'SZABÓ DÓRA', s:'Transfer out', a:-42000, ic:'wallet'}); return !billsFirst(x).on; })());
   const sP = clone(), spB = safeToSpend(sP); sP.accounts.find(a => a.id === 'junior').v -= 61000; sP.billsPocket = {on:true, bal:61000}; sP.tx.unshift({ym:'2026-11', day:14, d:'Today', n:'BILLS POCKET', s:'Between my accounts', a:-61000, ic:'wallet'});
@@ -1234,7 +1235,7 @@ function __checkAnalytics(){
   ok('Bills pocket move is an own-account row: income and spending unchanged, nothing counted twice', uP.income === uF.income && uP.spendTotal === uF.spendTotal && uP.own === uF.own + 61000 && uP.income - uP.spendTotal - uP.own - uP.cash - uP.topup === uP.sumA, [uP, uF]);
   // steps 6-9 and 12 run against a copy of the app state, then the real state is put back
   const keep = S; try{
-    S = clone(); S.analyst.on = true; S.onboarded = true; ok('suggestSplit comes from the projection: 44 / 31 / 20 / 5', (() => { const g = suggestSplit(); return g.must === 44 && g.ess === 31 && g.fun === 20 && g.save === 5; })(), suggestSplit());
+    S = clone(); S.analyst.on = true; S.onboarded = true; ok('suggestSplit comes from the projection: 42 / 33 / 20 / 5', (() => { const g = suggestSplit(); return g.must === 42 && g.ess === 33 && g.fun === 20 && g.save === 5; })(), suggestSplit());
     // every screen reads the same four buckets: analyst sheet, My split, Next month, story slide 8, editor, Persely tab row. The text on screen must carry the same percentages and amounts.
     const agree = (label) => { const v = curView(); let bad = [];
       const txt = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
@@ -1255,7 +1256,7 @@ function __checkAnalytics(){
     S.weekly.on = false; S.roundup.on = false; syncSplit();
     S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); ok('all screens agree after key B (rent unpaid)', agree().length === 0 && splitView().by.must.amt === 61000, agree());
     { const x = JSON.parse(JSON.stringify(S)); S.billsPocket = {on:true, bal:61000}; ok('all screens agree after key O (Bills pocket 61 000)', agree().length === 0, agree()); S = x; }
-    { const tr = S.tx.length; const d = JSON.parse(JSON.stringify(S)); S.analyst.split.fun = 25; syncSplit(); ok('all screens agree after Fun is changed to 25% (Everyday essentials gives way)', agree().length === 0 && splitView().by.fun.pct === 25 && splitView().by.ess.pct === 26, [agree(), splitView().rows.map(r => r.pct)]); S = d; syncSplit(); }
+    { const tr = S.tx.length; const d = JSON.parse(JSON.stringify(S)); S.analyst.split.fun = 25; syncSplit(); ok('all screens agree after Fun is changed to 25% (Everyday essentials gives way)', agree().length === 0 && splitView().by.fun.pct === 25 && splitView().by.ess.pct === 28, [agree(), splitView().rows.map(r => r.pct)]); S = d; syncSplit(); }
     S = clone(); S.analyst.on = true; S.onboarded = true;
     ok('bills first card, push text and Persi line when the rent is unpaid', (() => { S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); return bfNow().on && bfCard().includes('Rent share is late: ' + ft(42000) + ' (due on the 2nd)') && bfCard().includes('Coming up: Phone ' + ft(5550) + ' on the 20th') && persiSays().text === 'Rent share is late: ' + ft(42000) + ' (due on the 2nd).'; })());
     ok('analyst off: no bills-first card or Persi line', (() => { S.analyst.on = false; const r = !bfNow().on && bfCard() === ''; S.analyst.on = true; return r; })());
@@ -1266,9 +1267,15 @@ function __checkAnalytics(){
     S = clone(); S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.payday.on = true; S.billsConfirmed = true; monthStep(true);
     const uu = splitUse(), nb = billsFirst(), fam = S.tx.find(t => t.n === 'KISS ISTVÁN' && t.ym === ymAt(1));
     ok('+1 month: Everyday essentials 36 900 and Fun 27 000 are inside the split, reward earned, score 50 -> 75', uu.ess === 36900 && uu.fun === 27000 && !!S._rw && S._rw.essB >= 36900 && S._rw.funB >= 27000 && scoreNow().t === 75 && scorePrev().t === 50, [uu, scoreNow().t, S._rw]);
-    ok('+1 month: family transfer on the 1st, bills paid on their days, only the phone still to come', fam && fam.a === 60000 && fam.day === 1 && nb.total === 5550 && nb.count === 1 && !nb.on && S.tx.filter(t => t.ym === ymAt(1) && t.a < 0 && txType(t) !== 'card' && txType(t) !== 'own').length === 5, [nb.total, nb.count]);
-    ok('after +1 month: all 8 demo bills found again, income still salary 75 000 + family 60 000, projection consistent', (() => { const d = detectRecurring(), pj = project(); return Object.keys(want).every(k => d.bills.some(b => b.key === k && b.exp === want[k])) && d.income.length === 2 && d.income.some(i => i.key === 'SALARY' && i.exp === 75000) && d.income.some(i => i.key === 'KISS ISTVÁN' && i.exp === 60000) && pj.income.recurring === 135000 && pj.mustPay === 61000 && pj.deficit === 0 && pj.left > 0; })(), detectRecurring().bills.map(b => b.key));
+    ok('+1 month: family transfer on the 1st, bills paid on their days, only the phone still to come', fam && fam.a === FAMILY_AMT && fam.day === 1 && nb.total === 5550 && nb.count === 1 && !nb.on && S.tx.filter(t => t.ym === ymAt(1) && t.a < 0 && txType(t) !== 'card' && txType(t) !== 'own').length === 5, [nb.total, nb.count]);
+    ok('after +1 month: all 8 demo bills found again, income still salary 75 000 + family 67 000, projection consistent', (() => { const d = detectRecurring(), pj = project(); return Object.keys(want).every(k => d.bills.some(b => b.key === k && b.exp === want[k])) && d.income.length === 2 && d.income.some(i => i.key === 'SALARY' && i.exp === 75000) && d.income.some(i => i.key === 'KISS ISTVÁN' && i.exp === FAMILY_AMT) && pj.income.recurring === 75000 + FAMILY_AMT && pj.mustPay === 61000 && pj.deficit === 0 && pj.left > 0; })(), detectRecurring().bills.map(b => b.key));
     ok('after +1 month: proportions add to 100%', sum(project().pct) === 100, project().pct);
+    // no overspend on the demo path: the main demo rules (payday 10%, weekly 1 500 Ft, round-ups) after +1, +3, +10 and +12 months, plus the default, 8-weeks-later and rent-unpaid states
+    { const keepS = S, path = {}, run = n => { S = clone(); S.analyst = {on:true, accepted:true, split:{must:42, ess:26, fun:20, save:12}}; S.payday.on = true; S.weekly.on = true; S.weekly.amt = 1500; S.roundup.on = true; S.billsConfirmed = true; for(let i = 0; i < n; i++) monthStep(true); const q = project(); return {deficit:q.deficit, left:q.left, saving:q.saving}; };
+      [1, 3, 10, 12].forEach(n => { path['+' + n] = run(n); });
+      const dJ = (() => { S = clone(); S.payday.on = true; S.roundup.on = true; const q = project(); return {deficit:q.deficit, left:q.left}; })(), dB = (() => { S = clone(); S.analyst.on = true; S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); const q = project(); return {deficit:q.deficit, left:q.left}; })(), d0 = project(F);
+      ok('no state on the demo path shows a deficit: default, 8 weeks later, rent unpaid, +1, +3, +10 and +12 months all keep something left (full demo path: 1 000 to 5 000 Ft)', [d0, dJ, dB, ...Object.values(path)].every(x => x.deficit === 0 && x.left > 0) && Object.values(path).every(x => x.left <= 5000), {d0:[d0.deficit, d0.left], dJ, dB, path});
+      S = keepS; }
     ok('after +1 month: nothing counted twice (every month in the window)', ['2026-09', '2026-10', '2026-11', '2026-12'].every(ym => { const u = monthUse(ym), all = S.tx.filter(t => txWhen(t).ym === ym), t = all.reduce((a, x) => a + x.a, 0); return u.count === all.length && u.income - u.spendTotal - u.own - u.cash - u.topup === t; }));
     S = clone(); S.analyst.on = true; S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); const was = bfNow().on, pr = payBill('szab-d-ra');
     ok('alert in the app: on after key B, off after Pay now rent', was && !pr.err && !bfNow().on && bfCard() === '', [was, pr]);
@@ -1319,7 +1326,7 @@ const fresh = () => { const H = demoHistory(); const o = ({
   // financial analyst (opt-in, off by default). split = % of the monthly income base (must, ess, fun, save); only fun is a choice, the rest is refreshed from the data by syncSplit()
   analyst:{on:false, accepted:false, split:{must:44, ess:31, fun:20, save:5}}, txMark:H.old,   // txMark = rows before this month (the Aug-Oct history)
   // analytics (section 14): finished months, bill list (detected, locks kept), Bills pocket (built later; its balance is held outside the Junior balance), remembered categories, bills dismissed for a month, demo "today"
-  closedYm:['2026-08','2026-09','2026-10'], bills:[], billsConfirmed:false, billsPocket:{on:false, bal:0}, catRules:{}, billSkip:{}, billSkipWhy:{}, bfDone:false, bfPush:'', demoDay:14, histV:2,
+  closedYm:['2026-08','2026-09','2026-10'], bills:[], billsConfirmed:false, billsPocket:{on:false, bal:0}, catRules:{}, billSkip:{}, billSkipWhy:{}, bfDone:false, bfPush:'', demoDay:14, histV:3,
   // health score history: one entry per finished month, 1 = the indicator held that month. Score = 25 points per indicator x share of the last 3 months. Rewards earned / goal offers already used
   scoreHist:[{m:'July',earn:1,safe:1,buf:0,goal:0},{m:'August',earn:0,safe:1,buf:0,goal:0},{m:'September',earn:0,safe:1,buf:0,goal:1},{m:'October',earn:1,safe:1,buf:0,goal:1}], rewards:[], goalRewarded:[],   // txMark: how many transactions existed when this month began; this month = S.tx.slice(0, S.tx.length - S.txMark)
   // weekly streak: any amount once a week keeps it (automatic savings count too); it never changes the rate
@@ -1367,6 +1374,8 @@ if(S.histV === 1){ try{
   S.tx.forEach(t => { if(t.n === 'TÓTH LILI' && t.a === -2000 && (t.ym === '2026-08' || t.ym === '2026-10')) t.a = -1000; if(t.n === 'REVOLUT TOP-UP' && t.ym === '2026-09' && t.a === -1500) t.a = -1000; });
   S.txMark = Math.max(0, (S.txMark || 0) - (had - S.tx.length)); S.histV = 2;
 }catch(e){ S.histV = 2; } }
+// saved history from before the family transfer was raised to 67 000 Ft: the four seeded months (Aug-Nov) follow it, so the projection reads one regular amount
+if(S.histV === 2){ try{ S.tx.forEach(t => { if(t.n === 'KISS ISTVÁN' && t.a === 60000 && ['2026-08', '2026-09', '2026-10', '2026-11'].includes(t.ym)) t.a = FAMILY_AMT; }); S.histV = 3; }catch(e){ S.histV = 3; } }
 if(S.friendsOptIn === undefined) S.friendsOptIn = !!S.friendsOpen;   // Friends is opt-in: saved state that never opened it stays hidden
 if(!S.closedYm) S.closedYm = ['2026-08','2026-09','2026-10'];
 if(!S.catRules) S.catRules = {};
@@ -1670,7 +1679,7 @@ function persiSays(){
   return {mood:'proud', text:`Week done. ${g.name}: ${pct}%.`};
 }
 /* ---------- financial analyst: one income base, four buckets ----------
-   Base = the projected monthly income from Next month (regular income + the lowest of the last 3 months of other transfers; about 138 000 Ft in the demo).
+   Base = the projected monthly income from Next month (regular income + the lowest of the last 3 months of other transfers; about 145 000 Ft in the demo).
    Four buckets, in that base: Must-pay (locked: the bills you lock, at their usual amounts) · Everyday essentials (whatever is left, so Other payments and the rounding are in here) ·
    Fun (the one number you choose: a share of the base, in steps of 5%) · Saving (what the rules move: payday rule + weekly transfer + round-ups, so it always equals the real rules).
    The four amounts add up to the base. splitView() is the only place that computes them: My split, the analyst sheet, Next month, the reward rule, the insight and story slide 8 all read it.
@@ -1744,7 +1753,7 @@ function splitCard(){
    Everything here needs the analyst on. It tells, it never blocks: no card is declined and no money moves without a tap.
    State: S.bills (locks), S.billsConfirmed, S.billSkip {billId: ym} + S.billSkipWhy {billId: 'paid'|'notdue'},
    S.billsPocket {on, bal} (held outside the Junior balance), S.bfDone (Persi's "Bills paid" line), S.bfPush (day of the last bills push). */
-const FAMILY_IN = 60000;   // the family transfer on the 1st (demo)
+const FAMILY_IN = FAMILY_AMT;   // the family transfer on the 1st (demo)
 const FRIEND_IN_AMT = 3000, FRIEND_IN = [['FEKETE MÁRK', 'jegy'], ['KOVÁCS BENCE', 'mozi'], ['NAGY DÓRI', 'vacsora']];   // a small friend transfer on the 9th of each simulated month (demo)
 const ordinal = n => { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
 const NOBF = {on:false, total:0, count:0, rows:[], urgent:[], text:''};

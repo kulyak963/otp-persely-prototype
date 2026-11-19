@@ -4,7 +4,7 @@
 // Needs only what is already installed: the global @playwright/cli's playwright-core, a cached Playwright Chromium
 // (~/Library/Caches/ms-playwright/chromium_headless_shell-*), and macOS AVFoundation via tools/encode-frames.swift. Nothing is downloaded.
 // Env: APP_URL, PW_DIR (folder that contains node_modules/playwright), CHROME (browser executable), FRAMES (temp dir), DPR (default 3 = 1170x2532).
-// State recorded: Reset (8 weeks later) -> analyst on with the split accepted (data-anuse) -> +1 month (key O, same as the demo) -> story from slide 1, relabelled November (display only, see below).
+// State recorded: Reset (8 weeks later) -> analyst on with the split accepted (consent flow: Turn on, then Use this split) -> +1 month (key O, same as the demo) -> story from slide 1, relabelled November (display only, see below).
 // The story's clock is stepped by 1/30 s per screenshot (manual mode); only the 3D Persi on slide 1 runs on real time.
 import { createRequire } from 'module';
 import { execFileSync } from 'child_process';
@@ -30,11 +30,11 @@ const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, de
 const p = await ctx.newPage();
 p.on('pageerror', e => console.log('page error:', e.message));
 await p.goto(APP); await p.waitForTimeout(2500);
-await p.evaluate(() => { S = fresh(); week8State(); sheet(SHEETS.analyst()); });
-await p.waitForTimeout(400); await p.click('[data-anuse]'); await p.waitForTimeout(800);
-await p.evaluate(() => { S.billsConfirmed = true; });
+await p.evaluate(() => { S = fresh(); week8State(); S.billsConfirmed = true; sheet(SHEETS.analyst()); });   // billsConfirmed first: Use this split would otherwise open the Bills page
+await p.waitForTimeout(400); await p.click('[data-anon]'); await p.waitForTimeout(800);        // consent: Turn on
+await p.click('[data-anaccept]'); await p.waitForTimeout(800);                                  // then Use this split
 await p.keyboard.press('o'); await p.waitForTimeout(6000);   // +1 month, reward sheet and toasts come one at a time
-await p.evaluate(() => { closeSheet(); hideToast(true); }); await p.waitForTimeout(1500);
+await p.evaluate(() => { closeSheet(); hideToast(true); if (window.__story.info().on) window.__story.close(); }); await p.waitForTimeout(1500);
 await p.evaluate(() => { hideToast(true); });
 await p.addStyleTag({ content: "[data-stshare],[data-stclose]{visibility:hidden!important} #story{margin:0!important}" });   // record mode: no Share/Close buttons on the share card; margin:0 removes a 6 px strip at the left edge (the story had margin-left 6px)
 // Display only: the story reads the month just simulated (data month 2026-12). Show it as November: period label, and month names shifted back one.
