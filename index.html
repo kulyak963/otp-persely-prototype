@@ -1480,14 +1480,14 @@ function __checkAnalytics(){
       ok('story: every slide builds without errors and has a background', sl.every(x => x.share || (txt(x.build()).length > 0 && x.bg)), ids);
       const t0 = tipOf();
       ok('tip: regular category, 10% of the 3-month average, never under 1 000 Ft (food and drink -> 1 100)', t0 && t0.kind === 'tip' && t0.cat === 'food' && t0.ten === 1100, t0);
-      ok('tip: the story slide and the Home card show the same amount', nx && txt(nx.build()).includes(fz(t0.ten)) && txt(insightCard()).includes(fz(t0.ten)) && nx.btn && /data-stinsight=/.test(nx.btn.attr), nx && txt(nx.build()));
+      ok('tip: the story slide and the Left to spend page show the same amount; Home shows no tip', nx && txt(nx.build()).includes(fz(t0.ten)) && txt(myMoneyHTML()).includes(fz(t0.ten)) && !/class="card insight"/.test(vFooldal()) && nx.btn && /data-stinsight=/.test(nx.btn.attr), nx && txt(nx.build()));
       const io = sl.find(x => x.id === 'inout'), A = stAgg(stRange().yms), left = A.inc - (A.must + A.ess + A.fun + A.other) - A.save;
       ok('money in and out: the big number is in minus spent minus saved', io && txt(io.build()).includes(fz(Math.abs(left))), [left, io && txt(io.build())]);
       const wh = sl.find(x => x.id === 'where');
       ok('where it went: three bars at most, biggest first', wh && (wh.build().match(/class="sx-r"/g) || []).length <= 3, wh && txt(wh.build()));
       S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); S.analyst.on = true;
       const t3 = tipOf(), n3 = storySlides().find(x => x.id === 'next');
-      ok('late bill: the story tip is Pay now (not Set it up) and Home has no tip card', t3 && t3.kind === 'bill' && n3 && n3.btn && /data-stpay=/.test(n3.btn.attr) && insightCard() === '', [t3 && t3.kind, n3 && n3.btn]);
+      ok('late bill: the story tip is Pay now (not Set it up) and Left to spend has no tip card', t3 && t3.kind === 'bill' && n3 && n3.btn && /data-stpay=/.test(n3.btn.attr) && !/class="card insight"/.test(myMoneyHTML()), [t3 && t3.kind, n3 && n3.btn]);
       S = clone(); const ks = S.streak; S.streak = 0; S.goals.forEach(g => { g.date = '2020-05-05'; });
       ok('share card: no "0 week streak" and nothing to share says so', /Nothing to share this month yet/.test(txt(shareCard())) && !storySlides().some(x => x.id === 'streak'), txt(shareCard()));
       S.streak = ks;
@@ -1607,7 +1607,6 @@ function vFooldal(){
   <button class="card hubteaser" data-tab="hub">${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.onboarded && S.streak === 0
     ? `<b>New in Persely: goals with ${rateLabel()} interest</b><small>Set up in 1 minute</small>`
     : `<b style="display:flex;align-items:center;gap:4px">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Safe this week' : 'Ends Sunday. Any amount keeps it going'}</small>`}</span>${I('chev',20)}</button>
-  ${insightCard()}
   <div class="sec"><span>My monthly spending</span><a data-go="kiadas">Details ${I('chev',16)}</a></div>
   <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${mo.label}</div>
   <div class="gauge" data-go="kiadas" role="button" aria-label="Monthly spending details">
