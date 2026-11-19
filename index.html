@@ -688,6 +688,23 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .li-safe span{flex:1}.li-safe svg{color:var(--green-i)}
 .pbar{display:flex;gap:2px;height:16px;border-radius:8px;overflow:hidden;margin:14px 0 10px}.pbar i{display:block;min-width:3px}
 .dotc{width:12px;height:12px;border-radius:4px;flex:none}
+.mp-g{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:14px 0 2px;padding-top:12px;border-top:1px solid var(--line)}
+.mp-g b{display:flex;align-items:center;gap:7px;font-size:var(--fs-m)}
+.mp-g span{font-size:0.78125rem;color:var(--muted-t);white-space:nowrap}
+.mp-r{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:9px;font-size:0.875rem}
+.mp-r .num{white-space:nowrap}.mp-r small{color:var(--muted-t);font-size:0.78125rem}
+.mp-bar{height:6px;border-radius:3px;background:#E3E6EC;margin-top:4px;overflow:hidden}.mp-bar i{display:block;height:100%;border-radius:3px}
+.mp-card>.mp-g:first-child{margin-top:0;padding-top:0;border-top:0}
+/* Money in each month: the small panel under the Persely balance (the Home gauge, scaled down) */
+.mgauge{display:flex;align-items:center;gap:14px;width:100%;min-height:76px;padding:12px 16px;text-align:left;margin:0 0 12px}
+.mg-ring{position:relative;flex:none;width:56px;height:56px}
+.mg-ring svg{display:block;width:100%;height:100%}
+.mg-ring::after{content:"";position:absolute;inset:16.8%;border-radius:50%;background:linear-gradient(145deg,#F6F7FA,#E7EAF0)}
+.mgauge .t{flex:1;min-width:0;display:block}
+.mgauge .t b{display:block;font-size:1.25rem;color:var(--green-t);font-weight:700;white-space:nowrap}
+.mgauge .t small{display:block;font-size:0.84375rem;color:var(--ink2)}
+.mgauge .chev{flex:none;display:flex;color:var(--green-i)}
+
 .spk{display:flex;align-items:flex-end;gap:2px;height:24px;width:34px;flex:none}.spk i{flex:1;background:#C9CED6;border-radius:2px}.spk i:last-child{background:var(--green)}
 /* ---- utilities (replace repeated inline styles; keep these LAST; the doubled class name makes them win over rules like ".opt b", as the inline styles did) ---- */
 .u-sheet-sub.u-sheet-sub{text-align:center;margin:-8px 0 12px}
@@ -1117,6 +1134,57 @@ function monthUse(ym, st = S){
     else sp(classify(t, st), -t.a); });
   return u;
 }
+/* ---------- card spending per category, for any month (Home, Monthly spending page, the monthly plan) ----------
+   Card payments only: bills, transfers, cash and own-account moves are not "spending" here. A fast-forwarded month books its card
+   payments as one row with parts {ess, fun}; monthStep also stores parts.cats (the same totals spread like Anna's August-October history),
+   so the categories work in every month. Rows from before parts.cats existed fall back to two lines: Everyday / Fun card payments. */
+const SPEND_CATS = ['groceries','transport','health','edu','food','shopping','fun','travel','subs'];
+const SPEND_IC = {groceries:'cart', transport:'bus', health:'shield', edu:'edu', food:'food', shopping:'tag', fun:'fun', travel:'plane', subs:'fun', mix_ess:'cart', mix_fun:'food'};
+const SPEND_SHORT = {groceries:'Groceries', transport:'Transport', health:'Health', edu:'Education', food:'Food', shopping:'Shopping', fun:'Entertainment', travel:'Travel', subs:'Streaming', mix_ess:'Everyday', mix_fun:'Fun'};
+const HIST_YM = ['2026-08','2026-09','2026-10'];   // the real demo history the category shares come from
+function catSpend(ym, st = S){
+  const out = {};
+  st.tx.forEach(t => { if(txWhen(t, st).ym !== ym) return;
+    if(t.parts){ if(t.parts.cats) Object.entries(t.parts.cats).forEach(([c, v]) => out[c] = (out[c] || 0) + v);
+      else { out.mix_ess = (out.mix_ess || 0) + (t.parts.ess || 0); out.mix_fun = (out.mix_fun || 0) + (t.parts.fun || 0); } return; }
+    const ty = txType(t); if(ty !== 'card' && ty !== 'refund') return;
+    const c = classify(t, st); if(SPEND_CATS.includes(c)) out[c] = (out[c] || 0) - t.a; });
+  Object.keys(out).forEach(c => { if(out[c] <= 0) delete out[c]; });
+  return out;
+}
+const sumVals = o => Object.values(o).reduce((a, b) => a + b, 0);
+// each category's share of its bucket (Everyday essentials or Fun) in the August-October history
+function catShares(bucket, st = S){
+  const tot = {}; HIST_YM.forEach(ym => Object.entries(catSpend(ym, st)).forEach(([c, v]) => { if(CATEGORY[c] && CATEGORY[c][1] === bucket) tot[c] = (tot[c] || 0) + v; }));
+  const all = sumVals(tot); return all ? Object.fromEntries(Object.entries(tot).map(([c, v]) => [c, v / all])) : {};
+}
+// spread an amount over a bucket's categories by those shares, in whole 10 Ft, adding up exactly
+function spreadCats(amount, bucket, st = S){
+  // subscriptions are fixed amounts (Netflix + Spotify): they keep their usual total, and the rest of Fun is spread over the other categories
+  const subs = bucket === 'fun' ? Math.round(HIST_YM.reduce((a, ym) => a + (catSpend(ym, st).subs || 0), 0) / HIST_YM.length / 10) * 10 : 0, fixed = subs && amount > subs ? subs : 0;
+  const sh = Object.entries(catShares(bucket, st)).filter(([c]) => !(fixed && c === 'subs')), w = sh.reduce((a, x) => a + x[1], 0), left = amount - fixed;
+  if(!sh.length || left <= 0) return fixed ? {subs:fixed} : {};
+  const units = Math.round(left / 10), raw = sh.map(([, x]) => units * x / w), fl = raw.map(Math.floor); let rest = units - fl.reduce((a, b) => a + b, 0);
+  raw.map((r, i) => [r - fl[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if(rest > 0){ fl[i]++; rest--; } });
+  const out = {}; sh.forEach(([c], i) => { if(fl[i] > 0) out[c] = fl[i] * 10; }); out[sh[0][0]] = (out[sh[0][0]] || 0) + (left - units * 10);
+  if(fixed) out.subs = fixed; return out;
+}
+// the month on screen: its name, first and last day, and the demo "today" (the 14th)
+function shownMonth(){
+  const n = S.months || 0, d = new Date(2026, 10 + n, 1), name = MONTHN[d.getMonth()], last = new Date(2026, 11 + n, 0).getDate(), today = S.demoDay || 14;
+  return {ym:ymAt(n), name, year:d.getFullYear(), last, today, left:Math.max(0, last - today), label:`1 ${name} – ${last} ${name}`};
+}
+// average card spending of the last 3 finished months before the one on screen
+function avgSpend(){
+  const ym = ymAt(S.months || 0), yms = (S.closedYm || []).filter(y => y < ym).slice(-3);
+  return yms.length ? Math.round(yms.reduce((a, y) => a + sumVals(catSpend(y)), 0) / yms.length / 100) * 100 : 0;
+}
+// category bars ("What did I spend on this month?"): the five biggest this month
+function catBars(sp){
+  const rows = Object.entries(sp).sort((a, b) => b[1] - a[1]).slice(0, 5), max = Math.max(1, ...rows.map(r => r[1]));
+  if(!rows.length) return `<div class="card fine" style="padding:14px 16px">No card payments yet this month.</div>`;
+  return `<div class="cats">${rows.map(([c, v], i) => `<div class="cat ${i === 0 ? 'on' : ''}"><span class="ic">${I(SPEND_IC[c] || 'tag', 26)}</span><span class="cl">${SPEND_SHORT[c] || CATEGORY[c][0]}</span><span class="col"><i style="height:${v / max * 100}%"></i></span><span class="num">${ft(v)}</span></div>`).join('')}</div>`;
+}
 /* ---------- next-month projection ---------- */
 const lrPct = (vals, total) => { const raw = vals.map(v => v / total * 100), fl = raw.map(Math.floor); let rest = 100 - fl.reduce((a, b) => a + b, 0);
   raw.map((r, i) => [r - fl[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if(rest > 0){ fl[i]++; rest--; } }); return fl; };
@@ -1260,7 +1328,7 @@ function __checkAnalytics(){
       return bad; };
     S.analyst.accepted = false; ok('all screens agree: default, analyst on (suggestion), Saving = payday rule + weekly + round-ups', (() => { S.payday.on = false; const b = agree(); return b.length === 0; })(), agree());
     S.analyst.accepted = true; S.payday.on = true; syncSplit(); ok('all screens agree: after Use this split (payday rule on, 7 500 Ft = 10% of the salary)', agree().length === 0 && splitView().by.save.amt === 7500 && splitCard().replace(/\s/g, ' ').includes('7 500 Ft = 10% of your salary'), agree());
-    S.weekly.on = true; S.roundup.on = true; syncSplit(); ok('Saving = payday rule + weekly transfer + round-ups, shown the same on every screen', (() => { const v = splitView(), pl = savePlan(); return v.by.save.amt === pl.rule + pl.weekly + pl.round && pl.weekly > 0 && pl.round > 0 && agree().length === 0 && splitCard().includes('weekly transfer') && splitCard().includes('round-ups'); })(), agree());
+    S.weekly.on = true; S.roundup.on = true; syncSplit(); ok('Saving = payday rule + weekly transfer + round-ups, shown the same on every screen', (() => { const v = splitView(), pl = savePlan(); return v.by.save.amt === pl.rule + pl.weekly + pl.round && pl.weekly > 0 && pl.round > 0 && agree().length === 0 && splitCard().includes('weekly transfer') && splitCard().includes('round-ups') && (S.goals.some(g => g.weekly) || moneyIn().total === savePlan().total); })(), agree());
     S.weekly.on = false; S.roundup.on = false; syncSplit();
     S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); ok('all screens agree after key B (rent unpaid)', agree().length === 0 && splitView().by.must.amt === 61000, agree());
     { const x = JSON.parse(JSON.stringify(S)); S.billsPocket = {on:true, bal:61000}; ok('all screens agree after key O (Bills pocket 61 000)', agree().length === 0, agree()); S = x; }
@@ -1299,16 +1367,45 @@ function __checkAnalytics(){
       S = clone(); S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.onboarded = true; S.billsConfirmed = true; syncSplit();
       const H = vFooldal(), P = vHub(), mm = myMoneyHTML(), an = SHEETS.analyst();
       if(keepF){
-        ok('one entry path: Home has one My money card and no direct link to Next month, Must-pay bills or Safe to spend', cnt(H, 'mymoney') === 1 && cnt(H, 'nextmonth') === 0 && cnt(H, 'bills') === 0 && sheets(H, 'safe') === 0, [cnt(H, 'mymoney'), cnt(H, 'nextmonth'), cnt(H, 'bills'), sheets(H, 'safe')]);
-        ok('one entry path: the Persely tab has one My money row and no split, bills or Next month block', cnt(P, 'mymoney') === 1 && cnt(P, 'nextmonth') === 0 && cnt(P, 'bills') === 0 && sheets(P, 'safe') === 0 && !/data-splitopen/.test(P) && !/Bills and next month/.test(P), [cnt(P, 'mymoney'), cnt(P, 'nextmonth'), cnt(P, 'bills')]);
-        ok('My money page holds Safe to spend, My split, Next month, Must-pay bills and Bills pocket, each once', sheets(mm, 'safe') === 1 && /My split/.test(mm) && cnt(mm, 'nextmonth') === 1 && /Must-pay bills/.test(mm) && /Bills pocket/.test(mm) && cnt(mm, 'bills') === 2, [cnt(mm, 'nextmonth'), cnt(mm, 'bills')]);
-        ok('analyst sheet (on): one button to My money, none to Next month or Must-pay bills', cnt(an, 'mymoney') === 1 && cnt(an, 'nextmonth') === 0 && cnt(an, 'bills') === 0);
-        ok('Persely tab row shows Fun used and Safe to spend from the data', (() => { const v = splitView(), pc = Math.round(splitUse().fun / v.by.fun.amt * 100); return myMoneyRow().replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').includes(`Fun ${pc}% used · Safe to spend ${ft(safeToSpend().safe)}`.replace(/\s+/g, ' ')); })(), myMoneyRow());
+        ok('one entry path: Home has one Spending analysis card and no direct link to Next month, Must-pay bills or Safe to spend', cnt(H, 'mymoney') === 1 && cnt(H, 'nextmonth') === 0 && cnt(H, 'bills') === 0 && sheets(H, 'safe') === 0, [cnt(H, 'mymoney'), cnt(H, 'nextmonth'), cnt(H, 'bills'), sheets(H, 'safe')]);
+        ok('one entry path: the Persely tab has one Spending analysis row and no split, bills or Next month block', cnt(P, 'mymoney') === 1 && cnt(P, 'kiadas') === 0 && cnt(P, 'nextmonth') === 0 && cnt(P, 'bills') === 0 && sheets(P, 'safe') === 0 && !/data-splitopen/.test(P) && !/Bills and next month/.test(P), [cnt(P, 'mymoney'), cnt(P, 'nextmonth'), cnt(P, 'bills')]);
+        ok('Spending analysis page holds Safe to spend, My split, Next month, Must-pay bills and Bills pocket, each once', sheets(mm, 'safe') === 1 && /My split/.test(mm) && cnt(mm, 'nextmonth') === 1 && /Must-pay bills/.test(mm) && /Bills pocket/.test(mm) && cnt(mm, 'bills') === 2, [cnt(mm, 'nextmonth'), cnt(mm, 'bills')]);
+        ok('analyst sheet (on): one button to Spending analysis, none to Next month or Must-pay bills', cnt(an, 'mymoney') === 1 && cnt(an, 'nextmonth') === 0 && cnt(an, 'bills') === 0);
+        ok('Persely tab row shows what is spent of what is planned, from the data', (() => { const v = splitView(), t = analysisRow().replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '); return t.includes('Spending analysis') && t.includes(`${ft(sumVals(catSpend(shownMonth().ym)))} spent of ${ft(v.by.ess.amt + v.by.fun.amt)} planned`.replace(/\s+/g, ' ')) && !/My money/.test(P + mm + an); })(), analysisRow());
         S.analyst.on = false; const Poff = vHub();
-        ok('analyst off: the Persely tab row offers the analyst sheet; Home has no analytics card', sheets(Poff, 'analyst') >= 1 && cnt(Poff, 'mymoney') === 0 && cnt(vFooldal(), 'mymoney') === 0); S.analyst.on = true;
+        ok('analyst off: the Persely tab row (Spending analysis) offers the analyst sheet; Home has no analytics card', sheets(Poff, 'analyst') >= 1 && cnt(Poff, 'mymoney') === 0 && cnt(vFooldal(), 'mymoney') === 0); S.analyst.on = true;
         const late = clone(); late.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; late.onboarded = true; late.tx = late.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); S = late;
         ok('late bill: the Bills first card stays on top of Home and the Persely tab', vFooldal().indexOf('Bills first') > -1 && vFooldal().indexOf('Bills first') < vFooldal().indexOf('Balance') && vHub().indexOf('Bills first') > -1 && vHub().indexOf('Bills first') < vHub().indexOf('Total in Persely'));
       }
+      // Money in panel, Spending analysis, investing (UI plan: persely-home-ui-plan.md)
+      { const keepS = S, plain = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '), forint = g => !g.shared && !isEur(g);
+        S = clone(); S.onboarded = true; S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.billsConfirmed = true; syncSplit(); S.payday.on = true; S.weekly.on = true; S.roundup.on = true; S.ruleGoal = S.goals.find(forint).id; S.roundup.goal = S.ruleGoal;
+        const Pt = vHub(), fg = S.goals.filter(forint);
+        ok('Persely tab: no rule switches, no Money in section header, one small panel, one Spending analysis row', !/data-sw="(payday|weekly|round)"/.test(Pt) && !/<div class="sec"[^>]*><span>Money in<\/span>/.test(Pt) && (Pt.match(/class="card mgauge"/g) || []).length === 1 && (Pt.match(/data-go="mymoney"/g) || []).length === 1 && /<b>Spending analysis<\/b>/.test(Pt));
+        ok('every forint goal page has its own Payday rule, Round-ups and Weekly transfer switches', fg.length > 0 && fg.every(g => { S._detail = g.id; const h = PAGES.goal.html(); return h.includes(`data-gpay="${g.id}"`) && h.includes(`data-grr="${g.id}"`) && h.includes(`data-gwk="${g.id}"`); }), fg.map(g => g.id));
+        const mi = SHEETS.moneyin();
+        ok('Money in sheet: one row for every forint, not shared goal, one payrule row, no switches', fg.every(g => mi.includes(`data-goal="${g.id}"`)) && (mi.match(/data-goal=/g) || []).length === fg.length && (mi.match(/data-sheet="payrule"/g) || []).length === 1 && !/data-sw|data-gpay|data-grr|data-gwk/.test(mi) && !/deadline/i.test(mi));
+        const m = moneyIn();
+        ok('Money in panel: the amount is the sum of what the rules move into every goal, and the panel shows it', m.total === S.goals.reduce((a, g) => a + paceOf(g) - (g.pace || 0), 0) && m.total > 0 && plain(moneyInPanel()).includes(ft(m.total).replace(/\s+/g, ' ')), [m.total, S.goals.map(g => paceOf(g) - (g.pace || 0))]);
+        { const on = moneyInPanel(); ok('Money in panel: the ring is decorative and the three lines are the screen text', /<svg[^>]*aria-hidden="true"/.test(on) && !/aria-label/.test(on) && /Money in each month/.test(on) && /<b class="num">/.test(on)); }
+        S.payday.on = false; S.weekly.on = false; S.roundup.on = false; S.goals.forEach(g => { g.weekly = 0; });
+        const off = plain(moneyInPanel());
+        ok('Money in panel: all rules off reads Nothing yet and asks for a rule on a goal page', off.includes('Nothing yet') && off.includes("Switch on a rule on a goal's page") && moneyIn().total === 0);
+        { const keepG = S.goals; S.goals = []; ok('Money in panel: hidden with no goals', moneyInPanel() === ''); S.goals = keepG; }
+        S.payday.on = true; S.payday.ask = true; S.goals.forEach(g => { g.date = null; });
+        ok('Money in panel: no goal with a date, so no need line; payday asks first is said', (() => { const t = plain(moneyInPanel()); return !/goals need/.test(t) && !/Enough for every goal date/.test(t) && t.includes('Payday rule') && t.includes('payday asks first'); })());
+        S = clone(); S.onboarded = true; S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.billsConfirmed = true; syncSplit();
+        const sp0 = sumVals(catSpend(shownMonth().ym)), core = h => { const x = h.match(/Spent so far<\/small><b class="num">([^<]*)</); return x ? x[1] : ''; };
+        ok('Home "Spent so far" = Spending analysis "Spent so far" = the category total of the month on screen', sp0 > 0 && core(vFooldal()) === ft(sp0) && core(myMoneyHTML()) === ft(sp0) && PAGES.kiadas.html().includes(`<b class="num u-fs-22">${ft(sp0)}</b>`), [sp0, core(vFooldal()), core(myMoneyHTML())]);
+        monthStep(true); const sp1 = sumVals(catSpend(shownMonth().ym));
+        ok('after one simulated month Home and Spending analysis still show the same total, built from parts.cats', sp1 > 0 && S.tx.find(t => t.parts).parts.cats && sumVals(S.tx.find(t => t.parts).parts.cats) === S.tx.find(t => t.parts).parts.ess + S.tx.find(t => t.parts).parts.fun && core(vFooldal()) === ft(sp1) && core(myMoneyHTML()) === ft(sp1), [sp1, core(vFooldal()), core(myMoneyHTML())]);
+        ok('spreadCats adds up exactly to the amount for Everyday essentials and Fun', [36900, 36000, 27000, 28800, 12345].every(a => ['ess', 'fun'].every(b => sumVals(spreadCats(a, b)) === a)));
+        { const pm = planModel(), sv = splitView(); ok('plan groups equal the split, and the category rows of each group add up to the group', pm.groups.every(g => g.plan === sv.by[g.k].amt) && pm.groups.filter(g => g.k === 'ess' || g.k === 'fun').every(g => g.rows.reduce((a, r) => a + r.plan, 0) === g.plan), pm.groups.map(g => [g.k, g.plan, g.rows.reduce((a, r) => a + r.plan, 0)])); }
+        ok('Home Details page has no plan (it lives on Spending analysis only)', !/mp-g/.test(PAGES.kiadas.html()) && /mp-g/.test(myMoneyHTML()));
+        { const before = S.tx.length, bal = JSON.stringify(S.accounts); S.analyst.invest = 0; const dflt = planModel().inv; S._split = {fun:S.analyst.split.fun, rule:S.payday.pct, inv:0}; const room = splitView(S, {fun:S._split.fun, rule:S._split.rule}).by.save.amt;
+          S.analyst.invest = room + 50000; const capped = planModel().inv; S.analyst.invest = 0; S._split = null;
+          ok('investing: starts at 0, never more than Saving, and creates no transaction or balance change', dflt === 0 && capped === room && S.tx.length === before && JSON.stringify(S.accounts) === bal && SHEETS.splitedit().includes('data-splitinv'), [dflt, capped, room]); }
+        S = keepS; }
       S = clone(); S.onboarded = true; S.friendsOptIn = false;
       ok('Friends: hidden until opted in (a link to opt in, no ranking, no toggle); never shown in a fresh state', fresh().friendsOptIn === false && (!keepF || (!/data-frtoggle/.test(vHub()) && /data-frjoin/.test(vHub()) && !/class="fr /.test(vHub()))));
       S.friendsOptIn = true; S.friendsOpen = true; const FH = vHub();
@@ -1390,7 +1487,7 @@ function __checkAnalytics(){
     const r = removeGoal('ps5'), refs = JSON.stringify([S.ruleGoal, S.roundup.goal, S._detail, S._goal, S._out, S.goalRewarded]).includes('ps5');
     ok('delete leaves no orphan reference: the goal, its rules (moved to the next goal) and picks are gone, story, share card, pages and sheets still render', !!r && !goalById('ps5') && !refs && !!goalById(S.ruleGoal) && !!goalById(S.roundup.goal) && S.payday.on && (() => { try{ const t = [storySlides().map(x => x.build ? x.build() : '').join(''), shareCard(), PAGES.goal.html(), PAGES.year.html(), vHub(), SHEETS.payrule(), SHEETS.roundrule(), SHEETS.weeklyrule(), SHEETS.hubsave(), SHEETS.hubout()].join(''); return !/ps5|NaN/.test(t); }catch(e){ return String(e); } })() === true, [S.ruleGoal, S.roundup.goal]);
     S.goals.slice().forEach(g => { if(!goalEmpty(g)) withdrawFrom(g, gSaved(g)); removeGoal(g.id); });
-    ok('delete every goal (also Summer holiday and its Persely account): rules off, tab, Home, story, share card and sheets render without errors', S.goals.length === 0 && !S.payday.on && !S.weekly.on && !S.roundup.on && !acc('persely') && (() => { try{ const t = [vHub(), vFooldal(), storySlides().map(x => x.build ? x.build() : '').join(''), shareCard(), SHEETS.newgoal(), SHEETS.payrule(), SHEETS.weeklyrule(), SHEETS.roundrule()].join(''); return typeof t === 'string'; }catch(e){ return String(e); } })() === true);
+    ok('delete every goal (also Summer holiday and its Persely account): rules off, tab, Home, story, share card and sheets render without errors', S.goals.length === 0 && !S.payday.on && !S.weekly.on && !S.roundup.on && !acc('persely') && (() => { try{ const t = [vHub(), vFooldal(), storySlides().map(x => x.build ? x.build() : '').join(''), shareCard(), SHEETS.newgoal(), SHEETS.payrule(), SHEETS.weeklyrule(), SHEETS.roundrule(), SHEETS.moneyin(), myMoneyHTML(), PAGES.kiadas.html()].join(''); return typeof t === 'string'; }catch(e){ return String(e); } })() === true);
   } finally { S = sv3; } }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   const bad = out.filter(r => !r.pass);
@@ -1470,15 +1567,14 @@ if(!S.billsPocket) S.billsPocket = {on:false, bal:0};
 if(!S.demoDay) S.demoDay = 14;
 if(!S.bills || !S.bills.length){ try{ refreshBills(S); }catch(e){ S.bills = []; } }
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
-const CATS = [['food','Food',38200],['cart','Shopping',21400],['bus','Transport',9500],['fun','Fun',14300],['edu','Education',6000]];
 const acc = id => S.accounts.find(a=>a.id===id);
 
 /* ================= tab screens ================= */
-/* UX change 5 + 12 (plan: ux-change-plan-persely.md). true: the Persely tab is about saving, the analytics live on one "My money" page (one Home card, one Persely row), and Friends is opt-in.
+/* UX change 5 + 12 (plan: ux-change-plan-persely.md). true: the Persely tab is about saving, the analytics live on one "Spending analysis" page (one Home card, one Persely row), and Friends is opt-in.
    false: the old layout (My split, Bills and next month and Friends in the tab, Next month and Must-pay bills linked from Home). Kept until the run-through. */
 const NEW_PERSELY_IA = true;
 function vFooldal(){
-  const spent = CATS.reduce((a,c)=>a+c[2],0), avg = 102400, max = Math.max(...CATS.map(c=>c[2]));
+  const mo = shownMonth(), sp = catSpend(mo.ym), spent = sumVals(sp), avg = avgSpend() || spent;
   // gauge: 270° arc, gap at the bottom
   const R=104, C=2*Math.PI*R, arc=C*.75, p=Math.min(1,spent/ (avg*1.15));
   return `
@@ -1495,7 +1591,7 @@ function vFooldal(){
     : `<b style="display:flex;align-items:center;gap:4px">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Safe this week' : 'Ends Sunday. Any amount keeps it going'}</small>`}</span>${I('chev',20)}</button>
   ${insightCard()}
   <div class="sec"><span>My monthly spending</span><a data-go="kiadas">Details ${I('chev',16)}</a></div>
-  <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">1 November – 30 November</div>
+  <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${mo.label}</div>
   <div class="gauge">
     <svg viewBox="0 0 250 250" style="transform:rotate(135deg)">
       <circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>
@@ -1507,7 +1603,7 @@ function vFooldal(){
   ${S.analyst.on && !NEW_PERSELY_IA ? `<div class="lrow"><button class="link lnk44" data-go="nextmonth">Next month ${I('chev',16)}</button><button class="link lnk44" data-go="bills">Must-pay bills ${I('chev',16)}</button></div>` : ''}
   ${S.analyst.on && S.analyst.accepted ? '' : `<button class="link lnk44" data-sheet="analyst" style="margin:0 0 0 10px">See how it fits your income ${I('chev',16)}</button>`}
   <div class="sec"><span>What did I spend on this month?</span></div>
-  <div class="cats">${CATS.map((c,i)=>`<div class="cat ${i===0?'on':''}"><span class="ic">${I(c[0],26)}</span><span class="cl">${c[1]}</span><span class="col"><i style="height:${c[2]/max*100}%"></i></span><span class="num">${ft(c[2])}</span></div>`).join('')}</div>
+  ${catBars(sp)}
   <div class="sec"><span>For you</span><a data-go="neked">All ${I('chev',16)}</a></div>
   ${nekedCards(true)}`;
 }
@@ -1814,7 +1910,7 @@ function healGoalAccounts(){ if(S.goals.some(g => g.id === 'holiday') && !acc('p
    S.hints remembers which were shown (reset in fresh()). Nothing shows before onboarding is done. */
 const HINTS = [['total','Your savings','3.0% a year with your Junior account. Add or withdraw any time, no fees.'],
   ['goals','Your goals','Each goal shows the month you get there.'],
-  ['auto','Money in','Payday rule, weekly transfer and round-ups. Change them here.'],
+  ['auto','Money in each month','What moves in by itself. Change it on each goal.'],
   ['week','Your habits','Save any amount once a week to keep your streak going. Automatic savings count too.']];
 let HINT_NOW = null;
 function pickHint(force){ if(HINT_NOW && !S.hints[HINT_NOW]) return; const h = (S.onboarded || force) ? HINTS.find(x => !S.hints[x[0]]) : null; HINT_NOW = h ? h[0] : null; }
@@ -1902,7 +1998,7 @@ function splitCard(){
       <div class="k" style="font-size:0.78125rem">${hold ? `<b style="color:var(--orange-t)">Bills first: ${ft(bf.lateTotal)} late</b> · ${p}% used` : k === 'must' ? `${p}% paid · locked bills` : k === 'save' ? `${p}% moved to Persely · ${saveNote(v)}` : k === 'ess' ? `${p}% used · what is left after the other three` : `${p}% used${k === 'fun' ? dl : ''}`}${over ? ' · over your split' : ''}</div></div>`; }).join('');
   return `${head}<div class="card" style="padding:6px 16px 14px"><div class="fine" style="padding:8px 0 0"><b>${v.base}</b></div>${rows}
     ${NEW_PERSELY_IA ? '' : `<button class="li-safe" data-sheet="safe"><span>Safe to spend now</span><b class="num">${ft(safeToSpend().safe)}</b>${I('chev',16)}</button>`}
-    <div class="fine" style="border-top:1px solid var(--line);padding-top:10px">${S.payday.on ? 'Your saving rules move the Saving amount to Persely.' : 'Your payday rule is off, so Saving does not move by itself. Turn it on in Money in.'} Saving is the payday rule plus any weekly transfer and round-ups. Everyday essentials is what is left of your income.</div></div>`;
+    <div class="fine" style="border-top:1px solid var(--line);padding-top:10px">${S.payday.on ? 'Your saving rules move the Saving amount to Persely.' : 'Your payday rule is off, so Saving does not move by itself. Turn it on in a goal\'s Money in.'} Saving is the payday rule plus any weekly transfer and round-ups. Everyday essentials is what is left of your income.</div></div>`;
 }
 /* ---------- bills: screens, alerts and the Bills pocket (section 14, steps 6-9 and 12) ----------
    Everything here needs the analyst on. It tells, it never blocks: no card is declined and no money moves without a tap.
@@ -1971,7 +2067,7 @@ function billsLine(){
   const bf = bfNow();
   return bf.on ? `<span style="color:var(--orange-t);font-weight:600">${plural(bf.late.length, 'bill')} late: ${ft(bf.lateTotal)}</span>` : bf.soon.length ? `Coming up: ${comingUp(bf)}` : bf.count ? `${plural(bf.count, 'bill')} still to pay: ${ft(bf.total)}` : 'Must-pay bills are paid';
 }
-// Home (analyst on): the one card that opens My money. New layout: Safe to spend and the state of the bills. Old layout: Safe to spend opens its sheet.
+// Home (analyst on): the one card that opens Spending analysis. New layout: Safe to spend and the state of the bills. Old layout: Safe to spend opens its sheet.
 function safeRow(){
   if(!S.analyst.on) return '';
   const s = safeToSpend();
@@ -1991,23 +2087,31 @@ function billsBlock(){
     ${row('wallet', 'Bills pocket', S.billsPocket.on && S.billsPocket.bal > 0 ? `${ft(S.billsPocket.bal)} set aside · no goal, no interest` : 'Set the bill money aside on payday', 'bills')}
   </div>`;
 }
-// Persely tab: the one row to My money (analyst on), or an offer to turn the analyst on (off)
-function myMoneyRow(){
+// Persely tab: the one row to Spending analysis (analyst on), or an offer to turn the analyst on (off)
+function analysisRow(){
   if(!NEW_PERSELY_IA) return '';
-  const chev = `<span class="chev">${I('chev', 20)}</span>`;
-  if(!S.analyst.on) return `<button class="row" data-sheet="analyst"><span class="ic">${I('chart')}</span><span class="t"><b>My money</b><small>Optional: your split, bills and next month</small></span>${chev}</button>`;
+  const chev = `<span class="chev">${I('chev', 20)}</span>`, row = (go, sub) => `<button class="row" ${go}><span class="ic">${I('chart')}</span><span class="t"><b>Spending analysis</b><small>${sub}</small></span>${chev}</button>`;
+  if(!S.analyst.on) return row('data-sheet="analyst"', 'Optional: see where your money goes');
   const sf = safeToSpend(), bf = bfNow();
-  if(!S.analyst.accepted) return `<button class="row" data-go="mymoney"><span class="ic">${I('chart')}</span><span class="t"><b>My money</b><small>Split suggested · Safe to spend ${ft(sf.safe)}</small></span>${chev}</button>`;
-  const v = splitView(), used = splitUse().fun, pc = v.by.fun.amt ? Math.round(used / v.by.fun.amt * 100) : 0;
-  return `<button class="row" data-go="mymoney"><span class="ic">${I('chart')}</span><span class="t"><b>My split</b><small>${bf.on ? 'Fun on hold' : `Fun ${pc}% used`} · Safe to spend ${ft(sf.safe)}</small></span>${chev}</button>`;
+  if(!S.analyst.accepted) return row('data-go="mymoney"', `Split suggested · Safe to spend ${ft(sf.safe)}`);
+  if(bf.on) return row('data-go="mymoney"', `Fun on hold · Safe to spend ${ft(sf.safe)}`);
+  const v = splitView(), spent = sumVals(catSpend(shownMonth().ym)), plan = v.by.ess.amt + v.by.fun.amt;
+  return row('data-go="mymoney"', `${ft(spent)} spent of ${ft(plan)} planned`);
 }
-// the My money page: Safe to spend, My split, then Next month, Must-pay bills and Bills pocket
+// the Spending analysis page: the circle and categories for the month, the plan and tips, then Safe to spend, My split, Next month, Must-pay bills and Bills pocket
 function myMoneyHTML(){
-  if(!S.analyst.on) return needAnalyst('My money');
-  const s = safeToSpend();
-  return `<button class="safebtn" data-sheet="safe" style="margin-top:8px"><span class="t"><b>Safe to spend</b><small>${s.pocket ? `After bills, your saving rule and groceries. Bills pocket ${ft(s.pocket)} is apart` : 'After bills, your saving rule and groceries'}</small></span><b class="num" style="color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</b><span class="chev">${I('chev', 18)}</span></button>
+  if(!S.analyst.on) return needAnalyst('Spending analysis');
+  const s = safeToSpend(), mo = shownMonth(), sp = catSpend(mo.ym), m = S.analyst.accepted ? planModel() : null;
+  return `<div class="sec"><span>Spent in ${mo.name}</span></div>
+  <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${mo.label}</div>
+  ${analysisGauge(m)}
+  <div class="sec"><span>What did I spend on this month?</span></div>
+  ${catBars(sp)}
+  ${m ? planHTML(m) + planTipsHTML(m) : `<div class="card"><b class="u-bk-m14">Plan your month</b><div class="fine u-mt4-b12">See how your money splits into bills, everyday essentials, fun and saving, with progress for each category and tips. It is optional.</div><button class="btn" data-sheet="analyst">See the suggested split</button></div>`}
+  <button class="safebtn" data-sheet="safe" style="margin-top:8px"><span class="t"><b>Safe to spend</b><small>${s.pocket ? `After bills, your saving rule and groceries. Bills pocket ${ft(s.pocket)} is apart` : 'After bills, your saving rule and groceries'}</small></span><b class="num" style="color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</b><span class="chev">${I('chev', 18)}</span></button>
   ${splitCard()}
-  ${billsBlock()}`;
+  ${billsBlock()}
+  ${recentCards()}`;
 }
 // the same screen text for pages that need the analyst
 const needAnalyst = what => `<div class="card" style="padding:16px;margin-top:8px"><b class="u-fs-m">${what} needs the financial analyst</b><div class="fine u-mt4-b12">It is optional and off right now. Turn it on to see your bills and next month.</div><button class="btn" data-sheet="analyst">See what it measures</button></div>`;
@@ -2087,6 +2191,111 @@ const SHEETS_BILLS = {
     ${ty === 'cash' || ty === 'topup' ? `<div class="fine u-note-b12">${ty === 'cash' ? 'Cash is unknown: the app cannot see what you buy with it.' : 'Money moved to another app is unknown, so it is shown apart.'}</div>` : ''}
     ${canCat ? `<button class="btn" data-txcat2>Change category</button>` : ''}<button class="btn ghost" data-closesheet>Close</button>`; }
 };
+/* ---------- the monthly plan on the Monthly spending page (Kriszti's idea): one page with the split by category, progress, score and tips ----------
+   Built on the analyst's split, so every screen shows the same numbers: Must-pay, Everyday essentials, Fun and Saving come from splitView();
+   inside Everyday essentials and Fun, each category gets the share it had in the August-October history. Investing is the part of Saving
+   the student plans to invest (S.analyst.invest, set in the split editor); the rest is Persely. A plan, not a limit: nothing is blocked. */
+const tint = (hex, k) => { const n = parseInt(hex.slice(1), 16), m = c => Math.round(c + (255 - c) * k); return `rgb(${m(n >> 16)},${m((n >> 8) & 255)},${m(n & 255)})`; };
+function planModel(){
+  syncSplit();
+  const v = splitView(), mo = shownMonth(), sp = catSpend(mo.ym), use = splitUse(), inv = Math.min(S.analyst.invest || 0, v.by.save.amt);
+  const cats = b => { const pl = spreadCats(v.by[b].amt, b), keys = [...new Set([...Object.keys(pl), ...Object.keys(sp).filter(c => (CATEGORY[c] && CATEGORY[c][1] === b) || c === 'mix_' + b)])];
+    return keys.map((c, i) => ({c, name:SPEND_SHORT[c] || CATEGORY[c][0], plan:pl[c] || 0, spent:sp[c] || 0, col:tint(BKT_COL[b], Math.min(.6, i * .14))})).sort((x, y) => y.plan - x.plan); };
+  const groups = [
+    {k:'must', name:'Must-pay bills', plan:v.by.must.amt, spent:mustPaid(), rows:[], note:'paid'},
+    {k:'ess', name:'Everyday essentials', plan:v.by.ess.amt, spent:0, rows:cats('ess'), note:'spent'},
+    {k:'fun', name:'Fun', plan:v.by.fun.amt, spent:0, rows:cats('fun'), note:'spent'},
+    {k:'save', name:'Saving', plan:v.by.save.amt, spent:use.save, note:'saved', rows:[{c:'persely', name:'Persely', plan:v.by.save.amt - inv, spent:use.save, col:BKT_COL.save}].concat(inv ? [{c:'invest', name:'Investing', plan:inv, spent:null, col:'#7A6FD8'}] : [])}
+  ];
+  groups.forEach(g => { if(g.k === 'ess' || g.k === 'fun') g.spent = g.rows.reduce((a, r) => a + r.spent, 0); });
+  return {v, mo, groups, inv};
+}
+function planTips(m){
+  const tips = [], pace = m.mo.today / m.mo.last, rows = m.groups.filter(g => g.k === 'ess' || g.k === 'fun').flatMap(g => g.rows).filter(r => r.plan > 0);
+  const over = rows.filter(r => r.spent > r.plan).sort((a, b) => (b.spent - b.plan) - (a.spent - a.plan))[0];
+  if(over) tips.push(`${over.name} is ${ft(over.spent - over.plan)} over its share this month. Going easy there for ${plural(m.mo.left, 'day')} keeps the rest of the plan on track.`);
+  const fast = rows.filter(r => r.spent <= r.plan && r.spent / r.plan > pace + .25 && r.spent / r.plan >= .6).sort((a, b) => b.spent / b.plan - a.spent / a.plan)[0];
+  if(fast) tips.push(`${fast.name} is at ${Math.round(fast.spent / fast.plan * 100)}% with ${plural(m.mo.left, 'day')} left: ${ft(fast.plan - fast.spent)} of its share remains.`);
+  const t = tipOf();
+  if(t && t.kind === 'tip') tips.push(`Move 10% of ${t.label} (${ft(t.ten)}) to ${esc(t.g.name)} each month${t.wk >= 1 ? ` and get there ${plural(t.wk, 'week')} sooner` : ''}.`);
+  else if(t && t.kind === 'bill') tips.push(`A must-pay bill is late (${ft(t.total)}). Pay it first: bills come before saving.`);
+  else if(t && t.kind === 'short') tips.push(`More went out than came in this month (${ft(t.over)}). Saving tips wait until that is fixed.`);
+  if(!tips.length) tips.push('Everything is within your plan so far.');
+  return tips.slice(0, 3);
+}
+// the plan card on Spending analysis: the four groups with their categories. The circle above it replaces the old donut, and the score stays in Your habits
+function planHTML(m){
+  const mo = m.mo;
+  const bar = (spent, plan, col, k) => { const p = plan ? Math.min(100, spent / plan * 100) : 0, over = k !== 'save' && spent > plan; return `<div class="mp-bar" aria-hidden="true"><i style="width:${p}%;background:${over ? 'var(--orange)' : col}"></i></div>`; };
+  const grp = g => `<div class="mp-g"><b><span class="dotc" style="background:${BKT_COL[g.k]}"></span>${g.k === 'must' ? I('lock', 14) : ''}${g.name}</b><span class="num">${ft(g.spent)} ${g.note} of ${ft(g.plan)}</span></div>
+    ${g.rows.length ? g.rows.map(r => `<div class="mp-r"><span style="display:flex;align-items:center;gap:7px"><span class="dotc" style="background:${r.col};width:9px;height:9px"></span>${r.name}</span><span class="num">${r.spent === null ? `${ft(r.plan)} <small>planned, not tracked here</small>` : `${ft(r.spent)} <small>of ${ft(r.plan)}</small>`}</span></div>${r.spent === null ? '' : bar(r.spent, r.plan, r.col, g.k)}`).join('') : bar(g.spent, g.plan, BKT_COL[g.k], g.k)}`;
+  const v = curView(), few = v.rough || v.n < 3;
+  return `<div class="sec"><span>My plan for ${mo.name}</span><a class="lnk44" data-plangear>Edit ${I('chev',16)}</a></div>
+  <div class="card mp-card" style="padding:16px">
+    ${m.groups.map(grp).join('')}
+    ${few ? `<div class="fine" style="margin:12px 0 0">${v.label}</div>` : ''}
+    <div class="fine" style="margin:14px 0 0"><b>A plan, not a limit.</b> Nothing is blocked and no money moves between categories. It is a reminder to help you manage your month.</div>
+  </div>`;
+}
+// Persi's tips for the month (only when there is something to say)
+function planTipsHTML(m){
+  const tips = planTips(m);
+  if(tips.length === 1 && /^Everything is within/.test(tips[0]) && !sumVals(catSpend(m.mo.ym))) return '';
+  return `<div class="sec"><span>Persi's tips for ${m.mo.name}</span></div>
+  <div class="card lst">${tips.map(t => `<div class="li"><span class="t" style="line-height:1.45;font-size:0.875rem">${t}</span></div>`).join('')}</div>`;
+}
+// the Spending analysis circle, drawn like the Home gauge (270 degrees, round caps, grey track, soft core).
+// With a plan: Everyday essentials spent, then Fun spent, over what the plan has for both. Without one: spent so far against the usual month, as Home.
+function analysisGauge(m){
+  const mo = shownMonth(), spent = sumVals(catSpend(mo.ym)), R = 104, C = 2 * Math.PI * R, arc = C * .75;
+  const ring = (len, col) => len > 0 ? `<circle cx="125" cy="125" r="${R}" fill="none" stroke="${col}" stroke-width="16" stroke-linecap="round" stroke-dasharray="${len} ${C}"/>` : '';
+  let fill, line, over = false;
+  if(m){
+    const P = m.groups[1].plan + m.groups[2].plan, e = m.groups[1].spent, f = m.groups[2].spent, pe = P ? Math.min(1, e / P) : 0, pf = P ? Math.min(1 - pe, f / P) : 0;
+    fill = ring(arc * (pe + pf), BKT_COL.fun) + ring(arc * pe, BKT_COL.ess);
+    over = e + f > P;
+    line = over ? `<span class="num">${ft(e + f - P)}</span> over the plan · ${plural(mo.left, 'day')} left` : `Planned for everyday and fun: <span class="num">${ft(P)}</span> · ${plural(mo.left, 'day')} left`;
+  } else {
+    const avg = avgSpend() || spent;
+    fill = ring(arc * Math.min(1, spent / (avg * 1.15)), '#52AE30');
+    line = `Average monthly spending: <span class="num">${ft(avg)}</span>`;
+  }
+  return `<div class="gauge">
+    <svg viewBox="0 0 250 250" style="transform:rotate(135deg)" aria-hidden="true">
+      <circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>${fill}
+    </svg>
+    <div class="core"><small>Spent so far</small><b class="num">${ft(spent)}</b></div>
+  </div>
+  <div class="avg"${over ? ' style="color:var(--orange-t)"' : ''}><span style="text-align:center">${line}</span></div>`;
+}
+/* ---------- Money in each month: the one summary of what your rules move into Persely, under the balance ----------
+   Read only. Every switch lives on its goal's page. Shared and euro goals have no rules. Same numbers as paceOf() without the planned extra deposits (g.pace). */
+function moneyIn(){
+  const gs = S.goals.filter(g => !g.shared && !isEur(g)); let pay = 0, wk = 0, rnd = 0;
+  const rows = gs.map(g => {
+    const own = S.ruleGoal === g.id, p = own && S.payday.on ? incomeShare(S.payday.pct) : 0, w = (own && S.weekly.on ? Math.round(S.weekly.amt * 52 / 12) : 0) + (g.weekly ? Math.round(g.weekly * 52 / 12) : 0), r = S.roundup.on && S.roundup.goal === g.id ? ROUND_EST : 0;
+    pay += p; wk += w; rnd += r; return {g, pay:p, wk:w, rnd:r, total:p + w + r};
+  });
+  const dated = gs.filter(g => g.date && toGo(g) > 0 && daysTo(g) > 0), need = dated.reduce((a, g) => a + Math.ceil(toGo(g) / Math.max(1, Math.round(daysTo(g) / 30.4))), 0);   // a goal whose date is today or past is left out: no monthly amount can catch it up
+  return {pay, wk, rnd, total:pay + wk + rnd, need, dated:dated.length, ask:!!(S.payday.on && S.payday.ask), rows};
+}
+function moneyInPanel(){
+  if(!S.goals.length) return '';
+  const m = moneyIn(), R = 104, C = 2 * Math.PI * R, arc = C * .75, p = m.need ? Math.min(1, m.total / m.need) : (m.total ? 1 : 0);
+  const nm = [m.pay ? 'Payday rule' : '', m.wk ? 'Weekly transfer' : '', m.rnd ? 'Round-ups' : ''].filter(Boolean).map((n, i) => i ? n.toLowerCase() : n), names = nm.length > 1 ? nm.slice(0, -1).join(', ') + ' and ' + nm[nm.length - 1] : nm[0] || '';
+  const l3 = !m.total ? "Switch on a rule on a goal's page" : (m.dated ? (m.total >= m.need ? 'Enough for every goal date' : `Your goals need about ${ft(m.need)}`) : names) + (m.ask ? ' · payday asks first' : '');
+  return `${hintHTML('auto')}<button class="card mgauge" data-sheet="moneyin" data-tour="auto">
+    <span class="mg-ring"><svg viewBox="0 0 250 250" style="transform:rotate(135deg)" aria-hidden="true"><circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="24" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>${p > 0 ? `<circle cx="125" cy="125" r="${R}" fill="none" stroke="#52AE30" stroke-width="24" stroke-linecap="round" stroke-dasharray="${arc * p} ${C}"/>` : ''}</svg></span>
+    <span class="t"><small>Money in each month</small><b class="num">${m.total ? ft(m.total) : 'Nothing yet'}</b><small>${l3}</small></span>
+    <span class="chev">${I('chev', 20)}</span></button>`;
+}
+// the latest card payments of the month on screen
+function recentCards(n = 3){
+  const ym = shownMonth().ym, rows = S.tx.filter(t => txWhen(t).ym === ym && (t.parts || txType(t) === 'card' || txType(t) === 'refund')).slice(0, n);
+  if(!rows.length) return '';
+  return `<div class="sec"><span>Latest card payments</span><a data-tab="tranzakciok">All ${I('chev',16)}</a></div><div class="card lst">${rows.map(t => { const c = t.parts ? null : classify(t);
+    return `<div class="tx"><span class="ic">${I(t.ic)}</span><span class="t"><b>${esc(t.n)}</b><span>${t.d === 'Today' ? 'Today' : esc(t.d || '')}</span>${c ? `<em>${I(SPEND_IC[c] || 'tag',15)} ${SPEND_SHORT[c] || CATEGORY[c][0]}</em>` : ''}</span><span class="a num">${sft(t.a)}</span></div>`; }).join('')}</div>`;
+}
 /* ---------- financial health score (0-100), shown only when the analyst is on ----------
    Four indicators, 25 points each, over the last 3 finished months (S.scoreHist). Rewards trigger on improvement
    or on staying within the split, never on balance size. Neither the score nor the streak changes the rate. */
@@ -2109,8 +2318,6 @@ function vHub(){
   const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
   const weeks = Array.from({length:8}, (_,i) => S.week - 7 + i);
   const chev = `<span class="chev">${I('chev',20)}</span>`;
-  const rg = ruleGoal(), rgr = goalById(S.roundup.goal) || rg;
-  const li = (ic, title, sub, sheetKey, swKey, on) => `<div class="li sw"><button class="li-main" data-sheet="${sheetKey}"><span class="ic">${I(ic)}</span><span class="t"><b>${title}</b><small>${sub}</small></span></button>${swBtn(on, `data-sw="${swKey}"`, title)}</div>`;
   const junior = `<button class="row" data-go="grad"><span class="t24d"><b class="num">${S.juniorDays}</b><small>days</small></span><span class="t"><b class="u-bk-title">${S.bridge ? '3.0% for 12 more months' : 'Junior ends soon'}</b><small>${S.bridge ? 'While your salary comes to OTP' : 'Keep 3.0% for 12 more months'}</small></span>${chev}</button>`;
   const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
   return `<div class="tabtitle">Persely</div>
@@ -2127,6 +2334,8 @@ function vHub(){
     ${st ? `<div class="fine" style="margin-top:8px">${S.bridge ? 'Graduate: 3.0% for 12 months while your salary comes to OTP' : 'Included in your Junior package. Nothing to sign up for'}</div>` : ''}
   </div>
 
+  ${moneyInPanel()}
+
   ${S.onboarded ? '' : `<button class="setup" data-onbstart><span class="u-ico-g">${I('star',24)}</span><span class="u-fx1"><b>Set a goal and a saving rule</b><small>Takes 1 minute</small></span><span class="u-ico-g">${I('chev',20)}</span></button>`}
 
   ${hintHTML('goals')}<div class="sec" data-tour="goals"><span>Goals</span><a data-sheet="newgoal">New ${I('plus',16)}</a></div>
@@ -2137,14 +2346,7 @@ function vHub(){
     return `<div class="gwrap ${fx || bf ? 'fx' : ''}"><button class="card goal" ${attr}><div class="u-rowc"><span class="gic">${I(g.shared ? 'user' : isEur(g) ? 'euro' : g.ic,22)}</span><span class="u-fx0"><b class="u-bk-m">${esc(g.name)}</b><span class="num u-k-sm">${sub}</span></span>${right}</div><div class="prog" style="margin:10px 0 0"><i style="width:${pc.w}%"></i></div></button>${fx ? `<button class="gfix" data-latefix="${g.id}">${fixLabel(fx)}</button>` : bf ? `<button class="gfix" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}</div>`; }).join('')}
   ${S.goals.length ? '' : `<div class="card"><b class="u-bk-m">No goals yet</b><div class="k" style="margin:4px 0 12px">Set a goal and Persely shows you the month you get there.</div><button class="btn" data-sheet="newgoal">Set a goal</button></div>`}
 
-  ${hintHTML('auto')}<div class="sec" data-tour="auto"><span>Money in</span></div>
-  <div class="card lst">
-    ${li('money', 'Payday rule', S.payday.on ? `${S.payday.pct}% of each salary → ${esc(rg.name)} · ${S.payday.ask ? 'asks first' : 'automatic'}` : 'Move a share of each salary or scholarship', 'payrule', 'payday', S.payday.on)}
-    ${li('sched', 'Weekly transfer', S.weekly.on ? `${ft(S.weekly.amt)} every Monday → ${esc(rg.name)}` : 'A fixed amount every Monday', 'weeklyrule', 'weekly', S.weekly.on)}
-    ${li('limit', 'Round-ups', S.roundup.on ? `Next 100 Ft, ×2 → ${esc(rgr.name)} · about ${ft(ROUND_EST)} a month` : 'Save the change from card payments', 'roundrule', 'round', S.roundup.on)}
-  </div>
-
-  ${NEW_PERSELY_IA ? myMoneyRow() : splitCard() + billsBlock()}
+  ${NEW_PERSELY_IA ? analysisRow() : splitCard() + billsBlock()}
 
   ${hintHTML('week')}<div class="sec"><span>Your habits</span></div>
   <div class="card hab" data-tour="week" style="${!S.savedWeek && S.streak ? 'box-shadow:inset 0 0 0 1.5px #FFB27A,var(--sh)' : ''}">
@@ -2194,7 +2396,7 @@ function monthStep(quiet){
   if(S.weekly.on){ const v = S.weekly.amt * 4; depositTo(g, v, 'junior', 'Weekly transfers (4)'); moved += v; }
   S.goals.filter(x => x.weekly).forEach(x => { depositTo(x, x.weekly * 4, 'junior', 'Weekly transfers (4)'); moved += x.weekly * 4; });
   { const vi = S.months % 12, ev = ESS_VAR[vi], fv = FUN_VAR[vi], card = MONTH_CARD + ev + fv;   // months differ a little, so the fast-forward and the year look real (month 1 is the reference month)
-    acc('junior').v -= card; S.tx.unshift({...stamp(), d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-card, ic:'cart', parts:{ess:36900 + ev, fun:27000 + fv}}); }
+    acc('junior').v -= card; S.tx.unshift({...stamp(), d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-card, ic:'cart', parts:{ess:36900 + ev, fun:27000 + fv, cats:{...spreadCats(36900 + ev, 'ess'), ...spreadCats(27000 + fv, 'fun')}}}); }
   if(S.roundup.on){ depositTo(goalById(S.roundup.goal) || g, MONTH_ROUND, 'junior', `Round-ups (${MONTH_TX} payments)`); S.roundCount += MONTH_TX; S.roundSum += MONTH_ROUND; moved += MONTH_ROUND; }
   // interest after tax, credited to each forint Persely by its share
   const base = total(), net = Math.round(Math.min(base, CAP) * rate() / 100 / 12 * (1 - TAX));
@@ -2394,14 +2596,13 @@ const PAGES = {
       <div class="row"><span class="ic">${I('money')}</span><span class="t">Incoming transfers</span><span class="tg on"></span></div>
       <div class="row"><span class="ic">${I('piggy')}</span><span class="t">Persely weekly reminder<small class="g">Sunday 18:00, only if the week is still open</small></span><span class="tg ${S.remind?'on':''}"></span></div>`;}},
   challenges:{title:'Weekly challenges', html:()=>`<div class="card" style="padding:4px 16px 10px;margin-top:6px"><ul class="bul sm"><li>New challenges every Monday, the week ends on Sunday</li><li>Progress is checked automatically from your card payments</li><li>Join as many as you like</li></ul></div>${CH_DEFS.map(chCard).join('')}`},
-  kiadas:{title:'Monthly spending', right:`<span class="u-df">${I('gear',22)}</span>`, html:()=>{
-    const spent=CATS.reduce((a,c)=>a+c[2],0), max=Math.max(...CATS.map(c=>c[2]));
-    return `<div style="margin:18px auto 24px;width:230px;padding:18px;border-radius:40px;text-align:center;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff"><b class="num u-fs-22">${ft(spent)}</b><div style="color:var(--act-d);font-size:var(--fs-s)">November</div></div>
-    <div class="cats">${CATS.map((c,i)=>`<div class="cat ${i===0?'on':''}"><span class="ic">${I(c[0],26)}</span><span style="font-size:var(--fs-xs);color:${i===0?'var(--green-t)':'var(--muted-t)'}">${c[1]}</span><span class="col"><i style="height:${c[2]/max*100}%"></i></span><span class="num">${ft(c[2])}</span></div>`).join('')}</div>
-    <div class="sec"><span>Food – Saturday, 8 November</span></div>
-    <div class="tx"><span class="ic">${I('food')}</span><span class="t"><b>WOLT HUNGARY</b><span>Card payment</span><em>${I('food',15)} Food</em></span><span class="a num">${sft(-4690)}</span></div>
+  kiadas:{title:'Monthly spending', right:`<button data-plangear aria-label="Edit my monthly plan" style="display:flex;color:inherit">${I('gear',22)}</button>`, html:()=>{
+    const mo = shownMonth(), sp = catSpend(mo.ym);
+    return `<div style="margin:18px auto 24px;width:230px;padding:18px;border-radius:40px;text-align:center;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff"><b class="num u-fs-22">${ft(sumVals(sp))}</b><div style="color:var(--act-d);font-size:var(--fs-s)">${mo.name}${mo.year !== 2026 ? ' ' + mo.year : ''} · card spending</div></div>
+    ${catBars(sp)}
+    ${recentCards()}
     ${S.analyst.on && S.analyst.accepted ? '' : `<div class="card"><b class="u-bk-m14">How does this fit your income?</b><div class="fine u-mt4-b12">The analyst shows how your ${ft(S.income.amount)} splits into Essentials, Fun and Saving.</div><button class="btn" data-sheet="analyst">See the suggested split</button></div>`}`;}},
-  mymoney:{title:'My money', html:() => myMoneyHTML()},
+  mymoney:{title:'Spending analysis', html:() => myMoneyHTML()},
   nextmonth:{title:'Next month', html:() => nextMonthHTML()},
   bills:{title:'Must-pay bills', html:() => billsHTML()}
 };
@@ -2577,7 +2778,14 @@ const SHEETS = {
     <h2 style="text-align:left;margin:16px 0 10px;font-size:1.125rem;line-height:1.35">Move ${S.payday.pct}% (${ft(share)}) to ${esc(g.name)}?</h2>
     <div class="card" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-s)"><span class="k">${esc(g.name)}</span><b class="num">${ft(s)} → ${ft(s+share)}</b></div><div class="prog" style="margin:8px 0 0"><i style="width:${Math.min(100,Math.round((s+share)/t*100))}%"></i></div></div>
     <button class="btn" data-paymove>Move ${ft(share)}</button><button class="btn ghost" data-closesheet>Not this time</button>
-    <div class="fine" style="text-align:center;margin-top:4px">Your payday rule: ${S.payday.pct}% of every salary. Change it in Persely → Money in.</div>`; },
+    <div class="fine" style="text-align:center;margin-top:4px">Your payday rule: ${S.payday.pct}% of every salary. Change it on your goal's page.</div>`; },
+  moneyin:()=>{ const m = moneyIn(), p = S.payday;
+    const sub = r => { const bits = [r.pay ? `Payday rule ${ft(r.pay)}` : '', r.wk ? `Weekly transfer ${ft(r.wk)}` : '', r.rnd ? `Round-ups ${ft(r.rnd)}` : ''].filter(Boolean); return bits.length ? bits.join(' · ') : 'No rules yet'; };
+    return `<h2>Money in each month</h2>
+    <div class="card lst">${m.rows.map(r => `<button class="li" data-goal="${r.g.id}"><span class="t"><b>${esc(r.g.name)}</b><small>${sub(r)}</small></span><b class="num">${ft(r.total)}</b><span class="chev">${I('chev', 18)}</span></button>`).join('')}
+      <button class="li" data-sheet="payrule"><span class="t"><b>Payday rule settings</b><small>${p.on ? `${p.pct}% of each salary · ${p.ask ? 'asks first' : 'automatic'}` : 'Off'}</small></span><span class="chev">${I('chev', 18)}</span></button></div>
+    <div class="fine" style="text-align:center;margin:6px 0 12px">Each goal has its own rules. Open a goal to change them.</div>
+    <button class="btn ghost" data-closesheet>Close</button>`; },
   payrule:()=>{ const p = S.payday;
     return `<h2>Payday rule</h2><div class="fine u-sheet-sub">A share of each payment of 10 000 Ft or more: salary, scholarship, money from family.</div>
     <div class="chips eq u-chips-c">${[5,10,15,20].map(x=>`<button class="chip ${p.pct===x?'on':''} lg" data-prpct="${x}">${x}%</button>`).join('')}</div>
@@ -2609,7 +2817,7 @@ const SHEETS = {
     return `<h2>Financial analyst</h2><div class="u-sheet-sub k">The analyst is turned on.</div>
     ${splitRows}
     <div class="fine u-note-b14">It reads your payments, transfers and income on this OTP account, finds your regular bills, builds your split and gives one insight a month. You can change a payment's category in Transactions. Turn it off and the split, the bills and the tip go away. Nothing is shared.</div>
-    ${NEW_PERSELY_IA ? '<button class="btn w" data-go="mymoney">My money</button>' : '<button class="btn w" data-go="nextmonth">Next month</button><button class="btn w" data-go="bills">Must-pay bills</button>'}<button class="btn w" data-splitopen>Edit my split</button><button class="btn ghost" data-anoff>Turn off the analyst</button>`; },
+    ${NEW_PERSELY_IA ? '<button class="btn w" data-go="mymoney">Spending analysis</button>' : '<button class="btn w" data-go="nextmonth">Next month</button><button class="btn w" data-go="bills">Must-pay bills</button>'}<button class="btn w" data-splitopen>Edit my split</button><button class="btn ghost" data-anoff>Turn off the analyst</button>`; },
   // financial health score: four indicators, what they mean, rewards earned
   score:()=>{ const n = scoreNow(), pv = scorePrev(), d = n.t - pv.t;
     return `<h2>Financial health score</h2>
@@ -2648,6 +2856,9 @@ const SHEETS = {
     return `<h2>My split</h2><div class="fine" style="text-align:center;margin:-8px 0 8px"><b>${v.base}</b></div>
     <div class="card" style="padding:4px 16px">${blk('must', 'locked bills, at their usual amounts')}${blk('ess', 'what is left, with other payments')}${blk('fun', 'your choice: a share of the base', stp('fun', d.fun, 0, funMax, 'of the base'))}${blk('save', `${saveNote(v)}`, stp('save', d.rule, 5, 20, 'of your salary'))}</div>
     <div class="fine u-note-b14">The four add up to 100%. Fun is your choice; Everyday essentials is what is left. Saving here is the payday rule${v.plan.weekly || v.plan.round ? ' plus your weekly transfer and round-ups' : ''}: the % on its row is the share of your salary, and Saving is ${bPct(v, 'save') || ft(by.save.amt)} of the base. Changing it here changes the payday rule too.</div>
+    ${(() => { const inv = Math.min(d.inv !== undefined ? d.inv : (S.analyst.invest || 0), by.save.amt); return `<div class="card" style="padding:12px 16px"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b style="display:flex;align-items:center;gap:7px"><span class="dotc" style="background:#7A6FD8"></span>Of Saving, for investing</b><span class="k num">${ft(by.save.amt - inv)} stays in Persely</span></div>
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:6px"><button class="chip sq" data-splitinv="-1000" ${inv <= 0 ? 'disabled' : ''} aria-label="Less for investing">−</button><b class="num" style="min-width:92px;text-align:center;font-size:1rem">${ft(inv)}</b><button class="chip sq" data-splitinv="1000" ${inv + 1000 > by.save.amt ? 'disabled' : ''} aria-label="More for investing">+</button></div>
+      <div class="fine" style="margin-top:6px">A plan only: nothing is bought for you. It shows on your monthly plan.</div></div>`; })()}
     <button class="btn" data-splitsave>Save my split</button><button class="btn ghost" data-splitsuggest>Use the suggestion: Fun ${suggestSplit().fun}%</button>`; },
   // recategorise one card payment
   txcat:()=>{ const t = S.tx[S._txi]; if(!t) return '';
@@ -2921,15 +3132,18 @@ document.addEventListener('click', e=>{
     closeSheet(); renderAll(); undoable(before, `Split saved: Fun ${sg.fun}%, Saving ${sg.save}%. Saving is your payday rule${turnedOn ? ', now on' : ''}`);
     if(!S.billsConfirmed){ const n0 = NAVC.n; let tries = 0, go = () => { if(NAVC.n !== n0 || ++tries > 20) return; if(MQ.toast || sheetOpen()) return setTimeout(go, 400);
       if(S.analyst.on && !S.billsConfirmed && !stack.length) pushPage('bills'); }; setTimeout(go, 400); } return; }   // then one screen: what it found, lock the bills you must pay. It opens after the Undo toast is gone, so the toast never covers it
-  if('splitopen' in d){ UNDO.base = snap(); S._split = {fun:splitView(S, {forceRule:!S.analyst.accepted}).funPct, rule:S.payday.pct}; sheet(SHEETS.splitedit()); return; }
+  if('splitopen' in d || ('plangear' in d && S.analyst.on && S.analyst.accepted)){ UNDO.base = snap(); S._split = {fun:splitView(S, {forceRule:!S.analyst.accepted}).funPct, rule:S.payday.pct, inv:S.analyst.invest || 0}; sheet(SHEETS.splitedit()); return; }
+  if('plangear' in d){ sheet(SHEETS.analyst()); return; }   // analyst off or split not chosen yet: the opt-in first
+  if(d.splitinv){ S._split = S._split || {fun:S.analyst.split.fun, rule:S.payday.pct, inv:S.analyst.invest || 0};
+    const v = splitView(S, {fun:S._split.fun, rule:S._split.rule, forceRule:!S.analyst.accepted}); S._split.inv = Math.max(0, Math.min(v.by.save.amt, (S._split.inv || 0) + +d.splitinv)); sheet(SHEETS.splitedit()); return; }
   if(d.splitstep){ const [k, n] = d.splitstep.split(':'); S._split = S._split || {fun:S.analyst.split.fun, rule:S.payday.pct};
     if(k === 'fun'){ const v = splitView(S, {fun:S._split.fun, rule:S._split.rule, forceRule:!S.analyst.accepted}), hi = Math.floor((v.by.fun.pct + v.by.ess.pct) / 5) * 5; S._split.fun = Math.min(hi, Math.max(0, S._split.fun + +n)); }
     else S._split.rule = Math.min(20, Math.max(5, S._split.rule + +n));
     sheet(SHEETS.splitedit()); return; }
-  if('splitsuggest' in d){ S._split = {fun:suggestSplit().fun, rule:S._split ? S._split.rule : S.payday.pct}; sheet(SHEETS.splitedit()); return; }
+  if('splitsuggest' in d){ S._split = {fun:suggestSplit().fun, rule:S._split ? S._split.rule : S.payday.pct, inv:S._split ? S._split.inv : (S.analyst.invest || 0)}; sheet(SHEETS.splitedit()); return; }
   if('splitsave' in d){ const sp = S._split; if(!sp) return; const before = UNDO.base || snap(), turnedOn = !S.analyst.accepted && !S.payday.on; UNDO.base = null;
     S.payday.pct = sp.rule; if(turnedOn) S.payday.on = true; S.analyst.split = {...S.analyst.split, fun:sp.fun}; S.analyst.accepted = true; S._split = null; syncSplit();
-    const sv = splitView();
+    const sv = splitView(); S.analyst.invest = Math.min(sp.inv !== undefined ? sp.inv : (S.analyst.invest || 0), sv.by.save.amt);
     closeSheet(); renderAll(); undoable(before, `Split saved: Fun ${sv.by.fun.pct}%, Saving ${sv.by.save.pct}%. Payday rule is now ${sp.rule}% of each salary`); return; }
   if(d.txcat !== undefined){ S._txi = +d.txcat; sheet(SHEETS.txcat()); return; }
   if(d.setcat){ const t = S.tx[S._txi]; if(!t) return; t.cat = d.setcat; S.catRules[payeeKey(t)] = d.setcat; closeSheet(); renderAll();
