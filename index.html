@@ -641,7 +641,10 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* Persi: small, one line, no cartoon speech bubble */
 .persi{display:flex;align-items:center;gap:10px;margin:-6px 0 10px}
 .ptot{margin-bottom:14px}
-.ptot .persi{margin:-6px 0 0}
+.ptot .persi{margin:-2px 0 6px;gap:6px}
+.ptot .persi .pig{margin:0 -2px 0 -2px}
+.ptot .persi-t{background:#fff;border-radius:18px 18px 18px 4px;padding:10px 13px;box-shadow:var(--sh);font-size:0.9375rem;line-height:1.35;color:var(--ink)}
+.ptot .persi-t:empty{background:none;box-shadow:none;padding:0}
 .ptot .sring-in{width:44px;height:44px;font-size:var(--fs-xs);box-shadow:0 0 0 2px #fff,0 0 0 4px #FF7A1A}
 .ptot .sring.seen .sring-in{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #C9CED6}
 .ptot .sring{gap:5px}
@@ -1943,7 +1946,7 @@ function persiSays(){
   if(!S.onboarded) return {mood:'happy', text:"Hi, I'm Persi. Let's pick a goal."};
   const bf = bfNow(); if(bf.on) return {mood:'concerned', text:`${bf.text}.`};   // late bills only
   if(S.analyst.on && S.bfDone) return {mood:'proud', text:'Bills paid. Fun is back on.'};
-  if(!S.savedWeek && S.streak > 0) return {mood:'concerned', text:'Any amount by Sunday keeps your streak.'};
+  if(!S.savedWeek && S.streak > 0) return {mood:'happy', text:'Any amount by Sunday keeps your streak.'};   // a nudge, not a worry
   if(!S.savedWeek) return {mood:'happy', text:'Any amount this week starts your streak.'};
   const bh = S.goals.find(isTight); if(bh) return {mood:'concerned', text:`${bh.name} is behind. That is okay, a new date can fix it.`};
   if(pctOf(g).first) return {mood:'proud', text:`First ${money(g, gSaved(g))} is in. ${money(g, gTarget(g) - gSaved(g))} to go.`};
@@ -2364,7 +2367,7 @@ function vHub(){
   const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
   return `<div class="tabtitle">Persely</div>
   ${hintHTML('total')}<div class="ptot" data-tour="total">
-    <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${HINT_NOW ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
+    <div class="persi" data-tour="persi">${pig(ps.mood, 100)}${HINT_NOW ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
       <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
     <div class="sec"><span>Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Junior 3.0%' : 'Standard rate'}</span></div>
     <div class="ptot-v num">${ft(tot)}</div>${et ? `<div class="fine" style="text-align:center;margin-top:2px">+ ${eur(et)} in euro goals</div>` : ''}
@@ -3544,7 +3547,7 @@ const pig3d = (() => {
     g.userData.pupil = pupil; return g;
   });
   // brows, shown when concerned
-  const brows = [-1, 1].map(s => { const b = add(pigG, new T.BoxGeometry(0.22, 0.045, 0.05), INK, s*0.34, 0.57, 0.86); b.rotation.z = s * 0.35; b.visible = false; return b; });
+  const brows = [-1, 1].map(s => { const b = add(pigG, new T.BoxGeometry(0.22, 0.045, 0.05), INK, s*0.34, 0.57, 0.86); b.rotation.z = -s * 0.35; b.visible = false; return b; });   // inner ends up: worried, not angry
   // mouth: half torus, flipped for "concerned"
   const mouth = add(pigG, new T.TorusGeometry(0.1, 0.024, 10, 28, Math.PI), INK, 0, -0.34, 0.95);
   mouth.rotation.z = Math.PI;
