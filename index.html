@@ -3725,7 +3725,7 @@ function pkStackSync(st, v){
 function amountPicker(k){
   const o = pkObj(k), v = o.target, chips = [...new Set([o.typeAmt, 50000, 300000, 1000000, 5000000].filter(Boolean))].sort((a, b) => a - b).slice(0, 5);
   return `<div class="card pk" data-pk="${k}">
-    <div class="pkrow"><div class="pkfld"><input class="pkamt" inputmode="numeric" pattern="[0-9 ]*" enterkeyhint="done" autocomplete="off" maxlength="11" value="${v ? pkSpace(v) : ''}" aria-label="Amount you need, in forints. Type it, or use the slider"><span>Ft</span></div>${pkStackHTML(v)}</div>
+    <div class="pkrow"><div class="pkfld"><input class="pkamt" inputmode="numeric" pattern="[0-9 ]*" enterkeyhint="done" autocomplete="off" maxlength="11" value="${v ? pkSpace(v) : ''}" aria-label="Amount you need, in forints. Type it, or use the slider"><span>Ft</span></div></div>
     <div class="pksl" role="slider" tabindex="0" aria-label="Amount you need" aria-valuemin="${PK_MIN}" aria-valuemax="${PK_MAX}" aria-valuenow="${Math.min(PK_MAX, Math.max(PK_MIN, v))}" aria-valuetext="${pkSpace(v)} forints" style="--p:${(pkPos(v) * 100).toFixed(2)}%"><div class="pkin"><i class="pkfill"></i><b class="pkthumb"></b></div></div>
     <div class="chips pkchips">${chips.map(c => `<button class="chip ${v === c ? 'on' : ''}" data-pkamt="${c}" aria-pressed="${v === c}" aria-label="${pkSpace(c)} forints${c === o.typeAmt ? ', suggested for this goal' : ''}">${pkShort(c)}</button>`).join('')}</div></div>`;
 }
@@ -3745,7 +3745,7 @@ function pkSync(k, from){
       const inp = r.querySelector('.pkamt'); if(from !== 'type') inp.value = v ? pkSpace(v) : '';
       const sl = r.querySelector('.pksl'); sl.style.setProperty('--p', (pkPos(v) * 100).toFixed(2) + '%');
       sl.setAttribute('aria-valuenow', Math.min(PK_MAX, Math.max(PK_MIN, v))); sl.setAttribute('aria-valuetext', `${pkSpace(v)} forints`);
-      pkStackSync(r.querySelector('.pkstack'), v);
+      // (the money stack next to the amount was removed: the amount and the slider say it)
       r.querySelectorAll('[data-pkamt]').forEach(b => { const on = +b.dataset.pkamt === v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
     } else if(r.classList.contains('pkd')){
       const n = pkDateIdx(o.date) - pkNow(), f = r.querySelector('.fld');
