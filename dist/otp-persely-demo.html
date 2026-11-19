@@ -421,7 +421,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 @keyframes stfade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.st-body{animation:stfade .25s ease both}.story{transition:none}}
 @media (max-height:700px){.st-big{font-size:2.5rem}.st-big.m{font-size:2rem}.st-big.s{font-size:1.5rem}.st-sub{font-size:1rem}.st-vis{min-height:110px}.st-foot{min-height:48px;margin-top:8px}.story{padding-bottom:calc(env(safe-area-inset-bottom) + 14px)}.st-rc .r{padding:4px 0;min-height:26px}.st-lg{gap:5px}.st-stw{transform:scale(.85);margin:-10px 0}}
-@media (min-width:760px) and (hover:hover){.phone .story{--sb:56px}.phone .ff{--sb:56px;--sbb:26px}}
+@media (min-width:760px) and (hover:hover){.phone .story{--sb:56px}.phone .ff{--sbb:26px}}
 
 /* ---------- fake iOS notification (for the laptop demo) ---------- */
 .nbanner{position:absolute;left:8px;right:8px;top:calc(var(--top) + 6px);z-index:85;display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:22px;
@@ -447,28 +447,19 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 @keyframes fidp{to{transform:scale(.9)}}
 .fid.fid-done .fid-face{opacity:0;transition:opacity .15s}.fid.fid-done .fid-c{transform:scale(.82);transform-origin:32px 32px;transition:transform .25s ease-out}
 .fid.fid-done .fid-ok{opacity:1;stroke-dashoffset:0;transition:stroke-dashoffset .35s ease-out .05s}
-.ff{position:absolute;inset:0;z-index:78;display:none;flex-direction:column;color:#fff;--sb:var(--top);--sbb:env(safe-area-inset-bottom);padding:calc(var(--sb) + 18px) 18px calc(var(--sbb) + 18px);
-  background:linear-gradient(170deg,#0F3D1E 0%,#1E5410 100%);touch-action:none}
-.ff.on{display:flex}
-.ff-k{font-size:var(--fs-s);font-weight:600;color:#D4E5CE;letter-spacing:.2px}
-.ff-m{font-size:2rem;font-weight:800;line-height:1.15;margin:2px 0 8px}
-.ff-day{height:4px;border-radius:2px;background:rgba(255,255,255,.25);overflow:hidden}.ff-day i{display:block;height:100%;width:0;background:#fff}
-.ff-svg{width:100%;flex:1 1 auto;min-height:0;max-height:330px;margin:10px 0 4px}
-.ff-n rect{fill:rgba(255,255,255,.12);stroke:rgba(255,255,255,.35)}.ff-n text{fill:#fff;font-size:12.5px;font-weight:700}
-.ff-acc rect{fill:rgba(255,255,255,.2);stroke:#fff}.ff-acc text{font-size:13px}
-.ff-p,.ff-q{fill:none;stroke-linecap:round}.ff-q{stroke-dasharray:1.5 9}
-.ff-sal,.ff-fam{stroke:#fff}.ff-bills{stroke:#B4C3D6}.ff-ess{stroke:#62AEE6}.ff-fun{stroke:#F5913A}.ff-save{stroke:#6FCB4A}.ff-int{stroke:#F2C94C;fill:none;stroke-linecap:round;stroke-dasharray:1.5 7}
-.ff-n.ff-bills rect{stroke:#B4C3D6}.ff-n.ff-ess rect{stroke:#62AEE6}.ff-n.ff-fun rect{stroke:#F5913A}.ff-n.ff-save rect{stroke:#6FCB4A;fill:rgba(111,203,74,.2)}
-.ff-it{fill:#F2C94C;font-size:11px;font-weight:700}
-.ff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.ff-grid div{background:rgba(255,255,255,.1);border-radius:12px;padding:8px 10px}.ff-grid small{display:block;font-size:var(--fs-xs);color:#D4E5CE}.ff-grid b{font-size:var(--fs-s);font-weight:700;white-space:nowrap}
-.ff-persi{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:700;font-size:var(--fs-s);min-height:46px}
-.ff.landed .ff-svg,.ff.landed .ff-grid,.ff.landed .ff-persi,.ff.landed .ff-top{opacity:.15;transition:opacity .3s}
-.ff-land{position:absolute;left:16px;right:16px;bottom:calc(var(--sbb) + 18px);animation:pop .4s cubic-bezier(.2,.9,.25,1.15)}
-.ff-card{background:#fff;color:var(--ink);border-radius:22px;padding:18px 18px 16px;box-shadow:0 18px 40px rgba(0,0,0,.3)}
-.ff-ck{font-size:var(--fs-xs);color:var(--muted-t);font-weight:600}.ff-card h3{margin:2px 0 8px;font-size:1.375rem}.ff-card p{margin:0 0 10px;font-size:var(--fs-s);color:var(--ink2);line-height:1.45}
-.ff-rows div,.ff-tot{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:var(--fs-s)}.ff-rows span{color:var(--ink2)}
-.ff-tot{border:0;font-size:var(--fs-m);margin-bottom:10px}.ff-tot b{color:var(--act)}
+.ff{position:absolute;inset:0;z-index:78;display:none;pointer-events:auto;background:transparent;--sbb:env(safe-area-inset-bottom)}
+.ff.on{display:block}
+.ff-hud{position:absolute;left:12px;right:12px;bottom:calc(var(--sbb) + 74px);background:rgba(28,33,40,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#fff;border-radius:18px;
+  padding:10px 14px 0;box-shadow:0 12px 30px rgba(20,25,35,.35);display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 12px;overflow:hidden;cursor:pointer;animation:pop .35s cubic-bezier(.2,.9,.25,1.15)}
+.ff-hl{display:flex;align-items:center;gap:10px}.ff-hl small{display:block;font-size:var(--fs-xs);color:#B9C0CB;font-weight:600}.ff-hl b{display:block;font-size:var(--fs-m);font-weight:700;white-space:nowrap}
+.ff-ic{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center}
+.ff-ev{justify-self:end;text-align:right;min-width:0;opacity:0;transform:translateY(6px)}.ff-ev.in{opacity:1;transform:none;transition:opacity .25s,transform .25s}
+.ff-ev b{display:block;font-size:var(--fs-m);font-weight:800;white-space:nowrap}.ff-ev span{display:block;font-size:var(--fs-xs);color:#B9C0CB;white-space:nowrap}
+.ff-ev.in b{color:#fff}.ff-ev.save b{color:#8FDB6B}.ff-ev.out b{color:#FFB37A}
+.ff-day{grid-column:1/-1;height:3px;margin:10px -14px 0;background:rgba(255,255,255,.12)}.ff-day i{display:block;height:100%;width:0;background:#8FDB6B}
+.num.ff-chg{transition:color .4s}.phone.ffon .view.on .num.ff-chg{color:var(--act)}
+.phone.ffon .tabbar{pointer-events:none}
+.ff-ck{text-align:center;font-size:var(--fs-s);color:var(--muted-t);font-weight:600;margin-top:4px}.ff-h{margin-top:2px !important}
 .yr-hero{padding:18px}.yr-big{font-size:2.25rem;font-weight:800;margin:4px 0 2px;color:var(--ink)}
 .yr-bars{padding:14px 16px}.yr-b{margin:6px 0 12px}.yr-bl{display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-s)}.yr-b small{font-size:var(--fs-xs);color:var(--muted-t)}
 .yr-bt{height:12px;border-radius:6px;background:#E9ECF1;margin:6px 0 4px;overflow:hidden}.yr-bt i{display:block;height:100%;width:var(--w);border-radius:6px;animation:yrg .9s ease-out}
@@ -480,7 +471,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .yr-scb b{position:absolute;top:-17px;left:0;right:0;text-align:center;font-size:var(--fs-xs);color:var(--ink2)}
 @keyframes yrh{from{height:0}}
 .yr-sc small{font-size:var(--fs-xs);color:var(--muted-t)}
-@media (prefers-reduced-motion:reduce){.yr-bt i,.yr-scb i,.ff-land{animation:none}.fid.fid-scan .fid-c{animation:none}}
+@media (prefers-reduced-motion:reduce){.yr-bt i,.yr-scb i,.ff-hud{animation:none}.fid.fid-scan .fid-c{animation:none}}
 
 .lock.out{transform:translateY(-100%);opacity:.6}
 .lock .ld{font-size:1.1875rem;font-weight:600;opacity:.92}
@@ -492,9 +483,9 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .lock .lbot i{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.18);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center}
 .lock .lbot svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .lock .lhint{position:absolute;bottom:24px;left:0;right:0;text-align:center;font-size:var(--fs-xs);opacity:.7}
-.phone.locked .sbar,.phone.ffon .sbar{color:#fff}
-.phone.locked .sbar svg,.phone.ffon .sbar svg{fill:#fff}
-.phone.locked .sbar svg rect[stroke],.phone.ffon .sbar svg rect[stroke]{stroke:#fff}
+.phone.locked .sbar{color:#fff}
+.phone.locked .sbar svg{fill:#fff}
+.phone.locked .sbar svg rect[stroke]{stroke:#fff}
 .phone.locked .homebar{background:#fff}
 @media (min-width:760px) and (hover:hover){.nbanner{top:54px}.lock{padding-top:84px}.lock .lhint{bottom:22px}}
 
@@ -2140,7 +2131,7 @@ function qSheet(fn, id, late){ if(id) MQ.q = MQ.q.filter(x => x.id !== id); MQ.q
 function mqDrop(id){ MQ.q = MQ.q.filter(x => x.id !== id); }
 function toast(m, o){ if(sheetOpen()){ sheetNote(m); return; } MQ.q = MQ.q.filter(x => x.k !== 'toast'); MQ.q.push({k:'toast', m, o}); mqPump(); }
 function mqPump(){
-  if(MQ.banner || demo.locked) return;
+  if(MQ.banner || demo.locked || window.__ffOn) return;   // nothing pops up during a fast-forward; the queue continues after it
   const open = sheetOpen(), hasToast = MQ.q.some(x => x.k === 'toast');
   const si = MQ.q.findIndex(x => x.k === 'sheet' && (!x.late || (!hasToast && !MQ.toast)));
   if(si >= 0){
@@ -2578,6 +2569,9 @@ document.addEventListener('click', e=>{
     if(S._ffRest){ const r = S._ffRest; S._ffRest = 0; setTimeout(() => fastForward(r, 'year'), 1400); }   // the year jump carries on after the Junior moment
     return; }
   if('yearstory' in d){ S._yearStory = true; openStory(); return; }
+  if('ffdone' in d){ closeSheet(); tab('fooldal'); if(S._rw){ notify({title:'Persi · Persely', persi:true, body:`Reward earned: ${S._rw.rew.title}. ${S._rw.rew.why}.`, url:'hub'}); qSheet(() => SHEETS.reward(), 'reward'); } return; }
+  if('ffgrad' in d){ closeSheet(); tab('hub'); pushPage('grad'); return; }
+  if('ffyear' in d){ closeSheet(); tab('hub'); pushPage('year'); return; }
   if('raise' in d){ const before = snap(); S.payday.pct = Math.min(20, S.payday.pct + 5); syncSplit(); renderAll(); undoable(before, `Payday rule is now ${S.payday.pct}%`); return; }
   if('insyes' in d){ const before = snap(), g = ruleGoal(); g.pace = (g.pace || 0) + (+d.insyes); S.insightUsed = true; renderAll(); undoable(before, `Done: ${ft(+d.insyes)} more a month goes to ${g.name}`); return; }
   if('insno' in d){ S.insightUsed = true; renderAll(); return; }
@@ -3779,9 +3773,10 @@ function graduation(){ unlockPhone(); closeSheet(); S.juniorDays = 0; renderAll(
 function demoUpdateDay(){ demoStart(); }   // U: the presentation start (Face ID, splash, Persi's pop-up)
 /* ================= demo presentation (plan section 16): Face ID start, fast-forward cash-flow river, the year =================
    U / Reset = demoStart(): fresh data, the lock screen with a Face ID unlock, the splash, then Persi's pop-up. Junior ends in 300 days (month 10 of the year).
-   O = +1 month, Q = +2 months, Y = to month 12: fastForward(n, mode) runs monthStep() for each month first, then plays the months as a time-driven
-   overlay (ffSeek(t) is a pure function of t, like the story), and lands on a summary card. Y stops once when the Junior package ends: the card opens the
-   graduation screen and "Keep my 3.0%" carries on with the rest of the year (S._ffRest). The year ends on PAGES.year ("Your year in Persely"). */
+   O = +1 month, Q = +2 months, Y = to month 12: fastForward(n, mode) runs one month at a time on the app's own screens (Home, then the Persely tab):
+   numbers roll to their new values and bars grow while a small bar above the tab bar shows the month and what happens. Y stops once when the
+   Junior package ends: the summary sheet opens the graduation screen and "Keep my 3.0%" carries on with the rest of the year (S._ffRest).
+   The year ends on PAGES.year ("Your year in Persely"). */
 let fidTimers = [];
 function faceIdUnlock(done){
   fidTimers.forEach(clearTimeout); fidTimers = [];
@@ -3796,69 +3791,100 @@ function faceIdUnlock(done){
   fidTimers.push(setTimeout(() => { unlockPhone(); setTimeout(() => l.classList.remove('fidon'), 360); if(done) done(); }, 1600));
 }
 function demoStart(){
-  closeOnb(); closeWhatsNew(); closeStory(); ffClose(true); closeSheet(); while(stack.length) popPage(true);
+  closeOnb(); closeWhatsNew(); closeStory(); ffClose(); closeSheet(); while(stack.length) popPage(true);
   S = fresh(); S.juniorDays = 300; S.flowLog = []; S.savInt = 0; S._ffRest = 0; S.jrShown = false; renderAll(); tab('fooldal');
   faceIdUnlock(() => { showSplash(900); launchFlow(1100); });
 }
-// ---------- fast forward ----------
-const FF = {on:false, raf:0, t:0, T:0, last:0, months:[], dur:[], mode:'month', rest:0, max:1};
-function fastForward(n, mode){
+// ---------- fast forward, live on the app's own screens ----------
+// Each simulated month: snapshot the numbers and bars on the screen, run monthStep(), then the real screen re-renders and every number
+// that changed rolls from its old to its new value while the bars grow, so the jury watches Anna's actual balances move.
+// A small dark bar above the tab bar shows the month, the day running and what is happening ("+75 000 Ft · Salary").
+// Tap the bar to skip to the end. The jump ends on a summary sheet in the app's own sheet style.
+const FF = {on:false, skip:false, months:[], mode:'month', stop:false, timers:[], raf:new Set()};
+const ffWait = ms => new Promise(r => { if(FF.skip) return r(); const t = setTimeout(r, ms); FF.timers.push(t); FF.wake = r; });
+const ffView = () => document.querySelector('.view.on');
+function ffKey(el, root){   // a stable key for a number or bar: its nearest marked ancestor + its index inside it
+  let a = el.parentElement;
+  while(a && a !== root){ if(a.classList.contains('acc') || a.classList.contains('hero') || [...a.attributes].some(x => x.name.startsWith('data-'))) break; a = a.parentElement; }
+  const sig = a && a !== root ? a.className + '|' + [...a.attributes].filter(x => x.name.startsWith('data-')).map(x => x.name + '=' + x.value).join(',') : 'root';
+  const peers = a && a !== root ? [...a.querySelectorAll(el.matches('.num') ? '.num' : '.prog i, .bar i')] : [];
+  return sig + '#' + peers.indexOf(el);
+}
+function ffSnap(){
+  const v = ffView(), m = new Map(); if(!v) return m;
+  v.querySelectorAll('.num').forEach(el => m.set('n:' + ffKey(el, v), el.textContent));
+  v.querySelectorAll('.prog i, .bar i').forEach(el => m.set('b:' + ffKey(el, v), el.style.width));
+  return m;
+}
+const ffParse = s => { const mt = /-?\d(?:[\d.,]|[\s\u00a0\u202f](?=\d))*/.exec(s || ''); if(!mt) return null; const raw = mt[0].trim(), dec = /[.,]\d$/.test(raw);
+  const n = parseFloat(raw.replace(/[\s  ]/g, '').replace(/,(?=\d$)/, '.').replace(/,/g, '')); return isNaN(n) ? null : {pre:s.slice(0, mt.index), post:s.slice(mt.index + mt[0].length), n, dec, raw}; };
+const ffFmt = (n, p) => p.dec ? n.toFixed(1) : (Math.abs(p.n) >= 1000 || /\s/.test(p.raw) ? Math.round(n).toLocaleString('hu-HU').replace(/ /g, ' ') : String(Math.round(n)));
+function ffMorph(old, ms){   // roll every changed number on the current screen, grow every changed bar
+  const v = ffView(); if(!v || !old.size) return;
+  v.querySelectorAll('.num').forEach(el => {
+    const was = old.get('n:' + ffKey(el, v)), now = el.textContent; if(was == null || was === now) return;
+    const a = ffParse(was), b = ffParse(now); if(!a || !b || a.pre !== b.pre || a.post !== b.post || a.n === b.n) return;
+    el.classList.add('ff-chg');
+    if(FF.skip || ms <= 0){ el.textContent = now; return; }
+    const t0 = performance.now(); el.textContent = was;
+    const step = t => { const p = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - p, 3); el.textContent = p >= 1 || FF.skip ? now : b.pre + ffFmt(a.n + (b.n - a.n) * e, b) + b.post;
+      if(p < 1 && !FF.skip){ const id = requestAnimationFrame(step); FF.raf.add(id); } };
+    FF.raf.add(requestAnimationFrame(step));
+  });
+  v.querySelectorAll('.prog i, .bar i').forEach(el => {
+    const was = old.get('b:' + ffKey(el, v)), now = el.style.width; if(!was || was === now) return;
+    el.style.transition = 'none'; el.style.width = was; void el.offsetWidth;
+    el.style.transition = `width ${FF.skip ? 0 : ms}ms cubic-bezier(.2,.7,.2,1)`; el.style.width = now;
+  });
+}
+function ffEvents(f){   // what happened in a month, in the order it happens, for the bar's ticker
+  const e = [];
+  if(f.salary) e.push(['+' + ft(f.salary), 'Salary', 'in']);
+  if(f.family) e.push(['+' + ft(f.family), 'Family transfer', 'in']);
+  if(f.bills) e.push(['−' + ft(f.bills), `${plural(f.billsN, 'bill')} paid`, 'out']);
+  if(f.ess + f.fun) e.push(['−' + ft(f.ess + f.fun + f.other), 'Card payments', 'out']);
+  if(f.saved) e.push(['+' + ft(f.saved), 'To Persely', 'save']);
+  if(f.interest) e.push(['+' + ft(f.interest), `Interest at ${rateLabel()}`, 'save']);
+  return e;
+}
+function ffHud(f, i, n){
+  const el = $('#ff'); el.querySelector('[data-ffm]').textContent = `${f.name} ${f.ym.slice(0, 4)}`;
+  el.querySelector('[data-ffn]').textContent = n > 1 ? `Month ${i + 1} of ${n}` : 'Fast forward';
+}
+function ffTicker(ev, ms){
+  const t = $('#ff [data-fft]'); if(!t) return;
+  const show = ([a, b, k]) => { t.className = 'ff-ev ' + k; t.innerHTML = `<b class="num">${a}</b><span>${b}</span>`; t.classList.remove('in'); void t.offsetWidth; t.classList.add('in'); };
+  if(!ev.length) return; const gap = ms / ev.length; ev.forEach((x, k) => { const id = setTimeout(() => { if(!FF.skip) show(x); }, k * gap); FF.timers.push(id); });
+}
+function ffDay(ms){ const d = $('#ff [data-ffday]'); d.style.transition = 'none'; d.style.width = '0%'; void d.offsetWidth; d.style.transition = `width ${FF.skip ? 0 : ms}ms linear`; d.style.width = '100%'; }
+async function fastForward(n, mode){
   if(FF.on) return;
   unlockPhone(); closeSheet(); closeOnb(); closeWhatsNew(); closeStory(); hideBanners(); hideToast(true); while(stack.length) popPage(true);
-  const months = []; let stop = false; FF.start = total();
+  window.__ffOn = true; Object.assign(FF, {on:true, skip:false, months:[], mode, stop:false, timers:[], start:total()});
+  const el = $('#ff');
+  el.innerHTML = `<div class="ff-hud" data-ffskip role="status" aria-live="polite"><div class="ff-hl"><span class="ff-ic">${I('sched', 18)}</span><span><small data-ffn></small><b data-ffm></b></span></div>
+    <div class="ff-ev" data-fft></div><div class="ff-day"><i data-ffday></i></div></div>`;
+  el.classList.add('on'); $('#phone').classList.add('ffon');
+  const reduced = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches; if(reduced) FF.skip = true;
+  const plan = i => mode === 'year' ? 'hub' : n === 1 ? 'fooldal' : (i === 0 ? 'fooldal' : 'hub');
+  await ffWait(250);
   for(let i = 0; i < n; i++){
-    monthStep(true); months.push(S.flowLog[S.flowLog.length - 1]);
-    if(mode === 'year' && S.juniorDays === 0 && !S.bridge && !S.jrShown && i < n - 1){ S.jrShown = true; S._ffRest = n - i - 1; stop = true; break; }
+    const scr = plan(i); if(document.querySelector('.view.on') !== document.getElementById('v-' + scr)){ tab(scr); ffScroll(scr); await ffWait(FF.skip ? 0 : 450); }
+    const dur = n === 1 ? 4200 : n === 2 ? 3000 : Math.max(800, 1900 - i * 160), old = ffSnap();
+    monthStep(true); ffScroll(scr); const f = S.flowLog[S.flowLog.length - 1]; FF.months.push(f);
+    ffHud(f, i, n); ffDay(dur); ffMorph(old, dur * .8); ffTicker(n <= 2 ? ffEvents(f) : ffEvents(f).filter(x => x[2] === 'save'), dur * .8);
+    await ffWait(FF.skip ? 0 : dur);
+    if(mode === 'year' && S.juniorDays === 0 && !S.bridge && !S.jrShown){ S.jrShown = true; FF.stop = true; S._ffRest = n - i - 1; break; }
   }
-  if(mode === 'year' && S.juniorDays === 0 && !S.bridge && !S.jrShown){ S.jrShown = true; stop = true; S._ffRest = 0; }
-  save(); ffPlay(months, mode, stop);
+  save(); FF.skip = true; FF.raf.forEach(cancelAnimationFrame); FF.raf.clear(); renderAll();
+  await new Promise(r => setTimeout(r, 300));
+  ffEnd(); sheet(ffLandHTML());
 }
-function ffPlay(months, mode, stop){
-  const k = months.length, el = $('#ff');
-  FF.months = months; FF.mode = mode; FF.stop = stop; FF.max = Math.max(1, ...months.map(m => m.in));
-  FF.dur = months.map((_, i) => k === 1 ? 3.4 : k === 2 ? 2.6 : Math.max(.6, 1.5 - i * .13));
-  FF.T = .35 + FF.dur.reduce((a, b) => a + b, 0); FF.t = 0; FF.last = 0; FF.on = true;
-  const node = (x, y, w, h, label, cls) => `<g class="ff-n ${cls || ''}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10"/><text x="${x + w / 2}" y="${y + h / 2 + 5}" text-anchor="middle">${label}</text></g>`;
-  const R = FF_RIGHT.map(([key, label], i) => node(250, FF_Y[i] - 18, 86, 36, label, 'ff-' + key)).join('');
-  el.innerHTML = `<div class="ff-top"><div class="ff-k">Fast forward</div><div class="ff-m num" data-ffm></div><div class="ff-day"><i data-ffday></i></div></div>
-    <svg class="ff-svg" viewBox="0 0 340 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-      ${FF_LEFT.map(([key], i) => `<path class="ff-p ff-${key}" data-ffl="${i}" d="M92 ${FF_LY[i]} C110 ${FF_LY[i]} 112 ${150 + (i ? 30 : -30)} 128 ${150 + (i ? 30 : -30)}"/><path class="ff-q ff-${key}" data-ffl2="${i}" d="M92 ${FF_LY[i]} C110 ${FF_LY[i]} 112 ${150 + (i ? 30 : -30)} 128 ${150 + (i ? 30 : -30)}"/>`).join('')}
-      ${FF_RIGHT.map(([key], i) => `<path class="ff-p ff-${key}" data-ffr="${i}" d="M212 ${120 + i * 20} C232 ${120 + i * 20} 232 ${FF_Y[i]} 250 ${FF_Y[i]}"/><path class="ff-q ff-${key}" data-ffr2="${i}" d="M212 ${120 + i * 20} C232 ${120 + i * 20} 232 ${FF_Y[i]} 250 ${FF_Y[i]}"/>`).join('')}
-      <path class="ff-q ff-int" data-ffi d="M293 282 L293 ${FF_Y[3] + 18}"/>
-      ${node(4, FF_LY[0] - 18, 88, 36, 'Salary', 'ff-sal')}${node(4, FF_LY[1] - 18, 88, 36, 'Family', 'ff-fam')}
-      <g class="ff-n ff-acc"><rect x="128" y="96" width="84" height="108" rx="14"/><text x="170" y="142" text-anchor="middle">Junior</text><text x="170" y="160" text-anchor="middle">account</text></g>
-      ${R}<text class="ff-it" x="293" y="296" text-anchor="middle">interest</text>
-    </svg>
-    <div class="ff-grid">${FF_COUNT.map(([key, label]) => `<div><small>${label}</small><b class="num" data-ffc="${key}">0 Ft</b></div>`).join('')}</div>
-    <div class="ff-persi">${pigSvg('happy', 46)}<span data-ffw></span></div>
-    <div class="ff-land" data-ffland hidden></div>`;
-  el.classList.add('on'); $('#phone').classList.add('ffon'); el.onclick = e => { if(e.target.closest('button')) return; if(FF.t < FF.T) { FF.t = FF.T; ffSeek(FF.t); } };
-  if(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) FF.t = FF.T;
-  ffSeek(FF.t); if(FF.t < FF.T){ FF.raf = requestAnimationFrame(ffTick); }
-}
-const FF_LEFT = [['sal', 'Salary'], ['fam', 'Family']], FF_LY = [100, 200];
-const FF_RIGHT = [['bills', 'Bills'], ['ess', 'Essentials'], ['fun', 'Fun'], ['save', 'Persely']], FF_Y = [36, 104, 172, 240];
-const FF_COUNT = [['in', 'Money in'], ['bills', 'Bills paid'], ['spent', 'Spent'], ['saved', 'Saved'], ['interest', 'Interest'], ['ptotal', 'In Persely']];
+function ffScroll(scr){ const v = document.getElementById('v-' + scr); if(!v) return;
+  if(scr === 'hub'){ const g = v.querySelector('[data-tour="goals"]'); v.scrollTop = g ? Math.max(0, g.offsetTop - 330) : 0; } else v.scrollTop = 0; }
+function ffEnd(){ FF.timers.forEach(clearTimeout); FF.timers = []; FF.raf.forEach(cancelAnimationFrame); FF.raf.clear(); FF.on = false; window.__ffOn = false; const el = $('#ff'); el.classList.remove('on'); el.innerHTML = ''; $('#phone').classList.remove('ffon'); setTimeout(mqPump, 400); }
+$('#ff').addEventListener('click', e => { if(e.target.closest('[data-ffskip]') && FF.on){ FF.skip = true; if(FF.wake) FF.wake(); } });
 const ffVal = (m, key) => key === 'spent' ? m.ess + m.fun + m.other : m[key];
-function ffTick(now){ if(!FF.on) return; if(!FF.last) FF.last = now; FF.t = Math.min(FF.T, FF.t + (now - FF.last) / 1000); FF.last = now; ffSeek(FF.t); if(FF.t < FF.T) FF.raf = requestAnimationFrame(ffTick); }
-function ffSeek(t){
-  const el = $('#ff'), q = s => el.querySelector(s), qa = s => el.querySelectorAll(s), M = FF.months; if(!M.length) return;
-  let i = 0, acc0 = .35, p = 0;
-  if(t < .35) p = 0; else { for(i = 0; i < M.length; i++){ if(t < acc0 + FF.dur[i] || i === M.length - 1){ p = Math.min(1, (t - acc0) / FF.dur[i]); break; } acc0 += FF.dur[i]; } }
-  const m = M[i], ez = 1 - Math.pow(1 - p, 3), pulse = .35 + .65 * Math.sin(Math.PI * Math.min(1, p * 1.15)), wOf = v => v > 0 ? Math.max(2.5, 26 * v / FF.max) : 0;
-  q('[data-ffm]').textContent = m.name + ' ' + m.ym.slice(0, 4); q('[data-ffday]').style.width = Math.round(p * 100) + '%';
-  const left = [m.salary, m.family], right = [m.bills, m.ess, m.fun, m.saved], dash = -t * 70;
-  left.forEach((v, k) => { [q(`[data-ffl="${k}"]`), q(`[data-ffl2="${k}"]`)].forEach((pth, z) => { pth.style.strokeWidth = wOf(v); pth.style.opacity = z ? pulse : .22; if(z) pth.style.strokeDashoffset = dash; }); });
-  right.forEach((v, k) => { [q(`[data-ffr="${k}"]`), q(`[data-ffr2="${k}"]`)].forEach((pth, z) => { pth.style.strokeWidth = wOf(v); pth.style.opacity = z ? pulse : .22; if(z) pth.style.strokeDashoffset = dash; }); });
-  const ip = q('[data-ffi]'); ip.style.strokeWidth = m.interest > 0 ? 4 : 0; ip.style.strokeDashoffset = dash * .6; ip.style.opacity = pulse;
-  FF_COUNT.forEach(([key]) => { let v = 0;
-    if(key === 'ptotal'){ const a = i ? M[i - 1].ptotal : FF.start, b = m.ptotal; v = a + (b - a) * (t < .35 ? 0 : ez); }   // the Persely balance, not a sum
-    else { for(let j = 0; j < i; j++) v += ffVal(M[j], key); v += ffVal(m, key) * (t < .35 ? 0 : ez); }
-    q(`[data-ffc="${key}"]`).textContent = ft(v); });
-  q('[data-ffw]').textContent = t < .35 ? 'Off we go' : p < .5 ? (m.billsN ? `${plural(m.billsN, 'bill')} paid` : 'Salary in') : m.saved ? `${ft(m.saved)} saved` : 'Month done';
-  const land = q('[data-ffland]');
-  if(t >= FF.T && land.hidden){ land.innerHTML = ffLandHTML(); land.hidden = false; el.classList.add('landed'); }
-}
 function ffLandHTML(){
   const M = FF.mode === 'year' ? (S.flowLog || []).slice(-Math.min(12, S.months)) : FF.months, n = M.length, sum = key => M.reduce((a, m) => a + ffVal(m, key), 0), first = M[0], last = M[n - 1];
   const span = n === 1 ? `${last.name} ${last.ym.slice(0, 4)}` : `${first.name.slice(0, 3)} ${first.ym.slice(0, 4)} – ${last.name.slice(0, 3)} ${last.ym.slice(0, 4)}`;
@@ -3868,28 +3894,13 @@ function ffLandHTML(){
   const S2 = FF.mode === 'year' ? sumY : sum;
   const head = FF.stop ? 'Your Junior package ends' : FF.mode === 'year' && S.months >= 12 ? 'One year with Persely' : `${plural(n, 'month')} later`;
   const btn = FF.stop ? `<button class="btn" data-ffgrad>See what's next</button>` : FF.mode === 'year' && S.months >= 12 ? `<button class="btn" data-ffyear>See your year</button>` : `<button class="btn" data-ffdone>Continue</button>`;
-  return `<div class="ff-card"><div class="ff-ck">${span}</div><h3>${head}</h3>
-    ${FF.stop ? `<p>Month ${S.months}: have your salary paid into OTP and keep 3.0% for 12 more months.</p>` : ''}
-    <div class="ff-rows"><div><span>Money in</span><b class="num">${ft(S2('in'))}</b></div>
-      <div><span>Bills paid${due ? ` · ${paid} of ${due} on time` : ''}</span><b class="num">${ft(S2('bills'))}</b></div>
-      <div><span>Spent</span><b class="num">${ft(S2('spent'))}</b></div>
-      <div><span>Put aside in Persely</span><b class="num">${ft(S2('saved'))}</b></div>
-      <div><span>Interest at ${rateLabel()}, after tax</span><b class="num">+${ft(S2('interest'))}</b></div></div>
-    <div class="ff-tot"><span>Now in Persely</span><b class="num">${ft(total())}</b></div>${btn}</div>`;
+  return `<div class="ff-ck">${span}</div><h2 class="ff-h">${head}</h2>
+    ${FF.stop ? `<p class="fine" style="text-align:center;margin:-6px 0 12px">Month ${S.months}: have your salary paid into OTP and keep 3.0% for 12 more months.</p>` : ''}
+    <div class="card lst">${[['Money in', ft(S2('in'))], [`Bills paid${due ? ` · ${paid} of ${due} on time` : ''}`, ft(S2('bills'))], ['Spent', ft(S2('spent'))], ['Put aside in Persely', ft(S2('saved'))], [`Interest at ${rateLabel()}, after tax`, '+' + ft(S2('interest'))]].map(([a, b]) => `<div class="li"><span class="t"><b>${a}</b></span><b class="num">${b}</b></div>`).join('')}
+      <div class="li"><span class="t"><b>Now in Persely</b></span><b class="num u-c-gt">${ft(total())}</b></div></div>${btn}`;
 }
 const dueBills = () => mustBills().filter(b => b.day <= (S.demoDay || 14)).length;   // bills that fall due by the demo "today" (the 14th) of each simulated month
-function ffClose(quiet){
-  cancelAnimationFrame(FF.raf); FF.raf = 0; const was = FF.on; FF.on = false; const el = $('#ff'); el.classList.remove('on', 'landed'); el.innerHTML = ''; $('#phone').classList.remove('ffon');
-  if(!was || quiet) return;
-  renderAll(); mountPig();
-}
-$('#ff').addEventListener('click', e => {
-  const b = e.target.closest('button'); if(!b) return; const d = b.dataset;
-  if('ffdone' in d){ ffClose(); tab('fooldal');
-    if(S._rw){ notify({title:'Persi · Persely', persi:true, body:`Reward earned: ${S._rw.rew.title}. ${S._rw.rew.why}.`, url:'hub'}); qSheet(() => SHEETS.reward(), 'reward'); } }
-  else if('ffgrad' in d){ ffClose(); tab('hub'); pushPage('grad'); }
-  else if('ffyear' in d){ ffClose(); tab('hub'); pushPage('year'); }
-});
+function ffClose(){ if(FF.on){ FF.skip = true; if(FF.wake) FF.wake(); } ffEnd(); }
 function yearMonths(){ return (S.flowLog || []).slice(-Math.min(12, S.months || 0) || -1); }
 function yearHTML(){
   const M = yearMonths(), n = M.length, sum = key => M.reduce((a, m) => a + ffVal(m, key), 0); if(!n) return '<div class="card" style="padding:18px">Fast-forward a month first (O).</div>';

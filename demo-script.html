@@ -48,8 +48,8 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
 <div class="wrap">
   <header>
     <h1>Persely demo script</h1>
-    <p class="lead">Team 3, OTP × Corvinus seminar. One year with Kiss Anna: from her first login to the end of her first year with Persely. About 7 minutes of demo inside a 10-minute pitch. Time jumps play as a cash-flow animation on the phone, so the jury sees the money move. Everything runs in our app on the laptop (iPhone frame) and on the iPhone.</p>
-    <div class="meta"><span class="tag">3.0% with Junior</span><span class="tag">Weekly streak</span><span class="tag">Persi, the Persely piggy</span><span class="tag">Shared Persely</span><span class="tag">Graduation bridge</span><span class="tag">Bills first</span><span class="tag">Fast-forward cash flow</span><span class="tag">One year</span></div>
+    <p class="lead">Team 3, OTP × Corvinus seminar. One year with Kiss Anna: from her first login to the end of her first year with Persely. About 7 minutes of demo inside a 10-minute pitch. Time jumps play on the app's own screens: balances roll, bars grow and a small bar shows the month and each event, so the jury sees Anna's real money move. Everything runs in our app on the laptop (iPhone frame) and on the iPhone.</p>
+    <div class="meta"><span class="tag">3.0% with Junior</span><span class="tag">Weekly streak</span><span class="tag">Persi, the Persely piggy</span><span class="tag">Shared Persely</span><span class="tag">Graduation bridge</span><span class="tag">Bills first</span><span class="tag">Fast-forward on the live screens</span><span class="tag">One year</span></div>
   </header>
 
   <section class="box">
@@ -58,7 +58,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
       <li>Two minutes before: open <b>otp-persely-prototype.onrender.com</b> so the free server wakes up. On the laptop open it once as <b>…/?key=ADMIN_KEY</b> so real pushes work. The demo panel sits to the left of the phone; <kbd>H</kbd> hides it. (Backup: localhost:8090, then the MP4s in <b>media/</b>.)</li>
       <li>Press <kbd>U</kbd> (or <b>Reset app</b>): fresh data, the lock screen with a Face ID unlock, the splash, then Persi's pop-up. Anna has no First home fund yet and her Junior package ends in 300 days (month 10 of the year).</li>
       <li>Only one message shows at a time (banner, then sheet, then toast). After a push banner the sheet follows in about 4 seconds; tap the banner to open it at once. Every money move shows <b>Undo</b> for 5 seconds; do not tap it by accident.</li>
-      <li>The fast-forward plays on its own; a tap skips to its summary card. The driver never talks during an animation.</li>
+      <li>The fast-forward plays on its own; a tap on the dark bar skips to its summary sheet. The driver never talks during an animation.</li>
       <li>Presenting from the iPhone only: long-press Anna's picture on Home for the same controls (+1 month, +2 months, To month 12, Bill missed, Demo start).</li>
     </ol>
   </section>
@@ -83,7 +83,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
         <p class="say">"Three switches, and saving runs on its own. She never has to remember."</p></div>
 
       <div class="scene"><span class="n">4</span><h3>Fast forward: 1 month <kbd>O</kbd> <span class="time">3:15 · 15 s</span></h3>
-        <p class="do">The cash-flow river: salary and the family transfer flow into the Junior account, then out to bills, essentials, Fun and Persely, with a gold interest drip. Counters tick. It lands on "December 2026 · 1 month later": in 135,000 Ft, bills 5 of 5 on time, 16,500 Ft put aside, +230 Ft interest, 127,730 Ft in Persely. Tap <b>Continue</b>.</p>
+        <p class="do">The month runs on Anna's own Home screen: the Junior account rises with the salary and the family transfer and falls with the bills and card payments, Persely · total climbs, while the dark bar above the tab bar shows December 2026, the day running and each event (+75,000 Ft Salary, −55,450 Ft 5 bills paid, +16,500 Ft To Persely, +230 Ft Interest). It ends on a summary sheet: "December 2026 · 1 month later": in 135,000 Ft, bills 5 of 5 on time, 16,500 Ft put aside, +230 Ft interest, 127,730 Ft in Persely. Tap <b>Continue</b>.</p>
         <p class="say">"Let's skip a month. Watch where her money goes."</p></div>
 
       <div class="scene"><span class="n">5</span><h3>New salary <kbd>P</kbd> <span class="time">3:30 · 25 s</span></h3>
@@ -91,7 +91,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
         <p class="say">"Payday. The app asks first, and the share is gone before it can be spent."</p></div>
 
       <div class="scene"><span class="n">6</span><h3>Fast forward: 2 months <kbd>Q</kbd> <span class="time">3:55 · 15 s</span></h3>
-        <p class="do">Two months run in the river and land on "Jan 2027 – Feb 2027 · 2 months later": bills 10 of 10 on time, 33,000 Ft put aside, 168,805 Ft in Persely. <b>Continue</b>.</p>
+        <p class="do">January runs on Home, February on the Persely tab: the total and the goal bars grow. The summary sheet says "Jan 2027 – Feb 2027 · 2 months later": bills 10 of 10 on time, 33,000 Ft put aside, 168,805 Ft in Persely. <b>Continue</b>.</p>
         <p class="say">"Two more months. Now the bank has three months of her real money to learn from."</p></div>
 
       <div class="scene"><span class="n">7</span><h3>Financial analytics <span class="time">4:10 · 50 s</span></h3>
@@ -103,7 +103,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
         <p class="say">"If a bill is not paid, the app says so before Fun eats the rent. It only tells: nothing is blocked."</p></div>
 
       <div class="scene"><span class="n">9</span><h3>Fast forward: to month 12 <kbd>Y</kbd> <span class="time">5:30 · 15 s</span></h3>
-        <p class="do">The year runs, each month faster. It stops at month 10: "Dec 2026 – Sep 2027 · Your Junior package ends".</p>
+        <p class="do">The year runs on the Persely tab, each month faster: the total, the yearly interest line and the goal bars grow, the bar shows what went to Persely and the interest. It stops at month 10: "Dec 2026 – Sep 2027 · Your Junior package ends".</p>
         <p class="say">"Now a whole year."</p></div>
 
       <div class="scene"><span class="n">10</span><h3>Junior ends <span class="time">5:45 · 20 s</span></h3>
