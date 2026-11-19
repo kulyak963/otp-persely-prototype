@@ -293,6 +293,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* toast: placed by JS just above the lowest control of the screen on top (tab bar, page button, onboarding button), never over a button; inside a sheet the message is shown as a note in the sheet instead */
 .toast{position:absolute;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 104px);z-index:80;background:#2B3038;color:#fff;border-radius:14px;padding:12px 16px;font-size:0.875rem;font-weight:600;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;display:flex;align-items:center;gap:12px}
 .toast.on{opacity:1;transform:none}
+#phone.toast-on .view,#phone.toast-on .page .scroll{padding-bottom:calc(24px + var(--toast-pad,0px))}   /* while a toast is up, the last rows can be scrolled clear of it */
 .toast.act.on{pointer-events:auto}
 .toast .tm{flex:1;min-width:0}
 .tundo{flex:none;min-height:var(--tap);padding:0 12px;margin:-12px -10px -12px 0;color:#A9E88E;font-weight:700;font-size:var(--fs-m);border-radius:12px}
@@ -659,6 +660,22 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .hubteaser .pig{flex:none;margin:-6px 0}
 .bfc{border:1.5px solid var(--orange);box-shadow:none;margin-top:6px}
 .bfl{display:flex;flex-wrap:wrap;gap:0 10px;margin:2px 0 -6px}
+.bfd summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:var(--tap);cursor:pointer;list-style:none;font-size:var(--fs-m);line-height:1.35}
+.bfd summary::-webkit-details-marker{display:none}
+.bfd[open] .chev{transform:rotate(90deg)}
+.bfd-r{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:var(--tap);text-align:left;border-top:1px solid var(--line)}
+.bfd-r small{display:block;color:var(--muted-t);font-size:var(--fs-s)}
+.bfu{margin:2px 0 8px}
+.u-an-l p{margin:0 0 6px;font-size:var(--fs-m);line-height:1.45;color:var(--ink2)}
+.u-an-l{margin:2px 0 8px}
+.u-an-read{display:flex;margin:4px 0 8px}
+.u-an-b{margin:8px 0 0}
+.btn.eq{background:var(--card);color:var(--green-t);box-shadow:none;border:1.5px solid var(--green-t)}
+.bl-h{display:flex;justify-content:flex-end;padding:10px 16px 0;font-size:var(--fs-xs);font-weight:700;color:var(--muted-t)}
+.bl-h span{display:block;width:50px;text-align:center;white-space:nowrap}
+.u-pd-then{text-align:center;margin:8px 0 12px}
+.u-pd-msg{font-size:var(--fs-s);line-height:1.45;color:var(--ink2);margin:10px 0 12px}
+.u-pd-no{display:flex;margin:0 auto}
 .lrow{display:flex;flex-wrap:wrap;gap:0 14px;margin:0 0 0 10px}
 .safebtn{display:flex;align-items:center;gap:10px;width:100%;min-height:var(--tap);padding:8px 16px;margin:0 0 12px;background:var(--card);border-radius:14px;box-shadow:var(--sh);text-align:left}
 .safebtn .t{flex:1;min-width:0;font-size:var(--fs-m);color:var(--ink2)}.safebtn .t small{display:block;font-size:var(--fs-xs);color:var(--muted-t);margin-top:1px;line-height:1.3}
@@ -1132,13 +1149,15 @@ function billStatus(b, st = S){
   if(paid > 0) return {...o, st:'less', left:b.exp - paid, label:'Paid less than usual'};
   return {...o, st:over ? 'late' : 'due', label:over || days < 0 ? 'Not paid yet' : days === 0 ? 'Due today' : `Due in ${days} day${days === 1 ? '' : 's'}`};
 }
-// billsFirst() -> {on, total (every unpaid must-pay bill this month), count, rows:[{bill, s}], urgent:[...], text}
-// on = a bill is not paid and its window has passed, or one is due within 7 days and the balance does not cover the urgent ones
+// billsFirst() -> {on, warn, total (every unpaid must-pay bill this month), count, rows, late:[...], soon:[...], lateTotal, soonTotal, urgent, text}
+// "late" = a bill is not paid and its window (usual day + 5) has passed. on = at least one bill is late: only late bills drive the Bills first card, the Fun hold-off and the push.
+// "due soon" = due within 7 days (or past its day but inside the window). It lowers Safe to spend, never switches Bills first on. warn = nothing is late, but the soon bills are more than the balance.
 function billsFirst(st = S){
   const rows = mustBills(st).map(b => ({bill:b, s:billStatus(b, st)})), open = rows.filter(r => r.s.left > 0);
   const late = open.filter(r => r.s.over), soon = open.filter(r => !r.s.over && r.s.days <= 7), total = open.reduce((s, r) => s + r.s.left, 0);
-  const need = late.concat(soon).reduce((s, r) => s + r.s.left, 0), on = late.length > 0 || (soon.length > 0 && balanceOf(st) < need);
-  return {on, total, count:open.length, rows, urgent:late.concat(soon), text:on ? `Bills first: ${ft(total)} still to pay` : ''};
+  const lateTotal = late.reduce((s, r) => s + r.s.left, 0), soonTotal = soon.reduce((s, r) => s + r.s.left, 0), on = late.length > 0, warn = !on && soon.length > 0 && balanceOf(st) < soonTotal;
+  const text = !on ? '' : late.length === 1 ? `${late[0].bill.name} is late: ${ft(lateTotal)} (due on the ${ordinal(late[0].bill.day)})` : `${late.length} bills are late: ${ft(lateTotal)}`;
+  return {on, warn, total, count:open.length, rows, late, soon, lateTotal, soonTotal, urgent:late.concat(soon), text};
 }
 // groceries are not a bill: the lowest of the last 3 finished months' grocery spending is protected
 function groceriesOf(ym, st = S){ let v = 0; st.tx.forEach(t => { if(txWhen(t, st).ym !== ym) return; const ty = txType(t);
@@ -1175,8 +1194,9 @@ function __checkAnalytics(){
   ok('Persely/Savings rows never reach the projection categories', !p.cats.some(c => c.cat === 'saving' || c.cat === 'income'));
   const b0 = billsFirst(F); ok('bills first OFF by default (phone due in 6 days, balance covers it)', !b0.on && b0.total === 5550 && b0.count === 1, b0.text);
   const c1 = clone(); c1.tx = c1.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); const b1 = billsFirst(c1);
-  ok('bills first ON when rent is not paid (window passed)', b1.on && b1.total === 47550 && b1.text === 'Bills first: ' + ft(47550) + ' still to pay', b1.text);
-  const c2 = clone(); c2.accounts.find(a => a.id === 'junior').v = 3000; ok('bills first ON when a bill is due within 7 days and the balance does not cover it', billsFirst(c2).on);
+  ok('bills first ON when rent is not paid (window passed): headline counts the late rent only, the phone is coming up', b1.on && b1.total === 47550 && b1.lateTotal === 42000 && b1.late.length === 1 && b1.soonTotal === 5550 && b1.text === 'Rent share is late: ' + ft(42000) + ' (due on the 2nd)', b1.text);
+  const c2 = clone(); c2.accounts.find(a => a.id === 'junior').v = 3000; const w2 = billsFirst(c2); ok('due soon and the balance cannot cover it: warning only, Bills first stays OFF (no push, no Fun hold-off)', !w2.on && w2.warn && w2.late.length === 0 && w2.text === '' && w2.soonTotal === 5550, w2);
+  const c2b = clone(); c2b.tx = c2b.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); c2b.tx = c2b.tx.filter(t => !(t.n === 'YETTEL MAGYARORSZÁG' && t.ym === '2026-11')); ok('several late bills: headline "2 bills are late" with the late total, due-soon bills left out', (() => { c2b.bills.forEach(b => { if(b.key === 'YETTEL MAGYARORSZÁG') b.day = 3; }); const x = billsFirst(c2b); return x.on && x.late.length === 2 && x.text === '2 bills are late: ' + ft(47550); })());
   const c3 = clone(); c3.billSkip = {'szab-d-ra':'2026-11'}; c3.tx = c3.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); ok('"Not due this month" clears the card', !billsFirst(c3).on);
   const c4 = clone(); c4.tx = c4.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); c4.tx.unshift({ym:'2026-11', day:14, d:'14 November', n:'SZABÓ DÓRA', s:'Transfer out', a:-42000, ic:'wallet'}); ok('paying the rent turns it off again', !billsFirst(c4).on);
   const c5 = clone(); c5.tx.unshift({ym:'2026-11', day:14, d:'14 November', n:'YETTEL MAGYARORSZÁG', s:'Direct debit', a:-2000, ic:'wallet'}); ok('paid less than usual', billStatus(c5.bills.find(b => b.id === 'yettel-magyarorsz-g'), c5).st === 'less');
@@ -1203,7 +1223,7 @@ function __checkAnalytics(){
   // steps 6-9 and 12 run against a copy of the app state, then the real state is put back
   const keep = S; try{
     S = clone(); S.analyst.on = true; S.onboarded = true; ok('suggestSplit comes from the projection: 50 / 40 / 10', JSON.stringify(suggestSplit()) === JSON.stringify({ess:50, fun:40, save:10}), suggestSplit());
-    ok('bills first card, push text and Persi line when the rent is unpaid', (() => { S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); return bfNow().on && bfCard().includes('Bills first: ' + ft(47550) + ' still to pay') && persiSays().text === 'Bills first: ' + ft(47550) + ' still to pay.'; })());
+    ok('bills first card, push text and Persi line when the rent is unpaid', (() => { S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); return bfNow().on && bfCard().includes('Rent share is late: ' + ft(42000) + ' (due on the 2nd)') && bfCard().includes('Coming up: Phone ' + ft(5550) + ' on the 20th') && persiSays().text === 'Rent share is late: ' + ft(42000) + ' (due on the 2nd).'; })());
     ok('analyst off: no bills-first card or Persi line', (() => { S.analyst.on = false; const r = !bfNow().on && bfCard() === ''; S.analyst.on = true; return r; })());
     S.billsPocket = {on:true, bal:61000}; const j0 = balanceOf(), r1 = payBill('szab-d-ra');
     ok('pay from the Bills pocket: pocket 61 000 -> 19 000, Junior balance untouched, rent paid, bills first off', r1.fromPocket && S.billsPocket.bal === 19000 && balanceOf() === j0 && !bfNow().on && billStatus(billById('szab-d-ra')).st === 'paid', [r1, S.billsPocket]);
@@ -1218,6 +1238,13 @@ function __checkAnalytics(){
     ok('after +1 month: nothing counted twice (every month in the window)', ['2026-09', '2026-10', '2026-11', '2026-12'].every(ym => { const u = monthUse(ym), all = S.tx.filter(t => txWhen(t).ym === ym), t = all.reduce((a, x) => a + x.a, 0); return u.count === all.length && u.income - u.spendTotal - u.own - u.cash - u.topup === t; }));
     S = clone(); S.analyst.on = true; S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); const was = bfNow().on, pr = payBill('szab-d-ra');
     ok('alert in the app: on after key B, off after Pay now rent', was && !pr.err && !bfNow().on && bfCard() === '', [was, pr]);
+    // payday "Bills first" sheet: the amount moved is the unpaid amount, and the "Then:" line is what the balances show afterwards
+    S = clone(); S.analyst.on = true; S.payday.on = true; S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11'));
+    const P1 = paydayPlan(), jb = balanceOf(); pocketMove(P1.toMove);
+    ok('payday sheet (key B, then P): moves exactly the unpaid 47 550 Ft (not 61 000), 7 500 Ft saving rule, 19 950 Ft free for Fun', P1.toMove === 47550 && P1.unpaid === 47550 && P1.rule === 7500 && P1.canSave && P1.left === 19950 && pocketBal() === 47550 && balanceOf() === jb - 47550 && paydayPlan().pocketEnough, P1);
+    S = clone(); S.analyst.on = true; S.payday.on = true; S.billsPocket = {on:true, bal:61000}; const P2 = paydayPlan(); ok('payday sheet: pocket already holds enough -> nothing to move, saving action only', P2.pocketEnough && P2.toMove === 0 && P2.canSave && P2.left === 67500, P2);
+    S = clone(); S.analyst.on = true; S.payday.on = true; S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); acc('junior').v = 30000; const P3 = paydayPlan(); ok('payday sheet: salary does not cover the bills -> covers 1 of 2, saving waits, moves only what it covers (5 550 Ft)', P3.partial && P3.coverN === 1 && P3.toMove === 5550 && !P3.canSave, P3);
+    S = clone(); S.analyst.on = true; S.billSkip = {}; mustBills().forEach(b => { S.billSkip[b.id] = billToday().ym; }); ok('payday sheet: no unpaid bills -> the normal payday sheet', !paydayBills() && !SHEETS.payday().includes('Bills still to pay'));
   } finally { S = keep; renderAll(); }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   const bad = out.filter(r => !r.pass);
@@ -1568,7 +1595,7 @@ const hintHTML = key => { const h = HINT_NOW === key && HINTS.find(x => x[0] ===
 function persiSays(){
   const g = ruleGoal(), pct = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100));
   if(!S.onboarded) return {mood:'happy', text:"Hi, I'm Persi. Let's pick a goal."};
-  const bf = bfNow(); if(bf.on) return {mood:'concerned', text:`${bf.text}.`};
+  const bf = bfNow(); if(bf.on) return {mood:'concerned', text:`${bf.text}.`};   // late bills only
   if(S.analyst.on && S.bfDone) return {mood:'proud', text:'Bills paid. Fun is back on.'};
   if(!S.savedWeek && S.streak > 0) return {mood:'concerned', text:'Any amount by Sunday keeps your streak.'};
   if(!S.savedWeek) return {mood:'happy', text:'Any amount this week starts your streak.'};
@@ -1613,7 +1640,7 @@ function splitCard(){
   const rows = SPLIT_BUCKETS.map(([k, label]) => { const budget = splitAmt(a.split[k]), used = use[k], p = budget ? Math.round(used / budget * 100) : 0, over = k !== 'save' && p > 100, hold = k === 'fun' && bf.on;
     return `<div class="u-p10v"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b style="font-size:0.90625rem">${label} · ${a.split[k]}%</b><span class="num" style="font-size:0.78125rem;color:${over ? 'var(--orange-t)' : 'var(--muted-t)'}">${ft(used)} of ${ft(budget)}</span></div>
       <div class="prog" style="margin:7px 0 5px"><i style="width:${Math.min(100,p)}%;${over ? 'background:var(--orange)' : ''}"></i></div>
-      <div class="k" style="font-size:0.78125rem">${hold ? `<b style="color:var(--orange-t)">Bills first: ${ft(bf.total)} to pay</b> · ${p}% used` : k === 'save' ? `${p}% moved to Persely` : `${p}% used${k === 'fun' ? dl : ''}`}${over ? ' · over your split' : ''}</div></div>`; }).join('');
+      <div class="k" style="font-size:0.78125rem">${hold ? `<b style="color:var(--orange-t)">Bills first: ${ft(bf.lateTotal)} late</b> · ${p}% used` : k === 'save' ? `${p}% moved to Persely` : `${p}% used${k === 'fun' ? dl : ''}`}${over ? ' · over your split' : ''}</div></div>`; }).join('');
   return `${head}<div class="card" style="padding:6px 16px 14px">${rows}
     <button class="li-safe" data-sheet="safe"><span>Safe to spend now</span><b class="num">${ft(safeToSpend().safe)}</b>${I('chev',16)}</button>
     <div class="fine" style="border-top:1px solid var(--line);padding-top:10px">${S.payday.on ? 'Your payday rule moves this to Persely.' : 'Your payday rule is off, so Saving does not move by itself. Turn it on in Money in.'} The Saving share is the same setting as the payday rule, so changing one changes the other. Based on a ${ft(S.income.amount)} income.</div></div>`;
@@ -1632,7 +1659,11 @@ const GROUPN = {must:'Must-pay', flex:'Essentials', fun:'Fun', subs:'Subscriptio
 const catLabel = cat => { const c = CATEGORY[cat]; return c[2] === 'must' ? 'Must-pay' : c[1] ? bucketName(c[1]) : GROUPN[c[2]]; };
 const monthOf = ym => MONTHN[+ym.slice(5) - 1];
 const refBase = r => (r || '').replace(/\s*(január|február|március|április|május|június|július|augusztus|szeptember|október|november|december|january|february|march|april|may|june|july|august|september|october|december)\s*$/i, '');
-function billLabel(s, id){ return s.st === 'skipped' ? ((S.billSkipWhy || {})[id] === 'paid' ? 'Already paid elsewhere' : 'Not due this month') : s.label; }
+// "Paid 2 Nov": the paid state is its own chip with the day the payment left the account
+function billPaidOn(id){ const b = billById(id); if(!b) return ''; const now = billToday(); let last = null;
+  S.tx.forEach(t => { if(t.a < 0 && ['card', 'debit', 'out'].includes(txType(t)) && payeeKey(t) === b.key){ const w = txWhen(t); if(w.ym === now.ym && (!last || w.day > last.day)) last = w; } });
+  return last ? ` ${last.day} ${MONTHN[+now.ym.slice(5) - 1].slice(0, 3)}` : ''; }
+function billLabel(s, id){ return s.st === 'skipped' ? ((S.billSkipWhy || {})[id] === 'paid' ? 'Already paid elsewhere' : 'Not due this month') : s.st === 'paid' ? 'Paid' + billPaidOn(id) : s.label; }
 const billPill = s => s.st === 'paid' || s.st === 'skipped' ? 'ok' : s.st === 'late' || s.st === 'less' ? 'open' : '';
 const mustTotal = () => mustBills().reduce((a, b) => a + b.exp, 0);
 const pocketOffer = () => Math.max(0, mustTotal() - pocketBal());   // "Move X Ft to Bills pocket": a month of must-pay bills (61 000 Ft in the demo)
@@ -1660,13 +1691,17 @@ function pocketBack(){
   S.tx.unshift({...stamp(), d:'Today', n:'BILLS POCKET', s:'Between my accounts', a:x, ic:'wallet', note:'Moved back'}); return x;
 }
 function billsDone(was){ const now = bfNow().on; if(was && !now) S.bfDone = true; else if(now) S.bfDone = false; return was && !now; }
-// a card at the top of Home and the Persely tab while a bill is open: Pay now, Already paid elsewhere, Not due this month
+// a card at the top of Home and the Persely tab. Late bills: Pay now, Already paid elsewhere, Not due this month. Nothing late but a bill due soon the balance cannot cover: an orange heads-up, no "Bills first".
+const comingUp = bf => bf.soon.map(r => `${esc(r.bill.name)} ${ft(r.s.left)} on the ${ordinal(r.bill.day)}`).join(', ');
 function bfCard(){
-  const bf = bfNow(); if(!bf.on) return '';
-  const r = bf.urgent[0], b = r.bill, more = bf.count - 1;
-  const why = r.s.over ? `${b.name} isn't paid yet. It was due on the ${ordinal(b.day)}.` : `${b.name} is due on the ${ordinal(b.day)} and your balance does not cover it.`;
-  return `<div class="card bfc"><div class="hrow"><span class="pill open">Bills first</span><span class="k">${plural(bf.count, 'bill')} to pay</span></div>
-    <div class="u-tip-p"><b>${bf.text}.</b> ${why}${more > 0 ? ` ${more} more on the list.` : ''}</div>
+  const bf = bfNow(); if(!bf.on && !bf.warn) return '';
+  if(!bf.on) return `<div class="card bfc"><div class="hrow"><span class="pill open">Coming up</span><span class="k">${plural(bf.soon.length, 'bill')}</span></div>
+    <div class="u-tip-p"><b>${comingUp(bf)}: your balance won't cover it</b></div>
+    <div class="hero-btns u-m0"><button class="btn w" data-go="bills">All bills</button></div></div>`;
+  const r = bf.late[0], b = r.bill, many = bf.late.length > 1;
+  const head = many ? `<details class="bfd"><summary><b>${bf.text}</b><span class="chev">${I('chev', 16)}</span></summary><div class="bfd-l">${bf.late.map(x => `<button class="bfd-r" data-paybill="${x.bill.id}"><span class="t"><b>${esc(x.bill.name)}</b><small>Due on the ${ordinal(x.bill.day)}</small></span><b class="num">${ft(x.s.left)}</b></button>`).join('')}</div></details>` : `<div class="u-tip-p"><b>${bf.text}</b></div>`;
+  return `<div class="card bfc"><div class="hrow"><span class="pill open">Bills first</span><span class="k">${bf.late.length} late</span></div>
+    ${head}${bf.soon.length ? `<div class="k bfu">Coming up: ${comingUp(bf)}</div>` : ''}
     <div class="hero-btns u-m0"><button class="btn" data-paybill="${b.id}">Pay now</button><button class="btn w" data-go="bills">All bills</button></div>
     <div class="bfl"><button class="link lnk44" data-billskip="${b.id}:paid">Already paid elsewhere</button><button class="link lnk44" data-billskip="${b.id}:notdue">Not due this month</button></div></div>`;
 }
@@ -1682,7 +1717,7 @@ function billsBlock(){
   const bf = billsFirst(), p = project(), n = mustBills().length, found = (S.bills || []).filter(b => !b.ignored).length;
   const row = (ic, t, sub, go) => `<button class="li" data-go="${go}"><span class="ic">${I(ic)}</span><span class="t"><b>${t}</b><small>${sub}</small></span><span class="chev">${I('chev', 20)}</span></button>`;
   return `<div class="sec"><span>Bills and next month</span></div>
-  ${S.billsConfirmed ? '' : `<div class="card" style="padding:16px"><b class="u-fs-m">We found ${found} regular payments</b><div class="fine u-mt4-b12">Lock the ones you must pay. Housing, utilities, the pass and the phone are ticked already.</div><button class="btn" data-go="bills">Check my bills</button></div>`}
+  ${S.billsConfirmed ? '' : `<div class="card" style="padding:16px"><b class="u-fs-m">We found ${found} regular payments</b><div class="fine u-mt4-b12">Lock the ones you must pay. Housing, utilities, the pass and the phone are ticked already.</div><button class="btn" data-go="bills">Confirm my bills</button></div>`}
   <div class="card lst">
     ${row('chart', 'Next month', `About ${ft(p.income.total)} in · must-pay ${p.pct.must}% · Fun ${p.pct.fun}%`, 'nextmonth')}
     ${row('list', 'Must-pay bills', bf.on ? `<span style="color:var(--orange-t);font-weight:600">${bf.text}</span>` : `${plural(n, 'bill')} · ${ft(mustTotal())} a month`, 'bills')}
@@ -1693,7 +1728,7 @@ function billsBlock(){
 const needAnalyst = what => `<div class="card" style="padding:16px;margin-top:8px"><b class="u-fs-m">${what} needs the financial analyst</b><div class="fine u-mt4-b12">It is optional and off right now. Turn it on to see your bills and next month.</div><button class="btn" data-sheet="analyst">See what it measures</button></div>`;
 function billRow(r){
   const b = r.bill, s = r.s, sub = `${ft(b.exp)} · due on the ${ordinal(b.day)}${s.paid && s.st !== 'skipped' ? ` · paid ${ft(s.paid)}` : ''}`;
-  return `<div class="li sw"><button class="li-main" data-billopen="${b.id}"><span class="t"><b>${esc(b.name)}</b><small>${sub}</small><span class="pill ${billPill(s)}" style="display:inline-block;margin-top:5px">${billLabel(s, b.id)}</span></span></button>${swBtn(b.locked, `data-lockbill="${b.id}"`, `Must-pay: ${esc(b.name)}`)}</div>`;
+  return `<div class="li sw"><button class="li-main" data-billopen="${b.id}"><span class="t"><b>${esc(b.name)}</b><small>${sub}</small><span class="pill ${billPill(s)}" style="display:inline-block;margin-top:5px">${billLabel(s, b.id)}</span></span></button>${swBtn(b.locked, `data-lockbill="${b.id}"`, `Count ${esc(b.name)} as must-pay`)}</div>`;
 }
 const SEG = {must:['Must-pay bills', '#2467A0'], everyday:['Everyday essentials', '#4D9BD6'], fun:['Fun', '#F07D19'], other:['Other', '#A7ADB8'], saving:['Saving', '#52AE30'], left:['Left over', '#DDE1E8']};
 function nextMonthHTML(){
@@ -1718,15 +1753,15 @@ function billsHTML(){
   const bf = billsFirst(), rows = bf.rows, sf = safeToSpend(), paid = rows.reduce((a, r) => a + (r.s.st === 'paid' || r.s.st === 'less' ? r.s.paid : 0), 0);
   const others = (S.bills || []).filter(b => !b.locked && !b.ignored).map(b => ({bill:b, s:billStatus(b)}));
   const offer = pocketOffer(), pk = S.billsPocket;
-  return `${S.billsConfirmed ? '' : `<div class="card" style="margin-top:8px;padding:16px"><b class="u-fs-m">We found ${(S.bills || []).filter(b => !b.ignored).length} regular payments</b><div class="fine u-mt4-b12">Lock the ones you must pay. Housing, utilities, the pass and the phone are ticked already. You can change any of them later.</div><button class="btn" data-confirmbills>Confirm my must-pay bills</button></div>`}
+  return `${S.billsConfirmed ? '' : `<div class="card" style="margin-top:8px;padding:16px"><b class="u-fs-m">We found ${(S.bills || []).filter(b => !b.ignored).length} regular payments</b><div class="fine u-mt4-b12">Lock the ones you must pay. Housing, utilities, the pass and the phone are ticked already. You can change any of them later.</div><button class="btn" data-confirmbills>Confirm my bills</button></div>`}
   ${bfCard()}
   <div class="card" style="${bf.on || !S.billsConfirmed ? '' : 'margin-top:8px'}"><div class="k">This month's must-pay bills</div>
     <div class="hero-v num" style="margin:2px 0 4px">${ft(rows.reduce((a, r) => a + r.bill.exp, 0))}</div>
     <div class="k">${ft(paid)} paid · ${bf.total ? `${ft(bf.total)} still to pay` : 'nothing left to pay'}</div>
     <button class="link lnk44" data-sheet="safe" style="margin-top:4px">Safe to spend: ${ft(sf.safe)} ${I('chev', 16)}</button></div>
   <div class="sec"><span>Must-pay bills</span></div>
-  <div class="card lst">${rows.length ? rows.map(billRow).join('') : '<div class="li"><span class="t"><small>No bill is locked yet. Lock a regular payment below.</small></span></div>'}</div>
-  ${others.length ? `<div class="sec"><span>Other regular payments</span></div><div class="card lst">${others.map(billRow).join('')}</div><div class="fine u-note-b12">Subscriptions are not locked: they count as Fun. Still using them?</div>` : ''}
+  <div class="card lst">${rows.length ? `<div class="bl-h" aria-hidden="true"><span>Must-pay</span></div>${rows.map(billRow).join('')}` : '<div class="li"><span class="t"><small>No bill is locked yet. Lock a regular payment below.</small></span></div>'}</div>
+  ${others.length ? `<div class="sec"><span>Other regular payments</span></div><div class="card lst"><div class="bl-h" aria-hidden="true"><span>Must-pay</span></div>${others.map(billRow).join('')}</div><div class="fine u-note-b12">Subscriptions are not locked: they count as Fun. Still using them?</div>` : ''}
   <div class="sec"><span>Bills pocket</span></div>
   <div class="card"><div class="u-rowc"><span class="gic">${I('wallet', 22)}</span><span class="u-fx1"><b class="u-fs-m">${pk.on && pk.bal > 0 ? ft(pk.bal) : 'Not in use'}</b><div class="k">A pot for bills only. No goal, no interest. Each bill is paid from it while it has money. Safe to spend does not count it.</div></span></div>
     ${offer > 0 ? `<button class="btn w" data-pocketmove="${offer}" style="margin-top:12px">Move ${ft(offer)} to Bills pocket</button>` : ''}
@@ -1796,7 +1831,7 @@ function vHub(){
   ${bfCard()}
   ${juniorTop ? junior : ''}
   ${hintHTML('total')}<div class="card hero" data-tour="total">
-    <div class="persi" data-tour="persi">${pig(ps.mood, 48)}<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>
+    <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${HINT_NOW ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
       <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
     <div class="hrow"><span class="k">Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Junior 3.0%' : 'Standard rate'}</span></div>
     <div class="hero-v num">${ft(tot)}${et ? ` <small class="k" style="font-size:var(--fs-m);font-weight:600">+ ${eur(et)}</small>` : ''}</div>
@@ -2086,7 +2121,9 @@ let cur = 'fooldal';
 function renderTabs(){ $('#tabbar').innerHTML = TABS.map(([id,ic,l])=>`<button class="tb ${id===cur?'on':''}" data-tab="${id}">${I(ic)}${id==='hub' && !S.savedWeek && S.streak>0 ? '<i class="nd"></i>' : ''}${l}</button>`).join(''); }
 function renderView(id){ const t=TABS.find(x=>x[0]===id); $('#v-'+id).innerHTML = t[3](); }
 function renderAll(){ syncSplit(); TABS.forEach(t=>renderView(t[0])); renderTabs(); refreshPages(); save(); if(typeof mountPig==='function') mountPig(); }
+let NAVC = {n:0};   // counts page changes: something the app plans to open later checks that nothing else was opened meanwhile
 function tab(id){
+  NAVC.n++; hideToast();   // a toast belongs to the page where the action happened: it closes when the student goes somewhere else
   if(cur === 'hub' && id !== 'hub' && HINT_NOW){ S.hints[HINT_NOW] = 1; HINT_NOW = null; save(); }   // leaving the tab counts the hint as shown
   if(id === 'hub') pickHint();
   cur=id; document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on', v.id==='v-'+id));
@@ -2102,6 +2139,7 @@ function pageHTML(id){
   <div class="scroll">${p.html()}</div>${p.foot&&p.foot()?`<div class="foot">${p.foot()}</div>`:''}`;
 }
 function pushPage(id){
+  NAVC.n++; hideToast();
   if(cur === 'hub') endHint();   // opening a page counts the hint as shown
   const el = document.createElement('div'); el.className='page'; el.dataset.id=id;
   el.innerHTML = pageHTML(id); $('#stack').appendChild(el); stack.push(el);
@@ -2109,6 +2147,7 @@ function pushPage(id){
 }
 function popPage(instant){
   const el = stack.pop(); if(!el) return;
+  NAVC.n++; hideToast();
   if(instant){ el.remove(); if(typeof mountPig === 'function') mountPig(); return; }
   el.classList.add('out'); setTimeout(()=>{ el.remove(); if(typeof mountPig === 'function') mountPig(); },220);
 }
@@ -2157,9 +2196,9 @@ function showToast(m, o){
   o = o || {}; const t = $('#toast');
   t.innerHTML = `<span class="tm">${esc(m)}</span>${o.undo ? '<button class="tundo" data-undo>Undo</button>' : ''}`;
   t.classList.toggle('act', !!o.undo); UNDO.fn = o.undo || null; placeToast();
-  t.classList.add('on'); MQ.toast = true; clearTimeout(tt); tt = setTimeout(() => hideToast(), o.undo ? 5000 : 2400);
+  t.classList.add('on'); MQ.toast = true; $('#phone').style.setProperty('--toast-pad', (t.offsetHeight + 28) + 'px'); $('#phone').classList.add('toast-on'); clearTimeout(tt); tt = setTimeout(() => hideToast(), o.undo ? 5000 : 2400);
 }
-function hideToast(quiet){ clearTimeout(tt); $('#toast').classList.remove('on','act'); UNDO.fn = null; MQ.toast = false; if(!quiet) mqPump(); }
+function hideToast(quiet){ clearTimeout(tt); $('#toast').classList.remove('on','act'); $('#phone').classList.remove('toast-on'); UNDO.fn = null; MQ.toast = false; if(!quiet) mqPump(); }
 function sheetNote(m){   // a message while a sheet is open: shown at the top of the sheet, never over its buttons
   const sh = $('#sheet'); sh.querySelectorAll('.snote-w').forEach(n => n.remove());
   const w = document.createElement('div'); w.className = 'snote-w'; w.innerHTML = `<div class="snote" role="status">${esc(m)}</div>`; sh.prepend(w);
@@ -2169,6 +2208,14 @@ function sheetNote(m){   // a message while a sheet is open: shown at the top of
    Limit: anything else changed in those 5 seconds is undone too; a real push already sent or the piggy animation cannot be taken back. */
 const snap = () => JSON.stringify(S);
 function undoable(before, msg){ toast(msg, {undo:() => { S = JSON.parse(before); mqDrop('goaloffer'); closeSheet(); renderAll(); if(ST.on) stRefresh(true); toast('Undone'); }}); }
+// payday with bills open: what to move so the unpaid bills are covered, and what is left. unpaid = every must-pay bill not paid this month (late or still to come)
+function paydayPlan(){
+  const g = ruleGoal(), bf = billsFirst(), pk = pocketBal(), bal = balanceOf(), inc = S.income.amount, share = incomeShare(S.payday.pct), unpaid = bf.total;
+  const open = bf.rows.filter(r => r.s.left > 0).sort((a, b) => (b.s.over - a.s.over) || (a.bill.day - b.bill.day)), need = Math.max(0, unpaid - pk), pocketEnough = need === 0, partial = need > bal;
+  let sum = 0, coverN = 0; if(partial){ for(const r of open){ if(sum + r.s.left > bal + pk) continue; sum += r.s.left; coverN++; } }
+  const toMove = partial ? Math.max(0, sum - pk) : need, rule = S.payday.on ? share : 0, canSave = !partial && rule > 0 && bal - toMove >= rule;
+  return {g, bf, pk, bal, inc, unpaid, open, pocketEnough, partial, coverN, toMove, rule, canSave, left:Math.max(0, inc - toMove - (canSave ? rule : 0))};
+}
 const SHEETS = {
   befizet:()=>moneySheet('Add money','Junior account → Persely','befizet'),
   kivesz:()=>moneySheet('Take money out','Persely → Junior account','kivesz'),
@@ -2202,15 +2249,22 @@ const SHEETS = {
     <button class="btn" data-hubout>Withdraw</button>`; },
   // payday: the app asks before moving money (the user keeps control)
   payday:()=>{ const g = ruleGoal(), share = incomeShare(S.payday.pct), s = gSaved(g), t = gTarget(g);
-    if(paydayBills()){   // "Bills first": salary -> unpaid bills -> saving rule -> what is left for Fun
-      const inc = S.income.amount, bf = billsFirst(), pk = pocketBal(), unpaid = Math.max(0, bf.total - pk), rule = S.payday.on ? share : 0, covers = balanceOf() - unpaid >= rule, left = Math.max(0, inc - unpaid - (covers ? rule : 0)), offer = pocketOffer();
-      const li = (l, v, sub, c) => `<div class="li"><span class="t"><b>${l}</b>${sub ? `<small>${sub}</small>` : ''}</span><b class="num" style="${c ? 'color:' + c : ''}">${v}</b></div>`;
-      return `<div class="u-rowc"><span class="gic">${I('money',24)}</span><div><div class="k">Salary · today</div><b class="u-fs-22">+${ft(inc)} arrived</b></div></div>
-      <h2 style="text-align:left;margin:16px 0 10px;font-size:1.125rem;line-height:1.35">Bills first</h2>
-      <div class="card lst">${li('Salary', '+ ' + ft(inc))}${li('Bills still to pay', '− ' + ft(unpaid), pk ? `${plural(bf.count, 'bill')} · the Bills pocket covers ${ft(Math.min(bf.total, pk))}` : plural(bf.count, 'bill'))}
-        ${S.payday.on ? li('Saving rule', covers ? '− ' + ft(rule) : 'waits', covers ? `${S.payday.pct}% to ${esc(g.name)}` : 'The money does not cover the bills yet, so saving waits', covers ? '' : 'var(--orange-t)') : ''}${li('Left for Fun', ft(left), '', 'var(--green-t)')}</div>
-      ${offer > 0 ? `<button class="btn" data-pocketmove="${offer}" data-payday>Move ${ft(offer)} to Bills pocket</button><div class="fine" style="text-align:center;margin:6px 0 4px">A pot for bills only: no goal, no interest. Each bill is paid from it. Safe to spend leaves it out.</div>` : `<div class="fine u-note-b12">Your Bills pocket holds ${ft(pk)}, enough for this month's bills.</div>`}
-      ${S.payday.on && covers ? `<button class="btn ${offer > 0 ? 'w' : ''}" data-paymove>Move ${ft(share)} to ${esc(g.name)}</button>` : ''}<button class="btn ghost" data-closesheet>Not this time</button>`; }
+    if(paydayBills()){   // "Bills first": one recommended path with the exact unpaid amount and its result shown before the tap
+      const P = paydayPlan(), li = (l, v, sub, c) => `<div class="li"><span class="t"><b>${l}</b>${sub ? `<small>${sub}</small>` : ''}</span><b class="num" style="${c ? 'color:' + c : ''}">${v}</b></div>`;
+      const owed = P.open.map(r => `${esc(r.bill.name)} ${ft(r.s.left)}`).join(' · '), gn = esc(P.g.name);
+      const msg = P.pocketEnough ? `Your bills are covered by Bills pocket.`
+        : P.partial ? `Your salary covers ${P.coverN} of ${P.open.length} bills.${P.toMove > 0 ? ` Move ${ft(P.toMove)} to Bills pocket; the saving rule waits this month.` : ' The saving rule waits this month.'}`
+        : S.payday.on && !P.canSave ? 'The saving rule waits this month: your money does not cover both.' : '';
+      const then = `<div class="fine u-pd-then"><b>Then:</b> ${P.partial ? `${P.coverN} of ${P.open.length} bills covered · saving waits` : `bills covered${P.canSave ? ` · ${ft(P.rule)} to ${gn}` : S.payday.on ? ' · saving waits' : ''} · ${ft(P.left)} free for Fun`}</div>`;
+      let act;
+      if(P.pocketEnough) act = P.canSave ? `<button class="btn" data-paymove>Save ${ft(P.rule)} to ${gn}</button>${then}<button class="link lnk44 u-pd-no" data-closesheet>Not this time</button>` : `<button class="btn ghost" data-closesheet>Close</button>`;
+      else if(P.partial) act = P.toMove > 0 ? `<button class="btn" data-paycover="${P.toMove}" data-only>Move ${ft(P.toMove)} to Bills pocket</button>${then}<button class="link lnk44 u-pd-no" data-closesheet>Not this time</button>` : `<button class="btn ghost" data-closesheet>Close</button>`;
+      else if(P.canSave) act = `<button class="btn" data-paycover="${P.toMove}">Cover bills and save ${ft(P.rule)}</button>${then}<button class="btn w" data-paycover="${P.toMove}" data-only>Only cover the bills</button><button class="link lnk44 u-pd-no" data-closesheet>Not this time</button>`;
+      else act = `<button class="btn" data-paycover="${P.toMove}" data-only>Move ${ft(P.toMove)} to Bills pocket</button>${then}<button class="link lnk44 u-pd-no" data-closesheet>Not this time</button>`;
+      return `<div class="u-rowc"><span class="gic">${I('money',24)}</span><div><div class="k">Salary · today</div><b class="u-fs-22">+${ft(P.inc)} arrived</b></div></div>
+      <h2 style="text-align:left;margin:16px 0 10px;font-size:1.125rem;line-height:1.35">${P.bf.on ? 'Bills first' : 'Cover your bills'}</h2>
+      <div class="card lst">${li('Bills still to pay', ft(P.unpaid), owed + (P.pk ? ` · Bills pocket holds ${ft(P.pk)}` : ''))}</div>
+      ${msg ? `<div class="u-pd-msg">${msg}</div>` : ''}${act}`; }
     return `<div class="u-rowc"><span class="gic">${I('money',24)}</span><div><div class="k">Salary · today</div><b class="u-fs-22">+${ft(S.income.amount)} arrived</b></div></div>
     <h2 style="text-align:left;margin:16px 0 10px;font-size:1.125rem;line-height:1.35">Move ${S.payday.pct}% (${ft(share)}) to ${esc(g.name)}?</h2>
     <div class="card" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-s)"><span class="k">${esc(g.name)}</span><b class="num">${ft(s)} → ${ft(s+share)}</b></div><div class="prog" style="margin:8px 0 0"><i style="width:${Math.min(100,Math.round((s+share)/t*100))}%"></i></div></div>
@@ -2225,20 +2279,25 @@ const SHEETS = {
     <button class="opt slim ${p.floor?'on':''}" data-prfloor><span class="t"><b class="u-fs-14">Always keep 20 000 Ft on my account</b><small>If money is tight, less or nothing moves</small></span><span class="tg ${p.floor?'on':''}"></span></button>
     <div class="fine u-note-t6">From a ${ft(S.income.amount)} salary: ${ft(incomeShare(p.pct))}.${S.analyst.on ? ' This is also the Saving share of your monthly split.' : ''}</div>
     <button class="btn" data-pron>${p.on ? 'Save' : 'Turn on'}</button>${p.on ? '<button class="btn ghost" data-proff>Turn off</button>' : ''}`; },
-  // financial analyst: opt-in, says what it measures, shows the suggested split and lets the user accept it
+  // the full consent list, opened from "What it reads" on the analyst sheet
+  anread:()=>{ const sg = suggestSplit();
+    return `<h2>What it reads</h2><div class="fine u-sheet-sub">Optional. Off unless you turn it on.</div>
+    <div class="card u-card-bul"><ul class="bul sm"><li>Your card payments, transfers, direct debits and income on this OTP account</li><li>Your regular bills, found from the last 3 months, and a guess for next month</li><li>Your monthly split: Essentials, Fun and Saving, and one insight a month</li><li>Names of people you pay are only used to sort your payments</li></ul></div>
+    <div class="fine u-note-b14">Saving is your payday rule: ${S.payday.on ? `you already move ${sg.save}% of each salary to ${esc(ruleGoal().name)}.` : `using this split turns the payday rule on at ${sg.save}%, and it asks you first each time.`} Bills first only tells you: nothing is blocked and nothing moves unless you agree. Your data is not shared with anyone outside OTP. You can turn it off any time.</div>
+    <button class="btn" data-sheet="analyst">Back</button>`; },
+  // financial analyst: opt-in, two equal choices, the suggested split under three short lines; after Turn on: Use this split / Change it
   analyst:()=>{ const a = S.analyst, sg = suggestSplit(), sp = a.accepted ? a.split : sg;
     const splitRows = `<div class="card lst">${SPLIT_BUCKETS.map(([k,l]) => `<div class="li"><span class="t"><b>${l}</b></span><b class="num">${sp[k]}% · ${ft(splitAmt(sp[k]))}</b></div>`).join('')}</div>`;
-    if(!a.on) return `<h2>Financial analyst</h2><div class="fine u-sheet-sub">Optional. Off unless you turn it on.</div>
-    <div class="flabel">What it measures</div>
-    <div class="card u-card-bul"><ul class="bul sm"><li>Your card payments, transfers, direct debits and income on this OTP account</li><li>Your regular bills, found from the last 3 months, and a guess for next month</li><li>Your monthly split: Essentials, Fun and Saving, and one insight a month</li><li>Names of people you pay are only used to sort your payments</li></ul></div>
-    <div class="flabel">Suggested split of your ${ft(S.income.amount)} income</div>
+    if(!a.on) return `<h2>Financial analyst</h2>
+    <div class="u-an-l"><p>Sorts your payments, finds your regular bills and suggests a monthly split.</p><p>Only from this OTP account. Nothing moves without your tap.</p><p>Turn it off any time.</p></div>
+    <div class="flabel">Suggested split</div>
     ${splitRows}
-    <div class="fine u-note-b14">Saving is your payday rule: ${S.payday.on ? `you already move ${sg.save}% of each salary to ${esc(ruleGoal().name)}.` : `using this split turns the payday rule on at ${sg.save}%, and it asks you first each time.`} Bills first only tells you: nothing is blocked and nothing moves unless you agree. Your data is not shared with anyone outside OTP. You can turn it off any time.</div>
-    <button class="btn" data-anuse>Turn on and use this split</button><button class="btn ghost" data-anon>Only turn it on, I will choose later</button><button class="btn ghost" data-closesheet>Not now</button>`;
+    <button class="link lnk44 u-an-read" data-sheet="anread">What it reads ${I('chev',16)}</button>
+    <div class="hero-btns u-an-b"><button class="btn eq" data-anon>Turn on</button><button class="btn eq" data-closesheet>Not now</button></div>`;
     if(!a.accepted) return `<h2>Your suggested split</h2><div class="u-sheet-sub"><span class="pill ok">Suggested from your last 3 months</span></div>
     ${splitRows}
     <div class="fine u-note-b14">Based on your ${ft(S.income.amount)} salary. The Saving share is your payday rule: ${S.payday.on ? `you already move ${sg.save}% of each salary to ${esc(ruleGoal().name)}.` : `accepting turns the payday rule on at ${sg.save}% and it asks you first each time.`} It is one setting, so changing it in either place changes both.</div>
-    <button class="btn" data-anaccept>Accept this split</button><button class="btn ghost" data-splitopen>Change the percentages</button><button class="btn ghost" data-anoff>Turn off the analyst</button>`;
+    <div class="hero-btns u-an-b"><button class="btn eq" data-anaccept>Use this split</button><button class="btn eq" data-splitopen>Change it</button></div><button class="link lnk44 u-an-read" data-anoff>Turn off the analyst</button>`;
     return `<h2>Financial analyst</h2><div class="u-sheet-sub k">The analyst is turned on.</div>
     ${splitRows}
     <div class="fine u-note-b14">It reads your payments, transfers and income on this OTP account, finds your regular bills, builds your split and gives one insight a month. You can change a payment's category in Transactions. Turn it off and the split, the bills and the tip go away. Nothing is shared.</div>
@@ -2513,9 +2572,13 @@ document.addEventListener('click', e=>{
   if('confirmbills' in d){ const before = snap(); S.billsConfirmed = true; renderAll(); undoable(before, `${plural(mustBills().length, 'bill')} locked as must-pay`); return; }
   if(d.pocketmove){ const x = +d.pocketmove, before = snap();
     if(!pocketMove(x)){ toast('Not enough money on your Junior account'); return; }
-    closeSheet(); renderAll(); undoable(before, `${ft(x)} moved to your Bills pocket. Safe to spend: ${ft(safeToSpend().safe)}`);
-    if(typeof d.payday === 'string' && S.payday.on && S.payday.ask) qSheet(() => paydayBills() ? SHEETS.payday() : '', 'payday', true);   // after the toast, the payday sheet comes back with the pocket counted
-    return; }
+    closeSheet(); renderAll(); undoable(before, `${ft(x)} moved to your Bills pocket. Safe to spend: ${ft(safeToSpend().safe)}`); return; }
+  if(d.paycover !== undefined){   // payday sheet: the unpaid bills to the Bills pocket and (unless "only") the saving rule, both undone by one Undo
+    const x = +d.paycover, before = snap(), P = paydayPlan(), both = !('only' in d) && P.canSave && x === P.toMove;
+    if(x > 0 && !pocketMove(x)){ toast('Not enough money on your Junior account'); return; }
+    if(both) depositTo(P.g, P.rule, 'junior', `Payday rule: ${S.payday.pct}%`);
+    closeSheet(); renderAll(); if(both && pig3d && cur === 'hub') setTimeout(() => pig3d.celebrate(), 250);
+    undoable(before, `Bills covered: ${ft(x)} in Bills pocket${both ? `, ${ft(P.rule)} to ${P.g.name}. ${ft(P.left)} free for Fun` : ''}`); return; }
   if('pocketback' in d){ const before = snap(), x = pocketBack(); if(!x) return; renderAll(); undoable(before, `${ft(x)} moved back to your Junior account`); return; }
   if(d.txd !== undefined){ S._txi = +d.txd; sheet(SHEETS.txd()); return; }
   if('txcat2' in d){ sheet(SHEETS.txcat()); return; }
@@ -2524,14 +2587,12 @@ document.addEventListener('click', e=>{
       S.rewards.unshift({id:'o' + g.id, title: travel ? 'Travel partner offer' : '5% cashback at a partner', note: travel ? '8% back on one booking. Up to 10 000 Ft.' : 'Up to 2 000 Ft back.', why:`Reached ${g.name}`}); }
     S._offer = null; closeSheet(); renderAll(); toast('Offer added to your rewards'); return; }
   if('anon' in d){ S.analyst.on = true; renderAll(); sheet(SHEETS.analyst()); toast('Analyst on'); return; }
-  if('anuse' in d){ const before = snap(), sg = suggestSplit(), turnedOn = !S.payday.on;   // on + split accepted in one tap
-    S.analyst.on = true; S.analyst.split = sg; S.analyst.accepted = true; S.payday.pct = sg.save; if(turnedOn) S.payday.on = true;
-    closeSheet(); renderAll(); undoable(before, `Analyst on. Split ${sg.ess} / ${sg.fun} / ${sg.save}. Saving is your payday rule${turnedOn ? ', now on' : ''}`);
-    if(!S.billsConfirmed) setTimeout(() => { if(S.analyst.on && !S.billsConfirmed && !stack.some(e => e.dataset.id === 'bills')) pushPage('bills'); }, 350); return; }   // one screen: what it found, lock the bills you must pay
   if('anoff' in d){ const before = snap(); S.analyst.on = false; closeSheet(); renderAll(); undoable(before, 'Analyst off. Your split and tips are hidden'); return; }
   if('anaccept' in d){ const before = snap(), sg = suggestSplit(), turnedOn = !S.payday.on;
     S.analyst.split = sg; S.analyst.accepted = true; S.payday.pct = sg.save; if(turnedOn) S.payday.on = true;
-    closeSheet(); renderAll(); undoable(before, `Split saved: ${sg.ess} / ${sg.fun} / ${sg.save}. Saving is your payday rule${turnedOn ? ', now on' : ''}`); return; }
+    closeSheet(); renderAll(); undoable(before, `Split saved: ${sg.ess} / ${sg.fun} / ${sg.save}. Saving is your payday rule${turnedOn ? ', now on' : ''}`);
+    if(!S.billsConfirmed){ const n0 = NAVC.n; let tries = 0, go = () => { if(NAVC.n !== n0 || ++tries > 20) return; if(MQ.toast || sheetOpen()) return setTimeout(go, 400);
+      if(S.analyst.on && !S.billsConfirmed && !stack.length) pushPage('bills'); }; setTimeout(go, 400); } return; }   // then one screen: what it found, lock the bills you must pay. It opens after the Undo toast is gone, so the toast never covers it
   if('splitopen' in d){ UNDO.base = snap(); S._split = {...S.analyst.split}; sheet(SHEETS.splitedit()); return; }
   if(d.splitstep){ const [k, n] = d.splitstep.split(':'); const lim = {ess:[0,100], fun:[0,100], save:[5,20]}[k];
     S._split = S._split || {...S.analyst.split}; S._split[k] = Math.min(lim[1], Math.max(lim[0], S._split[k] + +n)); sheet(SHEETS.splitedit()); return; }
@@ -3350,17 +3411,18 @@ function storySlides(){
   // 2 in vs out
   if(A.inc > 0 || A.out > 0){
     const mx = Math.max(A.inc, A.out, 1), H = 124, B = 148, hi = H * A.inc / mx, ho = H * A.out / mx, gap = A.left >= 0;
+    const osegs = ['must', 'ess', 'fun', 'other', 'save'].filter(k => A[k] > 0), osum = osegs.reduce((a, k) => a + A[k], 0) || 1;   // Out is split in the bucket colours of the next slide's donut; In is neutral white
     out.push({id:'inout', say:`In and out${ov}. ${ft(A.inc)} came in and ${ft(A.out)} went out. ${gap ? `${ft(A.left)} is left over.` : `${ft(-A.left)} more went out than came in.`}`,
       build:() => stFrame('In and out', `<svg class="st-svg" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
         <line x1="14" x2="306" y1="${B}" y2="${B}" stroke="rgba(255,255,255,.4)"/>
-        <rect data-r="gap" x="${gap ? 184 : 40}" width="96" rx="6" fill="${gap ? '#6FCB4A' : '#F5913A'}"/>
-        <rect data-r="in" x="40" width="96" rx="6" fill="#fff"/><rect data-r="out" x="184" width="96" rx="6" fill="#8DB4DB"/>
+        <rect data-r="gap" x="${gap ? 184 : 40}" width="96" rx="6" fill="${gap ? ST_SEG.left[1] : '#FFB873'}" fill-opacity="${gap ? .45 : 1}"/>
+        ${osegs.map(k => `<rect data-r="o-${k}" x="184" width="96" fill="${ST_SEG[k][1]}"/>`).join('')}<rect data-r="in" x="40" width="96" rx="6" fill="#fff"/>
         <text x="88" y="170" text-anchor="middle" fill="#D4E5CE" font-size="14" font-weight="600">In</text><text data-t="in" x="88" y="191" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">${ft(A.inc)}</text>
         <text x="232" y="170" text-anchor="middle" fill="#D4E5CE" font-size="14" font-weight="600">Out</text><text data-t="out" x="232" y="191" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">${ft(A.out)}</text></svg>`,
         gap ? ft(A.left) : ft(-A.left), gap ? `left over this ${unit}.` : `more went out than came in.`),
       seek(r, t){ const u1 = stEz(stPh(t, 0, .9)), u2 = stEz(stPh(t, .15, 1.05)), u3 = stEz(stPh(t, .9, 1.5)), q = s => r.querySelector(s),
           h1 = hi * u1, h2 = ho * u2, g = Math.abs(hi - ho) * u3;
-        stSet(q('[data-r=in]'), {y:B - h1, height:h1}); stSet(q('[data-r=out]'), {y:B - h2, height:h2});
+        stSet(q('[data-r=in]'), {y:B - h1, height:h1}); let cum = 0; osegs.forEach(k => { const f = A[k] / osum, e = q(`[data-r=o-${k}]`); stSet(e, {y:B - h2 * (cum + f), height:h2 * f}); cum += f; });
         gap ? stSet(q('[data-r=gap]'), {y:B - h2 - g, height:g}) : stSet(q('[data-r=gap]'), {y:B - h1 - g, height:g});
         q('[data-t=in]').textContent = ft(Math.round(A.inc * u1)); q('[data-t=out]').textContent = ft(Math.round(A.out * u2));
         q('[data-big]').textContent = ft(Math.round(Math.abs(A.left) * u3)); q('[data-big]').style.color = gap ? '' : 'var(--st-warn)'; } });
@@ -3388,7 +3450,7 @@ function storySlides(){
       const big = !open ? `All ${n} bills paid` : bf.on ? bf.text : `${n - open} of ${n} bills paid`, names = stList(bf.rows.filter(r => r.s.left > 0).map(r => r.bill.name));
       const sub = (!open ? `${ft(paidTot)} went to bills.` : bf.on ? `${names} still open. Bills first.` : `${names} ${open > 1 ? 'are' : 'is'} due later: ${ft(bf.total)}.`) + (S.billsPocket && S.billsPocket.on ? ` Bills pocket: ${ft(pk)}.` : '');
       const shown = rows.slice(0, 6), more = rows.length - shown.length;
-      out.push({id:'bills', say:`Bills. ${big}. ${sub}`, btn:bf.on ? {label:'Pay now', attr:`data-stpay="${bf.urgent[0].bill.id}"`} : null,
+      out.push({id:'bills', say:`Bills. ${big}. ${sub}`, btn:bf.on ? {label:'Pay now', attr:`data-stpay="${bf.late[0].bill.id}"`} : null,
         build:() => stFrame('Must-pay bills', `<div class="st-rc" data-rc><b class="st-rh">${I('lock', 14)} Must-pay bills</b>${shown.map(r => { const s = r.s, ok = s.st === 'paid' || s.st === 'skipped';
           return `<div class="r ${ok ? '' : 'op'}" data-row><span class="nm">${esc(r.bill.name)}</span><span class="am num">${ft(r.bill.exp)}</span><span class="tk">${ok ? `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="#2F7A1B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : `<em>${s.st === 'late' || s.days < 0 ? 'Not paid' : s.label.replace('Due in ', 'In ').replace(' days', ' d').replace(' day', ' d')}</em>`}</span></div>`; }).join('')}
           ${more > 0 ? `<div class="r" data-row><span class="nm">${more} more</span></div>` : ''}<div class="r tot" data-row><span class="nm">Total</span><span class="am num">${ft(tot)}</span><span class="tk"></span></div>
@@ -3618,7 +3680,7 @@ const DEMO = [
   {e:'🎓', label:'Junior ends',       title:'Persi · Persely', persi:true, body:'Your Junior package ends in 30 days. Get your salary paid to OTP and keep 3.0% for 12 more months.', url:'grad'},
   {e:'📊', label:'Monthly story',     title:'Persi · Persely', persi:true, body:()=>`Your ${S.period} story is ready. Take a look.`, url:'story'},
   {e:'🏷️', label:'New discount',      title:'New discount',            body:'15% instant discount at Pizzeria Roma. Activate it now!', url:'kedvezmenyek'},
-  {e:'🧾', label:'Bills first',       title:'Persi · Persely', persi:true, body:()=>{ const bf = billsFirst(); return bf.total ? `Bills first: ${ft(bf.total)} still to pay. Safe to spend is now ${ft(safeToSpend().safe)}.` : 'All your must-pay bills are paid. Fun is back on.'; }, url:'hub'}
+  {e:'🧾', label:'Bills first',       title:'Persi · Persely', persi:true, body:()=>{ const bf = billsFirst(); return bf.on ? `${bf.text}. Safe to spend is now ${ft(safeToSpend().safe)}.` : bf.total ? `Nothing is late. Safe to spend is now ${ft(safeToSpend().safe)}.` : 'All your must-pay bills are paid. Fun is back on.'; }, url:'hub'}
 ];
 const demo = { delay:0, sound:true, phone:false, locked:false, hidden:false };
 let audioCtx;
@@ -3712,7 +3774,7 @@ function salaryArrives(){
   if((S.payday.on && S.payday.ask) || paydayBills()){   // with bills open the sheet is "Bills first": salary, bills, saving rule, left for Fun
     renderAll();
     const bfv = paydayBills(), ps = S.payday.on && S.payday.ask;
-    notify({title:'Persi · Persely', persi:true, body: bfv ? `Salary's in: +${ft(inc)}. Bills first: ${ft(billsFirst().total)} still to pay.${ps ? ' Then Persely.' : ''}` : `Salary's in: +${ft(inc)}. Move ${ft(share)} to ${g.name}?`, url:'payday'});
+    notify({title:'Persi · Persely', persi:true, body: bfv ? `Salary's in: +${ft(inc)}. ${ft(billsFirst().total)} of bills still to pay.${ps ? ' Then Persely.' : ''}` : `Salary's in: +${ft(inc)}. Move ${ft(share)} to ${g.name}?`, url:'payday'});
     if(!demo.locked){ tab('hub'); qSheet(() => SHEETS.payday(), 'payday'); }   // after the banner
     return;
   }
@@ -3737,7 +3799,7 @@ function coffee(){
 // one push a day at most (never at night) after a Fun card payment while a bill is open: "Bills first: X Ft still to pay. Safe to spend is now Y Ft."
 function billsPush(delay){
   const bf = bfNow(), day = billToday().ym + '-' + billToday().day; if(!bf.on || S.bfPush === day) return; S.bfPush = day; save();
-  setTimeout(() => notify({title:'Persi · Persely', persi:true, body:`Bills first: ${ft(bf.total)} still to pay. Safe to spend is now ${ft(safeToSpend().safe)}.`, url:'hub'}), delay || 0);
+  setTimeout(() => notify({title:'Persi · Persely', persi:true, body:`${bf.text}. Safe to spend is now ${ft(safeToSpend().safe)}.`, url:'hub'}), delay || 0);
 }
 // demo key B: this month's rent is not paid. The analyst goes on if it was off; the bills-first card, the Fun hold-off, Persi and a push appear. Pay now clears it.
 function billMissed(){
@@ -3747,7 +3809,7 @@ function billMissed(){
   const i = S.tx.findIndex(t => t.a < 0 && payeeKey(t) === b.key && txWhen(t).ym === now.ym);
   if(i >= 0){ const t = S.tx.splice(i, 1)[0]; if(t.note === 'Paid from Bills pocket') S.billsPocket.bal += -t.a; else acc('junior').v += -t.a; }   // the rent was not sent: the money is still here
   delete S.billSkip[b.id]; S.bfDone = false; S.bfPush = now.ym + '-' + now.day; renderAll(); tab('fooldal');
-  notify({title:'Persi · Persely', persi:true, body:`Bills first: ${ft(billsFirst().total)} still to pay. Safe to spend is now ${ft(safeToSpend().safe)}.`, url:'hub'});
+  notify({title:'Persi · Persely', persi:true, body:`${billsFirst().text}. Safe to spend is now ${ft(safeToSpend().safe)}.`, url:'hub'});
 }
 // a friend joins the shared Persely
 function doriJoins(){
