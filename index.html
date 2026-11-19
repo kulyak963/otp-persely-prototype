@@ -640,10 +640,16 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .fs .flame{margin-right:2px}
 /* Persi: small, one line, no cartoon speech bubble */
 .persi{display:flex;align-items:center;gap:10px;margin:-6px 0 10px}
-.hero .persi{margin:0 0 12px}
-.hero .sring-in{width:44px;height:44px;font-size:var(--fs-xs);box-shadow:0 0 0 2px #fff,0 0 0 4px #FF7A1A}
-.hero .sring.seen .sring-in{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #C9CED6}
-.hero .sring{gap:5px}
+.ptot{margin-bottom:14px}
+.ptot .persi{margin:-6px 0 0}
+.ptot .sring-in{width:44px;height:44px;font-size:var(--fs-xs);box-shadow:0 0 0 2px #fff,0 0 0 4px #FF7A1A}
+.ptot .sring.seen .sring-in{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #C9CED6}
+.ptot .sring{gap:5px}
+.ptot .sec .pill{padding:0 10px;line-height:19px}
+.ptot .avg .g{color:var(--green-t);font-weight:700}
+.ptot .hero-btns{margin:12px 0 10px}
+.ptot .trust{justify-content:center}
+.ptot .fine{text-align:center}
 /* Your habits: streak and health score in one card */
 .hab{padding-bottom:6px}
 .hab-score{display:flex;align-items:center;gap:14px;width:100%;min-height:var(--tap);padding:10px 0;margin-top:2px;border-top:1px solid var(--line);text-align:left}
@@ -2332,18 +2338,26 @@ function scoreRow(){   // the score part of the "Your habits" card (analyst on o
 function vHub(){
   const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
   const weeks = Array.from({length:8}, (_,i) => S.week - 7 + i);
+  const gl = S.goals.filter(g => !isEur(g)), gT = gl.reduce((x, g) => x + gTarget(g), 0), gp = gT > 0 ? Math.min(1, gl.reduce((x, g) => x + gSaved(g), 0) / gT) : 0, R = 104, C = 2 * Math.PI * R, arc = C * .75;   // the ring: saved across goals against all targets, as Home shows spent against plan
   const chev = `<span class="chev">${I('chev',20)}</span>`;
   const junior = `<button class="row" data-go="grad">${S.juniorDays > 0 ? `<span class="t24d"><b class="num">${S.juniorDays}</b><small>${S.juniorDays === 1 ? 'day' : 'days'}</small></span>` : `<span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span>`}<span class="t"><b class="u-bk-title">${S.bridge ? '3.0% for 12 more months' : S.juniorDays > 0 ? 'Junior ends soon' : 'Junior ends today'}</b><small>${S.bridge ? 'While your salary comes to OTP' : 'Keep 3.0% for 12 more months'}</small></span>${chev}</button>`;
   const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
   return `<div class="tabtitle">Persely</div>
   ${bfCard()}
   ${juniorTop ? junior : ''}
-  ${hintHTML('total')}<div class="card hero" data-tour="total">
+  ${hintHTML('total')}<div class="ptot" data-tour="total">
     <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${HINT_NOW ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
       <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
-    <div class="hrow"><span class="k">Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Junior 3.0%' : 'Standard rate'}</span></div>
-    <div class="hero-v num">${ft(tot)}${et ? ` <small class="k" style="font-size:var(--fs-m);font-weight:600">+ ${eur(et)}</small>` : ''}</div>
-    <div class="hero-r">${st ? `<b>${rateLabel()}</b> a year · about <b>${ft(yearNet())}</b> a year after tax` : `0.01% a year · about ${ft(yearNet())} a year`}</div>
+    <div class="sec"><span>Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Junior 3.0%' : 'Standard rate'}</span></div>
+    <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${gl.length ? `${Math.round(gp * 100)}% of what your goals need` : 'Set a goal to fill the ring'}${et ? ` · + ${eur(et)} in euro goals` : ''}</div>
+    <div class="gauge">
+      <svg viewBox="0 0 250 250" style="transform:rotate(135deg)" aria-hidden="true">
+        <circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>${gp > 0 ? `
+        <circle cx="125" cy="125" r="${R}" fill="none" stroke="#52AE30" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc*gp} ${C}"/>` : ''}
+      </svg>
+      <div class="core"><small>Saved so far</small><b class="num">${ft(tot)}</b></div>
+    </div>
+    <div class="avg">${st ? `<span style="text-align:center"><b class="g">${rateLabel()}</b> · about <span class="num">${ft(yearNet())}</span> a year after tax</span>` : `<span style="text-align:center">0.01% · about <span class="num">${ft(yearNet())}</span> a year</span>`}</div>
     <div class="hero-btns"><button class="btn" data-sheet="hubsave">Add money</button><button class="btn w" data-sheet="hubout">Withdraw</button></div>
     <div class="trust"><span>${I('check',15)} Withdraw any time</span><span>${I('check',15)} No fees</span><span>${I('shield',15)} Insured</span></div>
     ${st ? `<div class="fine" style="margin-top:8px">${S.bridge ? 'Graduate: 3.0% for 12 months while your salary comes to OTP' : 'Included in your Junior package. Nothing to sign up for'}</div>` : ''}
