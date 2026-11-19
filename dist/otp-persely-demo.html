@@ -399,20 +399,20 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .st-big{font-size:3rem;font-weight:800;line-height:1.05;letter-spacing:-1px;margin:8px 0 6px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .st-big.m{font-size:2.375rem;letter-spacing:-.6px}.st-big.s{font-size:1.75rem;letter-spacing:-.3px}
 .st-sub{font-size:1.0625rem;line-height:1.4;max-width:340px}
-.st-n{font-size:.9375rem;line-height:1.4;color:var(--st-warn);margin-top:8px;max-width:340px}
+.st-n{font-size:.9375rem;line-height:1.4;color:var(--st-dim);margin-top:8px;max-width:340px}.st-n.w{color:var(--st-warn)}.st-n.w svg.i{width:14px;height:14px;vertical-align:-2px;margin-right:5px}   /* a line in the warning colour only when something is wrong, and it carries an icon */
 .st-body .pig3d{margin:0}
 .st-share{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .st-dn{display:flex;align-items:center;gap:14px;width:100%;justify-content:center}.st-dw{position:relative;width:150px;height:150px;flex:none}
 .st-dc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.st-dc small{font-size:.75rem;color:var(--st-dim)}.st-dc b{font-size:.9375rem;font-variant-numeric:tabular-nums}
 .st-lg{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;min-width:0;flex:1}
 .st-lg li{display:flex;align-items:center;gap:7px;font-size:.875rem;line-height:1.2}.st-lg li i{width:12px;height:12px;border-radius:4px;flex:none}.st-lg li span{flex:1;display:flex;align-items:center;gap:4px;min-width:0}.st-lg li b{font-variant-numeric:tabular-nums}
-.st-lg svg.i{width:14px;height:14px}
+.st-lg svg.i{width:14px;height:14px}.st-lg li b.pl{display:flex;flex-direction:column;align-items:flex-end}.st-lg li b small{font-size:.6875rem;font-weight:500;line-height:1.2;color:var(--st-dim)}
 .st-lg.two{display:grid;grid-template-columns:1fr 1fr;gap:7px 16px;width:100%}
 .st-pj{width:100%}.st-ph{display:block;font-size:1.0625rem;margin-bottom:10px}.st-pb{display:flex;gap:2px;height:26px;border-radius:9px;overflow:hidden;margin-bottom:14px}.st-pb i{display:block;min-width:3px}
 .st-rc{width:min(100%,300px);background:#fff;color:var(--ink);border-radius:8px 8px 0 0;padding:10px 14px 4px;font-size:.875rem;position:relative;margin-bottom:8px}
 .st-rc::after{content:"";position:absolute;left:0;right:0;top:100%;height:7px;background:linear-gradient(135deg,#fff 25%,transparent 25%) -6px 0,linear-gradient(225deg,#fff 25%,transparent 25%) -6px 0;background-size:12px 12px}
 .st-rh{display:flex;align-items:center;gap:6px;font-size:.8125rem;color:var(--muted-t);text-transform:uppercase;letter-spacing:.4px;padding-bottom:6px;border-bottom:1px dashed #C9CED6}
-.st-rc .r{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed #E2E5EB;min-height:30px}.st-rc .nm{flex:1;min-width:0}.st-rc .am{font-weight:600}.st-rc .tk{width:58px;display:flex;justify-content:flex-end;font-size:.75rem}
+.st-rc .r{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed #E2E5EB;min-height:30px}.st-rc .nm{flex:1;min-width:0}.st-rc .am{font-weight:600}.st-rc .tk{width:72px;display:flex;justify-content:flex-end;font-size:.75rem}
 .st-rc .tk em{font-style:normal;font-weight:700;color:var(--orange-t)}.st-rc .r.op .nm{font-weight:700;color:var(--orange-t)}.st-rc .r.tot{border-bottom:0;font-weight:800}.st-rc .r.pk{border-bottom:0;color:var(--muted-t)}
 .st-co{position:absolute;left:0;top:0;z-index:2;background:#fff;color:var(--ink);border-radius:12px;padding:8px 12px;font-size:.875rem;line-height:1.3;box-shadow:0 6px 18px rgba(0,0,0,.25);transform-origin:0 0;max-width:62%}.st-co b{display:block}.st-co span{color:var(--orange-t);font-weight:700}
 .st-pt,.st-pr{display:flex;align-items:center;gap:18px;width:100%;justify-content:center}
@@ -464,7 +464,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .yr-hero{padding:18px}.yr-big{font-size:2.25rem;font-weight:800;margin:4px 0 2px;color:var(--ink)}
 .yr-bars{padding:14px 16px}.yr-b{margin:6px 0 12px}.yr-bl{display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-s)}.yr-b small{font-size:var(--fs-xs);color:var(--muted-t)}
 .yr-bt{height:12px;border-radius:6px;background:#E9ECF1;margin:6px 0 4px;overflow:hidden}.yr-bt i{display:block;height:100%;width:var(--w);border-radius:6px;animation:yrg .9s ease-out}
-.yr-bt i.g{background:var(--green)}.yr-bt i.r{background:#8D96A6}.yr-bt i.l{background:#C9CED7}
+.yr-bt i.g{background:var(--green)}.yr-bt i.l{background:#C9CED7}
 @keyframes yrg{from{width:0}}
 .yr-sav{display:flex;align-items:center;gap:10px;padding:14px 16px}.yr-sav .t{flex:1}.yr-sav b{font-size:var(--fs-m)}.yr-sav small{display:block;font-size:var(--fs-xs);color:var(--muted-t)}
 .yr-sc{padding:14px 16px}.yr-scb{display:flex;align-items:flex-end;gap:6px;height:90px;margin-bottom:8px}
@@ -1335,6 +1335,54 @@ function __checkAnalytics(){
       ok('forecastText(goal) returns {reachYm, over, text}', 'reachYm' in t && 'over' in t && 'text' in t, t);
     } finally { S = sv; }
   }
+  // story: state-aware tip, left over after bills still due, late bill first, one percentage base, goal dates on the demo clock
+  {
+    const sv = S; S = clone(); S.onboarded = true; S.analyst.on = true; const ym0 = ymAt(S.months || 0), txt = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '), fz = v => ft(v).replace(/\s+/g, ' '); S.insight = true;
+    try {
+      const nx = () => storySlides().find(x => x.id === 'next'), nxH = () => { const n = nx(); return n ? n.build() : ''; };
+      const t0 = tipOf();
+      ok('tip: regular category, 10% of the 3-month average, never under 1 000 Ft (food and drink 11 467 -> 1 100)', t0 && t0.kind === 'tip' && t0.cat === 'food' && t0.amt === 11467 && t0.ten === 1100 && t0.ten >= 1000, t0 && [t0.kind, t0.cat, t0.amt, t0.ten]);
+      ok('tip: the story slide and the Home card show the same amount', txt(nxH()).includes('Move ' + fz(t0.ten)) && txt(insightCard()).includes(fz(t0.ten)) && nx().btn && /data-stinsight="1100"/.test(nx().btn.attr), nx() && nx().btn);
+      S.tx.unshift({ym:ym0, day:14, d:'Today', n:'WOLT HUNGARY', s:'Card payment', a:-15000, ic:'food'});
+      const t1 = tipOf(), dr = stDrift(ym0); ok('tip: matches the biggest-change category when that slide shows food and drink', dr && dr.cat === 'food' && t1.kind === 'tip' && t1.cat === dr.cat && storySlides().some(x => x.id === 'change'), [dr && dr.cat, t1 && t1.cat]);
+      S.tx.shift(); S.tx.unshift({ym:ym0, day:14, d:'Today', n:'H&M', s:'Card payment', a:-600000, ic:'tag'});
+      const t2 = tipOf(), n2 = nx(); ok('overspent month: no saving tip, no Set it up, the pig is not happy', t2 && t2.kind === 'short' && n2 && !n2.btn && !/data-mood="happy"/.test(n2.build()) && /No saving tip this month/.test(txt(n2.build())) && !insightCard(), t2);
+      S.tx.shift();
+      S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11'));
+      const t3 = tipOf(), n3 = nx(), ids = storySlides().map(x => x.id);
+      ok('late bill: the story ends with Pay now (not Set it up) and Home has no tip card', t3 && t3.kind === 'bill' && n3 && n3.btn && /data-stpay=/.test(n3.btn.attr) && n3.btn.label === 'Pay now' && !/data-stinsight/.test(n3.btn.attr) && !insightCard(), n3 && n3.btn);
+      ok('late bill goes first: slide order is title, bills, in/out, ...', ids[0] === 'title' && ids[1] === 'bills' && ids[2] === 'inout', ids);
+      ok('no late bill: the bills slide keeps its place (after where it went)', (() => { const c = clone(); c.analyst.on = true; const k = S; S = c; const o = storySlides().map(x => x.id); S = k; return o.indexOf('bills') > o.indexOf('donut'); })());
+      const A3 = stAgg([ym0]), io = txt(storySlides().find(x => x.id === 'inout').build());
+      ok('left over after bills still due (rent late): left over minus rent 42 000 and phone 5 550', io.includes(fz(A3.left - 47550)) && io.includes(fz(47550)) && io.includes('left after the bills still due'), io);
+      const sB = S; S = clone(); S.analyst.on = true; const A4 = stAgg([ymAt(0)]), io4 = txt(storySlides().find(x => x.id === 'inout').build()); S = sB;
+      ok('left over after bills still due (default month): left over minus the phone bill 5 550', io4.includes(fz(A4.left - 5550)) && io4.includes(fz(5550)), [A4.left, io4]);
+      S = clone(); S.analyst.on = true;
+      const A5 = stAgg([ymAt(0)]), dn = storySlides().find(x => x.id === 'donut'), dh = txt(dn.build()), ks5 = ['must', 'ess', 'fun', 'other', 'save'].filter(k => A5[k] > 0).concat(A5.left > 0 ? ['left'] : []), pc5 = lrPct(ks5.map(k => k === 'left' ? A5.left : A5[k]), A5.inc), pct = k => pc5[ks5.indexOf(k)];
+      ok('donut is a share of the money that came in (same base as the plan): saving % matches, left over is a segment', A5.left >= 0 && dh.includes('came in') && dh.includes('Saving ' + pct('save') + '%') && dh.includes('Left over'), dh);
+      ok('donut hero is something she can steer (Fun / Everyday essentials vs plan), never Must-pay', (() => { const d = document.createElement('div'); d.innerHTML = dn.build(); const h = d.querySelector('[data-big]').textContent; return !/^Must-pay/.test(h) && /Fun|Everyday|Within/.test(h); })());
+      // story batch 2: one text for screen and VoiceOver, progress, put aside, share card, bills copy, overspend
+      { const sl = storySlides(); sl.forEach(x => x.fin && x.fin(30));
+        const wc = t => stNum(t).split(/\s+/).filter(Boolean).length, say = sl.map(x => [x.id, stSay(x)]);
+        const heroOk = x => { const d = document.createElement('div'); d.innerHTML = x.build(); const sp = stSay(x).replace(/\s+/g, ' '); return [...d.querySelectorAll('.st-big')].every(e => sp.includes(e.textContent.replace(/\s+/g, ' ').trim())); };
+        ok('VoiceOver text is built from the screen text: at most 25 words per slide (a figure like 145 000 Ft is one word), every spoken hero is on screen', say.every(([id, t]) => wc(t) <= 25) && sl.filter(x => x.build).every(heroOk), [say.map(([i, t]) => [i, wc(t)]), sl.filter(x => x.build && !heroOk(x)).map(x => x.id)]);
+        const pg = sl.find(x => x.id === 'progress'), pgh = pg ? pg.build() : '', pgw = pg ? stWords(pg) : 0, pgt = txt(pgh);
+        ok('progress slide: the score is shown once, a positive line is not in the warning colour, a late goal has the fix (Pick a new date) on screen and no "date passed"', pg && (pgt.match(/of 100/g) || []).length <= 1 && !/date passed|to go/.test(pgt) && (!/needs a new date/.test(pgt) || (pg.btn && pg.btn.label === 'Pick a new date' && /class="st-n w"/.test(pgh))) && (/needs a new date/.test(pgt) || !/class="st-n w"/.test(pgh)) && pgw <= 20, [pgw, pgt.slice(0, 160)]);
+        const keep = S.tx; S.tx = S.tx.filter(t => !(txType(t) === 'own' && t.a < 0 && !/^(BILLS POCKET|CURRENCY)/i.test(t.n)));
+        const pu = sd => txt(storySlides().find(x => x.id === 'put').build()); const put0 = pu(); S.tx = keep;
+        ok('put aside: never "added by you" when nothing was added (interest only, or nothing)', !/added by you/i.test(put0) && /Interest only|No money moved/.test(put0) && !/added by you/i.test(pu()), put0);
+        const kg = S.goals.map(g => g.date), ks = S.streak; S.streak = 0; S.goals.forEach(g => { g.date = '2020-05-05'; }); const emptyCard = txt(shareCard()), esh = storySlides().find(x => x.share);
+        S.goals.forEach((g, i) => { g.date = kg[i]; }); S.goals[0].date = '2020-05-05'; const noLate = txt(shareCard()), nm0 = S.goals[0].name; S.goals[0].date = kg[0];
+        ok('share card: no "0 week streak", no goal whose date has passed, and nothing to share says so (Close only)', /Nothing to share this month yet/.test(emptyCard) && esh.empty && !/week streak/.test(emptyCard) && !noLate.includes(nm0) && !/^\s*0 week/.test(noLate) && !/0 week streak/.test(noLate), [emptyCard, noLate]);
+        S.streak = ks;
+        const msk = S.tx; S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === ymAt(S.months || 0))); const bl = storySlides().find(x => x.id === 'bills'), blt = bl ? txt(bl.build()) : ''; S.tx = msk;
+        ok('bills slide, rent late: "Rent share is late", tags Late and In n days, no "Bills first", no "Not paid"', bl && /Rent share is late/.test(blt) && / Late /.test(blt) && /In \d+ days?/.test(blt) && !/Bills first|Not paid/.test(blt) && !/\blate\b/i.test(blt.replace(/Rent share is late|Late/g, '')), blt);
+      }
+      // goal dates run on the demo clock: 12 demo months later the same forecast is one year on
+      S = clone(); const a = inMonths(5); S.months = 12; const b = inMonths(5), la = a.split(' '), lb = b.split(' ');
+      ok('goal dates on the demo clock: inMonths(5) is a year later after 12 demo months', la[0] === lb[0] && +lb[1] === +la[1] + 1, [a, b]);
+    } finally { S = sv; }
+  }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   const bad = out.filter(r => !r.pass);
   console.log(`__checkAnalytics: ${out.length - bad.length}/${out.length} passed`); bad.forEach(r => console.log('FAIL', r.name, r.info));
@@ -1454,17 +1502,28 @@ function vFooldal(){
   <div class="sec"><span>For you</span><a data-go="neked">All ${I('chev',16)}</a></div>
   ${nekedCards(true)}`;
 }
-// the monthly tip (Home card and story slide 8 use this one): 10% of the biggest Fun category (from project()) moves to the goal every month
+// the monthly tip (Home card and story slide 8 use this one). State-aware and from a regular habit:
+//   {kind:'bill'}  a must-pay bill is late: no saving tip, the action is Pay now
+//   {kind:'short'} this month is overspent (more out than in): no saving tip
+//   {kind:'tip'}   10% of the 3-month average of a regular Fun category (the category of "The biggest change" when that slide shows it), never under 1 000 Ft, moves to the goal every month
+//   null           nothing worth a button
 function tipOf(){
-  const g = ruleGoal(), tc = project().cats.filter(c => c.group === 'fun' && !/^mix_/.test(c.cat)).sort((a, b) => b.amt - a.amt)[0], rem = g ? gTarget(g) - gSaved(g) : 0;
-  if(!g || !tc || rem <= 0) return null;
-  const ten = Math.max(100, Math.round(tc.amt / 10 / 100) * 100), p = paceOf(g), wk = p ? Math.round((rem / p - rem / (p + ten)) * 4.345) : 0;
-  return {g, label:tc.label.toLowerCase(), amt:tc.amt, ten, wk};
+  const bf = bfNow(); if(bf.on) return {kind:'bill', row:bf.late[0], late:bf.late, total:bf.lateTotal};
+  const ym = ymAt(S.months || 0), left = stAgg([ym]).left; if(left < 0) return {kind:'short', over:-left};
+  const g = ruleGoal(), rem = g ? gTarget(g) - gSaved(g) : 0; if(!g || rem <= 0) return null;
+  const base = (S.closedYm || []).filter(y => y < ym).slice(-3); if(base.length < 2) return null;
+  const hist = base.map(y => monthUse(y).spend), avgOf = c => hist.reduce((a, h) => a + (h[c] || 0), 0) / hist.length, regular = c => { const v = hist.map(h => h[c] || 0), mx = Math.max(...v), rest = (v.reduce((a, b) => a + b, 0) - mx) / (v.length - 1); return v.filter(x => x > 0).length >= 2 && mx <= 2.5 * rest; },   // in at least 2 of the 3 months, and no month driven by one big purchase
+    isFun = c => CATEGORY[c] && CATEGORY[c][2] === 'fun' && !/^mix_/.test(c), dr = stDrift(ym);
+  const cat = dr && isFun(dr.cat) && regular(dr.cat) ? dr.cat : Object.keys(CATEGORY).filter(c => isFun(c) && regular(c)).sort((a, b) => avgOf(b) - avgOf(a))[0];
+  if(!cat) return null;
+  const avg = avgOf(cat), ten = Math.round(avg / 10 / 100) * 100; if(ten < 1000) return null;
+  const p = paceOf(g), wk = p ? Math.round((rem / p - rem / (p + ten)) * 4.345) : 0;
+  return {kind:'tip', g, cat, label:CATEGORY[cat][0].toLowerCase(), amt:Math.round(avg), ten, wk};
 }
 // monthly insight on Home: the tip above, one action (same rule as the story's Set it up)
 function insightCard(){
   if(!S.insight || S.insightUsed) return '';
-  const t = tipOf(); if(!t) return '';
+  const t = tipOf(); if(!t || t.kind !== 'tip') return '';   // a late bill has its own Bills first card; an overspent month gets no tip
   const a = S.analyst, line = `Move 10% of ${t.label} (${ft(t.ten)}) to ${esc(t.g.name)} each month${t.wk >= 1 ? ` and get there <b>${plural(t.wk,'week')} sooner</b>` : ''}.`;
   if(a.on && a.accepted){   // analyst on: one headline from the split and exactly one action
     const use = splitUse(), sv = splitView(), pc = k => { const b = sv.by[k].amt; return b ? Math.round(use[k] / b * 100) : 0; };
@@ -1606,10 +1665,11 @@ function paceOf(g){
 }
 const gMonths = g => { const left = gTarget(g) - gSaved(g); if(left <= 0) return 0; const p = paceOf(g); return p ? Math.max(1, Math.ceil(left / p)) : -1; };
 // the forecast lands after the goal's own date
-const isLate = g => { const m = gMonths(g); if(m <= 0 || !g.date) return false; const d = new Date(); d.setMonth(d.getMonth() + m); return d > new Date(g.date + 'T12:00:00'); };
-const inMonths = m => { const d = new Date(); d.setMonth(d.getMonth() + m); return d.toLocaleDateString('en-GB',{month:'long', year:'numeric'}); };
+// goal dates run on the demo clock (demoNow(): today + the demo months, key O), so after 12 demo months the forecast moves 12 months too
+const isLate = g => { const m = gMonths(g); if(m <= 0 || !g.date) return false; const d = demoNow(); d.setMonth(d.getMonth() + m); return d > new Date(g.date + 'T12:00:00'); };
+const inMonths = m => { const d = demoNow(); d.setMonth(d.getMonth() + m); return d.toLocaleDateString('en-GB',{month:'long', year:'numeric'}); };
 const fDate = s => new Date(s + 'T12:00:00').toLocaleDateString('en-GB',{day:'numeric', month:'long', year:'numeric'});
-const monthsTo = s => Math.max(0, (new Date(s + 'T12:00:00') - new Date()) / (30.44 * 864e5));
+const monthsTo = s => Math.max(0, (new Date(s + 'T12:00:00') - demoNow()) / (30.44 * 864e5));
 const total = () => S.goals.filter(g => !isEur(g)).reduce((a,g) => a + mine(g), 0);
 const eurTotal = () => S.goals.filter(isEur).reduce((a,g) => a + g.saved, 0);
 const r10 = v => v < 100 ? Math.round(v) : Math.round(v / 10) * 10;
@@ -1635,7 +1695,7 @@ const dueTxt = g => { const n = daysTo(g); return n < 0 ? 'Goal date passed' : n
    fcCalc(target, saved, monthly, date, now): pure. Reach month = now + ceil(left / monthly) months (the same count as gMonths()). over = the projected amount at the date
    (monthly x months to the date) is at least what is left, so the goal is reached before its date: show the reach month, never an amount above the target.
    far = over and the reach month is 6 or more months before the date (only then do the goal card and goal page add a word about it). */
-function fcCalc(target, saved, monthly, date, now = new Date()){
+function fcCalc(target, saved, monthly, date, now = demoNow()){
   const left = target - saved, n = left <= 0 ? 0 : monthly > 0 ? Math.max(1, Math.ceil(left / monthly)) : -1;
   if(n < 0) return {n, reachYm:null, over:false, far:false, gap:0, when:'', dateTxt:'', text:''};
   const r = new Date(now); r.setMonth(r.getMonth() + n);
@@ -2839,7 +2899,8 @@ document.addEventListener('click', e=>{
   if('stpause' in d){ stHold('user', !ST.hold.has('user')); return; }
   if('stpay' in d){ S._bill = d.stpay; stAway(); sheet(SHEETS.paybill()); return; }   // Pay now on the bills slide: the story waits, the sheet opens, closing it brings the story back
   if('stinsight' in d){ stInsight(+d.stinsight); return; }
-  if('stshare' in d){ toast('Share card saved. It shows no amounts'); return; }
+  if('stgoal' in d){ const g = goalById(d.stgoal); if(!g) return; closeStory(); S._detail = g.id; pushPage('goal'); return; }   // Pick a new date on the progress slide: the story closes, the goal page opens (its date and Behind fix are there)
+  if('stshare' in d){ toast('Share card ready. It shows no amounts'); return; }
   /* update pop-up + onboarding */
   if(d.wnpick){ S.updateSeen = true; save(); closeWhatsNew(); startOnb(d.wnpick); return; }
   if('wnlater' in d){ S.updateSeen = true; save(); closeWhatsNew(); toast('You can set it up any time in the Persely tab'); return; }
@@ -3550,6 +3611,7 @@ function friendsCard(){   // collapsed and opt-in: nothing is compared until the
    Recording hooks: window.__story (open, go, seek, step, pause, play, manual, record, info). Semester: the same slides over the months of the semester. */
 const STORY_NEEDS_ANALYST = true;
 const ST_END = 2.2;   // seconds until every entrance has landed
+const ST_WPS = .17;   // seconds per word to read on a slide, on top of 2.5 s for the picture (a slide is at most 7 s)
 const stClamp = x => Math.min(1, Math.max(0, x));
 const stEz = x => 1 - Math.pow(1 - stClamp(x), 3);                                            // ease-out, no bounce on numbers
 const stBack = x => { x = stClamp(x); return 1 + 2.4 * Math.pow(x - 1, 3) + 1.4 * Math.pow(x - 1, 2); };   // a small overshoot, callouts only
@@ -3595,7 +3657,7 @@ function stDrift(ym){
   const cur = monthUse(ym).spend, hist = base.map(y => monthUse(y).spend); let best = null;
   Object.keys(cur).forEach(c => { const g = CATEGORY[c] && CATEGORY[c][2]; if(!g || ['must', 'save', 'other', 'in'].includes(g) || /^mix_/.test(c)) return;
     const vals = hist.map(h => h[c] || 0), avg = vals.reduce((a, b) => a + b, 0) / vals.length, amt = cur[c];
-    if(avg > 0 && amt >= avg * 1.25 && amt - avg >= 2000 && (!best || amt - avg > best.amt - best.avg)) best = {cat:c, label:CATEGORY[c][0], amt, avg, up:Math.round((amt / avg - 1) * 100), pts:vals.concat(amt), names:base.map(stShort).concat(stShort(ym))}; });
+    if(avg > 0 && amt >= avg * 1.25 && amt - avg >= 2000 && (!best || amt - avg > best.amt - best.avg)) best = {cat:c, label:CATEGORY[c][0], amt, avg, up:Math.round((amt / avg - 1) * 100), pts:vals.concat(amt), yms:base.concat(ym), names:base.map(stShort).concat(stShort(ym))}; });
   return best;
 }
 // how many months of saving a forint amount is, for the goal the rules feed
@@ -3612,72 +3674,90 @@ function stBillsSem(yms){
     return {b, d, p}; });
   return {per, due:per.reduce((a, r) => a + r.d, 0), paid:per.reduce((a, r) => a + r.p, 0)};
 }
-function stFrame(k, vis, big, sub, note){
+function stFrame(k, vis, big, sub, note, warn){   // note: one small line under the sub; warn = it is bad news (warning colour and an icon, never colour alone)
   const c = big.length > 24 ? 's' : big.length > 9 ? 'm' : '';
-  return `<div class="st-k">${k}</div><div class="st-vis">${vis}</div><div class="st-big ${c}" data-big>${big}</div><div class="st-sub">${sub}</div>${note ? `<div class="st-n">${note}</div>` : ''}`;
+  return `<div class="st-k">${k}</div><div class="st-vis">${vis}</div><div class="st-big ${c}" data-big>${big}</div><div class="st-sub">${sub}</div>${note ? `<div class="st-n${warn ? ' w' : ''}">${warn ? I('cal', 14) : ''}${note}</div>` : ''}`;
 }
 function storySlides(){
   const R = stRange(), A = stAgg(R.yms), sem = R.sem, an = S.analyst.on || !STORY_NEEDS_ANALYST, ym = R.yms[R.yms.length - 1], nm = R.yms.length;
   const unit = R.year ? 'year' : sem ? 'semester' : 'month', over = sem ? `over ${nm} months` : '', ov = over ? ' ' + over : '', out = [];
+  const lateFirst = !sem && bfNow().on;   // a late bill goes first: the bills slide moves up behind the title (end of this function)
   // 1 title
-  out.push({id:'title', fixed:2, say:`Your ${unit}: ${R.name}. Here is how it went, in about thirty seconds.`, fin(T){ this.secs = Math.round(T / 5) * 5; this.say = `Your ${unit}: ${R.name}. Here is how it went, in about ${this.secs} seconds.`; },
+  out.push({id:'title', fixed:2,
+    fin(T){ this.secs = Math.round(T / 5) * 5; },
     build(){ const small = matchMedia('(max-height:700px)').matches;
-      return `<div class="st-k">Your ${unit}</div><div class="st-vis st-c">${pig('proud', small ? 120 : 164)}</div><div class="st-big ${R.name.length > 9 ? 'm' : ''}">${R.name}</div><div class="st-sub">${sem ? `${plural(nm, 'month')}, in` : 'In'} about ${this.secs} seconds.</div>`; },
+      return `<div class="st-k">Your ${unit}</div><div class="st-vis st-c">${pig('proud', small ? 120 : 164)}</div><div class="st-big ${R.name.length > 9 ? 'm' : ''}">${R.name}</div><div class="st-sub">${lateFirst ? `One thing first, then the rest of ${R.name}.` : `${sem ? `${plural(nm, 'month')}, in` : 'In'} about ${this.secs} seconds.`}</div>`; },
     seek(){ } });
   // 2 in vs out
   if(A.inc > 0 || A.out > 0){
     const mx = Math.max(A.inc, A.out, 1), H = 124, B = 148, hi = H * A.inc / mx, ho = H * A.out / mx, gap = A.left >= 0;
+    // what is left after the must-pay bills still due this month (the same bills Safe to spend subtracts); the monthly story only
+    const due = an && !sem ? billsFirst().rows.filter(r => r.s.left > 0).reduce((a, r) => a + r.s.left, 0) : 0, free = A.left - due, mode = !gap ? 'over' : due > 0 ? (free >= 0 ? 'after' : 'short') : 'plain',
+      heroV = mode === 'after' ? free : mode === 'short' ? -free : Math.abs(A.left), dueFull = Math.max(4, H * due / mx), dueTxt = ft(due);
     const osegs = ['must', 'ess', 'fun', 'other', 'save'].filter(k => A[k] > 0), osum = osegs.reduce((a, k) => a + A[k], 0) || 1;   // Out is split in the bucket colours of the next slide's donut; In is neutral white
-    out.push({id:'inout', say:`In and out${ov}. ${ft(A.inc)} came in and ${ft(A.out)} went out. ${gap ? `${ft(A.left)} is left over.` : `${ft(-A.left)} more went out than came in.`}`,
-      build:() => stFrame('In and out', `<svg class="st-svg" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+    out.push({id:'inout',
+      build:() => stFrame('In and out' + ov, `<svg class="st-svg" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet" data-say="In ${ft(A.inc)}. Out ${ft(A.out)}.">
+        <defs><pattern id="st-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#0F3D1E" fill-opacity=".6"/><rect width="3" height="7" fill="#FFB873"/></pattern></defs>
         <line x1="14" x2="306" y1="${B}" y2="${B}" stroke="rgba(255,255,255,.4)"/>
-        <rect data-r="gap" x="${gap ? 184 : 40}" width="96" rx="6" fill="${gap ? ST_SEG.left[1] : '#FFB873'}" fill-opacity="${gap ? .45 : 1}"/>
         ${osegs.map(k => `<rect data-r="o-${k}" x="184" width="96" fill="${ST_SEG[k][1]}"/>`).join('')}<rect data-r="in" x="40" width="96" rx="6" fill="#fff"/>
+        <rect data-r="gap" x="184" width="96" rx="${gap ? 6 : 0}" fill="${gap ? ST_SEG.left[1] : 'url(#st-hatch)'}" fill-opacity="${gap ? .45 : 1}"/>
+        ${gap ? '' : `<line data-t="inl" x1="140" x2="284" stroke="#fff" stroke-width="1.6" stroke-dasharray="4 3"/><text data-t="inlab" x="289" fill="#fff" font-size="12" font-weight="600">In</text><text data-t="overl" x="232" text-anchor="middle" fill="#FFB873" font-size="12" font-weight="700">over by ${ft(-A.left)}</text>`}
+        ${mode === 'after' || mode === 'short' ? `<rect data-r="due" x="184" width="96" rx="3" fill="none" stroke="#fff" stroke-width="1.6" stroke-dasharray="4 3"/><text data-t="duel" x="159" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">Bills due</text>` : ''}
         <text x="88" y="170" text-anchor="middle" fill="#D4E5CE" font-size="14" font-weight="600">In</text><text data-t="in" x="88" y="191" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">${ft(A.inc)}</text>
         <text x="232" y="170" text-anchor="middle" fill="#D4E5CE" font-size="14" font-weight="600">Out</text><text data-t="out" x="232" y="191" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">${ft(A.out)}</text></svg>`,
-        gap ? ft(A.left) : ft(-A.left), gap ? `left over this ${unit}.` : `more went out than came in.`),
+        ft(heroV), mode === 'after' ? `left after the bills still due (${dueTxt}).` : mode === 'short' ? 'short for the bills still due.' : gap ? `left over this ${unit}.` : `more went out than came in. It happens; next ${unit}'s plan starts from here.`),
       seek(r, t){ const u1 = stEz(stPh(t, 0, .9)), u2 = stEz(stPh(t, .15, 1.05)), u3 = stEz(stPh(t, .9, 1.5)), q = s => r.querySelector(s),
           h1 = hi * u1, h2 = ho * u2, g = Math.abs(hi - ho) * u3;
         stSet(q('[data-r=in]'), {y:B - h1, height:h1}); let cum = 0; osegs.forEach(k => { const f = A[k] / osum, e = q(`[data-r=o-${k}]`); stSet(e, {y:B - h2 * (cum + f), height:h2 * f}); cum += f; });
-        gap ? stSet(q('[data-r=gap]'), {y:B - h2 - g, height:g}) : stSet(q('[data-r=gap]'), {y:B - h1 - g, height:g});
+        if(gap) stSet(q('[data-r=gap]'), {y:B - h2 - g, height:g});
+        else { stSet(q('[data-r=gap]'), {y:B - h2, height:Math.max(0, h2 - h1)}); stSet(q('[data-t=inl]'), {y1:B - h1, y2:B - h1}); stSet(q('[data-t=inlab]'), {y:B - h1 + 4}); const ol = q('[data-t=overl]'); stSet(ol, {y:B - h2 - 7}); ol.style.opacity = stPh(t, .9, 1.4); }
+        const dr = q('[data-r=due]'); if(dr){ const dh = Math.min(g, dueFull * u3); stSet(dr, {y:B - h2 - dh, height:dh}); const dl = q('[data-t=duel]'); stSet(dl, {y:B - h2 - dh / 2 + 4}); dl.style.opacity = stPh(t, 1.1, 1.5); }
         q('[data-t=in]').textContent = ft(Math.round(A.inc * u1)); q('[data-t=out]').textContent = ft(Math.round(A.out * u2));
-        q('[data-big]').textContent = ft(Math.round(Math.abs(A.left) * u3)); q('[data-big]').style.color = gap ? '' : 'var(--st-warn)'; } });
+        q('[data-big]').textContent = ft(Math.round(heroV * u3)); q('[data-big]').style.color = (gap && mode !== 'short') ? '' : 'var(--st-warn)'; } });
   }
-  // 3 where it went
+  // 3 where it went: percentages of the money that came in (the same base as the plan on the next-month slide and My split); a month that went over keeps money out as the base
   const bk = ['must', 'ess', 'fun', 'other', 'save'].filter(k => A[k] > 0);
   if(A.out > 0 && bk.length){
-    const pc = lrPct(bk.map(k => A[k]), A.out), C = 2 * Math.PI * 56; let acc0 = 0; const segs = bk.map((k, i) => { const f = A[k] / A.out, s = acc0; acc0 += f; return {k, f, s, p:pc[i]}; });
-    const top = segs.slice().sort((a, b) => b.f - a.f)[0], fun = segs.find(s => s.k === 'fun');
-    out.push({id:'donut', say:`Where it went${ov}. ${stList(segs.map(s => `${ST_SEG[s.k][0].toLowerCase()} ${s.p} percent`))}. ${ST_SEG[top.k][0]} was the biggest part.`,
-      build:() => stFrame('Where it went', `<div class="st-dn"><div class="st-dw"><svg viewBox="0 0 160 160" width="150" height="150">${segs.map(s => `<circle data-seg="${s.k}" cx="80" cy="80" r="56" fill="none" stroke="${ST_SEG[s.k][1]}" stroke-width="26" transform="rotate(-90 80 80)" stroke-dasharray="0 ${C}"/>`).join('')}</svg><div class="st-dc"><small>${sem ? 'went out' : 'went out'}</small><b data-c>${ft(0)}</b></div></div>
-        <ul class="st-lg">${segs.map(s => `<li data-l="${s.k}"><i style="background:${ST_SEG[s.k][1]}"></i><span>${s.k === 'must' ? I('lock', 14) : ''}${ST_SEG[s.k][0]}</span><b>${s.p}%</b></li>`).join('')}</ul></div>`,
-        `${top.p}%`, `${ST_SEG[top.k][0]} was the biggest part${fun && top.k !== 'fun' ? `. Fun was ${fun.p}%` : ''}.`),
+    const inBase = A.left >= 0, base = inBase ? A.inc : A.out, ks = inBase && A.left > 0 ? bk.concat('left') : bk, val = k => k === 'left' ? A.left : A[k];
+    const pc = lrPct(ks.map(val), base), C = 2 * Math.PI * 56; let acc0 = 0; const segs = ks.map((k, i) => { const f = val(k) / base, s = acc0; acc0 += f; return {k, f, s, p:pc[i]}; });
+    const PV = inBase && S.analyst.on && S.analyst.accepted ? curView() : null, plan = PV && !PV.rough ? PV : null, pOf = k => (segs.find(x => x.k === k) || {p:0}).p;   // the plan only when the analyst split is accepted
+    let big, sub;
+    if(plan){ const gp = ['ess', 'fun'].map(k => ({k, d:pOf(k) - plan.by[k].pct})).sort((x, y) => y.d - x.d)[0];
+      if(gp.d >= 1){ big = `${ST_SEG[gp.k][0]}: ${gp.d}% over plan`; sub = `${ST_SEG[gp.k][0]} was ${pOf(gp.k)}% of what came in. Your plan is ${plan.by[gp.k].pct}%.`; }
+      else { big = 'Within your plan'; sub = `Fun ${pOf('fun')}%, plan ${plan.by.fun.pct}%.`; } }
+    else { big = `Fun: ${pOf('fun')}%`; sub = inBase ? 'of the money that came in.' : 'of what went out.'; }
+    out.push({id:'donut',
+      build:() => stFrame('Where it went' + ov, `<div class="st-dn"><div class="st-dw"><svg viewBox="0 0 160 160" width="150" height="150">${segs.map(s => `<circle data-seg="${s.k}" cx="80" cy="80" r="56" fill="none" stroke="${ST_SEG[s.k][1]}" stroke-width="26" transform="rotate(-90 80 80)" stroke-dasharray="0 ${C}"/>`).join('')}</svg><div class="st-dc"><small>${inBase ? 'came in' : 'went out'}</small><b data-c>${ft(0)}</b></div></div>
+        <ul class="st-lg">${segs.map(s => `<li data-l="${s.k}"><i style="background:${ST_SEG[s.k][1]}"></i><span>${s.k === 'must' ? I('lock', 14) : ''}${ST_SEG[s.k][0]}</span><b${plan && plan.by[s.k] ? ' class="pl"' : ''}>${s.p}%${plan && plan.by[s.k] ? `<small>plan ${plan.by[s.k].pct}%</small>` : ''}</b></li>`).join('')}</ul></div>`,
+        big, sub),
       seek(r, t){ const p = stEz(stPh(t, 0, 1.5));
         segs.forEach((s, i) => { const vis = stClamp((p - s.s) / s.f) * s.f, c = r.querySelector(`[data-seg=${s.k}]`);
           stSet(c, {'stroke-dasharray':`${Math.max(0, vis * C - (vis > 0 ? 1.5 : 0))} ${C}`, 'stroke-dashoffset':-s.s * C});
           const l = r.querySelector(`[data-l=${s.k}]`); l.style.opacity = stPh(t, .4 + i * .15, .7 + i * .15); });
-        r.querySelector('[data-c]').textContent = ft(Math.round(A.out * p)); } });
+        r.querySelector('[data-c]').textContent = ft(Math.round(base * p)); } });
   }
   // 4 bills (analyst)
   if(an && mustBills().length){
     const n = mustBills().length;
     if(!sem){
       const bf = billsFirst(), rows = bf.rows, open = bf.count, tot = rows.reduce((a, r) => a + r.bill.exp, 0), pk = S.billsPocket && S.billsPocket.on ? S.billsPocket.bal : 0, paidTot = rows.reduce((a, r) => a + r.s.paid, 0);
-      const big = !open ? `All ${n} bills paid` : bf.on ? bf.text : `${n - open} of ${n} bills paid`, names = stList(bf.rows.filter(r => r.s.left > 0).map(r => r.bill.name));
-      const sub = (!open ? `${ft(paidTot)} went to bills.` : bf.on ? `${names} still open. Bills first.` : `${names} ${open > 1 ? 'are' : 'is'} due later: ${ft(bf.total)}.`) + (S.billsPocket && S.billsPocket.on ? ` Bills pocket: ${ft(pk)}.` : '');
+      // the same words as the Bills first card on Home: only a bill past its window is "late"; a bill due in the next days is "coming up" / "due later"
+      const names = stList(bf.rows.filter(r => r.s.left > 0).map(r => r.bill.name)), lt = bf.late, sn = bf.soon, dn = r => r.s.days > 0 ? `in ${plural(r.s.days, 'day')}` : r.s.days === 0 ? 'today' : 'now';
+      const big = !open ? `All ${n} bills paid` : bf.on ? (lt.length === 1 ? `${esc(lt[0].bill.name)} is late` : `${lt.length} bills are late`) : `${n - open} of ${n} bills paid`;
+      const sub = (!open ? `${ft(paidTot)} went to bills.` : bf.on ? `${ft(bf.lateTotal)}${lt.length === 1 ? `, due on the ${ordinal(lt[0].bill.day)}` : ' in total'}.${sn.length === 1 ? ` ${esc(sn[0].bill.name)} ${ft(sn[0].s.left)} is due ${dn(sn[0])}.` : sn.length > 1 ? ` ${sn.length} more bills are due soon.` : ''}` : `${names} ${open > 1 ? 'are' : 'is'} due later: ${ft(bf.total)}.`) + (S.billsPocket && S.billsPocket.on ? ` Bills pocket: ${ft(pk)}.` : '');
       const shown = rows.slice(0, 6), more = rows.length - shown.length;
-      out.push({id:'bills', say:`Bills. ${big}. ${sub}`, btn:bf.on ? {label:'Pay now', attr:`data-stpay="${bf.late[0].bill.id}"`} : null,
+      out.push({id:'bills', btn:bf.on ? {label:'Pay now', attr:`data-stpay="${bf.late[0].bill.id}"`} : null,
         build:() => stFrame('Must-pay bills', `<div class="st-rc" data-rc><b class="st-rh">${I('lock', 14)} Must-pay bills</b>${shown.map(r => { const s = r.s, ok = s.st === 'paid' || s.st === 'skipped';
-          return `<div class="r ${ok ? '' : 'op'}" data-row><span class="nm">${esc(r.bill.name)}</span><span class="am num">${ft(r.bill.exp)}</span><span class="tk">${ok ? `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="#2F7A1B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : `<em>${s.st === 'late' || s.days < 0 ? 'Not paid' : s.label.replace('Due in ', 'In ').replace(' days', ' d').replace(' day', ' d')}</em>`}</span></div>`; }).join('')}
+          return `<div class="r ${ok ? '' : 'op'}" data-row><span class="nm">${esc(r.bill.name)}</span><span class="am num">${ft(r.bill.exp)}</span><span class="tk">${ok ? `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="#2F7A1B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : `<em>${s.over ? 'Late' : s.days < 0 ? 'Due now' : s.days === 0 ? 'Today' : `In ${plural(s.days, 'day')}`}</em>`}</span></div>`; }).join('')}
           ${more > 0 ? `<div class="r" data-row><span class="nm">${more} more</span></div>` : ''}<div class="r tot" data-row><span class="nm">Total</span><span class="am num">${ft(tot)}</span><span class="tk"></span></div>
           ${S.billsPocket && S.billsPocket.on ? `<div class="r pk" data-row><span class="nm">Bills pocket</span><span class="am num">${ft(pk)}</span><span class="tk"></span></div>` : ''}</div>`, big, sub),
         seek(r, t){ const u = stEz(stPh(t, 0, 1.3)), rc = r.querySelector('[data-rc]'); rc.style.clipPath = `inset(0 0 ${(1 - u) * 104}% 0)`; rc.style.transform = `translateY(${-(1 - u) * 22}px)`;
           r.querySelectorAll('[data-row]').forEach((e, i) => { e.style.opacity = stPh(t, .15 + i * .14, .4 + i * .14); }); } });
     } else {
-      const sb = stBillsSem(R.yms), all = sb.paid >= sb.due, big = all ? `All ${n} bills paid` : `${sb.due - sb.paid} bills not paid`, sub = all ? `Every month of the semester: ${sb.paid} payments, none missed.` : `${sb.paid} of ${sb.due} payments went through on time.`;
-      out.push({id:'bills', say:`Bills. ${big}. ${sub}`,
-        build:() => stFrame('Must-pay bills', `<div class="st-rc" data-rc><b class="st-rh">${I('lock', 14)} Paid this semester</b>${sb.per.slice(0, 6).map(r => `<div class="r ${r.p < r.d ? 'op' : ''}" data-row><span class="nm">${esc(r.b.name)}</span><span class="am num">${r.p} of ${r.d}</span><span class="tk">${r.p >= r.d ? `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="#2F7A1B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : '<em>Missed</em>'}</span></div>`).join('')}
-          <div class="r tot" data-row><span class="nm">Months paid</span><span class="am num">${sb.paid} of ${sb.due}</span><span class="tk"></span></div></div>`, big, sub),
+      const sb = stBillsSem(R.yms), all = sb.paid >= sb.due, big = all ? `All ${n} bills paid` : `${sb.due - sb.paid} bills not paid`, sub = all ? `Every month of the ${unit}: ${sb.paid} payments, none missed.` : `${sb.paid} of ${sb.due} payments went through on time.`;
+      out.push({id:'bills',
+        build:() => stFrame('Must-pay bills', `<div class="st-rc" data-rc><b class="st-rh">${I('lock', 14)} Paid this ${unit}</b>${sb.per.slice(0, 6).map(r => `<div class="r ${r.p < r.d ? 'op' : ''}" data-row><span class="nm">${esc(r.b.name)}</span><span class="am num">${r.p} of ${r.d}</span><span class="tk">${r.p >= r.d ? `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="#2F7A1B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : '<em>Missed</em>'}</span></div>`).join('')}
+          <div class="r tot" data-row><span class="nm">Payments made</span><span class="am num">${sb.paid} of ${sb.due}</span><span class="tk"></span></div></div>`, big, sub),
         seek(r, t){ const u = stEz(stPh(t, 0, 1.3)), rc = r.querySelector('[data-rc]'); rc.style.clipPath = `inset(0 0 ${(1 - u) * 104}% 0)`; rc.style.transform = `translateY(${-(1 - u) * 22}px)`;
           r.querySelectorAll('[data-row]').forEach((e, i) => { e.style.opacity = stPh(t, .15 + i * .14, .4 + i * .14); }); } });
     }
@@ -3686,17 +3766,19 @@ function storySlides(){
   if(!sem){
     const d = stDrift(ym);
     if(d){
-      const mxv = Math.max(...d.pts) * 1.12, X = i => 36 + i * (248 / (d.pts.length - 1)), Y = v => 118 - v / mxv * 100, path = d.pts.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' '), worth = stWorth(d.amt - d.avg);
-      out.push({id:'change', say:`The biggest change. ${d.label} is ${ft(d.amt)}, up from ${ft(Math.round(d.avg))} on average. ${worth ? `That is ${worth}.` : ''}`,
-        build:() => stFrame('The biggest change', `<div class="st-co" data-co><b>${esc(d.label)}</b><span>${ft(d.amt)}, up from ${ft(Math.round(d.avg))}</span></div><svg class="st-svg" viewBox="0 0 320 160" preserveAspectRatio="xMidYMid meet">
+      // the months sit where they are on the calendar: a month with no data (the demo skips one) is a blank slot and the line has a gap there
+      const mi = y => +y.slice(0, 4) * 12 + +y.slice(5) - 1, m0 = mi(d.yms[0]), span = Math.max(1, mi(d.yms[d.yms.length - 1]) - m0), X = i => 36 + (mi(d.yms[i]) - m0) * (248 / span);
+      const mxv = Math.max(...d.pts) * 1.12, Y = v => 118 - v / mxv * 100, path = d.pts.map((v, i) => `${i && mi(d.yms[i]) - mi(d.yms[i - 1]) === 1 ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' '), worth = stWorth(d.amt - d.avg);
+      out.push({id:'change',
+        build:() => stFrame('The biggest change', `<div class="st-co" data-co><b>${esc(d.label)}</b><span>${ft(d.amt)}</span></div><svg class="st-svg" viewBox="0 0 320 160" preserveAspectRatio="xMidYMid meet">
           <line x1="20" x2="300" y1="${Y(d.avg).toFixed(1)}" y2="${Y(d.avg).toFixed(1)}" stroke="rgba(255,255,255,.55)" stroke-dasharray="4 4"/>
-          <text x="300" y="${(Y(d.avg) + 15).toFixed(1)}" text-anchor="end" fill="#D4E5CE" font-size="11">3-month average</text>
+          <text x="300" y="${(Y(d.avg) - 6).toFixed(1)}" text-anchor="end" fill="#D4E5CE" font-size="11">3-month average ${ft(Math.round(d.avg))}</text>
           <path d="${path}" data-line pathLength="1" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 1" stroke-dashoffset="1"/>
           ${d.pts.map((v, i) => `<circle data-dot="${i}" cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${i === d.pts.length - 1 ? 7 : 4}" fill="${i === d.pts.length - 1 ? '#F5913A' : '#fff'}" ${i === d.pts.length - 1 ? 'stroke="#fff" stroke-width="2.5"' : ''}/>`).join('')}
           ${d.names.map((n, i) => `<text x="${X(i).toFixed(1)}" y="152" text-anchor="middle" fill="#D4E5CE" font-size="13">${n}</text>`).join('')}</svg>`,
           `+${d.up}%`, worth ? `That is ${worth}.` : `Up from ${ft(Math.round(d.avg))}.`),
         seek(r, t){ const u = stEz(stPh(t, 0, 1.2)), n = d.pts.length; stSet(r.querySelector('[data-line]'), {'stroke-dashoffset':1 - u});
-          r.querySelectorAll('[data-dot]').forEach(c => { const i = +c.dataset.dot, last = i === n - 1; c.style.opacity = last ? stPh(t, 1.1, 1.3) : stPh(u, i / (n - 1) - .05, i / (n - 1)); });
+          r.querySelectorAll('[data-dot]').forEach(c => { const i = +c.dataset.dot, last = i === n - 1; c.style.opacity = last ? stPh(t, 1.1, 1.3) : stPh(u, (X(i) - 36) / 248 - .05, (X(i) - 36) / 248); });
           const co = r.querySelector('[data-co]'), k = stBack(stPh(t, 1.3, 1.9)); co.style.opacity = stPh(t, 1.3, 1.5); co.style.transform = `scale(${.7 + .3 * k})`;
           r.querySelector('[data-big]').textContent = `+${Math.round(d.up * stEz(stPh(t, .3, 1.5)))}%`; } });
     }
@@ -3704,23 +3786,28 @@ function storySlides(){
     const ms = R.yms.map(y => ({y, left:A.by[y].inc - A.by[y].out})), best = ms.reduce((a, b) => b.left > a.left ? b : a), hard = ms.reduce((a, b) => b.left < a.left ? b : a);
     if(best.y !== hard.y){
       const mxv = Math.max(...ms.map(m => Math.abs(m.left)), 1), Z = hard.left < 0 ? 72 : 118, bw = Math.min(40, 248 / ms.length - 12), X = i => 36 + (i + .5) * (248 / ms.length), Hh = v => Math.abs(v) / mxv * (hard.left < 0 ? 54 : 96);
-      out.push({id:'change', say:`Best and hardest month. Best was ${monthOf(best.y)} with ${ft(best.left)} left over. Hardest was ${monthOf(hard.y)} with ${hard.left >= 0 ? `${ft(hard.left)} left over` : `${ft(-hard.left)} more out than in`}.`,
+      // every bar carries its forint value (only best and hardest when there are too many bars), and best / hardest also a ▲ / ▼ so the meaning is not colour alone
+      const fz = v => (v < 0 ? '-' : '') + Math.abs(Math.round(v)).toLocaleString('en-US').replace(/,/g, ' '), showV = m => m.y === best.y || m.y === hard.y || ms.length <= 6;
+      out.push({id:'change',
         build:() => stFrame('Best and hardest month', `<svg class="st-svg" viewBox="0 0 320 160" preserveAspectRatio="xMidYMid meet"><line x1="14" x2="306" y1="${Z}" y2="${Z}" stroke="rgba(255,255,255,.4)"/>
           ${ms.map((m, i) => { const h = Hh(m.left), c = m.y === best.y ? '#6FCB4A' : m.y === hard.y ? '#F5913A' : 'rgba(255,255,255,.75)';
-            return `<rect data-b="${i}" x="${(X(i) - bw / 2).toFixed(1)}" width="${bw}" rx="4" fill="${c}" y="${m.left >= 0 ? Z : Z}" height="0"/><text x="${X(i).toFixed(1)}" y="152" text-anchor="middle" fill="#D4E5CE" font-size="13">${stShort(m.y)}</text>`; }).join('')}</svg>`,
+            return `<rect data-b="${i}" x="${(X(i) - bw / 2).toFixed(1)}" width="${bw}" rx="4" fill="${c}" y="${Z}" height="0"/>${showV(m) ? `<text data-v="${i}" x="${X(i).toFixed(1)}" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">${m.y === best.y ? '▲ ' : m.y === hard.y ? '▼ ' : ''}${fz(m.left)}</text>` : ''}<text x="${X(i).toFixed(1)}" y="152" text-anchor="middle" fill="#D4E5CE" font-size="13">${stShort(m.y)}</text>`; }).join('')}</svg>`,
           monthOf(best.y), `Best month, ${ft(best.left)} left over. Hardest was ${monthOf(hard.y)}${hard.left >= 0 ? `, ${ft(hard.left)} left` : `, ${ft(-hard.left)} more out than in`}.`),
-        seek(r, t){ ms.forEach((m, i) => { const h = Hh(m.left) * stEz(stPh(t, .1 + i * .12, .9 + i * .12)); stSet(r.querySelector(`[data-b="${i}"]`), {y:m.left >= 0 ? Z - h : Z, height:h}); }); } });
+        seek(r, t){ ms.forEach((m, i) => { const u = stEz(stPh(t, .1 + i * .12, .9 + i * .12)), h = Hh(m.left) * u; stSet(r.querySelector(`[data-b="${i}"]`), {y:m.left >= 0 ? Z - h : Z, height:h});
+          const v = r.querySelector(`[data-v="${i}"]`); if(v){ stSet(v, {y:m.left >= 0 ? Z - h - 5 : Z + h + 12}); v.style.opacity = stPh(t, .6 + i * .12, .9 + i * .12); } }); } });
     }
   }
   // 6 what you put aside
   { const put = A.put, per = Math.max(500, Math.round(S.income.amount * .02 / 500) * 500), L = put > 0 ? Math.min(12, Math.max(1, Math.ceil(A.save / per) || 1)) : 0,
-      rows = [['Your rules', A.rules], ['Round-ups', A.round], ['Interest', A.interest], ['Added by you', A.manual]].filter(r => r[1] > 0), by = A.rules + A.round;
-    out.push({id:'put', say:put > 0 ? `What you put aside${ov}. ${ft(put)}. ${by > 0 ? `${ft(by)} came from your rules and round-ups. ` : ''}${A.interest > 0 ? `${ft(A.interest)} is interest.` : ''}` : `What you put aside${ov}. Nothing yet.`,
-      build:() => stFrame('What you put aside', `<div class="st-pt"><div class="st-stw"><span class="pkstack st-stk" style="--L:${L};--st:5px">${Array.from({length:L}, (_, i) => `<i class="${i < 2 ? 'c' : 'n'}" style="--k:${i}" data-ly="${i}"></i>`).join('')}</span></div>
-        <ul class="st-cn">${rows.map(([l, v], i) => `<li data-cn="${i}"><small>${l}</small><b class="num">${ft(0)}</b></li>`).join('')}</ul></div>`,
-        ft(put), put > 0 ? `${by > 0 ? `Rules and round-ups moved ${ft(by)}.` : 'All of it was added by you.'}${A.interest > 0 ? ` Interest added ${ft(A.interest)}.` : ''}` : 'No money moved to a goal. Even 500 Ft starts a streak.'),
+      rows = [['Your rules', A.rules], ['Round-ups', A.round], ['Interest', A.interest], ['Added by you', A.manual]].filter(r => r[1] > 0), by = A.rules + A.round,
+      onlyInt = put > 0 && A.save <= 0, list = rows.length > 1;   // interest is not a deposit: with only interest there is no coin stack; one row would only repeat the big number
+    out.push({id:'put',
+      build:() => stFrame('What you put aside' + ov, `<div class="st-pt">${onlyInt ? pig('sleepy', 120) : `<div class="st-stw"><span class="pkstack st-stk" style="--L:${L};--st:5px">${Array.from({length:L}, (_, i) => `<i class="${i < 2 ? 'c' : 'n'}" style="--k:${i}" data-ly="${i}"></i>`).join('')}</span></div>`}
+        ${list ? `<ul class="st-cn">${rows.map(([l, v], i) => `<li data-cn="${i}"><small>${l}</small><b class="num">${ft(0)}</b></li>`).join('')}</ul>` : ''}</div>`,
+        ft(put), put <= 0 ? 'No money moved to a goal. Even 500 Ft starts a streak.' : onlyInt ? `Interest only. Nothing moved in this ${unit}.`
+          : [by > 0 ? `Rules and round-ups moved ${ft(by)}.` : '', A.manual > 0 ? `You added ${ft(A.manual)}.` : '', A.interest > 0 ? `Interest added ${ft(A.interest)}.` : ''].filter(Boolean).join(' ')),
       seek(r, t){ r.querySelectorAll('[data-ly]').forEach(e => { const i = +e.dataset.ly, u = stEz(stPh(t, .1 + i * .07, .4 + i * .07)); e.style.opacity = u; e.style.transform = `translateY(${-(1 - u) * 30}px)`; });
-        rows.forEach(([, v], i) => { const e = r.querySelector(`[data-cn="${i}"] b`); e.textContent = ft(Math.round(v * stEz(stPh(t, .3 + i * .15, 1.4 + i * .15)))); });
+        if(list) rows.forEach(([, v], i) => { const e = r.querySelector(`[data-cn="${i}"] b`); e.textContent = ft(Math.round(v * stEz(stPh(t, .3 + i * .15, 1.4 + i * .15)))); });
         r.querySelector('[data-big]').textContent = ft(Math.round(put * stEz(stPh(t, .2, 1.5)))); } }); }
   // 7 your progress: the goal, the streak, the score, and a late goal with its fix
   { const g = ruleGoal();
@@ -3728,55 +3815,84 @@ function storySlides(){
       const pcc = pctOf(g), pc = pcc.p, sav = pcc.saved, tiny = pcc.tiny, sc = S.analyst.on && S.analyst.accepted && S.scoreHist.length ? {n:scoreNow().t, p:scorePrev().t, held:habitsHeld()} : null, tight = S.goals.filter(isTight)[0], fix = tight ? behindFix(tight) : null,
         rw = S.rewards[0] && S.rewards[0].id === 'r' + S.months ? S.rewards[0] : null, gm = gMonths(g), R2 = 46, C2 = 2 * Math.PI * R2;
       const when = (tiny ? 'First step. ' : '') + (gm > 0 ? `On pace for ${inMonths(gm)}.` : gm === 0 ? 'You reached it.' : 'Add a rule to see the date.');
-      const note = [sc ? `${sc.n} of 100: ${sc.held} of 4 habits held this month` : '', tight ? `${esc(tight.name)}: ${daysTo(tight) < 0 ? 'date passed' : 'behind'}, ${ft(toGo(tight))} to go.` : rw ? `Reward earned: ${esc(rw.title.toLowerCase())}.` : ''].filter(Boolean).join('<br>'), noteSay = [tight ? `${esc(tight.name)}: ${daysTo(tight) < 0 ? 'goal date passed' : 'behind'}, ${ft(toGo(tight))} to go. Your ${ft(gSaved(tight))} is safe.${fix ? ` A new date, like ${pkMonthShort(fix.date)}, fixes it.` : ' Pick a new date to fix it.'}` : '', rw ? `Reward earned: ${esc(rw.title.toLowerCase())}.` : ''].filter(Boolean).join(' ');
-      out.push({id:'progress', say:`Your progress. ${g.name} is ${tiny ? `${ft(sav)} in, a first step` : `${pc} percent`}. ${when} Streak: ${plural(S.streak, 'week')}.${sc ? ` Health score ${sc.n} of 100: ${sc.held} of 4 habits held this month${sc.n !== sc.p ? `, was ${sc.p}` : ''}.` : ''} ${noteSay.replace(/<[^>]+>/g, '')}`,
+      // one message (the goal) and one small line under it: a goal that needs a new date (with the button to pick one, in the warning colour and with an icon), else the reward when there is one. The score is in the list, once.
+      const note = tight ? `${esc(tight.name)} needs a new date. Your ${ft(gSaved(tight))} is safe.` : rw ? `Reward earned: ${esc(rw.title.toLowerCase())}.` : '';
+      const listSay = tight ? '' : ` data-say="Streak ${plural(S.streak, 'week')}.${sc ? ` Health score ${sc.n} of 100, ${sc.held} of 4 habits held.` : ''}"`;   // the list is spoken only when there is room
+      out.push({id:'progress', btn:tight ? {label:'Pick a new date', attr:`data-stgoal="${tight.id}"`} : null,
         build:() => stFrame(esc(g.name), `<div class="st-pr"><div class="st-rg"><svg viewBox="0 0 120 120" width="120" height="120"><circle cx="60" cy="60" r="${R2}" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="14"/><circle data-ring cx="60" cy="60" r="${R2}" fill="none" stroke="#6FCB4A" stroke-width="14" stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="0 ${C2}"/></svg><span class="st-rc2">${I('piggy', 34)}</span></div>
-          <ul class="st-cn"><li><small>Streak</small><b class="num"><span class="st-fl">${flame(22, S.streak > 0)}</span><span data-sk>0</span> <span class="st-u">${S.streak === 1 ? 'week' : 'weeks'}</span></b></li>${sc ? `<li><small>Health score</small><b class="num"><span data-sc>${sc.p}</span> <span class="st-u">of 100${sc.n !== sc.p ? ` · ${sc.n > sc.p ? '▲' : '▼'} ${Math.abs(sc.n - sc.p)}` : ''}</span></b></li>` : ''}</ul></div>`,
-          tiny ? ft(sav) : `${pc}%`, when, note),
+          <ul class="st-cn"${listSay}><li><small>Streak</small><b class="num"><span class="st-fl">${flame(22, S.streak > 0)}</span><span data-sk>0</span> <span class="st-u">${S.streak === 1 ? 'week' : 'weeks'}</span></b></li>${sc ? `<li><small>Health score</small><b class="num"><span data-sc>${sc.p}</span> <span class="st-u">of 100</span></b><small>${sc.held} of 4 habits held${sc.n !== sc.p ? ` · ${sc.n > sc.p ? '▲' : '▼'} ${Math.abs(sc.n - sc.p)}` : ''}</small></li>` : ''}</ul></div>`,
+          tiny ? ft(sav) : `${pc}%`, when, note, !!tight),
         seek(r, t){ const u = stEz(stPh(t, 0, 1.4)); stSet(r.querySelector('[data-ring]'), {'stroke-dasharray':`${C2 * pc / 100 * u} ${C2}`});
           r.querySelector('[data-big]').textContent = tiny ? ft(Math.round(sav * u)) : `${Math.round(pc * u)}%`; r.querySelector('[data-sk]').textContent = Math.round(S.streak * stEz(stPh(t, .3, 1.3)));
           const e = r.querySelector('[data-sc]'); if(e) e.textContent = Math.round(sc.p + (sc.n - sc.p) * stEz(stPh(t, .4, 1.4))); } });
     } }
-  // 8 next month and one tip (the projection is the analyst's; the tip button sets a real rule: 10% of the biggest Fun category moves to the goal every month)
-  { const g = ruleGoal(), V = an ? curView() : null, P = V ? V.p : null, T = tipOf(), ten = T ? T.ten : 0, wk = T ? T.wk : 0,
-      tip = !!(T && !S.insightUsed), done = !!(g && S.insightUsed), mn = P ? monthOf(P.ym) : monthOf(ymAt((S.months || 0) + 1));
-    if(P || tip || done){
+  // 8 next month and one tip (the projection is the analyst's). The tip comes from tipOf(): a late bill gives Pay now instead, an overspent month gives no saving tip, otherwise
+  // 10% of a regular Fun category's 3-month average moves to the goal every month (Set it up)
+  { const g = ruleGoal(), V = an ? curView() : null, P = V ? V.p : null, T = tipOf(), kind = T ? T.kind : '', bill = kind === 'bill', short = kind === 'short', ten = kind === 'tip' ? T.ten : 0, wk = kind === 'tip' ? T.wk : 0,
+      tip = kind === 'tip' && !S.insightUsed, done = !!(g && S.insightUsed) && !bill && !short, tenDone = done ? (ten || S.insightTen || 0) : 0, mn = P ? monthOf(P.ym) : monthOf(ymAt((S.months || 0) + 1));
+    if(P || tip || done || bill || short){
       const keys = V ? V.rows.filter(r => r.amt > 0).map(r => r.k) : [], nameOf = k => ST_SEG[k][0], val = k => V.rough ? ft(V.by[k].amt) : V.by[k].pct + '%';   // the same four buckets and numbers as My split and Next month
-      const lead = V ? V.base : '';
-      const big = tip ? `Move ${ft(ten)}` : done ? 'Tip is on' : V ? (V.rough ? `About ${ft(V.about)} in` : `${V.by.save.pct}% saving`) : '', sub = tip ? `10% of ${T.label} each month to ${esc(T.g.name)}${wk >= 1 ? `: ${plural(wk, 'week')} sooner` : ''}.` : done ? `Your monthly tip is on. It moves to ${esc(g.name)} every month.` : `${mn}, if it goes like the last months. Tips only: nothing moves by itself.`;
-      out.push({id:'next', say:`Next month, ${mn}. ${P ? `${lead}. ${stList(keys.map(k => `${nameOf(k).toLowerCase()} ${V.rough ? ft(V.by[k].amt) : V.by[k].pct + ' percent'}`))}. ` : ''}${big.replace(/%/, ' percent')}. ${sub.replace(/<[^>]+>/g, '')}`, btn:tip ? {label:'Set it up', attr:`data-stinsight="${ten}"`} : null,
-        build:() => stFrame(`Next month · ${mn}`, P ? `<div class="st-pj"><b class="st-ph">${lead}</b><div class="st-pb" data-pb role="presentation">${keys.map(k => `<i style="width:${V.by[k].amt / V.B * 100}%;background:${ST_SEG[k][1]}"></i>`).join('')}</div>
-          <ul class="st-lg two">${keys.map((k, i) => `<li data-l="${i}"><i style="background:${ST_SEG[k][1]}"></i><span>${k === 'must' ? I('lock', 14) : ''}${nameOf(k)}</span><b>${val(k)}</b></li>`).join('')}</ul></div>` : `<div class="st-c">${pig('happy', 140)}</div>`,
-          big, sub, P && P.deficit ? `Spending is above income by ${ft(P.deficit)}.` : ''),
+      const lead = V ? V.base : '', ln = bill ? T.row.bill.name : '', lnl = /^[A-Z][^A-Z]*$/.test(ln) ? ln.toLowerCase() : ln, many = bill && T.late.length > 1;
+      const big = bill ? (many ? `Pay ${T.late.length} late bills first` : `Pay ${esc(lnl)} first`) : short ? 'A tighter month' : tip ? `Move ${ft(ten)}` : done ? (tenDone ? `Done: ${ft(tenDone)} a month` : 'Done') : V ? (V.rough ? `About ${ft(V.about)} in` : `${V.by.save.pct}% saving`) : '',
+        sub = bill ? `${ft(T.total)}${many ? '' : `, due on the ${ordinal(T.row.bill.day)}`}. Your saving tips wait until it is paid.` : short ? `${ft(T.over)} more went out than came in. No saving tip this month.`
+          : tip ? `10% of ${T.label}, about ${ft(T.amt)} a month, to ${esc(T.g.name)}${wk >= 2 ? `: ${plural(wk, 'week')} sooner` : ''}.` : done ? (tenDone ? `Your tip adds ${ft(tenDone)} a month to ${esc(g.name)}.` : `Your monthly tip is on. It moves to ${esc(g.name)} every month.`) : `${mn}, if it goes like the last months. Tips only: nothing moves by itself.`;
+      out.push({id:'next',
+        btn:bill ? {label:'Pay now', attr:`data-stpay="${T.row.bill.id}"`} : tip ? {label:'Set it up', attr:`data-stinsight="${ten}"`} : null,
+        build:() => stFrame(bill ? 'Next step' : P ? `Next month · ${mn}` : short ? `This ${unit}` : 'One tip', P ? `<div class="st-pj"><b class="st-ph">${lead}</b><div class="st-pb" data-pb role="presentation">${keys.map(k => `<i style="width:${V.by[k].amt / V.B * 100}%;background:${ST_SEG[k][1]}"></i>`).join('')}</div>
+          <ul class="st-lg two">${keys.map((k, i) => `<li data-l="${i}"><i style="background:${ST_SEG[k][1]}"></i><span>${k === 'must' ? I('lock', 14) : ''}${nameOf(k)}</span><b>${val(k)}</b></li>`).join('')}</ul></div>` : `<div class="st-c">${pig(bill || short ? 'concerned' : 'happy', 140)}</div>`,
+          big, sub, P && P.deficit ? `Spending is above income by ${ft(P.deficit)}.` : '', true),
         seek(r, t){ const pb = r.querySelector('[data-pb]'); if(pb) pb.style.clipPath = `inset(0 ${(1 - stEz(stPh(t, 0, 1.2))) * 100}% 0 0)`;
           r.querySelectorAll('[data-l]').forEach((e, i) => { e.style.opacity = stPh(t, .5 + i * .1, .8 + i * .1); }); const h = r.querySelector('.st-ph'); if(h) h.style.opacity = stPh(t, 0, .4);
           if(tip){ const b = r.querySelector('[data-big]'); b.style.opacity = stPh(t, 1, 1.5); } } });
     } }
+  // a late bill goes first: the bills slide moves up right behind the title
+  if(lateFirst){ const bi = out.findIndex(x => x.id === 'bills'); if(bi > 1) out.splice(1, 0, out.splice(bi, 1)[0]); }
   // share card
-  out.push({id:'share', share:true, end:true, say:`Share your ${unit}. The card shows your streak and goal progress, never amounts.`});
+  const sh = shareData(), shareSay = `Share your ${unit}. Amounts stay private. ${sh.empty ? `Nothing to share this ${unit} yet.` : `${sh.streak > 0 ? `${sh.streak} week streak, without a break. ` : ''}${sh.goals.map(x => `${x.g.name} ${x.p} percent.`).join(' ')}`}`;
+  out.push({id:'share', share:true, end:true, empty:sh.empty, say:shareSay});
   return out;
 }
-// last slide: a card to share, with progress but no amounts
+// last slide: a card to share, with progress but no amounts. Nothing sad goes on it: no streak of 0, no goal whose date has passed
+function shareData(){
+  const goals = S.goals.filter(g => !isEur(g) && !(isExact(g) && daysTo(g) < 0)).map(g => ({g, p:Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100))})).sort((a,b) => b.p - a.p).slice(0, 2);
+  return {streak:S.streak, goals, empty:!(S.streak > 0) && !goals.length};
+}
 function shareCard(){
-  const goals = S.goals.filter(g => !isEur(g)).map(g => ({g, p:Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100))})).sort((a,b) => b.p - a.p).slice(0, 2);
-  return `<div class="st-share"><div class="st-sub" style="text-align:center;margin-bottom:14px">Share your ${S._yearStory ? 'year' : S.period === 'Autumn semester' ? 'semester' : 'month'}. Amounts stay private.</div>
+  const {streak, goals, empty} = shareData(), unit = S._yearStory ? 'year' : S.period === 'Autumn semester' ? 'semester' : 'month';
+  if(empty) return `<div class="st-share"><div class="st-sub" style="text-align:center">Nothing to share this ${unit} yet.</div></div>`;
+  const row = ({g,p}) => `<div style="display:flex;justify-content:space-between;font-size:0.875rem;color:var(--ink)"><b class="u-fw6">${esc(g.name)}</b><b class="u-c-gt">${p}%</b></div><div class="prog" style="margin:6px 0 12px"><i style="width:${p}%"></i></div>`;
+  const lead = streak > 0 ? `<div style="display:flex;align-items:center;gap:8px;margin:6px 0 2px">${flame(40)}<b style="font-size:2.5rem;line-height:1;color:var(--ink)">${streak}</b></div>
+      <div style="font-size:var(--fs-m);font-weight:600;color:var(--ink)">week streak, without a break</div>`
+    : `<div style="display:flex;align-items:center;gap:8px;margin:6px 0 2px"><b style="font-size:2.5rem;line-height:1;color:var(--ink)">${goals[0].p}%</b></div>
+      <div style="font-size:var(--fs-m);font-weight:600;color:var(--ink)">of ${esc(goals[0].g.name)} saved</div>`;
+  const rest = streak > 0 ? goals : goals.slice(1);
+  return `<div class="st-share"><div class="st-sub" style="text-align:center;margin-bottom:14px">Share your ${unit}. Amounts stay private.</div>
     <div class="sharec"><span class="k">Anna's ${S._yearStory ? 'first year with Persely' : S.period}</span>
-      <div style="display:flex;align-items:center;gap:8px;margin:6px 0 2px">${flame(40)}<b style="font-size:2.5rem;line-height:1;color:var(--ink)">${S.streak}</b></div>
-      <div style="font-size:var(--fs-m);font-weight:600;color:var(--ink)">week streak, without a break</div>
-      <div style="height:1px;background:var(--line);margin:14px 0"></div>
-      ${goals.map(({g,p}) => `<div style="display:flex;justify-content:space-between;font-size:0.875rem;color:var(--ink)"><b class="u-fw6">${esc(g.name)}</b><b class="u-c-gt">${p}%</b></div><div class="prog" style="margin:6px 0 12px"><i style="width:${p}%"></i></div>`).join('')}
+      ${lead}
+      ${rest.length ? `<div style="height:1px;background:var(--line);margin:14px 0"></div>${rest.map(row).join('')}` : '<div style="height:12px"></div>'}
       <div style="display:flex;align-items:center;gap:6px;font-size:var(--fs-xs);font-weight:700;color:var(--green-t)">${I('piggy',18)} Saving with OTP Persely</div></div></div>`;
 }
 /* ---------- the story engine ----------
    ST.t is the time in the slide (s). Every frame: advance (unless held, paused, away or in manual mode), seek the slide to min(t, ST_END), update the bars.
-   Slide length = 2.5 s + 0.2 s per word on screen, at most 5 s (so keep a slide to about 12 words). Hold (press 220 ms) pauses; tap left/right = back/next; swipe down closes.
+   Slide length = 2.5 s + ST_WPS s per word on screen (a figure like 145 000 Ft is one word), at most 7 s. What VoiceOver reads is built from the same screen text (stSay), one slide at most about 20 words. Hold (press 220 ms) pauses; tap left/right = back/next; swipe down closes.
    Reasons to pause are kept in ST.hold (touch, btn, user, api, hidden): the story runs when it is empty. */
 const ST = {on:false, i:0, t:0, slides:[], total:0, hold:new Set(), raf:0, last:0, manual:false, away:false, down:null, settled:false};
-const stWords = s => { const d = document.createElement('div'); d.innerHTML = s.build(); return [...d.querySelectorAll('.st-big,.st-sub,.st-n')].map(e => e.textContent).join(' ').split(/\s+/).filter(Boolean).length; };   // the words on screen
-const stDur = s => s.end ? 0 : Math.min(5, 2.5 + .2 * stWords(s));
+// one text for the screen and for VoiceOver: the slide is built and landed (seek to its final frame) off screen, then its words are read. Nothing is typed twice, so the spoken text cannot drift from the screen.
+const stRoot = s => { const d = document.createElement('div'); d.className = 'st-body'; d.innerHTML = s.share ? shareCard() : s.build(); if(s.seek) s.seek(d, ST_END); return d; };
+const stNum = t => t.replace(/-?\d[\d \u00a0]*\d( Ft)?|\d( Ft)?/g, 'N');   // a figure such as 145 000 Ft is one word to read
+const stWords = s => stNum([...stRoot(s).querySelectorAll('.st-big,.st-sub,.st-n')].map(e => e.textContent).join(' ')).split(/\s+/).filter(Boolean).length;   // the words to read on screen
+const stDur = s => s.end ? 0 : Math.min(7, 2.5 + ST_WPS * stWords(s));
+function stSay(s){
+  if(s.share) return s.say;   // the share card reads from its own data (shareData), the same one that draws it
+  const piece = e => (e.dataset && e.dataset.say ? e.dataset.say : e.textContent).replace(/▲/g, 'up').replace(/▼/g, 'down').replace(/\s*·\s*/g, ', ').replace(/\s+/g, ' ').trim();
+  const parts = [...stRoot(s).querySelectorAll('.st-k,.st-big,.st-sub,.st-n,[data-say]')].filter(e => !e.closest('[data-say]') || e.dataset.say).map(piece).filter(Boolean);
+  let t = parts.reduce((a, x) => !a ? x : a + (/^[a-z(]/.test(x) ? ' ' : /[.!?]$/.test(a) ? ' ' : '. ') + x, '');
+  if(!/[.!?]$/.test(t)) t += '.';
+  return s.btn ? `${t} Button: ${s.btn.label}.` : t;
+}
 function stBuild(){
   ST.slides = storySlides(); ST.slides.forEach(s => s.dur = s.fixed || stDur(s)); ST.total = ST.slides.reduce((a, s) => a + s.dur, 0);
-  ST.slides.forEach(s => s.fin && s.fin(ST.total));
+  ST.slides.forEach(s => s.fin && s.fin(ST.total)); ST.slides.forEach(s => { s.say = stSay(s); });
 }
 function openStory(n){
   closeSheet(); stBuild(); const el = $('#story'), nn = ST.slides.length;
@@ -3801,9 +3917,9 @@ function stGo(i){
 function stRender(){
   const s = ST.slides[ST.i], el = $('#story'), body = el.querySelector('.st-body'), foot = el.querySelector('.st-foot');
   body.innerHTML = s.share ? shareCard() : s.build(); body.setAttribute('aria-hidden', s.share ? 'false' : 'true'); body.classList.toggle('share', !!s.share);
-  foot.innerHTML = s.end ? `<button class="btn" style="background:#fff;color:var(--green-t)" data-stshare>Share</button><button class="btn w" style="background:none;box-shadow:none;color:#fff" data-stclose>Close</button>`
+  foot.innerHTML = s.end ? `${s.empty ? '' : `<button class="btn" style="background:#fff;color:var(--green-t)" data-stshare>Share</button>`}<button class="btn w" style="background:none;box-shadow:none;color:#fff" data-stclose>Close</button>`
     : s.btn ? `<button class="btn" data-stbtn ${s.btn.attr}>${s.btn.label}</button>` : '';
-  el.querySelector('.st-sr').textContent = `Slide ${ST.i + 1} of ${ST.slides.length}. ${s.say}`;
+  el.querySelector('.st-sr').textContent = `Slide ${ST.i + 1} of ${ST.slides.length}. ${s.say}${s.end ? (s.empty ? ' Button: Close.' : ' Buttons: Share, Close.') : ''}`;
   el.dataset.slide = s.id; mountPig(); stPaint(true);
 }
 function stPaint(force){
@@ -3861,13 +3977,13 @@ function stAway(){ ST.away = true; window.__stAway = true; $('#story').classList
   el.addEventListener('contextmenu', e => e.preventDefault());
   document.addEventListener('keydown', e => {
     if(!ST.on || ST.away) return; const k = e.key;
-    if(k === 'ArrowRight'){ e.preventDefault(); stGo(ST.i + 1); } else if(k === 'ArrowLeft'){ e.preventDefault(); stGo(ST.i - 1); } else if(k === 'Escape'){ e.preventDefault(); closeStory(); }
+    if(k === 'ArrowRight' || k === 'ArrowLeft'){ e.preventDefault(); stHold('user', true); stGo(ST.i + (k === 'ArrowRight' ? 1 : -1)); }   // stepping by keyboard stops the auto-advance (the pause button then shows Play); it never races a screen reader else if(k === 'Escape'){ e.preventDefault(); closeStory(); }
   });
   document.addEventListener('visibilitychange', () => { if(ST.on) stHold('hidden', document.hidden); });
 })();
 // slide 8 button: the same rule as the Home tip (more a month to the goal), then the story waits 2 s on the confirmation
 function stInsight(ten){
-  const before = snap(), g = ruleGoal(); g.pace = (g.pace || 0) + ten; S.insightUsed = true; renderAll();
+  const before = snap(), g = ruleGoal(); g.pace = (g.pace || 0) + ten; S.insightUsed = true; S.insightTen = ten; renderAll();
   stHold('btn', true); clearTimeout(ST.pt); ST.pt = setTimeout(() => stHold('btn', false), 2200); stRefresh(true);
   undoable(before, `Done: ${ft(ten)} more a month goes to ${g.name}`);
 }
@@ -4180,7 +4296,7 @@ function ffClose(){ if(FF.on){ FF.skip = true; if(FF.wake) FF.wake(); } ffEnd();
 function yearMonths(){ return (S.flowLog || []).slice(-Math.min(12, S.months || 0) || -1); }
 function yearHTML(){
   const M = yearMonths(), n = M.length, sum = key => M.reduce((a, m) => a + ffVal(m, key), 0); if(!n) return '<div class="card" style="padding:18px">Fast-forward a month first (O).</div>';
-  const I0 = sum('interest'), rev = Math.round(I0 * 1.8 / (RATE * (1 - TAX))), low = Math.round(I0 * LOW_RATE / RATE), sav = M.reduce((a, m) => a + (m.sav || 0), 0), mx = Math.max(I0, rev, 1);
+  const I0 = sum('interest'), low = Math.round(I0 * LOW_RATE / RATE), sav = M.reduce((a, m) => a + (m.sav || 0), 0), mx = Math.max(I0, 1);
   const bar = (label, v, cls, note) => `<div class="yr-b"><div class="yr-bl"><span>${label}</span><b class="num">+${ft(v)}</b></div><div class="yr-bt"><i class="${cls}" style="--w:${Math.max(1.5, v / mx * 100)}%"></i></div>${note ? `<small>${note}</small>` : ''}</div>`;
   const due = n * dueBills(), paid = M.reduce((a, m) => a + m.billsN, 0);
   const yms = (S.closedYm || []).filter(y => y >= ymAt(1) && y <= ymAt(S.months)).slice(-12), A = stAgg(yms);   // the same totals as the year story
@@ -4189,7 +4305,7 @@ function yearHTML(){
   return `<div class="yr-hero card"><div class="u-k-xs">${M[0].name.slice(0, 3)} ${M[0].ym.slice(0, 4)} – ${M[n - 1].name.slice(0, 3)} ${M[n - 1].ym.slice(0, 4)} · ${plural(n, 'month')}</div>
       <div class="yr-big num">${ft(total())}</div><div class="u-fs-s">in Persely now · ${ft(A.save)} put aside this year</div></div>
     <div class="sec"><span>What your rate earned</span></div>
-    <div class="card yr-bars">${bar(`Persely at ${rateLabel()}`, I0, 'g', 'After 28% tax, on your first 500 000 Ft')}${bar('Revolut Standard, 1.8% after tax', rev, 'r', 'Same balances, for comparison')}${bar('Persely before, 0.01%', low, 'l', 'What the same money earned until now')}</div>
+    <div class="card yr-bars">${bar(`Persely at ${rateLabel()}`, I0, 'g', 'After 28% tax, on your first 500 000 Ft')}${bar('Persely before, 0.01%', low, 'l', 'What the same money earned until now')}</div>
     <div class="card yr-sav"><span class="t"><b>Savings account, ${SAV_RATE}%</b><small>${ft(acc('megt').v)} now, after tax</small></span><b class="num u-c-gt">+${ft(sav)}</b></div>
     <div class="sec"><span>Your money this year</span></div>
     <div class="card lst">${[['Money in', ft(A.inc)], ['Must-pay bills', `${ft(A.must)}${due ? ` · ${paid} of ${due} on time` : ''}`], ['Everyday essentials', ft(A.ess)], ['Fun', ft(A.fun)], ['Put aside in Persely', ft(A.save)], ['Interest, all accounts', '+' + ft(I0 + sav)]].map(([a, b]) => `<div class="li"><span class="t"><b>${a}</b></span><b class="num">${b}</b></div>`).join('')}</div>
