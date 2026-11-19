@@ -159,16 +159,17 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
     <h2>Other screens</h2>
     <div class="grid">
       <div class="box"><h3>Home</h3><ul><li>Accounts carousel (Junior, one "Persely · total" card for all goals, Savings)</li><li>Persely teaser with the streak</li><li>My monthly spending: the original OTP circle (tap it for Details) and categories, plus our one line <b>Left to spend this month</b></li><li>For you</li></ul></div>
-      <div class="box"><h3>Monthly story</h3><p>A few plain facts, one per slide, each slide its own colour, one chart type only (straight bars). Every figure comes from the transactions.</p><ul>
-<li><b>Title:</b> "Your month · November"</li>
-<li><b>Money in and out:</b> three bars (came in, spent, saved) and the hero "88,070 Ft left over this month" (or how much more went out)</li>
-<li><b>Where your card money went:</b> the top 3 categories as bars, hero "Groceries · 36% of your card spending"</li>
-<li><b>Into Persely:</b> saved this month plus interest, and the total now</li>
-<li><b>The goal:</b> one progress bar and "On pace for April 2027" (a goal that is behind gets <b>Pick a new date</b>)</li>
-<li><b>Your streak:</b> weeks in a row and the best so far</li>
-<li><b>One tip</b> with <b>Set it up</b>, or <b>Pay now</b> when a bill is late</li>
-<li><b>Share card</b> without amounts</li></ul>
-<p>Semester (key E) and year stories use the same slides over more months. Tap right or left to move, press and hold to pause, swipe down to close.</p>
+      <div class="box"><h3>Monthly story</h3><p>Spotify Wrapped style: a few facts about her own habits, then her saving. No analytics (that lives on Left to spend and Full analysis). One big fact and one short line per slide, each slide its own colour. When the month has few card payments (it just started), the habit facts use the latest months and the slide says which ("Aug – Nov").</p><ul>
+<li><b>Title:</b> "Your month · November · A few things about you." Persi jumps.</li>
+<li><b>Your top places:</b> top 3 shops by visits, like top artists (BKK 19, Wolt 13, KFC 13). Subscriptions are not places.</li>
+<li><b>Your spending day:</b> the weekday with the biggest share of card spending ("Friday · 23%").</li>
+<li><b>Days off:</b> days without a single card payment ("29 days, out of 106"). Persi is proud.</li>
+<li><b>Your biggest buy:</b> the biggest single card payment (MediaMarkt, 24,900 Ft).</li>
+<li><b>Your subscriptions:</b> Netflix and Spotify, 5,280 Ft a month, 63,360 Ft a year.</li>
+<li><b>Delivered to your door:</b> number of Wolt orders and how often (only with 3 or more).</li>
+<li><b>Into Persely</b> (saved plus interest, Persi catches a coin), <b>the goal</b> (one bar, "On pace for April 2027"), <b>your streak</b>: unchanged.</li>
+<li><b>Share card</b> without amounts.</li></ul>
+<p>Semester (key E) and year stories use the same slides over more months. Tap right or left to move, press and hold to pause, swipe down to close. Code: <code>storySlides()</code>, facts in <code>stFacts()</code>.</p>
   </section>
 
   <section id="persi">
