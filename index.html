@@ -425,6 +425,16 @@ input[type=range].rng{width:100%;accent-color:var(--green);height:30px}
   .demo-show{position:fixed;left:0;top:50%;width:12px;height:54px;margin-top:-27px;border-radius:0 8px 8px 0;background:rgba(43,48,56,.18);z-index:200}
   .demo-show.on{display:block}
 }
+/* monthly plan: split, progress, score, tips */
+.pl{display:flex;align-items:center;gap:10px;margin:0 0 4px}
+.pl .dot{width:12px;height:12px;border-radius:50%;flex:none}
+.pl .t{flex:1;min-width:0}.pl .t b{display:block;font-size:14.5px;font-weight:600}.pl .t small{font-size:12px;color:var(--muted)}
+.pl .v{text-align:right;font-size:13.5px;font-weight:600;white-space:nowrap}.pl .v small{display:block;font-size:12px;font-weight:400;color:var(--muted)}
+.stp{display:flex;align-items:center;gap:6px;flex:none}
+.stp button{width:34px;height:34px;border-radius:50%;background:#E9ECF1;font-weight:700;font-size:18px;color:var(--ink)}
+.stp b{min-width:70px;text-align:center;font-size:14.5px}
+.plscore{display:flex;align-items:baseline;gap:8px}.plscore b{font-size:40px;font-weight:700}
+.btn:disabled{opacity:.45;box-shadow:none}
 /* ---------- Persely tab v2: calm, factual, bank-grade ---------- */
 .k{font-size:13px;color:var(--muted)}
 .hero{padding:18px 18px 14px}
@@ -1000,6 +1010,91 @@ function monthStep(quiet){
   return net;
 }
 
+/* ================= monthly plan: split, progress, health score and tips on one page (Kriszti's idea) =================
+   A plan, not a limit: nothing is blocked and no money moves between buckets.
+   The starting split comes from the average of the last 3 months (CAT_AVG, adds up to the 102 400 Ft on Home),
+   with a share for saving (the payday rule's share) and for investing. Spending per category is the demo month's CATS. */
+const PLAN_CATS = [
+  {id:'food', color:'#52AE30', spend:0}, {id:'cart', color:'#3B82C4', spend:1}, {id:'bus', color:'#D98A1F', spend:2},
+  {id:'fun', color:'#B45FB0', spend:3}, {id:'edu', color:'#2BA3A3', spend:4},
+  {id:'saving', color:'#1F6B2A', name:'Saving (Persely)'}, {id:'invest', color:'#7A6FD8', name:'Investing'}
+];
+const CAT_AVG = {food:41000, cart:22000, bus:10000, fun:20400, edu:9000};
+const DEMO_DAY = 13;                                   // the demo month is shown on the 13th (last transaction: 13 November)
+const planName = c => c.name || CATS[c.spend][1];
+const clonePlan = pl => JSON.parse(JSON.stringify(pl));
+let planDraft = null;
+function suggestPlan(){
+  const save = S.payday && S.payday.on ? S.payday.pct : 10, inv = 5, spend = 100 - save - inv;
+  const ids = ['food','cart','bus','fun','edu'], tot = ids.reduce((a,k) => a + CAT_AVG[k], 0);
+  const raw = ids.map(k => CAT_AVG[k] / tot * spend), pct = raw.map(Math.floor);
+  let left = spend - pct.reduce((a,b) => a + b, 0);
+  raw.map((v,i) => [v - Math.floor(v), i]).sort((a,b) => b[0] - a[0]).slice(0, left).forEach(([,i]) => pct[i]++);   // shares add up to exactly 100%
+  const out = {budget:120000, pct:{saving:save, invest:inv}}; ids.forEach((k,i) => out.pct[k] = pct[i]);
+  return out;
+}
+const plan = () => (S.plan && S.plan.pct && S.plan.budget) ? S.plan : (S.plan = suggestPlan());
+const planned = id => Math.round(plan().budget * (plan().pct[id] || 0) / 100);
+const planSpent = c => c.spend !== undefined ? CATS[c.spend][2] : c.id === 'saving' ? (S.monthSaved || 0) : 0;
+const planUsed = c => { const pl = planned(c.id), sp = planSpent(c); return pl ? Math.round(sp / pl * 100) : (sp > 0 ? 100 : 0); };
+// financial health score (demo): four parts, 100 points in total
+function healthScore(){
+  const cats = PLAN_CATS.filter(c => c.spend !== undefined), spent = CATS.reduce((a,c) => a + c[2], 0);
+  const within = cats.filter(c => planSpent(c) <= planned(c.id)).length;
+  const saveShare = Math.min(1, (S.monthSaved || 0) / Math.max(1, planned('saving')));
+  const streak = Math.min(1, (S.streak || 0) / 8);
+  const cash = acc('junior').v + acc('megt').v, months = cash / spent, buffer = Math.min(1, months / 2);
+  const parts = [
+    {k:'Saving', pts:Math.round(30 * saveShare), max:30, v:saveShare, note:`${ft(S.monthSaved || 0)} saved, plan ${ft(planned('saving'))}`},
+    {k:'Staying within the plan', pts:Math.round(30 * within / cats.length), max:30, v:within / cats.length, note:`${within} of ${cats.length} categories within plan`},
+    {k:'Weekly streak', pts:Math.round(20 * streak), max:20, v:streak, note:`${S.streak || 0} of 8 weeks`},
+    {k:'Money buffer', pts:Math.round(20 * buffer), max:20, v:buffer, note:`${(Math.round(months * 10) / 10).toString().replace('.', ',')} months of spending in your accounts`}
+  ];
+  const score = parts.reduce((a,x) => a + x.pts, 0);
+  return {score, label: score >= 80 ? 'Strong' : score >= 60 ? 'Good' : score >= 40 ? 'Fair' : 'Needs attention', parts};
+}
+// tips worked out from the plan
+function planTips(left){
+  const cats = PLAN_CATS.filter(c => c.spend !== undefined).map(c => ({c, name:planName(c), over:planSpent(c) - planned(c.id), used:planUsed(c)}));
+  const tips = [], over = cats.filter(x => x.over > 0).sort((a,b) => b.over - a.over)[0];
+  if(over) tips.push(`${over.name} is ${ft(over.over)} over its share (${over.used}% used). Going easy there for the rest of the month keeps the plan on track.`);
+  else tips.push('Every category is within its share this month. Keep it up.');
+  const close = cats.filter(x => x.over <= 0 && x.used >= 80).sort((a,b) => b.used - a.used)[0];
+  if(close) tips.push(`${close.name} is at ${close.used}% with ${plural(left,'day')} left. ${ft(-close.over)} of its share remains.`);
+  tips.push(`2 deliveries less a week: ${tipSooner()}`);
+  return tips;
+}
+function planHTML(){
+  const p = plan(), left = Math.max(0, monthLastDay(S.months || 0) - DEMO_DAY), mn = monthNameAt(S.months || 0);
+  const spendCats = PLAN_CATS.filter(c => c.spend !== undefined), spent = spendCats.reduce((a,c) => a + planSpent(c), 0), spendPlan = spendCats.reduce((a,c) => a + planned(c.id), 0);
+  const R = 70, C = 2 * Math.PI * R; let off = 0;
+  const arcs = PLAN_CATS.filter(c => p.pct[c.id] > 0).map(c => { const len = C * p.pct[c.id] / 100;
+    const el = `<circle cx="100" cy="100" r="${R}" fill="none" stroke="${c.color}" stroke-width="26" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}"/>`; off += len; return el; }).join('');
+  const rows = PLAN_CATS.map(c => { const pl = planned(c.id), sp = planSpent(c), used = planUsed(c), over = c.spend !== undefined && sp > pl;
+    const val = c.id === 'invest' ? '' : `<span class="v num">${ft(sp)}<small>${c.id === 'saving' ? `${used}% of plan` : pl ? `${used}% used` : 'no share set'}</small></span>`;
+    return `<div class="pl"><span class="dot" style="background:${c.color}"></span><span class="t"><b>${planName(c)}</b><small>${p.pct[c.id] || 0}% · ${ft(pl)}${c.id === 'invest' ? ' · not tracked in the demo' : ''}</small></span>${val}</div>
+      <div class="prog" style="margin:6px 0 14px"><i style="width:${Math.min(100, used)}%;background:${over ? 'var(--orange)' : c.color}"></i></div>`; }).join('');
+  const hs = healthScore(), tips = planTips(left);
+  return `<div class="sec"><span>My monthly plan</span><a data-planedit>Edit ${I('chev',16)}</a></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+      <svg width="132" height="132" viewBox="0 0 200 200" style="flex:none" role="img" aria-label="Your monthly plan as a donut chart"><g transform="rotate(-90 100 100)">${arcs}</g>
+        <text x="100" y="96" text-anchor="middle" font-size="13" fill="#8A93A3">Planned</text><text x="100" y="120" text-anchor="middle" font-size="21" font-weight="700" fill="#2B3040">${shortFt(p.budget)}</text></svg>
+      <div style="flex:1;min-width:0"><div class="k">${mn} · ${plural(left,'day')} left</div>
+        <div class="num" style="font-size:20px;font-weight:700;margin:4px 0">${ft(spent)}</div><div class="k">spent of ${ft(spendPlan)} planned for spending</div></div></div>
+    ${rows}
+    <div class="fine" style="margin:0">A plan, not a limit. Nothing is blocked and no money moves between categories. It is a reminder to help you manage your month.</div>
+  </div>
+  <div class="sec"><span>My financial health score</span></div>
+  <div class="card">
+    <div class="plscore"><b class="num">${hs.score}</b><span class="k">out of 100</span><span class="pill ${hs.score >= 60 ? 'ok' : 'open'}" style="margin-left:auto">${hs.label}</span></div>
+    ${hs.parts.map(x => `<div style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-size:13.5px"><b style="font-weight:600">${x.k}</b><span class="k">${x.pts} / ${x.max}</span></div><div class="prog" style="margin:5px 0 3px"><i style="width:${Math.round(x.v * 100)}%"></i></div><div class="k" style="font-size:12px">${x.note}</div></div>`).join('')}
+    <div class="fine" style="margin:12px 0 0">A demo score, worked out from these four parts.</div>
+  </div>
+  <div class="sec"><span>Persi's tips for ${mn}</span></div>
+  <div class="card lst">${tips.map(t => `<div class="li"><span class="t" style="line-height:1.45;font-size:14px">${t}</span></div>`).join('')}</div>`;
+}
+
 /* ================= sub pages ================= */
 function nekedCards(compact){
   const art = (bg,icon,col='#fff') => `<div class="im" style="background:${bg};color:${col}">${I(icon,54)}</div>`;
@@ -1135,10 +1230,10 @@ const PAGES = {
       <div class="row"><span class="ic">${I('money')}</span><span class="t">Incoming transfers</span><span class="tg on"></span></div>
       <div class="row"><span class="ic">${I('piggy')}</span><span class="t">Persely weekly reminder<small class="g">Sunday 18:00, only if the week is still open</small></span><span class="tg ${S.remind?'on':''}"></span></div>`;}},
   challenges:{title:'Weekly challenges', html:()=>`<div class="card" style="padding:4px 16px 10px;margin-top:6px"><ul class="bul sm"><li>New challenges every Monday, the week ends on Sunday</li><li>Progress is checked automatically from your card payments</li><li>Join as many as you like</li></ul></div>${CH_DEFS.map(chCard).join('')}`},
-  kiadas:{title:'Monthly spending', right:`<span style="display:flex">${I('gear',22)}</span>`, html:()=>{
+  kiadas:{title:'Monthly spending', right:`<button data-planedit aria-label="Edit my monthly plan" style="display:flex;color:inherit">${I('gear',22)}</button>`, html:()=>{
     const spent=CATS.reduce((a,c)=>a+c[2],0), max=Math.max(...CATS.map(c=>c[2]));
     return `<div style="margin:18px auto 24px;width:230px;padding:18px;border-radius:40px;text-align:center;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff"><b class="num" style="font-size:22px">${ft(spent)}</b><div style="color:var(--green-t);font-size:13px">${monthNameAt(S.months||0)}</div></div>
-    <div class="cats">${CATS.map((c,i)=>`<div class="cat ${i===0?'on':''}"><span class="ic">${I(c[0],26)}</span><span style="font-size:10.5px;color:${i===0?'var(--green-t)':'var(--muted)'}">${c[1]}</span><span class="col"><i style="height:${c[2]/max*100}%"></i></span><span class="num">${ft(c[2])}</span></div>`).join('')}</div>
+    ${planHTML()}
     <div class="sec"><span>Food – Saturday, 8 November</span></div>
     <div class="tx"><span class="ic">${I('food')}</span><span class="t"><b>WOLT HUNGARY</b><span>Card payment</span><em>${I('food',15)} Food</em></span><span class="a num">${sft(-4690)}</span></div>`;}}
 };
@@ -1225,6 +1320,12 @@ const SHEETS = {
     <div class="card" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;gap:8px;font-size:13px"><span class="k">${esc(g.name)}</span><b class="num">${ft(s)} → ${ft(s+share)}</b></div><div class="prog" style="margin:8px 0 0"><i style="width:${Math.min(100,Math.round((s+share)/t*100))}%"></i></div></div>
     <button class="btn" data-paymove>Move ${ft(share)}</button><button class="btn ghost" data-closesheet>Not this time</button>
     <div class="fine" style="text-align:center;margin-top:4px">Your payday rule: ${S.payday.pct}% of every salary. Change it in Persely → Money in.</div>`; },
+  plan:()=>{ const d = planDraft || (planDraft = clonePlan(plan())), tot = PLAN_CATS.reduce((a,c) => a + (d.pct[c.id] || 0), 0), ok = tot === 100;
+    return `<h2>My monthly plan</h2><div class="fine" style="text-align:center;margin:-8px 0 12px">A plan, not a limit. Nothing is blocked and no money moves.</div>
+    <div class="pl" style="margin:0 0 10px"><span class="t"><b>Money to plan with</b><small>Salary, scholarship, family</small></span><span class="stp"><button data-planbud="-5000" aria-label="Less money">−</button><b class="num">${ft(d.budget)}</b><button data-planbud="5000" aria-label="More money">+</button></span></div>
+    ${PLAN_CATS.map(c => `<div class="pl" style="margin:0 0 8px"><span class="dot" style="background:${c.color}"></span><span class="t"><b>${planName(c)}</b><small>${ft(Math.round(d.budget * (d.pct[c.id] || 0) / 100))}</small></span><span class="stp"><button data-planpct="${c.id}|-1" aria-label="Less ${planName(c)}">−</button><b>${d.pct[c.id] || 0}%</b><button data-planpct="${c.id}|1" aria-label="More ${planName(c)}">+</button></span></div>`).join('')}
+    <div class="fine" style="margin:6px 2px 12px;text-align:center;color:${ok ? 'var(--green-t)' : 'var(--orange)'}">${ok ? 'Total 100%' : tot > 100 ? `Total ${tot}%: ${tot - 100}% too much` : `Total ${tot}%: ${100 - tot}% left to give`}</div>
+    <button class="btn" data-plansave ${ok ? '' : 'disabled'}>Save plan</button><button class="btn ghost" data-plansuggest>Use my 3-month suggestion</button>`; },
   payrule:()=>{ const p = S.payday;
     return `<h2>Payday rule</h2><div class="fine" style="text-align:center;margin:-8px 0 12px">A share of each payment of 10 000 Ft or more: salary, scholarship, money from family.</div>
     <div class="chips" style="justify-content:center;margin-top:0">${[5,10,15,20].map(x=>`<button class="chip ${p.pct===x?'on':''}" style="font-size:15px;padding:9px 16px" data-prpct="${x}">${x}%</button>`).join('')}</div>
@@ -1309,6 +1410,13 @@ document.addEventListener('click', e=>{
   if('pop' in d){ popPage(); return; }
   if(d.toast){ toast(d.toast); return; }
   if(d.sheet){ sheet(SHEETS[d.sheet]()); return; }
+  if('planedit' in d){ planDraft = clonePlan(plan()); sheet(SHEETS.plan()); return; }
+  if(d.planbud && planDraft){ planDraft.budget = Math.max(20000, Math.min(500000, planDraft.budget + (+d.planbud))); sheet(SHEETS.plan()); return; }
+  if(d.planpct && planDraft){ const [k, st] = d.planpct.split('|'); planDraft.pct[k] = Math.max(0, Math.min(100, (planDraft.pct[k] || 0) + (+st))); sheet(SHEETS.plan()); return; }
+  if('plansuggest' in d && planDraft){ planDraft.pct = suggestPlan().pct; sheet(SHEETS.plan()); return; }
+  if('plansave' in d && planDraft){
+    if(PLAN_CATS.reduce((a,c) => a + (planDraft.pct[c.id] || 0), 0) !== 100) return;
+    S.plan = clonePlan(planDraft); planDraft = null; save(); closeSheet(); refreshPages(); renderAll(); toast('Monthly plan saved'); return; }
   if(d.setv){ $('#mv').value = d.setv; return; }
   if(d.dmove){
     const v = Math.max(0, parseInt(($('#mv').value||'0').replace(/\D/g,''))||0); if(!v) return;
