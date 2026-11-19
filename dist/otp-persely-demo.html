@@ -639,9 +639,6 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .ptot{margin-bottom:14px}
 .ptot .persi{margin:-2px 0 8px;gap:14px}
 .ptot .persi-t{font-size:0.9375rem;line-height:1.35;color:var(--ink)}
-.ptot .pring .sring-in{width:76px;height:76px;background:#EAF5E4;overflow:visible;box-shadow:0 0 0 3px var(--bg),0 0 0 5.5px #FF7A1A}
-.ptot .pring.seen .sring-in{box-shadow:0 0 0 3px var(--bg),0 0 0 4.5px #C9CED6}
-.pring .pig3d{pointer-events:none;margin:6px 0 0}   /* a tap on Persi opens the story */
 .ptot .sring-in{width:44px;height:44px;font-size:var(--fs-xs);box-shadow:0 0 0 2px #fff,0 0 0 4px #FF7A1A}
 .ptot .sring.seen .sring-in{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #C9CED6}
 .ptot .sring{gap:5px}
@@ -2369,12 +2366,13 @@ function vHub(){
   const junior = `<button class="row" data-go="grad">${S.juniorDays > 0 ? `<span class="t24d"><b class="num">${S.juniorDays}</b><small>${S.juniorDays === 1 ? 'day' : 'days'}</small></span>` : `<span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span>`}<span class="t"><b class="u-bk-title">${S.bridge ? '3.0% for 12 more months' : S.juniorDays > 0 ? 'Junior ends soon' : 'Junior ends today'}</b><small>${S.bridge ? 'While your salary comes to OTP' : 'Keep 3.0% for 12 more months'}</small></span>${chev}</button>`;
   const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
   return `<div class="tabtitle">Persely</div>
-  ${hintHTML('total')}<div class="ptot" data-tour="total">
-    <div class="persi" data-tour="persi"><button class="sring pring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story from Persi"><span class="sring-in">${pig(ps.mood, 64)}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button>
-      ${HINT_NOW ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}</div>
-    <div class="sec"><span>Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Junior 3.0%' : 'Standard rate'}</span></div>
-    <div class="ptot-v num">${ft(tot)}</div>${et ? `<div class="fine" style="text-align:center;margin-top:2px">+ ${eur(et)} in euro goals</div>` : ''}
-    <div class="avg">${st ? `<span style="text-align:center"><b class="g">${rateLabel()}</b> · about <span class="num">${ft(yearNet())}</span> a year after tax</span>` : `<span style="text-align:center">0.01% · about <span class="num">${ft(yearNet())}</span> a year</span>`}</div>
+  <div class="persi" data-tour="persi">${pig(ps.mood, 84)}${HINT_NOW ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
+    <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
+
+  ${hintHTML('total')}<div class="card hero" data-tour="total">
+    <div class="hrow"><span class="k">Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Junior 3.0%' : 'Standard rate'}</span></div>
+    <div class="hero-v num">${ft(tot)}${et ? ` <small class="k" style="font-size:0.9375rem;font-weight:600">+ ${eur(et)}</small>` : ''}</div>
+    <div class="hero-r">${st ? `<b>${rateLabel()}</b> a year · about <b>${ft(yearNet())}</b> a year after tax` : `0.01% a year · about ${ft(yearNet())} a year`}</div>
     <div class="hero-btns"><button class="btn" data-sheet="hubsave">Add money</button><button class="btn w" data-sheet="hubout">Withdraw</button></div>
     <div class="trust"><span>${I('check',15)} Withdraw any time</span><span>${I('check',15)} No fees</span><span>${I('shield',15)} Insured</span></div>
     ${st ? `<div class="fine" style="margin-top:8px">${S.bridge ? 'Graduate: 3.0% for 12 months while your salary comes to OTP' : 'Included in your Junior package. Nothing to sign up for'}</div>` : ''}
