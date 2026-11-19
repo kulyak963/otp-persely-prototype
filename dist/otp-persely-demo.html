@@ -185,7 +185,6 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .avg{display:flex;align-items:center;justify-content:center;gap:8px;font-size:0.84375rem;color:var(--ink2);margin:6px 0 4px}
 .avg::before{content:"";flex:none;border-left:11px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent}
 .cats{display:grid;grid-template-columns:repeat(var(--n,5),minmax(0,1fr));gap:4px;padding:6px 0 0;text-align:center}
-@media (max-width:359px){.cats{grid-template-columns:repeat(4,minmax(0,1fr));row-gap:12px}}
 .cat{min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column;align-items:center;font-size:var(--fs-xs);color:var(--ink2);cursor:pointer}
 .cat .ic{color:var(--ink2);height:28px}
 .cat .cl{font-size:0.6875rem;font-weight:600;color:var(--ink2);margin-top:4px;line-height:1.2;overflow-wrap:normal}
@@ -193,6 +192,8 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .cat.on .ic{color:var(--green-i)}
 .cat .col{width:2px;height:96px;background:#DDE1E7;border-radius:2px;position:relative;margin:8px 0 6px}
 .cat .col i{position:absolute;bottom:0;left:-4px;width:10px;border-radius:5px;background:var(--green)}
+@media (max-width:429px){.cat .cl{font-size:0.59375rem}}
+@media (max-width:359px){.cats{gap:2px}.cat .cl{font-size:0.5rem;letter-spacing:-.01em}.cat .num{font-size:0.625rem}}
 
 /* tx list */
 .dh{display:flex;align-items:center;gap:8px;color:#464B53;font-size:0.78125rem;margin:16px 0 8px}
@@ -1409,6 +1410,16 @@ function __checkAnalytics(){
         { const before = S.tx.length, bal = JSON.stringify(S.accounts); S.analyst.invest = 0; const dflt = planModel().inv; S._split = {fun:S.analyst.split.fun, rule:S.payday.pct, inv:0}; const room = splitView(S, {fun:S._split.fun, rule:S._split.rule}).by.save.amt;
           S.analyst.invest = room + 50000; const capped = planModel().inv; S.analyst.invest = 0; S._split = null;
           ok('investing: starts at 0, never more than Saving, and creates no transaction or balance change', dflt === 0 && capped === room && S.tx.length === before && JSON.stringify(S.accounts) === bal && SHEETS.splitedit().includes('data-splitinv'), [dflt, capped, room]); }
+        { // 1: the Money in line never claims every goal when one is behind or due
+          S.payday.on = true; S.payday.pct = 60; S.weekly.on = true; S.roundup.on = true; const g0 = S.goals.find(forint), keepD = g0.date; { const d = demoNow(); d.setDate(d.getDate() - 3); g0.date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+          const t1 = plain(moneyInPanel()); g0.date = keepD;
+          ok('Money in panel: a goal that is behind is named and the line never says every goal date', !/Enough for every goal date/.test(t1) && (!/Enough for/.test(t1) || /(is|are) behind/.test(t1)) && !/deadline/i.test(t1), t1); }
+        { // 2: Junior card never shows 0 or negative days
+          S.bridge = false; S.juniorDays = 0; const h0 = plain(vHub()), hj = (() => { S.juniorDays = 41; return plain(vHub()); })(); S.juniorDays = 0;
+          ok('Junior card at the end: "Junior ends today", no 0 days; with days left it still counts them', /Junior ends today/.test(h0) && !/\b0 days\b|-\d+ days/.test(h0) && /41 days/.test(hj) && /Junior ends soon/.test(hj)); }
+        { // 4: investing is shown truthfully: Persely + Investing = Saving, Persely spent is what was really moved
+          S.analyst.invest = 2000; const pm = planModel(), sg = pm.groups.find(g => g.k === 'save'), pr = sg.rows[0], ir = sg.rows[1], h = plain(planHTML(pm)); S.analyst.invest = 0;
+          ok('plan: Persely planned is Saving minus investing, Investing is plan only, and they add up to Saving', pr.plan + ir.plan === sg.plan && pr.plan === sg.plan - 2000 && ir.spent === null && pr.spent === splitUse().save && /planned, not moved/.test(h) && !/not tracked here/.test(h), [sg.plan, pr.plan, ir.plan, pr.spent]); }
         S = keepS; }
       S = clone(); S.onboarded = true; S.friendsOptIn = false;
       ok('Friends: hidden until opted in (a link to opt in, no ranking, no toggle); never shown in a fresh state', fresh().friendsOptIn === false && (!keepF || (!/data-frtoggle/.test(vHub()) && /data-frjoin/.test(vHub()) && !/class="fr /.test(vHub()))));
@@ -2209,7 +2220,7 @@ function planModel(){
     {k:'must', name:'Must-pay bills', plan:v.by.must.amt, spent:mustPaid(), rows:[], note:'paid'},
     {k:'ess', name:'Everyday essentials', plan:v.by.ess.amt, spent:0, rows:cats('ess'), note:'spent'},
     {k:'fun', name:'Fun', plan:v.by.fun.amt, spent:0, rows:cats('fun'), note:'spent'},
-    {k:'save', name:'Saving', plan:v.by.save.amt, spent:use.save, note:'saved', rows:[{c:'persely', name:'Persely', plan:v.by.save.amt - inv, spent:Math.min(use.save, v.by.save.amt - inv), col:BKT_COL.save}].concat(inv ? [{c:'invest', name:'Investing', plan:inv, spent:null, col:'#7A6FD8'}] : [])}
+    {k:'save', name:'Saving', plan:v.by.save.amt, spent:use.save, note:'saved', rows:[{c:'persely', name:'Persely', plan:v.by.save.amt - inv, spent:use.save, col:BKT_COL.save}].concat(inv ? [{c:'invest', name:'Investing', plan:inv, spent:null, col:'#7A6FD8'}] : [])}
   ];
   groups.forEach(g => { if(g.k === 'ess' || g.k === 'fun') g.spent = g.rows.reduce((a, r) => a + r.spent, 0); });
   return {v, mo, groups, inv};
@@ -2232,7 +2243,7 @@ function planHTML(m){
   const mo = m.mo;
   const bar = (spent, plan, col, k) => { const p = plan ? Math.min(100, spent / plan * 100) : 0, over = k !== 'save' && spent > plan; return `<div class="mp-bar" aria-hidden="true"><i style="width:${p}%;background:${over ? 'var(--orange)' : col}"></i></div>`; };
   const grp = g => `<div class="mp-g"><b><span class="dotc" style="background:${BKT_COL[g.k]}"></span>${g.k === 'must' ? I('lock', 14) : ''}${g.name}</b><span class="num">${ft(g.spent)} ${g.note} of ${ft(g.plan)}</span></div>
-    ${g.rows.length ? g.rows.map(r => `<div class="mp-r"><span style="display:flex;align-items:center;gap:7px"><span class="dotc" style="background:${r.col};width:9px;height:9px"></span>${r.name}</span><span class="num">${r.spent === null ? `${ft(r.plan)} <small>planned, not tracked here</small>` : `${ft(r.spent)} <small>of ${ft(r.plan)}</small>`}</span></div>${r.spent === null ? '' : bar(r.spent, r.plan, r.col, g.k)}`).join('') : bar(g.spent, g.plan, BKT_COL[g.k], g.k)}`;
+    ${g.rows.length ? g.rows.map(r => `<div class="mp-r"><span style="display:flex;align-items:center;gap:7px"><span class="dotc" style="background:${r.col};width:9px;height:9px"></span>${r.name}</span><span class="num">${r.spent === null ? `${ft(r.plan)} <small>planned, not moved</small>` : `${ft(r.spent)} <small>of ${ft(r.plan)}</small>`}</span></div>${r.spent === null ? '' : bar(r.spent, r.plan, r.col, g.k)}`).join('') : bar(g.spent, g.plan, BKT_COL[g.k], g.k)}`;
   const v = curView(), few = v.rough || v.n < 3;
   return `<div class="sec"><span>My plan for ${mo.name}</span><a class="lnk44" data-plangear>Edit ${I('chev',16)}</a></div>
   <div class="card mp-card" style="padding:16px">
@@ -2282,13 +2293,14 @@ function moneyIn(){
     pay += p; wk += w; rnd += r; return {g, pay:p, wk:w, rnd:r, total:p + w + r};
   });
   const dated = gs.filter(g => g.date && toGo(g) > 0 && daysTo(g) > 0), need = Math.ceil(dated.reduce((a, g) => a + toGo(g) / Math.max(1, Math.round(daysTo(g) / 30.4)), 0) / 100) * 100;   // a goal whose date is today or past is left out: no monthly amount can catch it up
-  return {pay, wk, rnd, total:pay + wk + rnd, need, dated:dated.length, ask:!!(S.payday.on && S.payday.ask), rows};
+  const late = gs.filter(g => g.date && toGo(g) > 0 && daysTo(g) <= 0);   // behind or due today: named on the panel, left out of need
+  return {pay, wk, rnd, total:pay + wk + rnd, need, late, dated:dated.length, ask:!!(S.payday.on && S.payday.ask), rows};
 }
 function moneyInPanel(){
   if(!S.goals.length) return '';
   const m = moneyIn(), R = 104, C = 2 * Math.PI * R, arc = C * .75, p = m.need ? Math.min(1, m.total / m.need) : (m.total ? 1 : 0);
   const nm = [m.pay ? 'Payday rule' : '', m.wk ? 'Weekly transfer' : '', m.rnd ? 'Round-ups' : ''].filter(Boolean).map((n, i) => i ? n.toLowerCase() : n), names = nm.length > 1 ? nm.slice(0, -1).join(', ') + ' and ' + nm[nm.length - 1] : nm[0] || '';
-  const l3 = !m.total ? "Switch on a rule on a goal's page" : (m.dated ? (m.total >= m.need ? 'Enough for every goal date' : `Your goals need about ${ft(m.need)}`) : names) + (m.ask ? ' · payday asks first' : '');
+  const l3 = !m.total ? "Switch on a rule on a goal's page" : (m.dated ? (m.total >= m.need ? (m.late.length ? `Enough for goals with a date ahead. ${m.late.length > 1 ? m.late.length + ' goals are' : esc(m.late[0].name) + ' is'} behind.` : 'Enough for every goal date') : `Your goals need about ${ft(m.need)}`) : names) + (m.ask ? ' · payday asks first' : '');
   return `${hintHTML('auto')}<button class="card mgauge" data-sheet="moneyin" data-tour="auto">
     <span class="mg-ring"><svg viewBox="0 0 250 250" style="transform:rotate(135deg)" aria-hidden="true"><circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="24" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>${p > 0 ? `<circle cx="125" cy="125" r="${R}" fill="none" stroke="#52AE30" stroke-width="24" stroke-linecap="round" stroke-dasharray="${arc * p} ${C}"/>` : ''}</svg></span>
     <span class="t"><small>Money in each month</small><b class="num">${m.total ? ft(m.total) : 'Nothing yet'}</b><small>${l3}</small></span>
@@ -2323,7 +2335,7 @@ function vHub(){
   const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
   const weeks = Array.from({length:8}, (_,i) => S.week - 7 + i);
   const chev = `<span class="chev">${I('chev',20)}</span>`;
-  const junior = `<button class="row" data-go="grad"><span class="t24d"><b class="num">${S.juniorDays}</b><small>days</small></span><span class="t"><b class="u-bk-title">${S.bridge ? '3.0% for 12 more months' : 'Junior ends soon'}</b><small>${S.bridge ? 'While your salary comes to OTP' : 'Keep 3.0% for 12 more months'}</small></span>${chev}</button>`;
+  const junior = `<button class="row" data-go="grad">${S.juniorDays > 0 ? `<span class="t24d"><b class="num">${S.juniorDays}</b><small>${S.juniorDays === 1 ? 'day' : 'days'}</small></span>` : `<span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span>`}<span class="t"><b class="u-bk-title">${S.bridge ? '3.0% for 12 more months' : S.juniorDays > 0 ? 'Junior ends soon' : 'Junior ends today'}</b><small>${S.bridge ? 'While your salary comes to OTP' : 'Keep 3.0% for 12 more months'}</small></span>${chev}</button>`;
   const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
   return `<div class="tabtitle">Persely</div>
   ${bfCard()}
