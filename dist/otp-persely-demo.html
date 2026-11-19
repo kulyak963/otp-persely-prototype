@@ -1698,6 +1698,7 @@ function vTovabbiak(){
   ${it('cards','My cards','data-go="kartyaim"')}
   ${it('bell','Notifications','data-go="ertesitesek"')}
   ${it('chart','My money plan','data-planopen')}
+  ${it('limit','Full financial analysis','data-go="advanced"')}
   ${it('wallet','My accounts','data-go="szamlaim"')}
   ${it('piggy','Persely','data-go="persely"')}
   ${it('chart','Savings options','data-go="megtakaritas"')}
@@ -2121,9 +2122,26 @@ function myMoneyHTML(){
   <div class="sec"><span>${mo.name}, so far</span></div>
   <div class="card">${parts.map(row).join('')}</div>
   ${T && T.kind === 'tip' && !S.insightUsed ? `<div class="card insight"><div class="hrow"><span class="pill ok">Persi's tip</span></div><div class="u-tip-p">Move 10% of ${T.label} (${ft(T.ten)}) to ${esc(T.g.name)} each month${T.wk >= 1 ? ` and get there <b>${plural(T.wk,'week')} sooner</b>` : ''}.</div><div class="hero-btns u-m0"><button class="btn" data-insyes="${T.ten}">Move 10% a month</button></div></div>` : ''}
+  <button class="row" data-go="advanced" style="margin-top:14px"><span class="ic">${I('chart')}</span><span class="t"><b>Full analysis</b><small>Next month, all bills, your split, health score</small></span><span class="chev">${I('chev', 20)}</span></button>
   <div class="fine" style="text-align:center;margin:12px 8px 20px">A plan, not a limit. Nothing is blocked and nothing moves by itself.</div>`;
 }
 
+// Full analysis: the complete financial analyst (plan by category, Safe to spend, split, next month, bills, health score). Advanced: one level below My money plan and in More.
+function fullAnalysisHTML(){
+  if(!S.analyst.on) return needAnalyst('Full analysis');
+  const s = safeToSpend(), mo = shownMonth(), sp = catSpend(mo.ym), m = S.analyst.accepted ? planModel() : null;
+  return `${scoreRow() ? `<div class="sec"><span>Financial health</span></div><div class="card mp-score" style="padding:4px 16px">${scoreRow()}</div>` : ""}
+  <div class="sec"><span>Spent in ${mo.name}</span></div>
+  <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${mo.label}</div>
+  ${analysisGauge(m)}
+  <div class="sec"><span>What did I spend on this month?</span></div>
+  ${catBars(sp)}
+  ${m ? planHTML(m) + planTipsHTML(m) : ''}
+  <button class="safebtn" data-sheet="safe" style="margin-top:8px"><span class="t"><b>Safe to spend</b><small>${s.pocket ? `After bills, your saving rule and groceries. Bills pocket ${ft(s.pocket)} is apart` : 'After bills, your saving rule and groceries'}</small></span><b class="num" style="color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</b><span class="chev">${I('chev', 18)}</span></button>
+  ${splitCard()}
+  ${billsBlock()}
+  ${recentCards()}`;
+}
 // the same screen text for pages that need the analyst
 const needAnalyst = what => `<div class="card" style="padding:16px;margin-top:8px"><b class="u-fs-m">${what} needs the financial analyst</b><div class="fine u-mt4-b12">It is optional and off right now. Turn it on to see your bills and next month.</div><button class="btn" data-sheet="analyst">See what it measures</button></div>`;
 function billRow(r){
@@ -2612,6 +2630,7 @@ const PAGES = {
     ${recentCards()}
     ${planRow()}`;}},
   mymoney:{title:'My money plan', html:() => myMoneyHTML()},
+  advanced:{title:'Full analysis', html:() => fullAnalysisHTML()},
   nextmonth:{title:'Next month', html:() => nextMonthHTML()},
   bills:{title:'Must-pay bills', html:() => billsHTML()}
 };
