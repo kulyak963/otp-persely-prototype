@@ -585,6 +585,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .hint-p{flex:none;font-weight:800;color:var(--green-t);font-size:var(--fs-xs)}
 .hint-t{flex:1;min-width:0}
 .hint-x{flex:none;min-height:var(--tap);padding:0 10px;color:var(--green-t);font-weight:700;font-size:var(--fs-s)}
+.hint{flex-wrap:wrap;row-gap:2px;padding:10px 6px 4px 12px}.hint-p{width:100%}.hint-b{display:flex;margin-left:auto}.hint-s{min-height:var(--tap);padding:0 10px;color:var(--muted-t);font-size:var(--fs-s)}
 .lnk44{min-height:var(--tap);padding:0 6px}
 /* story ring at the top of the Persely tab (Instagram-style: bright ring = not watched yet) */
 .sring{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -653,7 +654,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .ptot .fine{text-align:center}
 /* Your habits: streak and health score in one card */
 .hab{padding-bottom:6px}
-.hab.sm{padding:12px 14px}.hab.sm .u-rowc{gap:10px}.hab-t{font-size:1.0625rem;font-weight:700;line-height:1.2}.hab-s{font-size:var(--fs-xs);color:var(--muted-t)}
+.hab.sm{padding:12px 14px}.hab-start{width:100%;text-align:left}.hab-start .chev{display:flex;color:var(--muted-t)}.hab.sm .u-rowc{gap:10px}.hab-t{font-size:1.0625rem;font-weight:700;line-height:1.2}.hab-s{font-size:var(--fs-xs);color:var(--muted-t)}
 .hab.sm .wk{margin:10px 2px 0}.hab.sm .wk i{width:24px;height:24px;font-size:0.75rem}.hab.sm .wk .today i{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #FF7A1A}
 .hab-score{display:flex;align-items:center;gap:14px;width:100%;min-height:var(--tap);padding:10px 0;margin-top:2px;border-top:1px solid var(--line);text-align:left}
 .hab-score .t{flex:1;min-width:0;font-size:var(--fs-m);color:var(--ink2)}
@@ -856,6 +857,8 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
   .pkgrid button.chip{min-height:44px}
 }
 /* simplification pass: Persely total, money plan, story bars */
+.lateline{display:flex;align-items:center;gap:10px;width:100%;margin:6px 0 4px;padding:11px 14px;border-radius:14px;background:var(--orange-l);color:var(--orange-t);font-size:var(--fs-s);font-weight:600;text-align:left}
+.lateline .t{flex:1;min-width:0}.lateline b{white-space:nowrap}.lateline-i{display:flex}
 .ltsline{display:flex;align-items:center;gap:8px;width:100%;margin:4px 0 0;padding:12px 16px;border-radius:14px;background:var(--card, #fff);box-shadow:var(--sh);font-size:var(--fs-m);text-align:left;color:var(--ink)}
 .ltsline span:first-child{flex:1;font-weight:600}.ltsline b{font-size:1.0625rem}.ltsline .chev{display:flex;color:var(--muted-t)}
 .gauge[data-go]{cursor:pointer}
@@ -1555,7 +1558,7 @@ const fresh = () => { const H = demoHistory(); const o = ({
     {id:'holiday', name:'Summer holiday', ic:'plane', pace:6000, date:'2027-06-01'},
     {id:'ps5', name:'PS5 + GTA VI', ic:'game', saved:46000, target:230000, pace:12000, date:inDays(7)},
     {id:'fest', name:'Festival ticket', ic:'fun', saved:30000, target:45000, pace:5000, date:'2027-07-01'},
-    {id:'balaton', name:'Balaton trip', ic:'user', shared:true, target:120000, date:'2027-06-30', members:[{n:'Anna', me:true, amt:20000, c:'#F07D19'}]}
+    {id:'balaton', name:'Balaton trip', ic:'user', shared:true, target:120000, date:'2027-06-30', members:[{n:'Anna', me:true, amt:20000, c:'#F07D19'}], invited:['Dóri']}
   ],
   accounts:[
     {id:'junior', n:'Junior account', no:'11773119 - 10066592', v:87450, h:'Credit limit: 0 Ft'},
@@ -1614,6 +1617,7 @@ function vFooldal(){
   const R=104, C=2*Math.PI*R, arc=C*.75, p=Math.min(1,spent/ (avg*1.15));
   return `
   <div class="hhead"><div class="avatar">${S.ini}</div><b>${S.name}</b><button class="mail" data-go="neked" aria-label="Messages">${I('mail',26)}</button></div>
+  ${lateLine()}
   <div class="sec"><span>Balance</span><a data-go="szamlaim">All accounts ${I('chev',16)}</a></div>
   <div class="accs" id="accs">${S.accounts.map(a => a.id === 'persely'
     ? `<button class="acc" data-tab="hub"><div class="n">Persely · total</div><div class="v num">${ft(total())}</div><div class="h">${plural(S.goals.filter(g => !isEur(g)).length,'goal')}${eurTotal() ? ` + ${eur(eurTotal())}` : ''}</div></button>`
@@ -1840,7 +1844,7 @@ function forecastText(g){
   if(!g || g.shared || isEur(g) || !g.date) return none;
   return fcCalc(gTarget(g), gSaved(g), paceOf(g), g.date);
 }
-const forecast = g => { if(isEur(g)) return 'Euro · no 3.0% rate'; if(g.shared) return `With ${g.members.filter(m=>!m.me).map(m=>m.n).join(', ') || 'nobody yet'} · you put in ${ft(mine(g))}`;
+const forecast = g => { if(isEur(g)) return 'Euro · no 3.0% rate'; if(g.shared){ const others = g.members.filter(m => !m.me).map(m => m.n), inv = (g.invited || []).filter(n => !others.includes(n)); return others.length ? `With ${others.join(', ')} · you put in ${ft(mine(g))}` : inv.length ? `Waiting for ${inv.join(', ')} · invite sent` : `Invite a friend · you put in ${ft(mine(g))}`; }
   if(isTight(g)) return daysTo(g) < 0 ? `<span class="late">Goal date passed · ${ft(toGo(g))} to go</span>` : `<span class="late">Behind · ${dueTxt(g).toLowerCase()}</span>`;
   const m = gMonths(g); return m === 0 ? 'Goal reached' : m < 0 ? 'Add a rule to see the date' : isLate(g) ? `<span class="late">${inMonths(m)} · late</span>` : forecastText(g).far ? `${forecastText(g).n <= 1 ? 'Next month' : inMonths(m)} · ahead` : inMonths(m); };
 
@@ -1873,19 +1877,29 @@ function pctOf(g){ const s = gSaved(g), r = s / gTarget(g) * 100, p = Math.min(1
   return {p, txt: tiny ? '' : p + '%', tiny, saved:s, w: s > 0 ? Math.max(p, 4) : p, first: s > 0 && r < 2}; }
 
 // the week counts for the streak (once per week)
+// true while a fast-forward plays (FF is declared further down, so read it safely)
+function ffRunning(){ try{ return !!(FF.on || window.__ffOn); }catch(e){ return false; } }
+// a small celebration when a goal passes 50% or the streak reaches 10 weeks (once each)
+function milestone(g, before){
+  if(!g || isEur(g)) return; const t = gTarget(g), now = gSaved(g); S.mile = S.mile || {};
+  if(t > 0 && before < t / 2 && now >= t / 2 && now < t && !S.mile['half-' + g.id]){ S.mile['half-' + g.id] = 1; setTimeout(() => { toast(`Halfway there: ${g.name} is at 50%`); if(pig3d) pig3d.spin(); }, 700); }
+}
+function streakMilestone(){ S.mile = S.mile || {}; if(S.streak >= 10 && !S.mile.s10){ S.mile.s10 = 1; setTimeout(() => { toast('🔥 10 weeks in a row. Keep it going'); if(pig3d) pig3d.celebrate(); }, 900); } }
 function markSaved(){
   if(S.savedWeek) return false;
   S.savedWeek = true; S.streak++; S.best = Math.max(S.best, S.streak); S.history.push(S.week);
   if(S.streak % 4 === 0) S.skips = Math.min(2, S.skips + 1);   // 1 skip week for every 4 weeks of streak
+  if(!ffRunning()) streakMilestone();
   return true;
 }
 // one place where forints go into a goal: balances, transaction, streak
 function depositTo(g, v, fromId='junior', how='Between my accounts'){
-  const wasDone = gSaved(g) >= gTarget(g);
+  const wasDone = gSaved(g) >= gTarget(g), before = gSaved(g);
   acc(fromId).v -= v;
   if(g.id==='holiday') acc('persely').v += v; else if(g.shared) g.members.find(m => m.me).amt += v; else g.saved += v;
   S.monthSaved = (S.monthSaved || 0) + v;
   S.tx.unshift({...stamp(), d:'Today', n:'PERSELY DEPOSIT', s:how, a:-v, ic:'piggy', note:g.name});
+  if(!ffRunning()) milestone(g, before);
   if(!wasDone && gSaved(g) >= gTarget(g) && S.analyst && S.analyst.on && !S.goalRewarded.includes(g.id)){   // goal reached: offer a goal-linked partner offer
     S.goalRewarded.push(g.id); S._offer = g.id; qSheet(() => S._offer ? SHEETS.goaloffer() : '', 'goaloffer', true);
   }
@@ -1933,16 +1947,19 @@ function healGoalAccounts(){ if(S.goals.some(g => g.id === 'holiday') && !acc('p
 const HINTS = [['total','Your savings','3.0% a year with your Junior account. Add or withdraw any time, no fees.'],
   ['goals','Your goals','Each goal shows the month you get there.'],
   ['auto','Money in each month','What moves in by itself. Change it on each goal.'],
-  ['week','Your habits','Save any amount once a week to keep your streak going. Automatic savings count too.']];
+  ['week','Your streak','Save any amount once a week to keep your streak going. Automatic savings count too.'],
+  ['story','Your monthly story','Tap the green circle next to me: a short story about your month, once a month.']];
 let HINT_NOW = null;
 function pickHint(force){ if(HINT_NOW && !S.hints[HINT_NOW]) return; const h = (S.onboarded || force) ? HINTS.find(x => !S.hints[x[0]]) : null; HINT_NOW = h ? h[0] : null; }
-function endHint(){ if(!HINT_NOW) return; S.hints[HINT_NOW] = 1; HINT_NOW = null; save(); renderView('hub'); }
+function endHint(){ if(!HINT_NOW) return; S.hints[HINT_NOW] = 1; HINT_NOW = null; pickHint(); save(); renderView('hub');   // the next tip follows right away, like a short guided tour
+  if(HINT_NOW) setTimeout(() => { const h = document.querySelector('.view.on .hint'); if(h) h.scrollIntoView({block:'center', behavior:stRed() ? 'auto' : 'smooth'}); }, 60); }
+function skipHints(){ HINTS.forEach(h => { S.hints[h[0]] = 1; }); HINT_NOW = null; save(); renderView('hub'); }
 function showHints(){ S.hints = {}; HINT_NOW = null; save(); closeSheet(); tab('hub'); pickHint(true); renderView('hub'); }   // demo: show them again
-const hintHTML = key => { const h = HINT_NOW === key && HINTS.find(x => x[0] === key); return h ? `<div class="hint"><span class="hint-p">Persi</span><span class="hint-t"><b>${h[1]}.</b> ${h[2]}</span><button class="hint-x" data-hintok="1">Got it</button></div>` : ''; };
+const hintHTML = key => { const h = HINT_NOW === key && HINTS.find(x => x[0] === key); return h ? `<div class="hint"><span class="hint-p">Persi · ${HINTS.indexOf(h) + 1} of ${HINTS.length}</span><span class="hint-t"><b>${h[1]}.</b> ${h[2]}</span><span class="hint-b"><button class="hint-x" data-hintok="1">${HINTS.indexOf(h) === HINTS.length - 1 ? 'Done' : 'Next'}</button><button class="hint-s" data-hintskip>Skip</button></span></div>` : ''; };
 // Persi: one short line
 function persiSays(){
   const g = ruleGoal(), pct = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100));
-  if(!S.onboarded) return {mood:'happy', text:"Hi, I'm Persi. Let's pick a goal."};
+  if(!S.onboarded) return {mood:'happy', text: S.goals.length ? "Hi, I'm Persi. Pick one goal to focus on." : "Hi, I'm Persi. Let's pick a goal."};
   const bf = bfNow(); if(bf.on) return {mood:'concerned', text:`${bf.text}.`};   // late bills only
   if(S.analyst.on && S.bfDone) return {mood:'proud', text:'Bills paid. You are all set this month.'};
   if(!S.savedWeek && S.streak > 0){ const m = g ? gMonths(g) : -1; return {mood:'happy', text: !g ? 'Any amount by Sunday keeps your streak.' : m > 0 ? `${g.name}: ${pct}%. ${inMonths(m)} at this pace.` : `${g.name}: ${pct}%.`}; }   // the streak card already says "Ends Sunday"
@@ -2121,6 +2138,11 @@ function analysisRow(){
   return row('data-go="mymoney"', `${ft(spent)} spent of ${ft(plan)} planned`);
 }
 // the Spending analysis page: the circle and categories for the month, the plan and tips, then Safe to spend, My split, Next month, Must-pay bills and Bills pocket
+// Home, top: one line only while a must-pay bill is late. Opens Left to spend, where Pay now is.
+function lateLine(){
+  const bf = billsFirst(); if(!bf.on) return '';
+  return `<button class="lateline" data-planopen><span class="lateline-i">${I('cal', 18)}</span><span class="t">${esc(bf.text)}</span><b>Pay now</b></button>`;
+}
 // Home, under the original spending gauge: the one line that is ours. Opens the Left to spend page.
 function ltsLine(){
   const sf = safeToSpend();
@@ -2367,7 +2389,7 @@ function vHub(){
   return `<div class="tabtitle">Persely</div>
   <div class="persi" data-tour="persi">${pig(ps.mood, 84)}${HINT_NOW ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
     <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
-
+  ${hintHTML('story')}
   ${hintHTML('total')}<div class="card hero" data-tour="total">
     <div class="hrow"><span class="k">Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Junior 3.0%' : 'Standard rate'}</span></div>
     <div class="hero-v num">${ft(tot)}${et ? ` <small class="k" style="font-size:0.9375rem;font-weight:600">+ ${eur(et)}</small>` : ''}</div>
@@ -2381,11 +2403,11 @@ function vHub(){
   ${S.onboarded ? '' : `<button class="setup" data-onbstart><span class="u-ico-g">${I('star',24)}</span><span class="u-fx1"><b>Set a goal and a saving rule</b><small>Takes 1 minute</small></span><span class="u-ico-g">${I('chev',20)}</span></button>`}
 
   ${hintHTML('week')}<div class="sec"><span>Your streak</span></div>
-  <div class="card hab sm" data-tour="week" style="${!S.savedWeek && S.streak ? 'box-shadow:inset 0 0 0 1.5px #FFB27A,var(--sh)' : ''}">
+  ${!S.streak && !S.savedWeek && !S.best ? `<button class="card hab sm hab-start" data-tour="week" data-sheet="hubsave"><div class="u-rowc">${flame(24, false)}<div class="u-fx1"><div class="hab-t">Start your streak</div><div class="hab-s">Save any amount this week. Every week after that adds a flame.</div></div><span class="chev">${I('chev', 20)}</span></div></button>` : `<div class="card hab sm" data-tour="week" style="${!S.savedWeek && S.streak ? 'box-shadow:inset 0 0 0 1.5px #FFB27A,var(--sh)' : ''}">
     <div class="u-rowc">${flame(24, S.streak > 0)}<div class="u-fx1"><div class="hab-t">${S.streak}-week streak</div><div class="hab-s">Best ${S.best} · ${plural(S.skips,'skip')} left</div></div>${S.savedWeek ? '<span class="pill ok">Saved</span>' : S.streak ? '<span class="pill open">Ends Sunday</span>' : ''}</div>
     <div class="wk">${weeks.map(w=>{ const on = S.history.includes(w), sk = (S.skipped||[]).includes(w);
       return `<div class="${on?'on':''} ${sk?'sk':''} ${w===S.week?'today':''}"><i>${on ? '✓' : sk ? '–' : ''}</i></div>`; }).join('')}</div>
-  </div>
+  </div>`}
 
   ${hintHTML('goals')}<div class="sec" data-tour="goals"><span>Goals</span><a data-sheet="newgoal">New ${I('plus',16)}</a></div>
   ${S.goals.map(g=>{ const s=gSaved(g), t=gTarget(g), pc=pctOf(g), fx=lateFix(g), bf=behindFix(g);
@@ -2525,7 +2547,6 @@ const PAGES = {
       ${!g.shared && !isEur(g) ? `<div class="note" style="margin:12px 0 0;${late ? 'background:#FFF1E6' : ''}">${tight ? (daysTo(g) < 0 ? `<b>Goal date passed: ${ft(toGo(g))} to go.</b> Nothing is lost. Your ${ft(s)} is still yours and still earns interest. Pick a date that fits.` : `<b>Behind: ${ft(toGo(g))} to go by ${daysTo(g) === 1 ? 'tomorrow' : daysTo(g) === 0 ? 'today' : 'the date'}.</b> At about ${ft(Math.round(paceOf(g)/100)*100)} a month this date is out of reach. Moving it is fine, most goals shift.`) : m === 0 ? '<b>Goal reached.</b> Take it out or start a new goal.' : m < 0 ? 'Add a rule below to see when you get there.' : `At your pace (about ${ft(Math.round(paceOf(g)/100)*100)} a month) you get there ${fc.far && fc.n <= 1 ? `<b>${fc.when}</b>` : `in <b>${inMonths(m)}</b>`}${late ? ', <b>after your goal date</b>.' : fc.far ? `, well before your goal date (${fc.dateTxt}).` : '.'}`}</div>${late && (fx || bf || lump) ? `${fx ? `<button class="btn" data-latefix="${g.id}">${fixLabel(fx)}</button>` : ''}${!fx && bf ? `<button class="btn" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}${!fx && lump ? `<button class="btn w" data-behindlump="${g.id}">Add ${ft(lump)} from Junior</button>` : ''}` : ''}` : ''}
       ${isEur(g) ? `<div class="note" style="margin:12px 0 0">Buy euros bit by bit instead of all at once before the trip. Demo rate: 1 € = ${EUR_RATE} Ft.</div>` : ''}
       <div class="hero-btns" style="margin:14px 0 0"><button class="btn" data-pickgoal="${g.id}">Add money</button><button class="btn w" data-outgoal="${g.id}">Take out</button></div></div>`;
-    html += goalManageHTML(g);
     if(g.shared){
       html += `<div class="sec"><span>Who put in what</span></div><div class="card lst">${g.members.map(mb=>`<div class="li">${avatar(mb,32)}<span class="t"><b>${mb.me ? 'Anna (you)' : esc(mb.n)}</b><div class="prog" style="margin:6px 0 0;height:6px"><i style="width:${Math.round(mb.amt / Math.max(1,s) * 100)}%"></i></div></span><b class="num">${ft(mb.amt)}</b></div>`).join('')}</div>
         <div class="card u-card-bul"><ul class="bul sm"><li><b>You can always take out what you put in.</b></li><li>Paying out the whole pot needs everyone to agree.</li><li>Each share earns 3.0% and counts toward that member's own 500 000 Ft limit.</li></ul>
@@ -2541,6 +2562,7 @@ const PAGES = {
     }
     const acts = S.tx.filter(x => x.note === g.name).slice(0, 5);
     if(acts.length) html += `<div class="sec"><span>Activity</span></div><div class="card lst">${acts.map(x=>`<div class="li"><span class="t"><b>${esc(x.s)}</b><small>${x.d}</small></span><b class="num ${x.a>0?'':'pos'}">${x.a>0?'−':'+'}${isEur(g) && x.n==='CURRENCY EXCHANGE' ? ft(Math.abs(x.a)) : ft(Math.abs(x.a))}</b></div>`).join('')}</div>`;
+    html += goalManageHTML(g);   // edit / delete goes last: it is rarely needed
     return html + `<p class="fine" style="text-align:center;margin:14px 0 4px">Take money out any time, free of charge.</p>`; }},
   // create a goal in 3 steps with a live projection (from the team handoff)
   create:{title:()=> S._draft && S._draft.edit ? 'Edit goal' : 'New Persely', html:()=>{
@@ -2574,7 +2596,7 @@ const PAGES = {
     <div class="card u-card-bul"><ul class="bul sm"><li>Your goals, streak and friends stay as they are</li><li>Without a salary at OTP the rate goes back to standard after 30 days' notice</li></ul></div>
     ${pr.on && pr.pct < 20 ? `<div class="note"><b>Tip:</b> most people earn more after 24. Saving ${pr.pct+5}% instead of ${pr.pct}% is about ${ft(incomeShare(5))} more a month. <a class="link" data-raise>Raise to ${pr.pct+5}%</a></div>` : ''}`; },
     foot:()=> S.bridge ? '' : `<button class="btn" data-keeprate>Keep my 3.0%</button>`},
-  year:{title:'Your year in Persely', html:()=>yearHTML(), foot:()=> yearMonths().length ? `<button class="btn" data-yearstory>See your year story</button>` : ''},
+  year:{title:'Your year in Persely', html:()=>yearHTML(), foot:()=> ''},   // stories are monthly: the story ring on the Persely tab
   kartyaim:{title:'My cards', html:()=>vKartyaim().replace('<div class="tabtitle">My cards</div>','')},
   szamlaim:{title:'My accounts', html:()=>S.accounts.map(a=>`<div class="card"><b class="u-fs-m">${a.n}</b><div class="u-k-xs">${a.no}</div>
     <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:0.84375rem"><span>${a.id==='persely'?'Balance':'Available balance'}</span><b class="num u-fs-16">${ft(a.v)}</b></div>
@@ -3033,6 +3055,7 @@ document.addEventListener('click', e=>{
   if(d.behindlump){ const g = goalById(d.behindlump), v = g ? lumpOf(g) : 0; if(!v) return; const before = snap();
     depositTo(g, v); renderAll(); undoable(before, `${ft(v)} moved to ${g.name}`); return; }
   if(d.hintok){ endHint(); return; }
+  if('hintskip' in d){ skipHints(); return; }
   if(d.goal){ S._detail = d.goal; closeSheet(); pushPage('goal'); return; }
   if(d.dm){ closeSheet(); ({payday:salaryArrives, coffee, dori:doriJoins, week:nextWeek, month:()=>fastForward(1, 'month'), month2:()=>fastForward(2, 'month'), year:()=>fastForward(S.months < 12 ? 12 - S.months : 12, 'year'), sem:endSemester, grad:graduation, update:demoUpdateDay,
     bills:billMissed, reset:demoStart})[d.dm](); return; }
@@ -4561,7 +4584,6 @@ function renderDemoPanel(){
     <button data-dmonth>⏩ +1 month<kbd>O</kbd></button>
     <button data-dmonth2>⏩ +2 months<kbd>Q</kbd></button>
     <button data-dyear>⏩ To month 12<kbd>Y</kbd></button>
-    <button data-dsem>🎓 End of semester<kbd>E</kbd></button>
     <button data-dgrad>🎉 Junior ends / graduation<kbd>G</kbd></button>
     <button data-dstory>📊 Story<kbd>M</kbd></button>
     <button data-dtour>💡 Persi hints again<kbd>T</kbd></button>
@@ -4602,7 +4624,7 @@ $('#demoShow').addEventListener('click', ()=>{ demo.hidden = false; renderDemoPa
 // on the phone itself: long-press Anna's avatar on Home opens the demo controls (idea from the team handoff)
 function demoSheet(){
   const b = (a, e, t, s) => `<button data-dm="${a}">${e} ${t}<small>${s}</small></button>`;
-  return `<h2>Demo controls</h2><div class="dsheet">${b('payday','💰','Payday','Salary, asks 10%')}${b('coffee','☕','Card purchase','Coffee, round-up')}${b('dori','👯','Dóri joins','Shared Persely')}${b('week','⏭','Next week','')}${b('bills','🧾','Bill missed','Rent unpaid, Bills first')}${b('month','⏩','+1 month','Cash flow, rules, interest')}${b('month2','⏩','+2 months','Cash flow')}${b('year','⏩','To month 12','Stops at Junior ends')}${b('sem','🎓','End of semester','Semester story')}${b('grad','🎉','Junior ends','Keep my 3.0%')}${b('update','▶','Demo start','Face ID, pop-up')}${b('reset','↺','Reset','Back to the start')}</div>`;
+  return `<h2>Demo controls</h2><div class="dsheet">${b('payday','💰','Payday','Salary, asks 10%')}${b('coffee','☕','Card purchase','Coffee, round-up')}${b('dori','👯','Dóri joins','Shared Persely')}${b('week','⏭','Next week','')}${b('bills','🧾','Bill missed','Rent unpaid, Bills first')}${b('month','⏩','+1 month','Cash flow, rules, interest')}${b('month2','⏩','+2 months','Cash flow')}${b('year','⏩','To month 12','Stops at Junior ends')}${''}${b('grad','🎉','Junior ends','Keep my 3.0%')}${b('update','▶','Demo start','Face ID, pop-up')}${b('reset','↺','Reset','Back to the start')}</div>`;
 }
 let lpTimer = null;
 document.addEventListener('pointerdown', e => { if(!(e.target.closest && e.target.closest('.hhead .avatar'))) return; clearTimeout(lpTimer); lpTimer = setTimeout(() => { lpTimer = null; sheet(demoSheet()); }, 650); });
@@ -4620,7 +4642,6 @@ addEventListener('keydown', e=>{
   else if(k === 'o') fastForward(1, 'month');
   else if(k === 'q') fastForward(2, 'month');
   else if(k === 'y') fastForward(S.months < 12 ? 12 - S.months : 12, 'year');
-  else if(k === 'e') endSemester();
   else if(k === 'g') graduation();
   else if(k === 'm'){ unlockPhone(); tab('hub'); openStory(); }
   else if(k === 't'){ unlockPhone(); showHints(); }
