@@ -187,12 +187,13 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .gauge .core small{font-size:0.84375rem;color:var(--ink2)}
 .gauge .core b{font-size:1.5625rem;color:var(--green-t);font-weight:700}
 .avg{display:flex;align-items:center;justify-content:center;gap:8px;font-size:0.84375rem;color:var(--ink2);margin:6px 0 4px}
-.avg::before{content:"";border-left:11px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent}
-.cats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:6px 0 0;text-align:center}
+.avg::before{content:"";flex:none;border-left:11px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent}
+.cats{display:grid;grid-template-columns:repeat(var(--n,5),minmax(0,1fr));gap:4px;padding:6px 0 0;text-align:center}
 @media (max-width:359px){.cats{grid-template-columns:repeat(4,minmax(0,1fr));row-gap:12px}}
 .cat{min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column;align-items:center;font-size:var(--fs-xs);color:var(--ink2);cursor:pointer}
 .cat .ic{color:var(--ink2);height:28px}
-.cat .cl{font-size:var(--fs-xs);font-weight:600;color:var(--ink2);margin-top:4px;line-height:1.2}
+.cat .cl{font-size:0.6875rem;font-weight:600;color:var(--ink2);margin-top:4px;line-height:1.2;overflow-wrap:normal}
+
 .cat.on .ic{color:var(--green-i)}
 .cat .col{width:2px;height:96px;background:#DDE1E7;border-radius:2px;position:relative;margin:8px 0 6px}
 .cat .col i{position:absolute;bottom:0;left:-4px;width:10px;border-radius:5px;background:var(--green)}
@@ -1183,7 +1184,7 @@ function avgSpend(){
 function catBars(sp){
   const rows = Object.entries(sp).sort((a, b) => b[1] - a[1]).slice(0, 5), max = Math.max(1, ...rows.map(r => r[1]));
   if(!rows.length) return `<div class="card fine" style="padding:14px 16px">No card payments yet this month.</div>`;
-  return `<div class="cats">${rows.map(([c, v], i) => `<div class="cat ${i === 0 ? 'on' : ''}"><span class="ic">${I(SPEND_IC[c] || 'tag', 26)}</span><span class="cl">${SPEND_SHORT[c] || CATEGORY[c][0]}</span><span class="col"><i style="height:${v / max * 100}%"></i></span><span class="num">${ft(v)}</span></div>`).join('')}</div>`;
+  return `<div class="cats" style="--n:${rows.length}">${rows.map(([c, v], i) => `<div class="cat ${i === 0 ? 'on' : ''}"><span class="ic">${I(SPEND_IC[c] || 'tag', 26)}</span><span class="cl">${SPEND_SHORT[c] || CATEGORY[c][0]}</span><span class="col"><i style="height:${v / max * 100}%"></i></span><span class="num">${ft(v)}</span></div>`).join('')}</div>`;
 }
 /* ---------- next-month projection ---------- */
 const lrPct = (vals, total) => { const raw = vals.map(v => v / total * 100), fl = raw.map(Math.floor); let rest = 100 - fl.reduce((a, b) => a + b, 0);
@@ -1192,7 +1193,7 @@ const lrPct = (vals, total) => { const raw = vals.map(v => v / total * 100), fl 
 //   pct:{must,everyday,fun,other,saving,left} (the raw projection, whole numbers, sum 100: the screens use splitView() below, which folds Other and Left over into Everyday essentials), cats:[...], oneOffs:[...], plan:{rule,weekly,round,total}}
 // what the saving rules move in a month: the payday rule (share of the salary) + the weekly transfer + round-ups
 function savePlan(st = S, withRule = false){
-  const rule = (st.payday.on || withRule) ? Math.round(st.income.amount * st.payday.pct / 100) : 0, weekly = st.weekly.on ? Math.round(st.weekly.amt * 52 / 12) : 0, round = st.roundup.on ? ROUND_EST : 0;
+  const rule = (st.payday.on || withRule) ? Math.round(st.income.amount * st.payday.pct / 100) : 0, weekly = (st.weekly.on ? Math.round(st.weekly.amt * 52 / 12) : 0) + (st.goals || []).reduce((n, g) => n + (g.weekly && !g.shared && !isEur(g) ? Math.round(g.weekly * 52 / 12) : 0), 0), round = st.roundup.on ? ROUND_EST : 0;
   return {rule, weekly, round, total:rule + weekly + round};
 }
 function project(st = S, o = {}){
@@ -1387,6 +1388,7 @@ function __checkAnalytics(){
         ok('Money in sheet: one row for every forint, not shared goal, one payrule row, no switches', fg.every(g => mi.includes(`data-goal="${g.id}"`)) && (mi.match(/data-goal=/g) || []).length === fg.length && (mi.match(/data-sheet="payrule"/g) || []).length === 1 && !/data-sw|data-gpay|data-grr|data-gwk/.test(mi) && !/deadline/i.test(mi));
         const m = moneyIn();
         ok('Money in panel: the amount is the sum of what the rules move into every goal, and the panel shows it', m.total === S.goals.reduce((a, g) => a + paceOf(g) - (g.pace || 0), 0) && m.total > 0 && plain(moneyInPanel()).includes(ft(m.total).replace(/\s+/g, ' ')), [m.total, S.goals.map(g => paceOf(g) - (g.pace || 0))]);
+        ok('Saving in the split equals Money in (own goal weekly transfers included), and the days left match the Spending analysis circle', savePlan().total === m.total && daysLeftInMonth() === shownMonth().left, [savePlan().total, m.total]);
         { const on = moneyInPanel(); ok('Money in panel: the ring is decorative and the three lines are the screen text', /<svg[^>]*aria-hidden="true"/.test(on) && !/aria-label/.test(on) && /Money in each month/.test(on) && /<b class="num">/.test(on)); }
         S.payday.on = false; S.weekly.on = false; S.roundup.on = false; S.goals.forEach(g => { g.weekly = 0; });
         const off = plain(moneyInPanel());
@@ -1983,7 +1985,7 @@ function splitUse(){
   });
   return u;
 }
-function daysLeftInMonth(){ if(S.months > 0) return null; const d = new Date(); return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate() - d.getDate(); }
+function daysLeftInMonth(){ return shownMonth().left; }   // the demo "today" (the 14th), the same count as the Home and Spending analysis circles
 // must-pay paid so far this month (for the first bar of My split)
 const mustPaid = () => billsFirst().rows.reduce((a, r) => a + (r.s.st === 'paid' || r.s.st === 'less' ? r.s.paid : r.s.st === 'skipped' ? r.bill.exp : 0), 0);
 function splitCard(){
@@ -2107,7 +2109,7 @@ function myMoneyHTML(){
   ${analysisGauge(m)}
   <div class="sec"><span>What did I spend on this month?</span></div>
   ${catBars(sp)}
-  ${m ? planHTML(m) + planTipsHTML(m) : `<div class="card"><b class="u-bk-m14">Plan your month</b><div class="fine u-mt4-b12">See how your money splits into bills, everyday essentials, fun and saving, with progress for each category and tips. It is optional.</div><button class="btn" data-sheet="analyst">See the suggested split</button></div>`}
+  ${m ? planHTML(m) + planTipsHTML(m) : ''}
   <button class="safebtn" data-sheet="safe" style="margin-top:8px"><span class="t"><b>Safe to spend</b><small>${s.pocket ? `After bills, your saving rule and groceries. Bills pocket ${ft(s.pocket)} is apart` : 'After bills, your saving rule and groceries'}</small></span><b class="num" style="color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</b><span class="chev">${I('chev', 18)}</span></button>
   ${splitCard()}
   ${billsBlock()}
@@ -2205,7 +2207,7 @@ function planModel(){
     {k:'must', name:'Must-pay bills', plan:v.by.must.amt, spent:mustPaid(), rows:[], note:'paid'},
     {k:'ess', name:'Everyday essentials', plan:v.by.ess.amt, spent:0, rows:cats('ess'), note:'spent'},
     {k:'fun', name:'Fun', plan:v.by.fun.amt, spent:0, rows:cats('fun'), note:'spent'},
-    {k:'save', name:'Saving', plan:v.by.save.amt, spent:use.save, note:'saved', rows:[{c:'persely', name:'Persely', plan:v.by.save.amt - inv, spent:use.save, col:BKT_COL.save}].concat(inv ? [{c:'invest', name:'Investing', plan:inv, spent:null, col:'#7A6FD8'}] : [])}
+    {k:'save', name:'Saving', plan:v.by.save.amt, spent:use.save, note:'saved', rows:[{c:'persely', name:'Persely', plan:v.by.save.amt - inv, spent:Math.min(use.save, v.by.save.amt - inv), col:BKT_COL.save}].concat(inv ? [{c:'invest', name:'Investing', plan:inv, spent:null, col:'#7A6FD8'}] : [])}
   ];
   groups.forEach(g => { if(g.k === 'ess' || g.k === 'fun') g.spent = g.rows.reduce((a, r) => a + r.spent, 0); });
   return {v, mo, groups, inv};
@@ -2266,7 +2268,8 @@ function analysisGauge(m){
     </svg>
     <div class="core"><small>Spent so far</small><b class="num">${ft(spent)}</b></div>
   </div>
-  <div class="avg"${over ? ' style="color:var(--orange-t)"' : ''}><span style="text-align:center">${line}</span></div>`;
+  <div class="avg"${over ? ' style="color:var(--orange-t)"' : ''}><span style="text-align:center">${line}</span></div>
+  ${m ? `<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:4px 14px;margin:0 0 4px;font-size:0.78125rem;color:var(--ink2)"><span class="u-rowc" style="gap:6px"><span class="dotc" style="background:${BKT_COL.ess}"></span>Everyday essentials</span><span class="u-rowc" style="gap:6px"><span class="dotc" style="background:${BKT_COL.fun}"></span>Fun</span></div>` : ''}`;
 }
 /* ---------- Money in each month: the one summary of what your rules move into Persely, under the balance ----------
    Read only. Every switch lives on its goal's page. Shared and euro goals have no rules. Same numbers as paceOf() without the planned extra deposits (g.pace). */
@@ -2276,7 +2279,7 @@ function moneyIn(){
     const own = S.ruleGoal === g.id, p = own && S.payday.on ? incomeShare(S.payday.pct) : 0, w = (own && S.weekly.on ? Math.round(S.weekly.amt * 52 / 12) : 0) + (g.weekly ? Math.round(g.weekly * 52 / 12) : 0), r = S.roundup.on && S.roundup.goal === g.id ? ROUND_EST : 0;
     pay += p; wk += w; rnd += r; return {g, pay:p, wk:w, rnd:r, total:p + w + r};
   });
-  const dated = gs.filter(g => g.date && toGo(g) > 0 && daysTo(g) > 0), need = dated.reduce((a, g) => a + Math.ceil(toGo(g) / Math.max(1, Math.round(daysTo(g) / 30.4))), 0);   // a goal whose date is today or past is left out: no monthly amount can catch it up
+  const dated = gs.filter(g => g.date && toGo(g) > 0 && daysTo(g) > 0), need = Math.ceil(dated.reduce((a, g) => a + toGo(g) / Math.max(1, Math.round(daysTo(g) / 30.4)), 0) / 100) * 100;   // a goal whose date is today or past is left out: no monthly amount can catch it up
   return {pay, wk, rnd, total:pay + wk + rnd, need, dated:dated.length, ask:!!(S.payday.on && S.payday.ask), rows};
 }
 function moneyInPanel(){
