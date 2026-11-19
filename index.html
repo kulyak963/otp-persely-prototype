@@ -252,6 +252,7 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stro
 .fld label{display:block;font-size:12.5px;color:var(--muted)}
 .fld b{font-size:15px;font-weight:600}
 .fld input{border:0;outline:0;background:none;font-size:16px;font-weight:600;width:100%;padding:2px 0}
+.fld input::placeholder{color:var(--muted);font-weight:400}
 .note{background:var(--green-l);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--ink2);margin-bottom:12px}
 
 /* tab bar: fixed at the very bottom, full width, white down to the screen edge, never moves */
@@ -1043,7 +1044,8 @@ const PAGES = {
     const d = S._draft, steps = `<div class="onb-step" style="margin-top:6px">Step ${d.step} of 3</div>`;
     if(d.step === 1) return `${steps}<h2 style="margin:4px 0 12px">What are you saving for?</h2>
       <div class="flabel">Name</div><div class="fld"><span class="t"><input id="cgName" maxlength="30" value="${esc(d.name)}" aria-label="Goal name"></span></div>
-      <div class="flabel">Amount</div><div class="chips" style="margin:0 0 4px">${[50000,150000,300000,1000000].map(v=>`<button class="chip ${d.target===v?'on':''}" style="font-size:13.5px;padding:7px 11px" data-cgamt="${v}">${shortFt(v)}</button>`).join('')}</div>
+      <div class="flabel">Amount</div><div class="chips" style="margin:0 0 4px">${AMOUNTS.map(v=>`<button class="chip ${d.target===v?'on':''}" style="font-size:13.5px;padding:7px 11px" data-cgamt="${v}">${shortFt(v)}</button>`).join('')}</div>
+      <div class="amt num" style="font-size:22px;margin:8px 0 0" id="cgT">${ft(d.target)}</div>${customAmtBox('cgCustom', d.target)}
       <div class="flabel">By when?</div><div class="chips" style="margin:0">${DATES.map(([v,l])=>`<button class="chip ${d.date===v?'on':''}" style="font-size:13.5px;padding:7px 11px" data-cgdate="${v}">${l}</button>`).join('')}</div>`;
     if(d.step === 2) return `${steps}<h2 style="margin:4px 0 12px">How should money get in?</h2>
       <div class="flabel">Weekly transfer, every Monday</div><div class="chips" style="margin:0 0 6px">${[0,1000,2000,5000].map(v=>`<button class="chip ${d.weekly===v?'on':''}" style="font-size:13.5px;padding:7px 11px" data-cgwk="${v}">${v ? ft(v) : 'None'}</button>`).join('')}</div>
@@ -1815,15 +1817,22 @@ const GOAL_PRESETS = {
   ps5:{label:'PS5 + GTA 6', ic:'game', name:'PS5 + GTA 6', target:230000, date:'2027-12-01', hot:true},
   travel:{label:'Travel', ic:'plane', name:'Erasmus in Lisbon', target:150000, date:'2027-09-01'},
   car:{label:'Car', ic:'car', name:'Driving licence', target:350000, date:'2028-06-01'},
-  home:{label:'Own home', ic:'home', name:'Home deposit', target:1000000, date:'2029-06-01'},
+  home:{label:'Own home', ic:'home', name:'Home deposit', target:5000000, date:'2031-06-01'},
   safety:{label:'Safety net', ic:'lock', name:'Safety net', target:200000, date:'2027-12-01'},
   study:{label:'Studies', ic:'edu', name:'Study fund', target:120000, date:'2027-09-01'}
 };
-const DATES = [['2027-06-01','June 2027'],['2027-09-01','Sept 2027'],['2027-12-01','Dec 2027'],['2028-06-01','June 2028']];
+const DATES = [['2027-06-01','June 2027'],['2027-09-01','Sept 2027'],['2027-12-01','Dec 2027'],['2028-06-01','June 2028'],['2029-06-01','June 2029'],['2031-06-01','June 2031']];
 const O = { i:0 };
 const STEPS = ['goal','how','first','done'];
 const onbMonthly = () => (O.payOn ? incomeShare(O.pct) : 0) + (O.weeklyOn ? Math.round(O.weekly * 52 / 12) : 0) + (O.roundOn ? ROUND_EST : 0);
 const shortFt = v => v >= 1000000 ? `${v/1000000} M Ft` : `${v/1000}k Ft`;
+// goal amounts: quick chips up to 10 M Ft (a home deposit), the slider covers the small range, and a box takes any amount
+const AMOUNTS = [50000, 150000, 300000, 1000000, 5000000, 10000000];
+const SLIDER_MAX = 1500000, AMT_MIN = 10000, AMT_MAX = 100000000;
+const grouped = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const customAmtBox = (id, target) => `<div class="fld" style="margin:10px 0 0"><span class="t"><label for="${id}">Or type your own amount</label><input id="${id}" type="text" inputmode="numeric" autocomplete="off" placeholder="for example 8 000 000" value="${AMOUNTS.includes(target) ? '' : grouped(target)}"></span><span class="k" style="font-weight:600">Ft</span></div>`;
+// read what was typed: digits only, kept between 10 000 Ft and 100 M Ft
+const readAmt = raw => { const v = parseInt(String(raw).replace(/\D/g, ''), 10); return isNaN(v) ? 0 : Math.min(AMT_MAX, v); };
 // the day the update arrives: nothing set up yet
 function updateDayState(){
   Object.assign(S, {streak:0, best:0, history:[], skipped:[], savedWeek:false, skips:0, challenges:{}, friends:[], toured:false, monthSaved:4000,
@@ -1874,8 +1883,9 @@ function renderOnb(){
       <div class="fld"><span class="t"><input id="onbName" maxlength="30" value="${esc(O.name)}" aria-label="Goal name"></span></div>
       <div class="flabel">Amount</div>
       <div class="card"><div class="amt num" id="onbT">${ft(O.target)}</div>
-        <input class="rng" id="onbTR" type="range" min="20000" max="1500000" step="10000" value="${O.target}" aria-label="Amount you need">
-        <div class="chips" style="margin:6px 0 0">${[50000,150000,300000,1000000].map(v=>`<button class="chip ${O.target===v?'on':''}" style="font-size:13px;padding:6px 10px" data-onbt="${v}">${shortFt(v)}</button>`).join('')}</div></div>
+        ${O.target <= SLIDER_MAX ? `<input class="rng" id="onbTR" type="range" min="20000" max="${SLIDER_MAX}" step="10000" value="${O.target}" aria-label="Amount you need">` : ''}
+        <div class="chips" style="margin:6px 0 0">${AMOUNTS.map(v=>`<button class="chip ${O.target===v?'on':''}" style="font-size:13px;padding:6px 10px" data-onbt="${v}">${shortFt(v)}</button>`).join('')}</div>
+        ${customAmtBox('onbCustom', O.target)}</div>
       <div class="flabel">By when?</div>
       <div class="chips" style="margin:0">${DATES.map(([v,l])=>`<button class="chip ${O.date===v?'on':''}" style="font-size:13.5px;padding:7px 11px" data-onbdate="${v}">${l}</button>`).join('')}</div>`;
   } else if(step === 'how'){
@@ -1911,7 +1921,7 @@ function renderOnb(){
   $('#onb').innerHTML = `<div class="onb-top">${i>0 && !done ?`<button data-onbback aria-label="Back" style="color:var(--green);display:flex">${I('back',22)}</button>`:''}<div class="onb-bars">${done ? '' : bars}</div>${done ? '' : '<button class="onb-skip" data-onbquit>Not now</button>'}</div>
     <div class="onb-body">${body}</div><div class="onb-foot">${foot}</div>`;
   if(step === 'goal'){
-    $('#onbTR').addEventListener('input', e => { O.target = +e.target.value; $('#onbT').textContent = ft(O.target); });
+    if($('#onbTR')) $('#onbTR').addEventListener('input', e => { O.target = +e.target.value; $('#onbT').textContent = ft(O.target); });
     $('#onbName').addEventListener('input', e => { O.name = e.target.value; });
   }
   mountPig();
@@ -2252,6 +2262,23 @@ function demoSheet(){
 let lpTimer = null;
 document.addEventListener('pointerdown', e => { if(!(e.target.closest && e.target.closest('.hhead .avatar'))) return; clearTimeout(lpTimer); lpTimer = setTimeout(() => { lpTimer = null; sheet(demoSheet()); }, 650); });
 ['pointerup','pointercancel','pointermove'].forEach(ev => document.addEventListener(ev, e => { if(ev === 'pointermove' && !(e.target.closest && e.target.closest('.hhead .avatar'))) clearTimeout(lpTimer); else if(ev !== 'pointermove') clearTimeout(lpTimer); }));
+// custom goal amount (onboarding and "New goal"): the number follows the typing, the screen is tidied when the box is left
+document.addEventListener('input', e => {
+  const id = e.target && e.target.id;
+  if(id !== 'onbCustom' && id !== 'cgCustom') return;
+  const raw = readAmt(e.target.value);
+  if(!raw) return;                                   // empty box: keep the amount that was set
+  const v = Math.max(AMT_MIN, raw), shown = $(id === 'onbCustom' ? '#onbT' : '#cgT');
+  if(id === 'onbCustom') O.target = v; else if(S._draft) S._draft.target = v;
+  if(shown) shown.textContent = ft(v);
+});
+document.addEventListener('change', e => {
+  const id = e.target && e.target.id;
+  if(id !== 'onbCustom' && id !== 'cgCustom') return;
+  const raw = readAmt(e.target.value);
+  if(raw && raw < AMT_MIN) toast(`The smallest goal is ${ft(AMT_MIN)}`);
+  if(id === 'onbCustom'){ keepOnbName(); renderOnb(); } else if(S._draft){ keepCgName(); refreshPages(); }
+});
 addEventListener('keydown', e=>{
   if(e.target.closest && e.target.closest('input')) return;
   const k = e.key.toLowerCase();
