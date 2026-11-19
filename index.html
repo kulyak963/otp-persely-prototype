@@ -682,7 +682,7 @@ const fresh = () => ({
   accounts:[
     {id:'junior', n:'Junior account', no:'11773119 - 10066592', v:87450, h:'Credit limit: 0 Ft'},
     {id:'persely', n:'Persely – Summer holiday', no:'11770116 - 10066592', v:64000, h:'Goal: 134 000 Ft'},
-    {id:'megt', n:'Savings account', no:'11770116 - 10066601', v:120000, h:'Interest: 3.5%'}
+    {id:'megt', n:'Savings account', no:'11770116 - 10066601', v:120000, h:'Interest: 0.5%'}
   ],
   persely:{name:'Summer holiday', target:134000, auto:false, freq:'Monthly', day:'On the 1st of the month', amt:4000},
   disc:{activated:[]},
@@ -700,6 +700,9 @@ let S; try{ S = JSON.parse(localStorage.getItem(KEY)) || fresh(); }catch(e){ S =
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
 const CATS = [['food','Food',38200],['cart','Shopping',21400],['bus','Transport',9500],['fun','Fun',14300],['edu','Education',6000]];
 const acc = id => S.accounts.find(a=>a.id===id);
+// the month the demo is in (November + months passed): names and last day, so the labels follow "+1 month"
+const monthNameAt = n => new Date(2026, 10 + n, 1).toLocaleDateString('en-GB',{month:'long'});
+const monthLastDay = n => new Date(2026, 11 + n, 0).getDate();
 
 /* ================= tab screens ================= */
 function vFooldal(){
@@ -712,10 +715,10 @@ function vFooldal(){
   <div class="accs" id="accs">${S.accounts.map(a=>`<button class="acc" data-go="${a.id==='persely'?'persely':'szamlaim'}"><div class="n">${a.n}</div><div class="v num">${ft(a.v)}</div><div class="h">${a.h}</div></button>`).join('')}</div>
   <div class="dots">${S.accounts.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>
   <button class="card hubteaser" data-tab="hub">${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.onboarded && S.streak === 0
-    ? `<b>New in Persely: goals with bonus interest</b><small>Set up in 1 minute</small>`
+    ? `<b>New in Persely: goals with ${rateLabel()} interest</b><small>Set up in 1 minute</small>`
     : `<b style="display:flex;align-items:center;gap:4px">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Safe this week' : 'Ends Sunday. Any amount keeps it going'}</small>`}</span>${I('chev',20)}</button>
   <div class="sec"><span>My monthly spending</span><a data-go="kiadas">Details ${I('chev',16)}</a></div>
-  <div style="margin:-6px 0 0 6px;font-size:12.5px;color:var(--muted)">1 November – 30 November</div>
+  <div style="margin:-6px 0 0 6px;font-size:12.5px;color:var(--muted)">1 ${monthNameAt(S.months||0)} – ${monthLastDay(S.months||0)} ${monthNameAt(S.months||0)}</div>
   <div class="gauge">
     <svg width="250" height="250" viewBox="0 0 250 250" style="transform:rotate(135deg)">
       <circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>
@@ -976,7 +979,7 @@ function monthStep(quiet){
   // four weeks pass; the rules keep the streak alive
   const ran = S.payday.on || S.weekly.on || S.roundup.on || S.goals.some(x => x.weekly);
   for(let i = 0; i < 4; i++){ S.week++; if(ran){ S.streak++; S.best = Math.max(S.best, S.streak); S.history.push(S.week); } else S.streak = 0; }
-  S.savedWeek = ran; S.monthSaved = 0; S.juniorDays = Math.max(0, S.juniorDays - 30);
+  S.savedWeek = ran; S.prevSaved = S.monthSaved; S.monthSaved = 0; S.juniorDays = Math.max(0, S.juniorDays - 30);
   acc('junior').v += inc; S.tx.unshift({d:'Today', n:'SALARY', s:'Incoming transfer', a:inc, ic:'money'});
   if(S.payday.on){ const v = incomeShare(S.payday.pct); depositTo(g, v, 'junior', `Payday rule: ${S.payday.pct}%`); moved += v; }
   if(S.weekly.on){ const v = S.weekly.amt * 4; depositTo(g, v, 'junior', 'Weekly transfers (4)'); moved += v; }
@@ -1134,7 +1137,7 @@ const PAGES = {
   challenges:{title:'Weekly challenges', html:()=>`<div class="card" style="padding:4px 16px 10px;margin-top:6px"><ul class="bul sm"><li>New challenges every Monday, the week ends on Sunday</li><li>Progress is checked automatically from your card payments</li><li>Join as many as you like</li></ul></div>${CH_DEFS.map(chCard).join('')}`},
   kiadas:{title:'Monthly spending', right:`<span style="display:flex">${I('gear',22)}</span>`, html:()=>{
     const spent=CATS.reduce((a,c)=>a+c[2],0), max=Math.max(...CATS.map(c=>c[2]));
-    return `<div style="margin:18px auto 24px;width:230px;padding:18px;border-radius:40px;text-align:center;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff"><b class="num" style="font-size:22px">${ft(spent)}</b><div style="color:var(--green-t);font-size:13px">November</div></div>
+    return `<div style="margin:18px auto 24px;width:230px;padding:18px;border-radius:40px;text-align:center;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff"><b class="num" style="font-size:22px">${ft(spent)}</b><div style="color:var(--green-t);font-size:13px">${monthNameAt(S.months||0)}</div></div>
     <div class="cats">${CATS.map((c,i)=>`<div class="cat ${i===0?'on':''}"><span class="ic">${I(c[0],26)}</span><span style="font-size:10.5px;color:${i===0?'var(--green-t)':'var(--muted)'}">${c[1]}</span><span class="col"><i style="height:${c[2]/max*100}%"></i></span><span class="num">${ft(c[2])}</span></div>`).join('')}</div>
     <div class="sec"><span>Food – Saturday, 8 November</span></div>
     <div class="tx"><span class="ic">${I('food')}</span><span class="t"><b>WOLT HUNGARY</b><span>Card payment</span><em>${I('food',15)} Food</em></span><span class="a num">${sft(-4690)}</span></div>`;}}
@@ -1889,7 +1892,7 @@ function renderOnb(){
       ${tg(O.roundOn, 'data-onbrr', 'Round-ups', `Card payments rounded up to 100 Ft, ×2. About ${ft(ROUND_EST)} a month.`)}
       <div class="card" style="padding:14px 16px;margin-top:6px">
         <b style="font-size:15px;line-height:1.4;display:block">${onbMonthly() ? `About ${ft(Math.round(proj/1000)*1000)} by ${fDate(O.date)}` : 'Switch something on to see your forecast'}</b>
-        ${onbMonthly() ? `<div class="prog" style="margin:10px 0 6px"><i style="width:${p}%"></i></div><div class="k">${p}% of ${ft(O.target)} · ${short > 0 ? `about ${ft(Math.round(short/1000)*1000)} short` : 'on time'}</div>` : ''}
+        ${onbMonthly() ? `<div class="prog" style="margin:10px 0 6px"><i style="width:${p}%"></i></div><div class="k">${p}% of ${ft(O.target)} by your date · ${short > 0 ? `about ${ft(Math.round(short/1000)*1000)} short` : 'on time'}</div>` : ''}
         ${short > 0 && onbMonthly() ? `<button class="btn w" style="margin-top:12px" data-onbboost="${(O.weeklyOn ? O.weekly : 0) + extra}">Add ${ft(extra)} a week to make it</button>` : ''}
       </div>`;
   } else if(step === 'first'){
@@ -2002,6 +2005,19 @@ function friendsCard(){
 }
 
 /* ================= monthly story (reels format, the original design) ================= */
+// story texts that are worked out from the app's own numbers, so they match the Home tip
+function savedVsLast(){
+  const prev = S.prevSaved || 0, now = S.monthSaved || 0;
+  if(!prev) return 'Persi is proud of you.';
+  if(now > prev) return `${ft(now - prev)} more than last month. Persi is proud of you.`;
+  if(now < prev) return `${ft(prev - now)} less than last month. Any amount still counts.`;
+  return 'The same as last month. Steady habits.';
+}
+function tipSooner(){
+  const g = ruleGoal(), extra = 9000, rem = gTarget(g) - gSaved(g), p = paceOf(g);
+  const wk = p && rem > 0 ? Math.round((rem / p - rem / (p + extra)) * 4.345) : 0;
+  return `About ${ft(extra)} more saved. ${esc(g.name)} arrives ${wk >= 1 ? plural(wk,'week') + ' sooner' : 'sooner'}.`;
+}
 function storySlides(){
   const g = S.goals[0], pct = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100));
   const spent = CATS.reduce((a,c) => a + c[2], 0);
@@ -2009,16 +2025,16 @@ function storySlides(){
   const rank = rows.findIndex(r => r.me) + 1, ahead = rank > 1 ? rows[rank-2] : null;
   return [
     {bg:'linear-gradient(160deg,#1F6B2A,#52AE30)', k: S.period === 'Autumn semester' ? 'Your semester' : 'Your month', big:S.period, sub:"Here's how it went. Tap to keep going.", pig:'proud'},
-    {bg:'linear-gradient(160deg,#0F3B25,#2C7A3C)', k:'You spent', big:ft(spent), sub:'That is 13% less than in October. Nice control.'},
+    {bg:'linear-gradient(160deg,#0F3B25,#2C7A3C)', k:'You spent', big:ft(spent), sub:`That is 13% less than in ${monthNameAt((S.months||0) - 1)}. Nice control.`},
     {bg:'linear-gradient(160deg,#C2410C,#F97316)', k:'Food took the biggest bite', big:'43%', sub:'Including 6 Wolt orders for 28 140 Ft. That is GTA 6 on release day.'},
     {bg:'linear-gradient(160deg,#6B2D7A,#B45FB0)', k:'Fun fact', big:'14 coffees', sub:'9 800 Ft on coffee this month. Exactly 3 cinema tickets.'},
-    {bg:'linear-gradient(160deg,#0E5E4E,#22A38A)', k:'You saved', big:ft(S.monthSaved), sub:'Three times more than last month. Persi is proud of you.', pig:'proud'},
+    {bg:'linear-gradient(160deg,#0E5E4E,#22A38A)', k:'You saved', big:ft(S.monthSaved), sub:savedVsLast(), pig:'proud'},
     ...(S.roundCount ? [{bg:'linear-gradient(160deg,#5B21B6,#8B5CF6)', k:'Small change adds up', big:`${S.roundCount} round-ups`, sub:`They put ${ft(S.roundSum)} into your savings without you noticing.`}] : []),
     {bg:'linear-gradient(160deg,#9A3412,#FB923C)', k:'Your streak', big:`${Math.max(S.streak,1)} weeks`, sub:'You saved every single week. That is how habits are made.'},
     {bg:'linear-gradient(160deg,#1E3A8A,#3B82F6)', k:esc(g.name), big:`${pct}%`, sub:`At this pace you get there in ${inMonths(gMonths(g))}.`},
     {bg:'linear-gradient(160deg,#7C2D12,#D97706)', k:'Among your friends', big:`#${rank}`, sub: !S.friends.length ? 'Add friends and compare next month.' : ahead ? `${ahead.n} is ${plural(ahead.s - S.streak,'week')} ahead. Catch up in December?` : 'You lead your crew. Keep it up.'},
     {bg:'linear-gradient(160deg,#14532D,#16A34A)', k: S.interest ? 'Interest earned' : 'Your Junior rate', big: S.interest ? ft(S.interest) : rateLabel(), sub: S.interest ? `Your ${rateLabel()} Junior rate at work, after tax. At 0.01% it would be a few forints.` : `On ${ft(total())} that is about ${ft(yearNet())} a year after tax.`},
-    {bg:'linear-gradient(160deg,#1F6B2A,#52AE30)', k:'Your tip for next month', big:'2 deliveries less a week', sub:`About 9 000 Ft more saved. ${esc(g.name)} arrives a month sooner.`, pig:'happy'},
+    {bg:'linear-gradient(160deg,#1F6B2A,#52AE30)', k:'Your tip for next month', big:'2 deliveries less a week', sub:tipSooner(), pig:'happy'},
     {bg:'linear-gradient(160deg,#1F6B2A,#52AE30)', share:true, end:true}
   ];
 }
