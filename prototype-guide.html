@@ -62,7 +62,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
   <a href="#open">Open the prototype</a>
   <a href="#journey">User journey</a>
   <a href="#tab">Persely tab</a>
-  <a href="#analyst">My money plan</a>
+  <a href="#analyst">Left to spend and Full analysis</a>
   <a href="#screens">Other screens</a>
   <a href="#rules">Rules and numbers</a>
   <a href="#persi">Persi and pushes</a>
@@ -117,7 +117,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
 
   <section id="tab">
     <h2>The Persely tab, top to bottom</h2>
-    <p class="note"><b>Simplified on 19 November:</b> the app had grown too heavy to understand on a first visit, so the analytics now live on one screen (My money plan), the story is a few plain facts, and the Persely tab is back to savings only. The team's full version is kept in git as the tag <code>team-2026-11-19</code>.</p>
+    <p class="note"><b>Simplified on 19 November:</b> the app had grown too heavy to understand on a first visit, so Home keeps the original OTP spending circle and categories with one line of ours, Left to spend, the story is a few plain facts, and the Persely tab is back to savings only. The team's full version is kept in git as the tag <code>team-2026-11-19</code>.</p>
     <p>Order: Persi with the story ring → total in Persely → Your streak → Goals → Money in → Junior ends → Friends (only after "Add friends +") → How Persely works.</p>
     <div class="tbl"><table>
       <thead><tr><th>Block</th><th>What it shows and does</th></tr></thead>
@@ -141,24 +141,24 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
   </section>
 
   <section id="analyst">
-    <h2>My money plan</h2>
-    <p>The financial analyst, on one screen. Home → <b>My money plan</b> (also in More). The first time it asks once: "Your month on one screen", with <b>Show my plan</b>; one tap and it is on. No settings, no consent wall, no editor.</p>
+    <h2>Left to spend and Full analysis</h2>
+    <p>The spending circle, the categories and the Details page (tap the circle or Details) are the real OTP app, copied as they are, with the full category list. Ours is <b>one line</b> under the circle: <b>Left to spend this month · 59,840 Ft</b>. It opens one page (also in More). No consent screen, nothing to set up.</p>
     <div class="tbl"><table>
       <thead><tr><th>Part</th><th>What it shows</th></tr></thead>
       <tbody>
-        <tr><td>Left to spend</td><td>One big number: "Left to spend in November", after the bills still to pay, the saving rule and groceries, with the days left. It is <code>safeToSpend()</code>.</td></tr>
-        <tr><td>A late bill</td><td>Only when a must-pay bill is late: "Rent share is late: 42,000 Ft (due on the 2nd)" with <b>Pay now</b>. Persi's push says the same and opens this screen.</td></tr>
-        <tr><td>The month so far</td><td>Four bars against the plan: Bills paid, Everyday spent, Fun spent, Saving moved. Everyday and Fun turn orange only when they go over ("2,000 Ft over the plan"). The plan is the analyst's split (<code>splitView()</code>).</td></tr>
-        <tr><td>One tip</td><td>Persi's tip from <code>tipOf()</code> with one button: "Move 10% of food and drink (1,100 Ft) to Summer holiday each month".</td></tr>
+        <tr><td>Left to spend</td><td>The big number for the month on screen, the days left and "about 3,700 Ft a day". It is <code>safeToSpend()</code>.</td></tr>
+        <tr><td>How we count it</td><td>A short ladder that adds up: on your Junior account 87,450 Ft − bills still to pay 5,550 Ft − saving still to move 3,500 Ft − groceries for the rest of the month 18,560 Ft = 59,840 Ft.</td></tr>
+        <tr><td>Bills still to pay</td><td>The must-pay bills not yet paid this month, late ones first with <b>Pay now</b>. Persi's late-bill push opens this page.</td></tr>
+        <tr><td>One tip</td><td>Persi's tip from <code>tipOf()</code> with one button.</td></tr>
+        <tr><td>Full analysis</td><td>A row at the bottom (and <b>Full financial analysis</b> in More). The complete analyst for students who want it: health score (tap for the four indicators and rewards), the monthly plan by category with tips, My split (editable), Next month, Must-pay bills and Bills pocket. It does not repeat the circle or the categories. It asks for the analyst the first time. Code: <code>fullAnalysisHTML()</code>, page <code>advanced</code>.</td></tr>
       </tbody>
     </table></div>
-    <p class="note"><b>Full analysis (advanced):</b> the complete analyst is one level down, for students who want it: a <b>Full analysis</b> row at the bottom of My money plan, and <b>Full financial analysis</b> in More. It holds the health score (tap for the four indicators and rewards), the circle and categories, the monthly plan by category with tips, Safe to spend, My split (editable), Next month, Must-pay bills and Bills pocket. Code: <code>fullAnalysisHTML()</code>, page <code>advanced</code>.</p>
   </section>
 
   <section id="screens">
     <h2>Other screens</h2>
     <div class="grid">
-      <div class="box"><h3>Home</h3><ul><li>Accounts carousel (Junior, one "Persely · total" card for all goals, Savings)</li><li>Persely teaser with the streak</li><li><b>Persi's tip</b>: "Move 10% of food and drink (1,100 Ft) to Summer holiday each month and get there 1 week sooner", with Move 10% a month and Not now</li><li>My monthly spending: the gauge, the categories, and one row to <b>My money plan</b></li><li>For you</li></ul></div>
+      <div class="box"><h3>Home</h3><ul><li>Accounts carousel (Junior, one "Persely · total" card for all goals, Savings)</li><li>Persely teaser with the streak</li><li><b>Persi's tip</b>: "Move 10% of food and drink (1,100 Ft) to Summer holiday each month and get there 1 week sooner", with Move 10% a month and Not now</li><li>My monthly spending: the original OTP circle (tap it for Details) and categories, plus our one line <b>Left to spend this month</b></li><li>For you</li></ul></div>
       <div class="box"><h3>Monthly story</h3><p>A few plain facts, one per slide, each slide its own colour, one chart type only (straight bars). Every figure comes from the transactions.</p><ul>
 <li><b>Title:</b> "Your month · November"</li>
 <li><b>Money in and out:</b> three bars (came in, spent, saved) and the hero "88,070 Ft left over this month" (or how much more went out)</li>
@@ -204,7 +204,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
         <tr><td><kbd>T</kbd></td><td>Persi hints again (button "Persi hints again")</td><td><kbd>L</kbd></td><td>Lock / unlock phone (pushes land on the lock screen)</td></tr>
         <tr><td><kbd>H</kbd></td><td>Hide the panel</td><td><kbd>1–9</kbd></td><td>Notifications (see above)</td></tr>
         <tr><td><kbd>Q</kbd></td><td>+2 months, live: January on Home, February on the Persely tab</td><td><kbd>Y</kbd></td><td>To month 12. Stops once when the Junior package ends (month 10): See what's next → Keep my 3.0% → the year carries on → "See your year" opens <b>Your year in Persely</b> (interest at 3.0% vs 0.01%, Savings account 3.5%, bills, goals, score) and its year story</td></tr>
-        <tr><td><kbd>B</kbd></td><td>Rent not paid: takes back this month's rent payment (turns the analyst on if it is off), Persi's line and a push ("Rent share is late: 42,000 Ft (due on the 2nd)") that opens My money plan with <b>Pay now</b>. Then <kbd>P</kbd> shows the payday sheet that covers the bill first</td><td></td><td></td></tr>
+        <tr><td><kbd>B</kbd></td><td>Rent not paid: takes back this month's rent payment (turns the analyst on if it is off), Persi's line and a push ("Rent share is late: 42,000 Ft (due on the 2nd)") that opens Left to spend with <b>Pay now</b>. Then <kbd>P</kbd> shows the payday sheet that covers the bill first</td><td></td><td></td></tr>
       </tbody>
     </table></div>
     <p>The panel also has Delay (0/3/10 s), <b>Also send to iPhone</b> (real push), Sound and <b>Reset app</b> (back to the demo start, same as <kbd>U</kbd>); "Demo: 8 weeks later" lives here and on <kbd>J</kbd>, no longer in More. The analyst is switched on from its offers (late goal, Home, Monthly spending, More), not with a key. With it on, reaching a goal opens a goal-linked partner offer (Summer holiday: travel partner, 8% back on one booking, up to 10,000 Ft; other goals: 5% boosted cashback, up to 2,000 Ft). On the phone: long-press Anna's picture on Home for the same controls. The step-by-step presentation (about 6 minutes) is in the <a href="https://claude.ai/artifact/WnAXG26ZGs2F1NbKHHckYc">Persely demo script</a>.</p>
@@ -234,7 +234,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
       <li><code>events</code>: what every button does</li>
       <li><code>3D piggy</code>: Persi</li>
       <li><code>update pop-up + onboarding</code>: <code>GOAL_PRESETS</code>, <code>renderOnb()</code> (3 screens), <code>amountPicker()</code> and <code>monthPicker()</code>, <code>week8State()</code>; hints in <code>HINTS</code></li>
-      <li>Persely tab: <code>vHub()</code>, <code>moneyInPanel()</code>; My money plan: <code>myMoneyHTML()</code>, <code>planRow()</code> (Home, Monthly spending, More). <code>FRIEND_IN</code> and <code>monthStep()</code>: the small friend transfer added to each simulated month</li>
+      <li>Persely tab: <code>vHub()</code>, <code>moneyInPanel()</code>; Left to spend: <code>ltsLine()</code> (Home), <code>myMoneyHTML()</code> (page); Full analysis: <code>fullAnalysisHTML()</code>. <code>FRIEND_IN</code> and <code>monthStep()</code>: the small friend transfer added to each simulated month</li>
       <li><code>friends</code>: <code>friendsCard()</code>; <code>monthly story</code>: <code>storySlides()</code> (slides), <code>stAgg()</code>, <code>stDrift()</code> (figures), the engine <code>stGo()</code>, <code>stPaint()</code>, <code>stStep()</code>; recording hooks in <code>window.__story</code> (<code>open(n, {pause, manual, record})</code>, <code>go(n)</code>, <code>seek(t)</code>, <code>step(dt)</code>, <code>pause()</code>, <code>play()</code>, <code>info()</code>)</li>
       <li><code>laptop demo</code>: <code>DEMO</code> pushes, payday, coffee, Dóri, semester, graduation, panel keys</li>
     </ul></div>
@@ -249,7 +249,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
         <tr><td>Goal tiles in the pop-up (Own home, Travel etc.)</td><td><code>GOAL_PRESETS</code></td></tr>
         <tr><td>Anna's money, goals, friends</td><td><code>fresh()</code>; the 8-weeks state in <code>week8State()</code></td></tr>
         <tr><td>Story texts and facts</td><td><code>storySlides()</code></td></tr>
-        <tr><td>Persely tab order, My money plan</td><td><code>vHub()</code>, <code>myMoneyHTML()</code>, <code>planRow()</code></td></tr>
+        <tr><td>Persely tab order, Left to spend</td><td><code>vHub()</code>, <code>ltsLine()</code>, <code>myMoneyHTML()</code></td></tr>
         <tr><td>The suggested split and its base</td><td><code>splitView()</code> and <code>project()</code></td></tr>
         <tr><td>The payday Bills first sheet</td><td><code>SHEETS.payday</code> (the <code>data-paycover</code> button)</td></tr>
         <tr><td>Persi's line in the tab</td><td><code>persiSays()</code></td></tr>
