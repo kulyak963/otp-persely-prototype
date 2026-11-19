@@ -857,8 +857,6 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
   .pkgrid button.chip{min-height:44px}
 }
 /* simplification pass: Persely total, money plan, story bars */
-.lateline{display:flex;align-items:center;gap:10px;width:100%;margin:6px 0 4px;padding:11px 14px;border-radius:14px;background:var(--orange-l);color:var(--orange-t);font-size:var(--fs-s);font-weight:600;text-align:left}
-.lateline .t{flex:1;min-width:0}.lateline b{white-space:nowrap}.lateline-i{display:flex}
 .ltsline{display:flex;align-items:center;gap:8px;width:100%;margin:4px 0 0;padding:12px 16px;border-radius:14px;background:var(--card, #fff);box-shadow:var(--sh);font-size:var(--fs-m);text-align:left;color:var(--ink)}
 .ltsline span:first-child{flex:1;font-weight:600}.ltsline b{font-size:1.0625rem}.ltsline .chev{display:flex;color:var(--muted-t)}
 .gauge[data-go]{cursor:pointer}
@@ -1496,7 +1494,7 @@ function __checkAnalytics(){
       ok('story: starts with the title and ends with the share card', ids[0] === 'title' && ids[ids.length - 1] === 'share', ids);
       ok('story: at most 11 slides, no analytics slides (in and out, where it went, plan, tip)', sl.length <= 11 && !ids.some(x => ['inout', 'where', 'donut', 'bills', 'next', 'change'].includes(x)), ids);
       ok('story: every slide builds without errors and has a background', sl.every(x => x.share || (txt(x.build()).length > 0 && x.bg)), ids);
-      ok('story facts: a month with few card payments falls back to the latest months and says which', F.yms.length > 1 && /–/.test(F.label), F.label);
+      ok('story facts: one month only; a month that has just started uses the latest full month', F.yms.length === 1 && S.tx.filter(t => !t.parts && txType(t) === 'card' && txWhen(t).ym === F.yms[0]).length >= 15, F.yms);
       ok('top places: at most 3, most visits first; subscriptions, transport (BKK pass, MÁV), rides and delivery are not places', F.top.length === 3 && F.top.every((x, k) => !k || F.top[k - 1][1] >= x[1]) && !F.top.some(([n]) => /NETFLIX|SPOTIFY|BKK|MÁV|BOLT|WOLT/.test(n)), F.top);
       ok('subscriptions: the usual monthly amount of each (Netflix 3 490 + Spotify 1 790 = 5 280 Ft)', F.subsM === 5280, [F.subsM, F.subsN]);
       ok('spending day: a real weekday and a share under 100%', F.weekday && /day$/.test(F.weekday.name) && F.weekday.pct > 0 && F.weekday.pct < 100, F.weekday);
@@ -1617,7 +1615,6 @@ function vFooldal(){
   const R=104, C=2*Math.PI*R, arc=C*.75, p=Math.min(1,spent/ (avg*1.15));
   return `
   <div class="hhead"><div class="avatar">${S.ini}</div><b>${S.name}</b><button class="mail" data-go="neked" aria-label="Messages">${I('mail',26)}</button></div>
-  ${lateLine()}
   <div class="sec"><span>Balance</span><a data-go="szamlaim">All accounts ${I('chev',16)}</a></div>
   <div class="accs" id="accs">${S.accounts.map(a => a.id === 'persely'
     ? `<button class="acc" data-tab="hub"><div class="n">Persely · total</div><div class="v num">${ft(total())}</div><div class="h">${plural(S.goals.filter(g => !isEur(g)).length,'goal')}${eurTotal() ? ` + ${eur(eurTotal())}` : ''}</div></button>`
@@ -2138,11 +2135,6 @@ function analysisRow(){
   return row('data-go="mymoney"', `${ft(spent)} spent of ${ft(plan)} planned`);
 }
 // the Spending analysis page: the circle and categories for the month, the plan and tips, then Safe to spend, My split, Next month, Must-pay bills and Bills pocket
-// Home, top: one line only while a must-pay bill is late. Opens Left to spend, where Pay now is.
-function lateLine(){
-  const bf = billsFirst(); if(!bf.on) return '';
-  return `<button class="lateline" data-planopen><span class="lateline-i">${I('cal', 18)}</span><span class="t">${esc(bf.text)}</span><b>Pay now</b></button>`;
-}
 // Home, under the original spending gauge: the one line that is ours. Opens the Left to spend page.
 function ltsLine(){
   const sf = safeToSpend();
@@ -4060,8 +4052,9 @@ const WEEKDAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday
 // the latest months that have single card payments. The slides say which months they cover.
 function stFacts(R){
   const rows = ym => S.tx.filter(t => !t.parts && txType(t) === 'card' && t.a < 0 && txWhen(t).ym === ym);
-  let yms = R.yms.filter(y => rows(y).length);
-  if(yms.reduce((n, y) => n + rows(y).length, 0) < 15){ const all = [...new Set(S.tx.filter(t => !t.parts && txType(t) === 'card').map(t => txWhen(t).ym))].sort(); yms = all.slice(-4); }
+  // one month: the story month if it has enough single card payments, else the latest full month that has (the demo's November has only started)
+  const full = y => rows(y).length >= 15, all = [...new Set(S.tx.filter(t => !t.parts && txType(t) === 'card').map(t => txWhen(t).ym))].sort().filter(full);
+  const yms = [R.yms.slice().reverse().find(full) || all[all.length - 1] || R.yms[R.yms.length - 1]];
   const tx = yms.flatMap(rows), cur = ymAt(S.months || 0), today = shownMonth().today;
   const label = yms.length > 1 ? `${stShort(yms[0])} – ${stShort(yms[yms.length - 1])}` : MONTHN[+yms[0].slice(5) - 1];
   const sub = t => classify(t) === 'subs';
@@ -4081,7 +4074,7 @@ function stFacts(R){
   return {yms, label, top, weekday:tot ? {name:WEEKDAY[wi], pct:Math.round(wd[wi] / tot * 100)} : null, quiet, days, big, subsM, subsN, wolt:{n:wolt.length, perWeek:days ? wolt.length / (days / 7) : 0, perMonth:days ? Math.round(wolt.length / (days / 30.4)) : 0, avg:wolt.length ? Math.round(wolt.reduce((x, t) => x - t.a, 0) / wolt.length / 100) * 100 : 0}};
 }
 function storySlides(){
-  const R = stRange(), A = stAgg(R.yms), unit = R.year ? 'year' : R.sem ? 'semester' : 'month', out = [], F = stFacts(R), k = t => `${t} · ${F.label}`;
+  const R = stRange(), A = stAgg(R.yms), unit = R.year ? 'year' : R.sem ? 'semester' : 'month', out = [], F = stFacts(R), k = t => t;   // one month, so no date range on the slides
   // 1 title
   out.push({id:'title', bg:ST_BG[0], pig:'jump', build:() => `<div class="st-k">Your ${unit}</div><div class="st-vis st-c">${pig('happy', matchMedia('(max-height:700px)').matches ? 120 : 164)}</div><div class="st-big ${R.name.length > 9 ? 'm' : ''}">${R.name}</div><div class="st-sub">A few things about you.</div>`});
   // 2 top places, like top artists
@@ -4089,9 +4082,9 @@ function storySlides(){
   // 3 her day of the week
   if(F.weekday && F.weekday.pct >= 18) out.push({id:'weekday', bg:ST_BG[2], build:() => stFrame(k('Your spending day'), `<div class="st-wd">${WEEKDAY.slice(1).concat(WEEKDAY[0]).map(d => `<i class="${d === F.weekday.name ? 'on' : ''}">${d[0]}</i>`).join('')}</div>`, F.weekday.name, `${F.weekday.pct}% of your card spending happens on ${F.weekday.name}s.`)});
   // 4 no-spend days
-  if(F.quiet > 0) out.push({id:'quiet', bg:ST_BG[3], pig:'jump', build:() => stFrame(k('Days off'), `<div class="st-c">${pig('proud', 120)}</div>`, plural(F.quiet, 'day'), `without a single card payment. Out of ${F.days}.`)});
+  if(F.quiet > 0) out.push({id:'quiet', bg:ST_BG[3], pig:'jump', build:() => stFrame(k('Days off'), `<div class="st-c">${pig('proud', 120)}</div>`, plural(F.quiet, 'day'), 'without a single card payment.')});
   // 5 biggest single buy
-  if(F.big) out.push({id:'biggest', bg:ST_BG[4], build:() => stFrame(k('Your biggest buy'), `<div class="st-tag">${ft(-F.big.a)}</div>`, esc(shopName(F.big.n)), `On ${esc(F.big.d || '')}. Your biggest single card payment.`)});
+  if(F.big) out.push({id:'biggest', bg:ST_BG[4], build:() => stFrame(k('Your biggest buy'), `<div class="st-tag">${ft(-F.big.a)}</div>`, esc(shopName(F.big.n)), 'Your biggest single card payment this month.')});
   // 6 subscriptions
   if(F.subsM > 0) out.push({id:'subs', bg:ST_BG[5], build:() => stFrame(k('Your subscriptions'), `<div class="st-chips">${F.subsN.map(n => `<span>${esc(n)}</span>`).join('')}</div>`, `${ft(F.subsM)} a month`, `That is ${ft(F.subsM * 12)} a year, on autopilot.`)});
   // 7 food delivery
