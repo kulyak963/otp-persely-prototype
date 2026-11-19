@@ -1315,6 +1315,24 @@ function __checkAnalytics(){
       ok('Friends: after opt-in the card shows, ranked by streak only (no amounts)', /data-frtoggle/.test(FH) && !/data-frjoin/.test(FH) && /Compared by weekly streak only/.test(FH) && !/ Ft/.test(friendsCard()));
     }
   } finally { S = keep; renderAll(); }
+  // forecast text when the goal is reached well before its date (pure helper, fixed "today" = 19 Nov 2026)
+  {
+    const N = new Date(2026, 10, 19, 12), c = (t, sv, mo, dt) => fcCalc(t, sv, mo, dt, N);
+    const demo = c(500000, 0, incomeShare(10) + ROUND_EST, '2029-06-01'), far = c(500000, 0, incomeShare(10) + ROUND_EST, '2046-06-01'), soon = c(45000, 0, 50000, '2031-06-01'), early = c(45000, 0, 40000, '2031-06-01');
+    const late = c(500000, 0, 5000, '2029-06-01'), ex = c(35000, 30000, 7000, '2026-12-14');
+    ok('forecast: demo preset (500 000 Ft by June 2029) is not over: old wording stays, no early text', !demo.over && demo.text === '' && demo.gap < 0, demo);
+    ok('forecast: 500 000 Ft by June 2046 gives a reach month before the date, no amount above the target', far.over && far.far && /^2030-1\d$|^2030-0\d$/.test(far.reachYm) && /^You reach 500.000\sFt in \w+ 2030, well before June 2046\.$/.test(far.text), far);
+    ok('forecast: reach next month says "next month", never "0 months"', soon.n === 1 && soon.text.includes('next month, well before June 2031') && !/0 month/.test(soon.text), soon);
+    ok('forecast: reach in two months names the month', early.n === 2 && /^You reach 45.000\sFt in January 2027, well before June 2031\.$/.test(early.text), early);
+    ok('forecast: a late goal is not "over" and has no early text', !late.over && !late.far && late.text === '' && late.gap < 0, late);
+    ok('forecast: an exact-day goal reached in its own month says "by" and the full day', ex.over && /by 14 December 2026\.$/.test(ex.text), ex);
+    const sv = S; S = clone(); try {
+      const ps5 = S.goals.find(g => g.id === 'ps5' || /PS5|GTA/.test(g.name)), hol = S.goals.find(g => g.id === 'holiday');
+      ok('forecast: PS5 + GTA VI (exact day) and Summer holiday cards keep their old wording', ps5 && hol && !forecastText(ps5).far && !forecastText(hol).far && !/ahead/.test(forecast(ps5) + forecast(hol)), [ps5 && forecast(ps5), hol && forecast(hol)]);
+      const t = forecastText(S.goals.find(g => !g.shared && !isEur(g)));
+      ok('forecastText(goal) returns {reachYm, over, text}', 'reachYm' in t && 'over' in t && 'text' in t, t);
+    } finally { S = sv; }
+  }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   const bad = out.filter(r => !r.pass);
   console.log(`__checkAnalytics: ${out.length - bad.length}/${out.length} passed`); bad.forEach(r => console.log('FAIL', r.name, r.info));
@@ -1611,9 +1629,30 @@ const toGo = g => Math.max(0, gTarget(g) - gSaved(g));
 const daysTo = g => { const t = demoNow(); t.setHours(12,0,0,0); return Math.round((new Date(g.date + 'T12:00:00') - t) / 864e5); };
 const isTight = g => !g.shared && !isEur(g) && isExact(g) && toGo(g) > 0 && daysTo(g) <= 14;
 const dueTxt = g => { const n = daysTo(g); return n < 0 ? 'Goal date passed' : n === 0 ? 'Due today' : n === 1 ? 'Due tomorrow' : `Due in ${n} days`; };
+/* ---------- forecast text when the money arrives well before the goal date ----------
+   fcCalc(target, saved, monthly, date, now): pure. Reach month = now + ceil(left / monthly) months (the same count as gMonths()). over = the projected amount at the date
+   (monthly x months to the date) is at least what is left, so the goal is reached before its date: show the reach month, never an amount above the target.
+   far = over and the reach month is 6 or more months before the date (only then do the goal card and goal page add a word about it). */
+function fcCalc(target, saved, monthly, date, now = new Date()){
+  const left = target - saved, n = left <= 0 ? 0 : monthly > 0 ? Math.max(1, Math.ceil(left / monthly)) : -1;
+  if(n < 0) return {n, reachYm:null, over:false, far:false, gap:0, when:'', dateTxt:'', text:''};
+  const r = new Date(now); r.setMonth(r.getMonth() + n);
+  const reachYm = `${r.getFullYear()}-${String(r.getMonth() + 1).padStart(2, '0')}`, mName = r.toLocaleDateString('en-GB', {month:'long', year:'numeric'});
+  const d = new Date(date + 'T12:00:00'), mo = Math.max(0, (d - now) / (30.44 * 864e5)), over = left > 0 && Math.round(monthly * mo) >= left;
+  const gap = (d.getFullYear() * 12 + d.getMonth()) - (r.getFullYear() * 12 + r.getMonth()), when = n <= 0 ? 'this month' : n === 1 ? 'next month' : mName;
+  const dateTxt = date.slice(8) === '01' ? d.toLocaleDateString('en-GB', {month:'long', year:'numeric'}) : fDate(date);
+  const text = over ? (gap < 1 ? `You reach ${ft(target)} by ${dateTxt}.` : `You reach ${ft(target)} ${n <= 1 ? when : 'in ' + mName}, ${gap >= 6 ? 'well before' : 'before'} ${dateTxt}.`) : '';
+  return {n, reachYm, over, far: over && gap >= 6, gap, when, dateTxt, text};
+}
+// the same for a goal, from its own rules (paceOf)
+function forecastText(g){
+  const none = {n:-1, reachYm:null, over:false, far:false, gap:0, when:'', dateTxt:'', text:''};
+  if(!g || g.shared || isEur(g) || !g.date) return none;
+  return fcCalc(gTarget(g), gSaved(g), paceOf(g), g.date);
+}
 const forecast = g => { if(isEur(g)) return 'Euro · no 3.0% rate'; if(g.shared) return `With ${g.members.filter(m=>!m.me).map(m=>m.n).join(', ') || 'nobody yet'} · you put in ${ft(mine(g))}`;
   if(isTight(g)) return daysTo(g) < 0 ? `<span class="late">Goal date passed · ${ft(toGo(g))} to go</span>` : `<span class="late">Behind · ${dueTxt(g).toLowerCase()}</span>`;
-  const m = gMonths(g); return m === 0 ? 'Goal reached' : m < 0 ? 'Add a rule to see the date' : isLate(g) ? `<span class="late">${inMonths(m)} · late</span>` : inMonths(m); };
+  const m = gMonths(g); return m === 0 ? 'Goal reached' : m < 0 ? 'Add a rule to see the date' : isLate(g) ? `<span class="late">${inMonths(m)} · late</span>` : forecastText(g).far ? `${forecastText(g).n <= 1 ? 'Next month' : inMonths(m)} · ahead` : inMonths(m); };
 
 /* ---------- a late goal always gets a fix ----------
    lateFix(g): the smallest weekly top-up (500 Ft steps) that gets the goal there by its date. Applied to the weekly transfer that feeds this goal. */
@@ -2116,13 +2155,13 @@ const PAGES = {
   // one Persely: balance, forecast against its date, its rate, the rules that feed it, members (shared) and activity
   goal:{title:()=> (goalById(S._detail) || {name:'Persely'}).name, html:()=>{
     const g = goalById(S._detail); if(!g) return '';
-    const s = gSaved(g), t = gTarget(g), pc = pctOf(g), m = gMonths(g), late = isLate(g), fx = lateFix(g), tight = isTight(g), bf = behindFix(g), lump = tight ? lumpOf(g) : 0;
+    const s = gSaved(g), t = gTarget(g), pc = pctOf(g), m = gMonths(g), late = isLate(g), fx = lateFix(g), tight = isTight(g), bf = behindFix(g), lump = tight ? lumpOf(g) : 0, fc = forecastText(g);
     const sw = swBtn;
     let html = `<div class="card u-mt6">${g.shared ? `<span class="pill ok">Shared Persely · ${plural(g.members.length,'member')}</span>` : ''}
       <div class="hero-v num" style="margin-top:${g.shared?8:0}px">${money(g,s)} <small class="k u-fs-14b">of ${money(g,t)}</small></div>
       <div class="prog" style="margin:8px 0 6px;height:10px"><i style="width:${pc.w}%"></i></div>
       <div style="display:flex;justify-content:space-between;gap:8px" class="k"><span>${pc.tiny ? `First step · ${money(g, s)} in` : `${pc.first ? 'First step · ' : ''}${pc.txt} saved`}</span><span>${tight ? dueTxt(g) + ' · ' : 'Goal date: '}${g.date ? fDate(g.date) : '—'}</span></div>
-      ${!g.shared && !isEur(g) ? `<div class="note" style="margin:12px 0 0;${late ? 'background:#FFF1E6' : ''}">${tight ? (daysTo(g) < 0 ? `<b>Goal date passed: ${ft(toGo(g))} to go.</b> Nothing is lost. Your ${ft(s)} is still yours and still earns interest. Pick a date that fits.` : `<b>Behind: ${ft(toGo(g))} to go by ${daysTo(g) === 1 ? 'tomorrow' : daysTo(g) === 0 ? 'today' : 'the date'}.</b> At about ${ft(Math.round(paceOf(g)/100)*100)} a month this date is out of reach. Moving it is fine, most goals shift.`) : m === 0 ? '<b>Goal reached.</b> Take it out or start a new goal.' : m < 0 ? 'Add a rule below to see when you get there.' : `At your pace (about ${ft(Math.round(paceOf(g)/100)*100)} a month) you get there in <b>${inMonths(m)}</b>${late ? ', <b>after your goal date</b>.' : '.'}`}</div>${late && (fx || bf || lump) ? `${fx ? `<button class="btn" data-latefix="${g.id}">${fixLabel(fx)}</button>` : ''}${!fx && bf ? `<button class="btn" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}${!fx && lump ? `<button class="btn w" data-behindlump="${g.id}">Add ${ft(lump)} from Junior</button>` : ''}${S.analyst.on && S.analyst.accepted ? '' : '<button class="btn ghost" data-sheet="analyst">Or see what the analyst suggests</button>'}` : ''}` : ''}
+      ${!g.shared && !isEur(g) ? `<div class="note" style="margin:12px 0 0;${late ? 'background:#FFF1E6' : ''}">${tight ? (daysTo(g) < 0 ? `<b>Goal date passed: ${ft(toGo(g))} to go.</b> Nothing is lost. Your ${ft(s)} is still yours and still earns interest. Pick a date that fits.` : `<b>Behind: ${ft(toGo(g))} to go by ${daysTo(g) === 1 ? 'tomorrow' : daysTo(g) === 0 ? 'today' : 'the date'}.</b> At about ${ft(Math.round(paceOf(g)/100)*100)} a month this date is out of reach. Moving it is fine, most goals shift.`) : m === 0 ? '<b>Goal reached.</b> Take it out or start a new goal.' : m < 0 ? 'Add a rule below to see when you get there.' : `At your pace (about ${ft(Math.round(paceOf(g)/100)*100)} a month) you get there ${fc.far && fc.n <= 1 ? `<b>${fc.when}</b>` : `in <b>${inMonths(m)}</b>`}${late ? ', <b>after your goal date</b>.' : fc.far ? `, well before your goal date (${fc.dateTxt}).` : '.'}`}</div>${late && (fx || bf || lump) ? `${fx ? `<button class="btn" data-latefix="${g.id}">${fixLabel(fx)}</button>` : ''}${!fx && bf ? `<button class="btn" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}${!fx && lump ? `<button class="btn w" data-behindlump="${g.id}">Add ${ft(lump)} from Junior</button>` : ''}${S.analyst.on && S.analyst.accepted ? '' : '<button class="btn ghost" data-sheet="analyst">Or see what the analyst suggests</button>'}` : ''}` : ''}
       ${isEur(g) ? `<div class="note" style="margin:12px 0 0">Buy euros bit by bit instead of all at once before the trip. Demo rate: 1 € = ${EUR_RATE} Ft.</div>` : ''}
       <div class="hero-btns" style="margin:14px 0 0"><button class="btn" data-pickgoal="${g.id}">Add money</button><button class="btn w" data-outgoal="${g.id}">Take out</button></div></div>`;
     if(g.shared){
@@ -2152,11 +2191,11 @@ const PAGES = {
       <div class="flabel">Weekly transfer, every Monday</div><div class="chips u-mb6">${[0,1000,2000,5000].map(v=>`<button class="chip ${d.weekly===v?'on':''}" data-cgwk="${v}">${v ? ft(v) : 'None'}</button>`).join('')}</div>
       <button class="opt slim ${d.round?'on':''}" data-cground><span class="t"><b>Round-ups</b><small>Next 100 Ft, ×2 · about ${ft(ROUND_EST)} a month${S.roundup.on ? ` (moves them from ${esc((goalById(S.roundup.goal)||ruleGoal()).name)})` : ''}</small></span><span class="tg ${d.round?'on':''}"></span></button>`;
     const mo = monthsTo(d.date), monthly = d.weekly * 52 / 12 + (d.round ? ROUND_EST : 0), proj = Math.round(monthly * mo), pc = Math.min(100, Math.round(proj / d.target * 100)), short = d.target - proj;
-    const extra = short > 0 ? Math.ceil(short / Math.max(1, mo * 4.345) / 500) * 500 : 0;
+    const extra = short > 0 ? Math.ceil(short / Math.max(1, mo * 4.345) / 500) * 500 : 0, fc = fcCalc(d.target, 0, monthly, d.date);
     return `${steps}<h2 class="u-mt4-b12">Check and create</h2>
       <div class="card sumcard">${[['Name', esc(d.name)], ['Goal', ft(d.target)], ['By', fDate(d.date)], ['Weekly transfer', d.weekly ? `${ft(d.weekly)} every Monday` : 'None'], ['Round-ups', d.round ? 'Next 100 Ft, ×2' : 'Off']].map(([k,v])=>`<div class="sr"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
-      <div class="card"><b class="u-bk-m14">${monthly ? `With these rules: about ${ft(Math.round(proj/1000)*1000)} by ${fDate(d.date)}` : 'No rules yet. Add a weekly transfer or round-ups to see a forecast.'}</b>
-        ${monthly ? `<div class="prog" style="margin:10px 0 6px;height:10px"><i style="width:${pc}%"></i></div><div class="k">${pc}% of your goal · ${short > 0 ? `about ${ft(Math.round(short/1000)*1000)} short` : 'on time'}</div>` : ''}
+      <div class="card"><b class="u-bk-m14">${monthly ? (fc.over ? fc.text : `With these rules: about ${ft(Math.round(proj/1000)*1000)} by ${fDate(d.date)}`) : 'No rules yet. Add a weekly transfer or round-ups to see a forecast.'}</b>
+        ${monthly ? `<div class="prog" style="margin:10px 0 6px;height:10px"><i style="width:${pc}%"></i></div><div class="k">${fc.over ? 'On time' : `${pc}% of your goal · ${short > 0 ? `about ${ft(Math.round(short/1000)*1000)} short` : 'on time'}`}</div>` : ''}
         ${extra ? `<button class="btn w u-mt12" data-cgboost="${d.weekly + extra}">Make it ${ft(d.weekly + extra)} a week</button>` : ''}</div>
       <p class="fine" style="margin:0 2px">Earns ${(S.verified||S.bridge) ? '3.0% with your Junior account' : '0.01% (standard rate)'}.</p>`; },
     foot:()=>{ const d = S._draft; if(!d) return '';
@@ -3410,7 +3449,7 @@ function renderOnb(){
       ${monthPicker('onb')}`;
   } else if(step === 'how'){
     const m = monthsTo(O.date), proj = Math.round(onbMonthly() * m), p = Math.min(100, Math.round(proj / O.target * 100)), short = O.target - proj;
-    const weeks = Math.max(1, m * 4.345), extra = short > 0 ? Math.ceil(short / weeks / 500) * 500 : 0;
+    const fc = fcCalc(O.target, 0, onbMonthly(), O.date), weeks = Math.max(1, m * 4.345), extra = short > 0 ? Math.ceil(short / weeks / 500) * 500 : 0;
     body = `<div class="onb-step">Step 2 of ${n}</div><h2>How should money get in?</h2><p class="lead">Switch on what suits you. Change it any time.</p>
       ${tg(O.payOn, 'data-onbpay', 'Payday rule <span class="rec">Recommended</span>', 'A share of each salary or scholarship. We ask first.',
         `<div class="chips eq u-m0">${[5,10,15,20].map(x=>`<button class="chip ${O.pct===x?'on':''}" data-onbpct="${x}">${x}%</button>`).join('')}</div>`)}
@@ -3418,8 +3457,8 @@ function renderOnb(){
         `<div class="chips eq u-m0">${[1000,2000,3000,5000].map(x=>`<button class="chip ${O.weekly===x?'on':''}" data-onbweekly="${x}">${ft(x)}</button>`).join('')}</div>`)}
       ${tg(O.roundOn, 'data-onbrr', 'Round-ups', `Card payments rounded up to 100 Ft, ×2. About ${ft(ROUND_EST)} a month.`)}
       <div class="card" style="padding:14px 16px;margin-top:6px">
-        <b class="u-bk-m14">${onbMonthly() ? `About ${ft(Math.round(proj/1000)*1000)} by ${fDate(O.date)}` : 'Switch something on to see your forecast'}</b>
-        ${onbMonthly() ? `<div class="prog" style="margin:10px 0 6px"><i style="width:${p}%"></i></div><div class="k">${p}% of ${ft(O.target)} · ${short > 0 ? `about ${ft(Math.round(short/1000)*1000)} short` : 'on time'}</div>` : ''}
+        <b class="u-bk-m14">${onbMonthly() ? (fc.over ? fc.text : `About ${ft(Math.round(proj/1000)*1000)} by ${fDate(O.date)}`) : 'Switch something on to see your forecast'}</b>
+        ${onbMonthly() ? `<div class="prog" style="margin:10px 0 6px"><i style="width:${p}%"></i></div><div class="k">${fc.over ? 'On time' : `${p}% of ${ft(O.target)} · ${short > 0 ? `about ${ft(Math.round(short/1000)*1000)} short` : 'on time'}`}</div>` : ''}
         ${short > 0 && onbMonthly() ? `<button class="btn w u-mt12" data-onbboost="${(O.weeklyOn ? O.weekly : 0) + extra}">Add ${ft(extra)} a week to make it</button>` : ''}
       </div>`;
   } else {
