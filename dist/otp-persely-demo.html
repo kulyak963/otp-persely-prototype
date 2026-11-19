@@ -848,6 +848,20 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
   .page .foot{padding-bottom:calc(env(safe-area-inset-bottom) + 20px)}
   .pkgrid button.chip{min-height:44px}
 }
+/* simplification pass: Persely total, money plan, story bars */
+.ptot-v{font-size:2.75rem;font-weight:800;letter-spacing:-1px;text-align:center;margin:10px 0 2px;color:var(--ink)}
+.mp2-hero{text-align:center;padding:20px 16px;margin-top:16px;display:flex;flex-direction:column;gap:4px}
+.mp2-hero small{color:var(--muted-t);font-size:var(--fs-s)}.mp2-hero b{font-size:2.25rem;font-weight:800;letter-spacing:-.5px}
+.mp2-r{padding:10px 0}.mp2-r + .mp2-r{border-top:1px solid var(--line)}
+.mp2-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:var(--fs-m)}.mp2-h small{color:var(--muted-t);font-weight:400}
+.mp2-bar{height:8px;border-radius:4px;background:#E3E6EC;margin-top:8px;overflow:hidden}.mp2-bar i{display:block;height:100%;border-radius:4px}
+.mp2-r .late{display:block;margin-top:6px;font-size:var(--fs-xs)}
+.sx{width:100%;max-width:340px;display:flex;flex-direction:column;gap:16px}
+.sx-r{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:1rem;font-weight:600;align-items:baseline}
+.sx-r i{grid-column:1/-1;height:14px;border-radius:7px;background:rgba(255,255,255,.18);overflow:hidden}.sx-r i.big{height:22px;border-radius:11px}
+.sx-r em{display:block;height:100%;border-radius:inherit;transform-origin:left center;animation:sxgrow .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes sxgrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){.sx-r em{animation:none}}
 </style>
 </head>
 <body>
@@ -1322,7 +1336,7 @@ function __checkAnalytics(){
   // steps 6-9 and 12 run against a copy of the app state, then the real state is put back
   const keep = S; try{
     S = clone(); S.analyst.on = true; S.onboarded = true; ok('suggestSplit comes from the projection: 42 / 33 / 20 / 5', (() => { const g = suggestSplit(); return g.must === 42 && g.ess === 33 && g.fun === 20 && g.save === 5; })(), suggestSplit());
-    // every screen reads the same four buckets: analyst sheet, My split, Next month, story slide 8, editor, Persely tab row. The text on screen must carry the same percentages and amounts.
+    // every screen reads the same four buckets: analyst sheet, My split, Next month, editor (the simple story does not repeat the split). The text on screen must carry the same percentages and amounts.
     const agree = (label) => { const v = curView(); let bad = [];
       const txt = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
       const sheetT = txt(SHEETS.analyst()), nextT = txt(nextMonthHTML()), splitT = S.analyst.accepted ? txt(splitCard()) : '';
@@ -1331,7 +1345,7 @@ function __checkAnalytics(){
         if(!(sheetT.includes(`${r.name} ${pc ? pc + ' · ' : ''}${a}`) || sheetT.includes(`${r.name} `) && sheetT.includes(`${pc ? pc + ' · ' : ''}${a}`))) bad.push('sheet ' + r.k);
         if(!(nextT.includes(r.name) && nextT.includes(`${pc} ${a}`.trim()))) bad.push('next ' + r.k);
         if(S.analyst.accepted && !(splitT.includes(`${r.name}${pc ? ' · ' + pc : ''}`) && splitT.includes(`of ${a}`))) bad.push('split ' + r.k); });
-      const slide = (() => { const st = storySlides().find(x => x.id === 'next'); if(!st) return false; const html = txt(st.build()); return v.rows.every(r => html.includes(r.name) && html.includes(v.rough ? nz(ft(r.amt)) : bPct(v, r.k))); })();
+      const slide = true; (() => { const st = storySlides().find(x => x.id === 'next'); if(!st) return false; const html = txt(st.build()); return v.rows.every(r => html.includes(r.name) && html.includes(v.rough ? nz(ft(r.amt)) : bPct(v, r.k))); })();
       if(!slide) bad.push('story slide 8');
       const tot = v.rows.reduce((a, r) => a + r.amt, 0), pt = v.rows.reduce((a, r) => a + r.pct, 0), saveOK = v.by.save.amt === savePlan(S, !S.analyst.accepted).total || (savePlan(S, !S.analyst.accepted).total === 0);
       if(tot !== v.B) bad.push('amounts ' + tot + ' != ' + v.B); if(!v.rough && pt !== 100) bad.push('pct sum ' + pt); if(!saveOK) bad.push('saving != rules');
@@ -1377,42 +1391,42 @@ function __checkAnalytics(){
       S = clone(); S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.onboarded = true; S.billsConfirmed = true; syncSplit();
       const H = vFooldal(), P = vHub(), mm = myMoneyHTML(), an = SHEETS.analyst();
       if(keepF){
-        ok('one entry path: Home has one Spending analysis card and no direct link to Next month, Must-pay bills or Safe to spend', cnt(H, 'mymoney') === 1 && cnt(H, 'nextmonth') === 0 && cnt(H, 'bills') === 0 && sheets(H, 'safe') === 0, [cnt(H, 'mymoney'), cnt(H, 'nextmonth'), cnt(H, 'bills'), sheets(H, 'safe')]);
-        ok('one entry path: the Persely tab has one Spending analysis row and no split, bills or Next month block', cnt(P, 'mymoney') === 1 && cnt(P, 'kiadas') === 0 && cnt(P, 'nextmonth') === 0 && cnt(P, 'bills') === 0 && sheets(P, 'safe') === 0 && !/data-splitopen/.test(P) && !/Bills and next month/.test(P), [cnt(P, 'mymoney'), cnt(P, 'nextmonth'), cnt(P, 'bills')]);
-        ok('Spending analysis page holds Safe to spend, My split, Next month, Must-pay bills and Bills pocket, each once', sheets(mm, 'safe') === 1 && /My split/.test(mm) && cnt(mm, 'nextmonth') === 1 && /Must-pay bills/.test(mm) && /Bills pocket/.test(mm) && cnt(mm, 'bills') === 2, [cnt(mm, 'nextmonth'), cnt(mm, 'bills')]);
-        ok('analyst sheet (on): one button to Spending analysis, none to Next month or Must-pay bills', cnt(an, 'mymoney') === 1 && cnt(an, 'nextmonth') === 0 && cnt(an, 'bills') === 0);
-        ok('Persely tab row shows what is spent of what is planned, from the data', (() => { const v = splitView(), t = analysisRow().replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '); return t.includes('Spending analysis') && t.includes(`${ft(sumVals(catSpend(shownMonth().ym)))} spent of ${ft(v.by.ess.amt + v.by.fun.amt)} planned`.replace(/\s+/g, ' ')) && !/My money/.test(P + mm + an); })(), analysisRow());
-        S.analyst.on = false; const Poff = vHub();
-        ok('analyst off: the Persely tab row (Spending analysis) offers the analyst sheet; Home has no analytics card', sheets(Poff, 'analyst') >= 1 && cnt(Poff, 'mymoney') === 0 && cnt(vFooldal(), 'mymoney') === 0); S.analyst.on = true;
+        const n = (h, re) => (h.match(re) || []).length;
+        ok('simple layout: Home has one My money plan row and no bills card, Safe to spend row or links to Next month or Must-pay bills', n(H, /data-planopen/g) === 1 && cnt(H, 'nextmonth') === 0 && cnt(H, 'bills') === 0 && !/safebtn|Bills first/.test(H), [n(H, /data-planopen/g), cnt(H, 'nextmonth'), cnt(H, 'bills')]);
+        ok('simple layout: the Persely tab has no analytics, bills or score blocks', !/data-planopen|data-go="mymoney"|Bills first|Financial health score|Bills and next month|data-sheet="score"/.test(P));
+        ok('money plan: what is left to spend, four parts, nothing else', /Left to spend in/.test(mm) && n(mm, /class="mp2-r"/g) === 4 && cnt(mm, 'nextmonth') === 0 && cnt(mm, 'bills') === 0 && !/data-plangear|data-splitopen|Bills pocket/.test(mm), n(mm, /class="mp2-r"/g));
+        ok('money plan: the big number is Safe to spend', mm.includes(ft(safeToSpend().safe)));
+        S.analyst.on = false;
+        ok('analyst off: the money plan asks once (Show my plan); Home still has its one row', /data-planon/.test(myMoneyHTML()) && n(vFooldal(), /data-planopen/g) === 1); S.analyst.on = true;
         const late = clone(); late.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; late.onboarded = true; late.tx = late.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); S = late;
-        ok('late bill: the Bills first card stays on top of Home and the Persely tab', vFooldal().indexOf('Bills first') > -1 && vFooldal().indexOf('Bills first') < vFooldal().indexOf('Balance') && vHub().indexOf('Bills first') > -1 && vHub().indexOf('Bills first') < vHub().indexOf('Total in Persely'));
+        ok('late bill: the money plan shows it with Pay now', /data-paybill=/.test(myMoneyHTML()));
       }
       // Money in panel, Spending analysis, investing (UI plan: persely-home-ui-plan.md)
       { const keepS = S, plain = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '), forint = g => !g.shared && !isEur(g);
         S = clone(); S.onboarded = true; S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.billsConfirmed = true; syncSplit(); S.payday.on = true; S.weekly.on = true; S.roundup.on = true; S.ruleGoal = S.goals.find(forint).id; S.roundup.goal = S.ruleGoal;
         const Pt = vHub(), fg = S.goals.filter(forint);
-        ok('Persely tab: no rule switches, no Money in section header, one small panel, one Spending analysis row', !/data-sw="(payday|weekly|round)"/.test(Pt) && !/<div class="sec"[^>]*><span>Money in<\/span>/.test(Pt) && (Pt.match(/class="card mgauge"/g) || []).length === 1 && (Pt.match(/data-go="mymoney"/g) || []).length === 1 && /<b>Spending analysis<\/b>/.test(Pt));
+        ok('Persely tab: no rule switches, one Money in row', !/data-sw="(payday|weekly|round)"/.test(Pt) && (Pt.match(/data-sheet="moneyin"/g) || []).length === 1 && !/mgauge/.test(Pt));
         ok('every forint goal page has its own Payday rule, Round-ups and Weekly transfer switches', fg.length > 0 && fg.every(g => { S._detail = g.id; const h = PAGES.goal.html(); return h.includes(`data-gpay="${g.id}"`) && h.includes(`data-grr="${g.id}"`) && h.includes(`data-gwk="${g.id}"`); }), fg.map(g => g.id));
         const mi = SHEETS.moneyin();
         ok('Money in sheet: one row for every forint, not shared goal, one payrule row, no switches', fg.every(g => mi.includes(`data-goal="${g.id}"`)) && (mi.match(/data-goal=/g) || []).length === fg.length && (mi.match(/data-sheet="payrule"/g) || []).length === 1 && !/data-sw|data-gpay|data-grr|data-gwk/.test(mi) && !/deadline/i.test(mi));
         const m = moneyIn();
         ok('Money in panel: the amount is the sum of what the rules move into every goal, and the panel shows it', m.total === S.goals.reduce((a, g) => a + paceOf(g) - (g.pace || 0), 0) && m.total > 0 && plain(moneyInPanel()).includes(ft(m.total).replace(/\s+/g, ' ')), [m.total, S.goals.map(g => paceOf(g) - (g.pace || 0))]);
         ok('Saving in the split equals Money in (own goal weekly transfers included), and the days left match the Spending analysis circle', savePlan().total === m.total && daysLeftInMonth() === shownMonth().left, [savePlan().total, m.total]);
-        { const on = moneyInPanel(); ok('Money in panel: the ring is decorative and the three lines are the screen text', /<svg[^>]*aria-hidden="true"/.test(on) && !/aria-label/.test(on) && /Money in each month/.test(on) && /<b class="num">/.test(on)); }
+        { const on = moneyInPanel(); ok('Money in row: one plain row with the monthly amount', /<span>Money in<\/span>/.test(on) && / a month<\/b>/.test(on)); }
         S.payday.on = false; S.weekly.on = false; S.roundup.on = false; S.goals.forEach(g => { g.weekly = 0; });
         const off = plain(moneyInPanel());
-        ok('Money in panel: all rules off reads Nothing yet and asks for a rule on a goal page', off.includes('Nothing yet') && off.includes("Switch on a rule on a goal's page") && moneyIn().total === 0);
+        ok('Money in row: all rules off says automatic saving is off', off.includes('Automatic saving is off') && moneyIn().total === 0);
         { const keepG = S.goals; S.goals = []; ok('Money in panel: hidden with no goals', moneyInPanel() === ''); S.goals = keepG; }
         S.payday.on = true; S.payday.ask = true; S.goals.forEach(g => { g.date = null; });
         ok('Money in panel: no goal with a date, so no need line; payday asks first is said', (() => { const t = plain(moneyInPanel()); return !/goals need/.test(t) && !/Enough for every goal date/.test(t) && t.includes('Payday rule') && t.includes('payday asks first'); })());
         S = clone(); S.onboarded = true; S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.billsConfirmed = true; syncSplit();
         const sp0 = sumVals(catSpend(shownMonth().ym)), core = h => { const x = h.match(/Spent so far<\/small><b class="num">([^<]*)</); return x ? x[1] : ''; };
-        ok('Home "Spent so far" = Spending analysis "Spent so far" = the category total of the month on screen', sp0 > 0 && core(vFooldal()) === ft(sp0) && core(myMoneyHTML()) === ft(sp0) && PAGES.kiadas.html().includes(`<b class="num u-fs-22">${ft(sp0)}</b>`), [sp0, core(vFooldal()), core(myMoneyHTML())]);
+        ok('Home "Spent so far" = Monthly spending page = the category total of the month on screen', sp0 > 0 && core(vFooldal()) === ft(sp0) && PAGES.kiadas.html().includes(`<b class="num u-fs-22">${ft(sp0)}</b>`), [sp0, core(vFooldal())]);
         monthStep(true); const sp1 = sumVals(catSpend(shownMonth().ym));
-        ok('after one simulated month Home and Spending analysis still show the same total, built from parts.cats', sp1 > 0 && S.tx.find(t => t.parts).parts.cats && sumVals(S.tx.find(t => t.parts).parts.cats) === S.tx.find(t => t.parts).parts.ess + S.tx.find(t => t.parts).parts.fun && core(vFooldal()) === ft(sp1) && core(myMoneyHTML()) === ft(sp1), [sp1, core(vFooldal()), core(myMoneyHTML())]);
+        ok('after one simulated month Home still shows the category total, built from parts.cats', sp1 > 0 && S.tx.find(t => t.parts).parts.cats && sumVals(S.tx.find(t => t.parts).parts.cats) === S.tx.find(t => t.parts).parts.ess + S.tx.find(t => t.parts).parts.fun && core(vFooldal()) === ft(sp1), [sp1, core(vFooldal())]);
         ok('spreadCats adds up exactly to the amount for Everyday essentials and Fun', [36900, 36000, 27000, 28800, 12345].every(a => ['ess', 'fun'].every(b => sumVals(spreadCats(a, b)) === a)));
         { const pm = planModel(), sv = splitView(); ok('plan groups equal the split, and the category rows of each group add up to the group', pm.groups.every(g => g.plan === sv.by[g.k].amt) && pm.groups.filter(g => g.k === 'ess' || g.k === 'fun').every(g => g.rows.reduce((a, r) => a + r.plan, 0) === g.plan), pm.groups.map(g => [g.k, g.plan, g.rows.reduce((a, r) => a + r.plan, 0)])); }
-        ok('Home Details page has no plan (it lives on Spending analysis only)', !/mp-g/.test(PAGES.kiadas.html()) && /mp-g/.test(myMoneyHTML()));
+        ok('Monthly spending page has no plan editor', !/mp-g|data-plangear/.test(PAGES.kiadas.html()));
         { const before = S.tx.length, bal = JSON.stringify(S.accounts); S.analyst.invest = 0; const dflt = planModel().inv; S._split = {fun:S.analyst.split.fun, rule:S.payday.pct, inv:0}; const room = splitView(S, {fun:S._split.fun, rule:S._split.rule}).by.save.amt;
           S.analyst.invest = room + 50000; const capped = planModel().inv; S.analyst.invest = 0; S._split = null;
           ok('investing: starts at 0, never more than Saving, and creates no transaction or balance change', dflt === 0 && capped === room && S.tx.length === before && JSON.stringify(S.accounts) === bal && SHEETS.splitedit().includes('data-splitinv'), [dflt, capped, room]); }
@@ -1451,52 +1465,30 @@ function __checkAnalytics(){
       ok('forecastText(goal) returns {reachYm, over, text}', 'reachYm' in t && 'over' in t && 'text' in t, t);
     } finally { S = sv; }
   }
-  // story: state-aware tip, left over after bills still due, late bill first, one percentage base, goal dates on the demo clock
+  // story (simple): a few plain facts, one tip, the share card. Tip logic is shared with the Home card.
   {
-    const sv = S; S = clone(); S.onboarded = true; S.analyst.on = true; const ym0 = ymAt(S.months || 0), txt = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '), fz = v => ft(v).replace(/\s+/g, ' '); S.insight = true;
+    const sv = S; S = clone(); S.onboarded = true; const txt = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '), fz = n => ft(n).replace(/\s+/g, ' '); S.insight = true; S.insightUsed = false;
     try {
-      const nx = () => storySlides().find(x => x.id === 'next'), nxH = () => { const n = nx(); return n ? n.build() : ''; };
+      const sl = storySlides(), ids = sl.map(x => x.id), nx = sl.find(x => x.id === 'next');
+      ok('story: starts with the title and ends with the share card', ids[0] === 'title' && ids[ids.length - 1] === 'share', ids);
+      ok('story: at most 8 slides', sl.length <= 8, ids.length);
+      ok('story: every slide builds without errors and has a background', sl.every(x => x.share || (txt(x.build()).length > 0 && x.bg)), ids);
       const t0 = tipOf();
-      ok('tip: regular category, 10% of the 3-month average, never under 1 000 Ft (food and drink 11 467 -> 1 100)', t0 && t0.kind === 'tip' && t0.cat === 'food' && t0.amt === 11467 && t0.ten === 1100 && t0.ten >= 1000, t0 && [t0.kind, t0.cat, t0.amt, t0.ten]);
-      ok('tip: the story slide and the Home card show the same amount', txt(nxH()).includes('Move ' + fz(t0.ten)) && txt(insightCard()).includes(fz(t0.ten)) && nx().btn && /data-stinsight="1100"/.test(nx().btn.attr), nx() && nx().btn);
-      S.tx.unshift({ym:ym0, day:14, d:'Today', n:'WOLT HUNGARY', s:'Card payment', a:-15000, ic:'food'});
-      const t1 = tipOf(), dr = stDrift(ym0); ok('tip: matches the biggest-change category when that slide shows food and drink', dr && dr.cat === 'food' && t1.kind === 'tip' && t1.cat === dr.cat && storySlides().some(x => x.id === 'change'), [dr && dr.cat, t1 && t1.cat]);
-      S.tx.shift(); S.tx.unshift({ym:ym0, day:14, d:'Today', n:'H&M', s:'Card payment', a:-600000, ic:'tag'});
-      const t2 = tipOf(), n2 = nx(); ok('overspent month: no saving tip, no Set it up, the pig is not happy', t2 && t2.kind === 'short' && n2 && !n2.btn && !/data-mood="happy"/.test(n2.build()) && /No saving tip this month/.test(txt(n2.build())) && !insightCard(), t2);
-      S.tx.shift();
-      S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11'));
-      const t3 = tipOf(), n3 = nx(), ids = storySlides().map(x => x.id);
-      ok('late bill: the story ends with Pay now (not Set it up) and Home has no tip card', t3 && t3.kind === 'bill' && n3 && n3.btn && /data-stpay=/.test(n3.btn.attr) && n3.btn.label === 'Pay now' && !/data-stinsight/.test(n3.btn.attr) && !insightCard(), n3 && n3.btn);
-      ok('late bill goes first: slide order is title, bills, in/out, ...', ids[0] === 'title' && ids[1] === 'bills' && ids[2] === 'inout', ids);
-      ok('no late bill: the bills slide keeps its place (after where it went)', (() => { const c = clone(); c.analyst.on = true; const k = S; S = c; const o = storySlides().map(x => x.id); S = k; return o.indexOf('bills') > o.indexOf('donut'); })());
-      const A3 = stAgg([ym0]), io = txt(storySlides().find(x => x.id === 'inout').build());
-      ok('left over after bills still due (rent late): left over minus rent 42 000 and phone 5 550', io.includes(fz(A3.left - 47550)) && io.includes(fz(47550)) && io.includes('left after the bills still due'), io);
-      const sB = S; S = clone(); S.analyst.on = true; const A4 = stAgg([ymAt(0)]), io4 = txt(storySlides().find(x => x.id === 'inout').build()); S = sB;
-      ok('left over after bills still due (default month): left over minus the phone bill 5 550', io4.includes(fz(A4.left - 5550)) && io4.includes(fz(5550)), [A4.left, io4]);
-      S = clone(); S.analyst.on = true;
-      const A5 = stAgg([ymAt(0)]), dn = storySlides().find(x => x.id === 'donut'), dh = txt(dn.build()), ks5 = ['must', 'ess', 'fun', 'other', 'save'].filter(k => A5[k] > 0).concat(A5.left > 0 ? ['left'] : []), pc5 = lrPct(ks5.map(k => k === 'left' ? A5.left : A5[k]), A5.inc), pct = k => pc5[ks5.indexOf(k)];
-      ok('donut is a share of the money that came in (same base as the plan): saving % matches, left over is a segment', A5.left >= 0 && dh.includes('came in') && dh.includes('Saving ' + pct('save') + '%') && dh.includes('Left over'), dh);
-      ok('donut hero is something she can steer (Fun / Everyday essentials vs plan), never Must-pay', (() => { const d = document.createElement('div'); d.innerHTML = dn.build(); const h = d.querySelector('[data-big]').textContent; return !/^Must-pay/.test(h) && /Fun|Everyday|Within/.test(h); })());
-      // story batch 2: one text for screen and VoiceOver, progress, put aside, share card, bills copy, overspend
-      { const sl = storySlides(); sl.forEach(x => x.fin && x.fin(30));
-        const wc = t => stNum(t).split(/\s+/).filter(Boolean).length, say = sl.map(x => [x.id, stSay(x)]);
-        const heroOk = x => { const d = document.createElement('div'); d.innerHTML = x.build(); const sp = stSay(x).replace(/\s+/g, ' '); return [...d.querySelectorAll('.st-big')].every(e => sp.includes(e.textContent.replace(/\s+/g, ' ').trim())); };
-        ok('VoiceOver text is built from the screen text: at most 25 words per slide (a figure like 145 000 Ft is one word), every spoken hero is on screen', say.every(([id, t]) => wc(t) <= 25) && sl.filter(x => x.build).every(heroOk), [say.map(([i, t]) => [i, wc(t)]), sl.filter(x => x.build && !heroOk(x)).map(x => x.id)]);
-        const pg = sl.find(x => x.id === 'progress'), pgh = pg ? pg.build() : '', pgw = pg ? stWords(pg) : 0, pgt = txt(pgh);
-        ok('progress slide: the score is shown once, a positive line is not in the warning colour, a late goal has the fix (Pick a new date) on screen and no "date passed"', pg && (pgt.match(/of 100/g) || []).length <= 1 && !/date passed|to go/.test(pgt) && (!/needs a new date/.test(pgt) || (pg.btn && pg.btn.label === 'Pick a new date' && /class="st-n w"/.test(pgh))) && (/needs a new date/.test(pgt) || !/class="st-n w"/.test(pgh)) && pgw <= 20, [pgw, pgt.slice(0, 160)]);
-        const keep = S.tx; S.tx = S.tx.filter(t => !(txType(t) === 'own' && t.a < 0 && !/^(BILLS POCKET|CURRENCY)/i.test(t.n)));
-        const pu = sd => txt(storySlides().find(x => x.id === 'put').build()); const put0 = pu(); S.tx = keep;
-        ok('put aside: never "added by you" when nothing was added (interest only, or nothing)', !/added by you/i.test(put0) && /Interest only|No money moved/.test(put0) && !/added by you/i.test(pu()), put0);
-        const kg = S.goals.map(g => g.date), ks = S.streak; S.streak = 0; S.goals.forEach(g => { g.date = '2020-05-05'; }); const emptyCard = txt(shareCard()), esh = storySlides().find(x => x.share);
-        S.goals.forEach((g, i) => { g.date = kg[i]; }); S.goals[0].date = '2020-05-05'; const noLate = txt(shareCard()), nm0 = S.goals[0].name; S.goals[0].date = kg[0];
-        ok('share card: no "0 week streak", no goal whose date has passed, and nothing to share says so (Close only)', /Nothing to share this month yet/.test(emptyCard) && esh.empty && !/week streak/.test(emptyCard) && !noLate.includes(nm0) && !/^\s*0 week/.test(noLate) && !/0 week streak/.test(noLate), [emptyCard, noLate]);
-        S.streak = ks;
-        const msk = S.tx; S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === ymAt(S.months || 0))); const bl = storySlides().find(x => x.id === 'bills'), blt = bl ? txt(bl.build()) : ''; S.tx = msk;
-        ok('bills slide, rent late: "Rent share is late", tags Late and In n days, no "Bills first", no "Not paid"', bl && /Rent share is late/.test(blt) && / Late /.test(blt) && /In \d+ days?/.test(blt) && !/Bills first|Not paid/.test(blt) && !/\blate\b/i.test(blt.replace(/Rent share is late|Late/g, '')), blt);
-      }
+      ok('tip: regular category, 10% of the 3-month average, never under 1 000 Ft (food and drink -> 1 100)', t0 && t0.kind === 'tip' && t0.cat === 'food' && t0.ten === 1100, t0);
+      ok('tip: the story slide and the Home card show the same amount', nx && txt(nx.build()).includes(fz(t0.ten)) && txt(insightCard()).includes(fz(t0.ten)) && nx.btn && /data-stinsight=/.test(nx.btn.attr), nx && txt(nx.build()));
+      const io = sl.find(x => x.id === 'inout'), A = stAgg(stRange().yms), left = A.inc - (A.must + A.ess + A.fun + A.other) - A.save;
+      ok('money in and out: the big number is in minus spent minus saved', io && txt(io.build()).includes(fz(Math.abs(left))), [left, io && txt(io.build())]);
+      const wh = sl.find(x => x.id === 'where');
+      ok('where it went: three bars at most, biggest first', wh && (wh.build().match(/class="sx-r"/g) || []).length <= 3, wh && txt(wh.build()));
+      S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); S.analyst.on = true;
+      const t3 = tipOf(), n3 = storySlides().find(x => x.id === 'next');
+      ok('late bill: the story tip is Pay now (not Set it up) and Home has no tip card', t3 && t3.kind === 'bill' && n3 && n3.btn && /data-stpay=/.test(n3.btn.attr) && insightCard() === '', [t3 && t3.kind, n3 && n3.btn]);
+      S = clone(); const ks = S.streak; S.streak = 0; S.goals.forEach(g => { g.date = '2020-05-05'; });
+      ok('share card: no "0 week streak" and nothing to share says so', /Nothing to share this month yet/.test(txt(shareCard())) && !storySlides().some(x => x.id === 'streak'), txt(shareCard()));
+      S.streak = ks;
       // goal dates run on the demo clock: 12 demo months later the same forecast is one year on
-      S = clone(); const a = inMonths(5); S.months = 12; const b = inMonths(5), la = a.split(' '), lb = b.split(' ');
-      ok('goal dates on the demo clock: inMonths(5) is a year later after 12 demo months', la[0] === lb[0] && +lb[1] === +la[1] + 1, [a, b]);
+      S = clone(); const a1 = inMonths(5); S.months = 12; const b1 = inMonths(5), la = a1.split(' '), lb = b1.split(' ');
+      ok('goal dates on the demo clock: inMonths(5) is a year later after 12 demo months', la[0] === lb[0] && +lb[1] === +la[1] + 1, [a1, b1]);
     } finally { S = sv; }
   }
   // edit and delete a goal: only with 0 Ft inside; delete leaves no reference behind; taking money out is an own-account move
@@ -1519,6 +1511,8 @@ window.__checkAnalytics = __checkAnalytics;
 
 /* ================= demo data ================= */
 const KEY='otp-clone-en-v5';
+// a date n days from today: the PS5 goal stays the "behind" example on whatever day the demo runs
+const inDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
 const fresh = () => { const H = demoHistory(); const o = ({
   name:'Kiss Anna', ini:'KA',
   updateSeen:false, onboarded:false,   // pop-up after the update, then onboarding
@@ -1540,13 +1534,13 @@ const fresh = () => { const H = demoHistory(); const o = ({
   rankBy:'streak', toured:true, hints:{}, monthSaved:23500, months:0, period:'November', interest:0, roundCount:0, roundSum:0, insight:false, insightUsed:false,
   goals:[
     {id:'holiday', name:'Summer holiday', ic:'plane', pace:6000, date:'2027-06-01'},
-    {id:'ps5', name:'PS5 + GTA VI', ic:'game', saved:46000, target:230000, pace:12000, date:'2026-11-19'},
+    {id:'ps5', name:'PS5 + GTA VI', ic:'game', saved:46000, target:230000, pace:12000, date:inDays(30)},
     {id:'fest', name:'Festival ticket', ic:'fun', saved:30000, target:45000, pace:5000, date:'2027-07-01'}
   ],
   accounts:[
     {id:'junior', n:'Junior account', no:'11773119 - 10066592', v:87450, h:'Credit limit: 0 Ft'},
     {id:'persely', n:'Persely – Summer holiday', no:'11770116 - 10066592', v:64000, h:'Goal: 134 000 Ft'},
-    {id:'megt', n:'Savings account', no:'11770116 - 10066601', v:120000, h:'Interest: 3.5%'}
+    {id:'megt', n:'Savings account', no:'11770116 - 10066601', v:120000, h:'Interest: 0.5%'}
   ],
   persely:{name:'Summer holiday', target:134000, auto:false, freq:'Monthly', day:'On the 1st of the month', amt:4000},
   disc:{activated:[]},
@@ -1554,7 +1548,7 @@ const fresh = () => { const H = demoHistory(); const o = ({
 });
   o.bills = mergeBills([], detectRecurring(o).bills); return o; };
 let S; try{ S = JSON.parse(localStorage.getItem(KEY)) || fresh(); }catch(e){ S = fresh(); }
-try{ (S.goals || []).forEach(g => { if(g.id === 'ps5' && g.name === 'PS5 + GTA 6'){ g.name = 'PS5 + GTA VI'; g.date = '2026-11-19'; } }); }catch(e){}   // older saved demo state
+try{ (S.goals || []).forEach(g => { if(g.id === 'ps5' && g.name === 'PS5 + GTA 6'){ g.name = 'PS5 + GTA VI'; g.date = inDays(30); } }); }catch(e){}   // older saved demo state
 if(!S.analyst) S.analyst = fresh().analyst;   // state saved before the analyst existed
 if(S.txMark === undefined) S.txMark = 0;
 if(!S.scoreHist) S.scoreHist = fresh().scoreHist;   // state saved before the health score existed
@@ -1600,15 +1594,13 @@ function vFooldal(){
   const R=104, C=2*Math.PI*R, arc=C*.75, p=Math.min(1,spent/ (avg*1.15));
   return `
   <div class="hhead"><div class="avatar">${S.ini}</div><b>${S.name}</b><button class="mail" data-go="neked" aria-label="Messages">${I('mail',26)}</button></div>
-  ${bfCard()}
   <div class="sec"><span>Balance</span><a data-go="szamlaim">All accounts ${I('chev',16)}</a></div>
   <div class="accs" id="accs">${S.accounts.map(a => a.id === 'persely'
     ? `<button class="acc" data-tab="hub"><div class="n">Persely · total</div><div class="v num">${ft(total())}</div><div class="h">${plural(S.goals.filter(g => !isEur(g)).length,'goal')}${eurTotal() ? ` + ${eur(eurTotal())}` : ''}</div></button>`
     : `<button class="acc" data-go="szamlaim"><div class="n">${a.n}</div><div class="v num">${ft(a.v)}</div><div class="h">${a.h}</div></button>`).join('')}</div>
   <div class="dots">${S.accounts.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>
-  ${safeRow()}
   <button class="card hubteaser" data-tab="hub">${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.onboarded && S.streak === 0
-    ? `<b>New in Persely: goals with bonus interest</b><small>Set up in 1 minute</small>`
+    ? `<b>New in Persely: goals with ${rateLabel()} interest</b><small>Set up in 1 minute</small>`
     : `<b style="display:flex;align-items:center;gap:4px">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Safe this week' : 'Ends Sunday. Any amount keeps it going'}</small>`}</span>${I('chev',20)}</button>
   ${insightCard()}
   <div class="sec"><span>My monthly spending</span><a data-go="kiadas">Details ${I('chev',16)}</a></div>
@@ -1621,8 +1613,7 @@ function vFooldal(){
     <div class="core"><small>Spent so far</small><b class="num">${ft(spent)}</b></div>
   </div>
   <div class="avg">Average monthly spending: <span class="num">${ft(avg)}</span></div>
-  ${S.analyst.on && !NEW_PERSELY_IA ? `<div class="lrow"><button class="link lnk44" data-go="nextmonth">Next month ${I('chev',16)}</button><button class="link lnk44" data-go="bills">Must-pay bills ${I('chev',16)}</button></div>` : ''}
-  ${S.analyst.on && S.analyst.accepted ? '' : `<button class="link lnk44" data-sheet="analyst" style="margin:0 0 0 10px">See how it fits your income ${I('chev',16)}</button>`}
+  ${planRow()}
   <div class="sec"><span>What did I spend on this month?</span></div>
   ${catBars(sp)}
   <div class="sec"><span>For you</span><a data-go="neked">All ${I('chev',16)}</a></div>
@@ -1649,20 +1640,10 @@ function tipOf(){
 // monthly insight on Home: the tip above, one action (same rule as the story's Set it up)
 function insightCard(){
   if(!S.insight || S.insightUsed) return '';
-  const t = tipOf(); if(!t || t.kind !== 'tip') return '';   // a late bill has its own Bills first card; an overspent month gets no tip
-  const a = S.analyst, line = `Move 10% of ${t.label} (${ft(t.ten)}) to ${esc(t.g.name)} each month${t.wk >= 1 ? ` and get there <b>${plural(t.wk,'week')} sooner</b>` : ''}.`;
-  if(a.on && a.accepted){   // analyst on: one headline from the split and exactly one action
-    const use = splitUse(), sv = splitView(), pc = k => { const b = sv.by[k].amt; return b ? Math.round(use[k] / b * 100) : 0; };
-    const over = ['ess','fun'].filter(k => pc(k) > 100).map(bucketName);
-    const head = over.length ? `${over.join(' and ')} went over your split` : `You stayed within your split: Everyday essentials ${pc('ess')}%, Fun ${pc('fun')}% used`;
-    return `<div class="card insight"><div class="hrow"><span class="pill ok">Analyst</span><span class="k">This month</span></div>
-    <div class="u-tip-p"><b>${head}.</b> ${line}</div>
-    <div class="hero-btns u-m0"><button class="btn" data-insyes="${t.ten}">Move 10% a month</button></div></div>`;
-  }
+  const t = tipOf(); if(!t || t.kind !== 'tip') return '';
   return `<div class="card insight"><div class="hrow"><span class="pill ok">Persi's tip</span><span class="k">This month</span></div>
-    <div class="u-tip-p">${line}</div>
-    <div class="hero-btns u-m0"><button class="btn" data-insyes="${t.ten}">Move 10% a month</button><button class="btn w" data-insno>Not now</button></div>
-    <button class="btn ghost" data-sheet="analyst">${a.on ? 'See your suggested split' : 'See how this fits your split'}</button></div>`;
+    <div class="u-tip-p">Move 10% of ${t.label} (${ft(t.ten)}) to ${esc(t.g.name)} each month${t.wk >= 1 ? ` and get there <b>${plural(t.wk,'week')} sooner</b>` : ''}.</div>
+    <div class="hero-btns u-m0"><button class="btn" data-insyes="${t.ten}">Move 10% a month</button><button class="btn w" data-insno>Not now</button></div></div>`;
 }
 
 function vUtalas(){
@@ -1716,7 +1697,7 @@ function vTovabbiak(){
   <div class="sec"><span>My finances</span></div>
   ${it('cards','My cards','data-go="kartyaim"')}
   ${it('bell','Notifications','data-go="ertesitesek"')}
-  <div class="mi sw"><button class="mi-main" data-sheet="analyst">${I('chart')}<span>Financial analyst</span></button>${swBtn(S.analyst.on, 'data-sw="analyst"', 'Financial analyst')}</div>
+  ${it('chart','My money plan','data-planopen')}
   ${it('wallet','My accounts','data-go="szamlaim"')}
   ${it('piggy','Persely','data-go="persely"')}
   ${it('chart','Savings options','data-go="megtakaritas"')}
@@ -2120,20 +2101,29 @@ function analysisRow(){
   return row('data-go="mymoney"', `${ft(spent)} spent of ${ft(plan)} planned`);
 }
 // the Spending analysis page: the circle and categories for the month, the plan and tips, then Safe to spend, My split, Next month, Must-pay bills and Bills pocket
-function myMoneyHTML(){
-  if(!S.analyst.on) return needAnalyst('Spending analysis');
-  const s = safeToSpend(), mo = shownMonth(), sp = catSpend(mo.ym), m = S.analyst.accepted ? planModel() : null;
-  return `<div class="sec"><span>Spent in ${mo.name}</span></div>
-  <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${mo.label}</div>
-  ${analysisGauge(m)}
-  <div class="sec"><span>What did I spend on this month?</span></div>
-  ${catBars(sp)}
-  ${m ? planHTML(m) + planTipsHTML(m) : ''}
-  <button class="safebtn" data-sheet="safe" style="margin-top:8px"><span class="t"><b>Safe to spend</b><small>${s.pocket ? `After bills, your saving rule and groceries. Bills pocket ${ft(s.pocket)} is apart` : 'After bills, your saving rule and groceries'}</small></span><b class="num" style="color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</b><span class="chev">${I('chev', 18)}</span></button>
-  ${splitCard()}
-  ${billsBlock()}
-  ${recentCards()}`;
+// Home row and Monthly spending: the one way into the money plan
+function planRow(){
+  const on = S.analyst.on && S.analyst.accepted, sf = on ? safeToSpend().safe : 0;
+  return `<button class="row" data-planopen style="margin-top:4px"><span class="ic">${I('chart')}</span><span class="t"><b>My money plan</b><small>${on ? `${ft(sf)} left to spend this month` : 'What is left to spend this month'}</small></span><span class="chev">${I('chev', 20)}</span></button>`;
 }
+// the money plan: what is left to spend, four parts of the month, one tip. Nothing else.
+function myMoneyHTML(){
+  if(!S.analyst.on || !S.analyst.accepted) return `<div class="card" style="margin-top:16px"><b class="u-bk-m">Your month on one screen</b>
+    <div class="fine u-mt4-b12">What is left to spend after bills and saving, and how bills, everyday costs, fun and saving are going. Only your OTP account is used. Nothing moves without your tap.</div>
+    <button class="btn" data-planon>Show my plan</button></div>`;
+  const sf = safeToSpend(), mo = shownMonth(), v = splitView(), use = splitUse(), bf = bfNow(), T = tipOf();
+  const parts = [['must', 'Bills', mustPaid(), 'paid'], ['ess', 'Everyday', use.ess, 'spent'], ['fun', 'Fun', use.fun, 'spent'], ['save', 'Saving', use.save, 'saved']];
+  const row = ([k, n, used, verb]) => { const plan = v.by[k].amt, p = plan ? Math.round(used / plan * 100) : 0, over = (k === 'ess' || k === 'fun') && used > plan;
+    return `<div class="mp2-r"><div class="mp2-h"><b>${n}</b><span class="num">${ft(used)} <small>${verb} of ${ft(plan)}</small></span></div>
+      <div class="mp2-bar"><i style="width:${Math.min(100, p)}%;background:${over ? 'var(--orange)' : BKT_COL[k]}"></i></div>${over ? `<small class="late">${ft(used - plan)} over the plan</small>` : ''}</div>`; };
+  return `<div class="card mp2-hero"><small>Left to spend in ${mo.name}</small><b class="num" style="color:${sf.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(sf.safe)}</b><small>after bills and saving · ${plural(mo.left, 'day')} left</small></div>
+  ${bf.on ? `<div class="card bfc"><div class="u-tip-p"><b>${bf.text}</b></div><div class="hero-btns u-m0"><button class="btn" data-paybill="${bf.late[0].bill.id}">Pay now</button></div></div>` : ''}
+  <div class="sec"><span>${mo.name}, so far</span></div>
+  <div class="card">${parts.map(row).join('')}</div>
+  ${T && T.kind === 'tip' && !S.insightUsed ? `<div class="card insight"><div class="hrow"><span class="pill ok">Persi's tip</span></div><div class="u-tip-p">Move 10% of ${T.label} (${ft(T.ten)}) to ${esc(T.g.name)} each month${T.wk >= 1 ? ` and get there <b>${plural(T.wk,'week')} sooner</b>` : ''}.</div><div class="hero-btns u-m0"><button class="btn" data-insyes="${T.ten}">Move 10% a month</button></div></div>` : ''}
+  <div class="fine" style="text-align:center;margin:12px 8px 20px">A plan, not a limit. Nothing is blocked and nothing moves by itself.</div>`;
+}
+
 // the same screen text for pages that need the analyst
 const needAnalyst = what => `<div class="card" style="padding:16px;margin-top:8px"><b class="u-fs-m">${what} needs the financial analyst</b><div class="fine u-mt4-b12">It is optional and off right now. Turn it on to see your bills and next month.</div><button class="btn" data-sheet="analyst">See what it measures</button></div>`;
 function billRow(r){
@@ -2304,14 +2294,12 @@ function moneyIn(){
 }
 function moneyInPanel(){
   if(!S.goals.length) return '';
-  const m = moneyIn(), R = 104, C = 2 * Math.PI * R, arc = C * .75, p = m.need ? Math.min(1, m.total / m.need) : (m.total ? 1 : 0);
-  const nm = [m.pay ? 'Payday rule' : '', m.wk ? 'Weekly transfer' : '', m.rnd ? 'Round-ups' : ''].filter(Boolean).map((n, i) => i ? n.toLowerCase() : n), names = nm.length > 1 ? nm.slice(0, -1).join(', ') + ' and ' + nm[nm.length - 1] : nm[0] || '';
-  const l3 = !m.total ? "Switch on a rule on a goal's page" : (m.dated ? (m.total >= m.need ? (m.late.length ? `Enough for goals with a date ahead. ${m.late.length > 1 ? m.late.length + ' goals are' : esc(m.late[0].name) + ' is'} behind.` : 'Enough for every goal date') : `Your goals need about ${ft(m.need)}`) : names) + (m.ask ? ' · payday asks first' : '');
-  return `${hintHTML('auto')}<button class="card mgauge" data-sheet="moneyin" data-tour="auto">
-    <span class="mg-ring"><svg viewBox="0 0 250 250" style="transform:rotate(135deg)" aria-hidden="true"><circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="24" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>${p > 0 ? `<circle cx="125" cy="125" r="${R}" fill="none" stroke="#52AE30" stroke-width="24" stroke-linecap="round" stroke-dasharray="${arc * p} ${C}"/>` : ''}</svg></span>
-    <span class="t"><small>Money in each month</small><b class="num">${m.total ? ft(m.total) : 'Nothing yet'}</b><small>${l3}</small></span>
-    <span class="chev">${I('chev', 20)}</span></button>`;
+  const m = moneyIn(), nm = [m.pay ? 'payday rule' : '', m.wk ? 'weekly transfer' : '', m.rnd ? 'round-ups' : ''].filter(Boolean);
+  const sub = m.total ? nm.join(', ') + (m.ask ? ' · payday asks first' : '') : 'Turn on a rule and saving runs by itself';
+  return `${hintHTML('auto')}<div class="sec"><span>Money in</span></div>
+  <button class="row" data-sheet="moneyin" data-tour="auto"><span class="ic">${I('sched')}</span><span class="t"><b>${m.total ? ft(m.total) + ' a month' : 'Automatic saving is off'}</b><small>${sub.charAt(0).toUpperCase() + sub.slice(1)}</small></span><span class="chev">${I('chev', 20)}</span></button>`;
 }
+
 // the latest card payments of the month on screen
 function recentCards(n = 3){
   const ym = shownMonth().ym, rows = S.tx.filter(t => txWhen(t).ym === ym && (t.parts || txType(t) === 'card' || txType(t) === 'refund')).slice(0, n);
@@ -2345,29 +2333,26 @@ function vHub(){
   const junior = `<button class="row" data-go="grad">${S.juniorDays > 0 ? `<span class="t24d"><b class="num">${S.juniorDays}</b><small>${S.juniorDays === 1 ? 'day' : 'days'}</small></span>` : `<span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span>`}<span class="t"><b class="u-bk-title">${S.bridge ? '3.0% for 12 more months' : S.juniorDays > 0 ? 'Junior ends soon' : 'Junior ends today'}</b><small>${S.bridge ? 'While your salary comes to OTP' : 'Keep 3.0% for 12 more months'}</small></span>${chev}</button>`;
   const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
   return `<div class="tabtitle">Persely</div>
-  ${bfCard()}
-  ${juniorTop ? junior : ''}
   ${hintHTML('total')}<div class="ptot" data-tour="total">
     <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${HINT_NOW ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
       <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
     <div class="sec"><span>Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Junior 3.0%' : 'Standard rate'}</span></div>
-    <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${gl.length ? `${Math.round(gp * 100)}% of what your goals need` : 'Set a goal to fill the ring'}${et ? ` · + ${eur(et)} in euro goals` : ''}</div>
-    <div class="gauge">
-      <svg viewBox="0 0 250 250" style="transform:rotate(135deg)" aria-hidden="true">
-        <circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>${gp > 0 ? `
-        <circle cx="125" cy="125" r="${R}" fill="none" stroke="#52AE30" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc*gp} ${C}"/>` : ''}
-      </svg>
-      <div class="core"><small>Saved so far</small><b class="num">${ft(tot)}</b></div>
-    </div>
+    <div class="ptot-v num">${ft(tot)}</div>${et ? `<div class="fine" style="text-align:center;margin-top:2px">+ ${eur(et)} in euro goals</div>` : ''}
     <div class="avg">${st ? `<span style="text-align:center"><b class="g">${rateLabel()}</b> · about <span class="num">${ft(yearNet())}</span> a year after tax</span>` : `<span style="text-align:center">0.01% · about <span class="num">${ft(yearNet())}</span> a year</span>`}</div>
     <div class="hero-btns"><button class="btn" data-sheet="hubsave">Add money</button><button class="btn w" data-sheet="hubout">Withdraw</button></div>
     <div class="trust"><span>${I('check',15)} Withdraw any time</span><span>${I('check',15)} No fees</span><span>${I('shield',15)} Insured</span></div>
     ${st ? `<div class="fine" style="margin-top:8px">${S.bridge ? 'Graduate: 3.0% for 12 months while your salary comes to OTP' : 'Included in your Junior package. Nothing to sign up for'}</div>` : ''}
   </div>
 
-  ${moneyInPanel()}
 
   ${S.onboarded ? '' : `<button class="setup" data-onbstart><span class="u-ico-g">${I('star',24)}</span><span class="u-fx1"><b>Set a goal and a saving rule</b><small>Takes 1 minute</small></span><span class="u-ico-g">${I('chev',20)}</span></button>`}
+
+  ${hintHTML('week')}<div class="sec"><span>Your streak</span></div>
+  <div class="card hab" data-tour="week" style="${!S.savedWeek && S.streak ? 'box-shadow:inset 0 0 0 1.5px #FFB27A,var(--sh)' : ''}">
+    <div class="u-rowc">${flame(36, S.streak > 0)}<div class="u-fx1"><div style="font-size:1.375rem;font-weight:700">${S.streak}-week streak</div><div class="u-k-sm">Best: ${S.best} · ${plural(S.skips,'skip')} left</div></div>${S.savedWeek ? '<span class="pill ok">Saved</span>' : S.streak ? '<span class="pill open">Ends Sunday</span>' : ''}</div>
+    <div class="wk">${weeks.map(w=>{ const on = S.history.includes(w), sk = (S.skipped||[]).includes(w);
+      return `<div class="${on?'on':''} ${sk?'sk':''} ${w===S.week?'today':''}"><i>${on ? '✓' : sk ? '–' : ''}</i><span>${w===S.week ? 'Now' : ''}</span></div>`; }).join('')}</div>
+  </div>
 
   ${hintHTML('goals')}<div class="sec" data-tour="goals"><span>Goals</span><a data-sheet="newgoal">New ${I('plus',16)}</a></div>
   ${S.goals.map(g=>{ const s=gSaved(g), t=gTarget(g), pc=pctOf(g), fx=lateFix(g), bf=behindFix(g);
@@ -2377,17 +2362,10 @@ function vHub(){
     return `<div class="gwrap ${fx || bf ? 'fx' : ''}"><button class="card goal" ${attr}><div class="u-rowc"><span class="gic">${I(g.shared ? 'user' : isEur(g) ? 'euro' : g.ic,22)}</span><span class="u-fx0"><b class="u-bk-m">${esc(g.name)}</b><span class="num u-k-sm">${sub}</span></span>${right}</div><div class="prog" style="margin:10px 0 0"><i style="width:${pc.w}%"></i></div></button>${fx ? `<button class="gfix" data-latefix="${g.id}">${fixLabel(fx)}</button>` : bf ? `<button class="gfix" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}</div>`; }).join('')}
   ${S.goals.length ? '' : `<div class="card"><b class="u-bk-m">No goals yet</b><div class="k" style="margin:4px 0 12px">Set a goal and Persely shows you the month you get there.</div><button class="btn" data-sheet="newgoal">Set a goal</button></div>`}
 
-  ${NEW_PERSELY_IA ? analysisRow() : splitCard() + billsBlock()}
+  ${moneyInPanel()}
 
-  ${hintHTML('week')}<div class="sec"><span>Your habits</span></div>
-  <div class="card hab" data-tour="week" style="${!S.savedWeek && S.streak ? 'box-shadow:inset 0 0 0 1.5px #FFB27A,var(--sh)' : ''}">
-    <div class="u-rowc">${flame(36, S.streak > 0)}<div class="u-fx1"><div style="font-size:1.375rem;font-weight:700">${S.streak}-week streak</div><div class="u-k-sm">Best: ${S.best} · ${plural(S.skips,'skip')} left</div></div>${S.savedWeek ? '<span class="pill ok">Saved</span>' : S.streak ? '<span class="pill open">Ends Sunday</span>' : ''}</div>
-    <div class="wk">${weeks.map(w=>{ const on = S.history.includes(w), sk = (S.skipped||[]).includes(w);
-      return `<div class="${on?'on':''} ${sk?'sk':''} ${w===S.week?'today':''}"><i>${on ? '✓' : sk ? '–' : ''}</i><span>${w===S.week ? 'Now' : ''}</span></div>`; }).join('')}</div>
-    ${remindRow()}${scoreRow()}
-  </div>
 
-  ${juniorTop ? '' : junior}
+  ${junior}
 
   ${!NEW_PERSELY_IA || S.friendsOptIn ? friendsCard() : ''}
   <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:0 18px;margin:8px 0 6px"><a class="link lnk44" style="display:inline-flex;align-items:center" data-sheet="how">How Persely works ${I('chev',16)}</a>${NEW_PERSELY_IA && !S.friendsOptIn ? addFriendsLink() : ''}</div>`;
@@ -2411,7 +2389,7 @@ function nextWeek(){
 const MONTH_CARD = 63900, MONTH_ROUND = 3000, MONTH_TX = 30;
 // small month-to-month differences in card spending (index = S.months % 12; index 1 = the first simulated month, kept at 0 for the self-checks). Essentials only go down, so they stay within the split
 const ESS_VAR = [-500, 0, -900, -400, -1600, -200, -1100, -700, -1300, -300, -1000, -600], FUN_VAR = [600, 0, 1800, -1200, 2400, -600, 1500, -1800, 900, -300, 2100, -900];
-const SAV_RATE = 3.5;   // the Savings account's demo rate (shown on its card); interest after tax is credited each simulated month
+const SAV_RATE = 0.5;   // the Savings account's demo rate (shown on its card); interest after tax is credited each simulated month
 function monthStep(quiet){
   const g = ruleGoal(), inc = S.income.amount, planDone = splitView(); let moved = 0, lenBefore = S.tx.length;   // planDone: the split the student saw during the month that ends
   const done = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'});   // the month that just ended
@@ -2511,7 +2489,7 @@ const PAGES = {
       <div class="hero-v num" style="margin-top:${g.shared?8:0}px">${money(g,s)} <small class="k u-fs-14b">of ${money(g,t)}</small></div>
       <div class="prog" style="margin:8px 0 6px;height:10px"><i style="width:${pc.w}%"></i></div>
       <div style="display:flex;justify-content:space-between;gap:8px" class="k"><span>${pc.tiny ? `First step · ${money(g, s)} in` : `${pc.first ? 'First step · ' : ''}${pc.txt} saved`}</span><span>${tight ? dueTxt(g) + ' · ' : 'Goal date: '}${g.date ? fDate(g.date) : '—'}</span></div>
-      ${!g.shared && !isEur(g) ? `<div class="note" style="margin:12px 0 0;${late ? 'background:#FFF1E6' : ''}">${tight ? (daysTo(g) < 0 ? `<b>Goal date passed: ${ft(toGo(g))} to go.</b> Nothing is lost. Your ${ft(s)} is still yours and still earns interest. Pick a date that fits.` : `<b>Behind: ${ft(toGo(g))} to go by ${daysTo(g) === 1 ? 'tomorrow' : daysTo(g) === 0 ? 'today' : 'the date'}.</b> At about ${ft(Math.round(paceOf(g)/100)*100)} a month this date is out of reach. Moving it is fine, most goals shift.`) : m === 0 ? '<b>Goal reached.</b> Take it out or start a new goal.' : m < 0 ? 'Add a rule below to see when you get there.' : `At your pace (about ${ft(Math.round(paceOf(g)/100)*100)} a month) you get there ${fc.far && fc.n <= 1 ? `<b>${fc.when}</b>` : `in <b>${inMonths(m)}</b>`}${late ? ', <b>after your goal date</b>.' : fc.far ? `, well before your goal date (${fc.dateTxt}).` : '.'}`}</div>${late && (fx || bf || lump) ? `${fx ? `<button class="btn" data-latefix="${g.id}">${fixLabel(fx)}</button>` : ''}${!fx && bf ? `<button class="btn" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}${!fx && lump ? `<button class="btn w" data-behindlump="${g.id}">Add ${ft(lump)} from Junior</button>` : ''}${S.analyst.on && S.analyst.accepted ? '' : '<button class="btn ghost" data-sheet="analyst">Or see what the analyst suggests</button>'}` : ''}` : ''}
+      ${!g.shared && !isEur(g) ? `<div class="note" style="margin:12px 0 0;${late ? 'background:#FFF1E6' : ''}">${tight ? (daysTo(g) < 0 ? `<b>Goal date passed: ${ft(toGo(g))} to go.</b> Nothing is lost. Your ${ft(s)} is still yours and still earns interest. Pick a date that fits.` : `<b>Behind: ${ft(toGo(g))} to go by ${daysTo(g) === 1 ? 'tomorrow' : daysTo(g) === 0 ? 'today' : 'the date'}.</b> At about ${ft(Math.round(paceOf(g)/100)*100)} a month this date is out of reach. Moving it is fine, most goals shift.`) : m === 0 ? '<b>Goal reached.</b> Take it out or start a new goal.' : m < 0 ? 'Add a rule below to see when you get there.' : `At your pace (about ${ft(Math.round(paceOf(g)/100)*100)} a month) you get there ${fc.far && fc.n <= 1 ? `<b>${fc.when}</b>` : `in <b>${inMonths(m)}</b>`}${late ? ', <b>after your goal date</b>.' : fc.far ? `, well before your goal date (${fc.dateTxt}).` : '.'}`}</div>${late && (fx || bf || lump) ? `${fx ? `<button class="btn" data-latefix="${g.id}">${fixLabel(fx)}</button>` : ''}${!fx && bf ? `<button class="btn" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}${!fx && lump ? `<button class="btn w" data-behindlump="${g.id}">Add ${ft(lump)} from Junior</button>` : ''}` : ''}` : ''}
       ${isEur(g) ? `<div class="note" style="margin:12px 0 0">Buy euros bit by bit instead of all at once before the trip. Demo rate: 1 € = ${EUR_RATE} Ft.</div>` : ''}
       <div class="hero-btns" style="margin:14px 0 0"><button class="btn" data-pickgoal="${g.id}">Add money</button><button class="btn w" data-outgoal="${g.id}">Take out</button></div></div>`;
     html += goalManageHTML(g);
@@ -2627,13 +2605,13 @@ const PAGES = {
       <div class="row"><span class="ic">${I('money')}</span><span class="t">Incoming transfers</span><span class="tg on"></span></div>
       <div class="row"><span class="ic">${I('piggy')}</span><span class="t">Persely weekly reminder<small class="g">Sunday 18:00, only if the week is still open</small></span><span class="tg ${S.remind?'on':''}"></span></div>`;}},
   challenges:{title:'Weekly challenges', html:()=>`<div class="card" style="padding:4px 16px 10px;margin-top:6px"><ul class="bul sm"><li>New challenges every Monday, the week ends on Sunday</li><li>Progress is checked automatically from your card payments</li><li>Join as many as you like</li></ul></div>${CH_DEFS.map(chCard).join('')}`},
-  kiadas:{title:'Monthly spending', right:`<button data-plangear aria-label="Edit my monthly plan" style="display:flex;color:inherit">${I('gear',22)}</button>`, html:()=>{
+  kiadas:{title:'Monthly spending', html:()=>{
     const mo = shownMonth(), sp = catSpend(mo.ym);
     return `<div style="margin:18px auto 24px;width:230px;padding:18px;border-radius:40px;text-align:center;background:linear-gradient(145deg,#F6F7FA,#E7EAF0);box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px #fff"><b class="num u-fs-22">${ft(sumVals(sp))}</b><div style="color:var(--act-d);font-size:var(--fs-s)">${mo.name}${mo.year !== 2026 ? ' ' + mo.year : ''} · card spending</div></div>
     ${catBars(sp)}
     ${recentCards()}
-    ${S.analyst.on && S.analyst.accepted ? '' : `<div class="card"><b class="u-bk-m14">How does this fit your income?</b><div class="fine u-mt4-b12">The analyst shows how your ${ft(S.income.amount)} splits into Essentials, Fun and Saving.</div><button class="btn" data-sheet="analyst">See the suggested split</button></div>`}`;}},
-  mymoney:{title:'Spending analysis', html:() => myMoneyHTML()},
+    ${planRow()}`;}},
+  mymoney:{title:'My money plan', html:() => myMoneyHTML()},
   nextmonth:{title:'Next month', html:() => nextMonthHTML()},
   bills:{title:'Must-pay bills', html:() => billsHTML()}
 };
@@ -3156,6 +3134,8 @@ document.addEventListener('click', e=>{
   if('claimoffer' in d){ const g = goalById(S._offer); if(g){ const travel = g.ic === 'plane';
       S.rewards.unshift({id:'o' + g.id, title: travel ? 'Travel partner offer' : '5% cashback at a partner', note: travel ? '8% back on one booking. Up to 10 000 Ft.' : 'Up to 2 000 Ft back.', why:`Reached ${g.name}`}); }
     S._offer = null; closeSheet(); renderAll(); toast('Offer added to your rewards'); return; }
+  if('planopen' in d){ if(sheetOpen()) closeSheet(); pushPage('mymoney'); return; }
+  if('planon' in d){ S.analyst.on = true; if(!S.analyst.accepted){ const sg = suggestSplit(); S.analyst.split = {must:sg.must, ess:sg.ess, fun:sg.fun, save:sg.save}; S.analyst.accepted = true; } renderAll(); return; }
   if('anon' in d){ S.analyst.on = true; renderAll(); sheet(SHEETS.analyst()); toast('Analyst on'); return; }
   if('anoff' in d){ const before = snap(); S.analyst.on = false; closeSheet(); renderAll(); undoable(before, 'Analyst off. Your split and tips are hidden'); return; }
   if('anaccept' in d){ const before = snap(), sg = suggestSplit(), turnedOn = !S.payday.on;
@@ -3707,7 +3687,7 @@ function pkStackSync(st, v){
   st.style.setProperty('--L', L); st.classList.toggle('strap', v >= 500000);
 }
 function amountPicker(k){
-  const o = pkObj(k), v = o.target, chips = [...new Set([o.typeAmt, 50000, 150000, 300000, 1000000].filter(Boolean))].sort((a, b) => a - b).slice(0, 5);
+  const o = pkObj(k), v = o.target, chips = [...new Set([o.typeAmt, 50000, 300000, 1000000, 5000000].filter(Boolean))].sort((a, b) => a - b).slice(0, 5);
   return `<div class="card pk" data-pk="${k}">
     <div class="pkrow"><div class="pkfld"><input class="pkamt" inputmode="numeric" pattern="[0-9 ]*" enterkeyhint="done" autocomplete="off" maxlength="11" value="${v ? pkSpace(v) : ''}" aria-label="Amount you need, in forints. Type it, or use the slider"><span>Ft</span></div>${pkStackHTML(v)}</div>
     <div class="pksl" role="slider" tabindex="0" aria-label="Amount you need" aria-valuemin="${PK_MIN}" aria-valuemax="${PK_MAX}" aria-valuenow="${Math.min(PK_MAX, Math.max(PK_MIN, v))}" aria-valuetext="${pkSpace(v)} forints" style="--p:${(pkPos(v) * 100).toFixed(2)}%"><div class="pkin"><i class="pkfill"></i><b class="pkthumb"></b></div></div>
@@ -4008,180 +3988,46 @@ function stFrame(k, vis, big, sub, note, warn){   // note: one small line under 
   const c = big.length > 24 ? 's' : big.length > 9 ? 'm' : '';
   return `<div class="st-k">${k}</div><div class="st-vis">${vis}</div><div class="st-big ${c}" data-big>${big}</div><div class="st-sub">${sub}</div>${note ? `<div class="st-n${warn ? ' w' : ''}">${warn ? I('cal', 14) : ''}${note}</div>` : ''}`;
 }
+// The story: a few facts that matter, in plain words. One chart type only (straight bars), so nothing needs explaining.
+// 1 title · 2 money in and out · 3 where it went (top 3) · 4 put into Persely · 5 the goal · 6 the streak · 7 one tip · 8 share
+const ST_BG = ['linear-gradient(160deg,#0F3B25,#2C7A3C)', 'linear-gradient(160deg,#123A5C,#2F7FBF)', 'linear-gradient(160deg,#6B2A0C,#D9661A)', 'linear-gradient(160deg,#0E5E4E,#22A38A)', 'linear-gradient(160deg,#33256B,#6E55C4)', 'linear-gradient(160deg,#7A3300,#E8811F)', 'linear-gradient(160deg,#1F6B2A,#52AE30)', 'linear-gradient(160deg,#0F3B25,#2C7A3C)'];
+const stBars = rows => { const mx = Math.max(1, ...rows.map(r => r[1])); return `<div class="sx">${rows.map(([l, v, c], i) => `<div class="sx-r"><span>${l}</span><b class="num">${ft(v)}</b><i><em style="width:${Math.max(2, Math.round(v / mx * 100))}%;background:${c};animation-delay:${i * .15}s"></em></i></div>`).join('')}</div>`; };
 function storySlides(){
-  const R = stRange(), A = stAgg(R.yms), sem = R.sem, an = S.analyst.on || !STORY_NEEDS_ANALYST, ym = R.yms[R.yms.length - 1], nm = R.yms.length;
-  const unit = R.year ? 'year' : sem ? 'semester' : 'month', over = sem ? `over ${nm} months` : '', ov = over ? ' ' + over : '', out = [];
-  const lateFirst = !sem && bfNow().on;   // a late bill goes first: the bills slide moves up behind the title (end of this function)
+  const R = stRange(), A = stAgg(R.yms), unit = R.year ? 'year' : R.sem ? 'semester' : 'month', out = [];
+  const spent = A.must + A.ess + A.fun + A.other, left = A.inc - spent - A.save;
   // 1 title
-  out.push({id:'title', fixed:2,
-    fin(T){ this.secs = Math.round(T / 5) * 5; },
-    build(){ const small = matchMedia('(max-height:700px)').matches;
-      return `<div class="st-k">Your ${unit}</div><div class="st-vis st-c">${pig('proud', small ? 120 : 164)}</div><div class="st-big ${R.name.length > 9 ? 'm' : ''}">${R.name}</div><div class="st-sub">${lateFirst ? `One thing first, then the rest of ${R.name}.` : `${sem ? `${plural(nm, 'month')}, in` : 'In'} about ${this.secs} seconds.`}</div>`; },
-    seek(){ } });
-  // 2 in vs out
-  if(A.inc > 0 || A.out > 0){
-    const mx = Math.max(A.inc, A.out, 1), H = 124, B = 148, hi = H * A.inc / mx, ho = H * A.out / mx, gap = A.left >= 0;
-    // what is left after the must-pay bills still due this month (the same bills Safe to spend subtracts); the monthly story only
-    const due = an && !sem ? billsFirst().rows.filter(r => r.s.left > 0).reduce((a, r) => a + r.s.left, 0) : 0, free = A.left - due, mode = !gap ? 'over' : due > 0 ? (free >= 0 ? 'after' : 'short') : 'plain',
-      heroV = mode === 'after' ? free : mode === 'short' ? -free : Math.abs(A.left), dueFull = Math.max(4, H * due / mx), dueTxt = ft(due);
-    const osegs = ['must', 'ess', 'fun', 'other', 'save'].filter(k => A[k] > 0), osum = osegs.reduce((a, k) => a + A[k], 0) || 1;   // Out is split in the bucket colours of the next slide's donut; In is neutral white
-    out.push({id:'inout',
-      build:() => stFrame('In and out' + ov, `<svg class="st-svg" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet" data-say="In ${ft(A.inc)}. Out ${ft(A.out)}.">
-        <defs><pattern id="st-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#0F3D1E" fill-opacity=".6"/><rect width="3" height="7" fill="#FFB873"/></pattern></defs>
-        <line x1="14" x2="306" y1="${B}" y2="${B}" stroke="rgba(255,255,255,.4)"/>
-        ${osegs.map(k => `<rect data-r="o-${k}" x="184" width="96" fill="${ST_SEG[k][1]}"/>`).join('')}<rect data-r="in" x="40" width="96" rx="6" fill="#fff"/>
-        <rect data-r="gap" x="184" width="96" rx="${gap ? 6 : 0}" fill="${gap ? ST_SEG.left[1] : 'url(#st-hatch)'}" fill-opacity="${gap ? .45 : 1}"/>
-        ${gap ? '' : `<line data-t="inl" x1="140" x2="284" stroke="#fff" stroke-width="1.6" stroke-dasharray="4 3"/><text data-t="inlab" x="289" fill="#fff" font-size="12" font-weight="600">In</text><text data-t="overl" x="232" text-anchor="middle" fill="#FFB873" font-size="12" font-weight="700">over by ${ft(-A.left)}</text>`}
-        ${mode === 'after' || mode === 'short' ? `<rect data-r="due" x="184" width="96" rx="3" fill="none" stroke="#fff" stroke-width="1.6" stroke-dasharray="4 3"/><text data-t="duel" x="159" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">Bills due</text>` : ''}
-        <text x="88" y="170" text-anchor="middle" fill="#D4E5CE" font-size="14" font-weight="600">In</text><text data-t="in" x="88" y="191" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">${ft(A.inc)}</text>
-        <text x="232" y="170" text-anchor="middle" fill="#D4E5CE" font-size="14" font-weight="600">Out</text><text data-t="out" x="232" y="191" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">${ft(A.out)}</text></svg>`,
-        ft(heroV), mode === 'after' ? `left after the bills still due (${dueTxt}).` : mode === 'short' ? 'short for the bills still due.' : gap ? `left over this ${unit}.` : `more went out than came in. It happens; next ${unit}'s plan starts from here.`),
-      seek(r, t){ const u1 = stEz(stPh(t, 0, .9)), u2 = stEz(stPh(t, .15, 1.05)), u3 = stEz(stPh(t, .9, 1.5)), q = s => r.querySelector(s),
-          h1 = hi * u1, h2 = ho * u2, g = Math.abs(hi - ho) * u3;
-        stSet(q('[data-r=in]'), {y:B - h1, height:h1}); let cum = 0; osegs.forEach(k => { const f = A[k] / osum, e = q(`[data-r=o-${k}]`); stSet(e, {y:B - h2 * (cum + f), height:h2 * f}); cum += f; });
-        if(gap) stSet(q('[data-r=gap]'), {y:B - h2 - g, height:g});
-        else { stSet(q('[data-r=gap]'), {y:B - h2, height:Math.max(0, h2 - h1)}); stSet(q('[data-t=inl]'), {y1:B - h1, y2:B - h1}); stSet(q('[data-t=inlab]'), {y:B - h1 + 4}); const ol = q('[data-t=overl]'); stSet(ol, {y:B - h2 - 7}); ol.style.opacity = stPh(t, .9, 1.4); }
-        const dr = q('[data-r=due]'); if(dr){ const dh = Math.min(g, dueFull * u3); stSet(dr, {y:B - h2 - dh, height:dh}); const dl = q('[data-t=duel]'); stSet(dl, {y:B - h2 - dh / 2 + 4}); dl.style.opacity = stPh(t, 1.1, 1.5); }
-        q('[data-t=in]').textContent = ft(Math.round(A.inc * u1)); q('[data-t=out]').textContent = ft(Math.round(A.out * u2));
-        q('[data-big]').textContent = ft(Math.round(heroV * u3)); q('[data-big]').style.color = (gap && mode !== 'short') ? '' : 'var(--st-warn)'; } });
-  }
-  // 3 where it went: percentages of the money that came in (the same base as the plan on the next-month slide and My split); a month that went over keeps money out as the base
-  const bk = ['must', 'ess', 'fun', 'other', 'save'].filter(k => A[k] > 0);
-  if(A.out > 0 && bk.length){
-    const inBase = A.left >= 0, base = inBase ? A.inc : A.out, ks = inBase && A.left > 0 ? bk.concat('left') : bk, val = k => k === 'left' ? A.left : A[k];
-    const pc = lrPct(ks.map(val), base), C = 2 * Math.PI * 56; let acc0 = 0; const segs = ks.map((k, i) => { const f = val(k) / base, s = acc0; acc0 += f; return {k, f, s, p:pc[i]}; });
-    const PV = inBase && S.analyst.on && S.analyst.accepted ? curView() : null, plan = PV && !PV.rough ? PV : null, pOf = k => (segs.find(x => x.k === k) || {p:0}).p;   // the plan only when the analyst split is accepted
-    let big, sub;
-    if(plan){ const gp = ['ess', 'fun'].map(k => ({k, d:pOf(k) - plan.by[k].pct})).sort((x, y) => y.d - x.d)[0];
-      if(gp.d >= 1){ big = `${ST_SEG[gp.k][0]}: ${gp.d}% over plan`; sub = `${ST_SEG[gp.k][0]} was ${pOf(gp.k)}% of what came in. Your plan is ${plan.by[gp.k].pct}%.`; }
-      else { big = 'Within your plan'; sub = `Fun ${pOf('fun')}%, plan ${plan.by.fun.pct}%.`; } }
-    else { big = `Fun: ${pOf('fun')}%`; sub = inBase ? 'of the money that came in.' : 'of what went out.'; }
-    out.push({id:'donut',
-      build:() => stFrame('Where it went' + ov, `<div class="st-dn"><div class="st-dw"><svg viewBox="0 0 160 160" width="150" height="150">${segs.map(s => `<circle data-seg="${s.k}" cx="80" cy="80" r="56" fill="none" stroke="${ST_SEG[s.k][1]}" stroke-width="26" transform="rotate(-90 80 80)" stroke-dasharray="0 ${C}"/>`).join('')}</svg><div class="st-dc"><small>${inBase ? 'came in' : 'went out'}</small><b data-c>${ft(0)}</b></div></div>
-        <ul class="st-lg">${segs.map(s => `<li data-l="${s.k}"><i style="background:${ST_SEG[s.k][1]}"></i><span>${s.k === 'must' ? I('lock', 14) : ''}${ST_SEG[s.k][0]}</span><b${plan && plan.by[s.k] ? ' class="pl"' : ''}>${s.p}%${plan && plan.by[s.k] ? `<small>plan ${plan.by[s.k].pct}%</small>` : ''}</b></li>`).join('')}</ul></div>`,
-        big, sub),
-      seek(r, t){ const p = stEz(stPh(t, 0, 1.5));
-        segs.forEach((s, i) => { const vis = stClamp((p - s.s) / s.f) * s.f, c = r.querySelector(`[data-seg=${s.k}]`);
-          stSet(c, {'stroke-dasharray':`${Math.max(0, vis * C - (vis > 0 ? 1.5 : 0))} ${C}`, 'stroke-dashoffset':-s.s * C});
-          const l = r.querySelector(`[data-l=${s.k}]`); l.style.opacity = stPh(t, .4 + i * .15, .7 + i * .15); });
-        r.querySelector('[data-c]').textContent = ft(Math.round(base * p)); } });
-  }
-  // 4 bills (analyst)
-  if(an && mustBills().length){
-    const n = mustBills().length;
-    if(!sem){
-      const bf = billsFirst(), rows = bf.rows, open = bf.count, tot = rows.reduce((a, r) => a + r.bill.exp, 0), pk = S.billsPocket && S.billsPocket.on ? S.billsPocket.bal : 0, paidTot = rows.reduce((a, r) => a + r.s.paid, 0);
-      // the same words as the Bills first card on Home: only a bill past its window is "late"; a bill due in the next days is "coming up" / "due later"
-      const names = stList(bf.rows.filter(r => r.s.left > 0).map(r => r.bill.name)), lt = bf.late, sn = bf.soon, dn = r => r.s.days > 0 ? `in ${plural(r.s.days, 'day')}` : r.s.days === 0 ? 'today' : 'now';
-      const big = !open ? `All ${n} bills paid` : bf.on ? (lt.length === 1 ? `${esc(lt[0].bill.name)} is late` : `${lt.length} bills are late`) : `${n - open} of ${n} bills paid`;
-      const sub = (!open ? `${ft(paidTot)} went to bills.` : bf.on ? `${ft(bf.lateTotal)}${lt.length === 1 ? `, due on the ${ordinal(lt[0].bill.day)}` : ' in total'}.${sn.length === 1 ? ` ${esc(sn[0].bill.name)} ${ft(sn[0].s.left)} is due ${dn(sn[0])}.` : sn.length > 1 ? ` ${sn.length} more bills are due soon.` : ''}` : `${names} ${open > 1 ? 'are' : 'is'} due later: ${ft(bf.total)}.`) + (S.billsPocket && S.billsPocket.on ? ` Bills pocket: ${ft(pk)}.` : '');
-      const shown = rows.slice(0, 6), more = rows.length - shown.length;
-      out.push({id:'bills', btn:bf.on ? {label:'Pay now', attr:`data-stpay="${bf.late[0].bill.id}"`} : null,
-        build:() => stFrame('Must-pay bills', `<div class="st-rc" data-rc><b class="st-rh">${I('lock', 14)} Must-pay bills</b>${shown.map(r => { const s = r.s, ok = s.st === 'paid' || s.st === 'skipped';
-          return `<div class="r ${ok ? '' : 'op'}" data-row><span class="nm">${esc(r.bill.name)}</span><span class="am num">${ft(r.bill.exp)}</span><span class="tk">${ok ? `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="#2F7A1B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : `<em>${s.over ? 'Late' : s.days < 0 ? 'Due now' : s.days === 0 ? 'Today' : `In ${plural(s.days, 'day')}`}</em>`}</span></div>`; }).join('')}
-          ${more > 0 ? `<div class="r" data-row><span class="nm">${more} more</span></div>` : ''}<div class="r tot" data-row><span class="nm">Total</span><span class="am num">${ft(tot)}</span><span class="tk"></span></div>
-          ${S.billsPocket && S.billsPocket.on ? `<div class="r pk" data-row><span class="nm">Bills pocket</span><span class="am num">${ft(pk)}</span><span class="tk"></span></div>` : ''}</div>`, big, sub),
-        seek(r, t){ const u = stEz(stPh(t, 0, 1.3)), rc = r.querySelector('[data-rc]'); rc.style.clipPath = `inset(0 0 ${(1 - u) * 104}% 0)`; rc.style.transform = `translateY(${-(1 - u) * 22}px)`;
-          r.querySelectorAll('[data-row]').forEach((e, i) => { e.style.opacity = stPh(t, .15 + i * .14, .4 + i * .14); }); } });
-    } else {
-      const sb = stBillsSem(R.yms), all = sb.paid >= sb.due, big = all ? `All ${n} bills paid` : `${sb.due - sb.paid} bills not paid`, sub = all ? `Every month of the ${unit}: ${sb.paid} payments, none missed.` : `${sb.paid} of ${sb.due} payments went through on time.`;
-      out.push({id:'bills',
-        build:() => stFrame('Must-pay bills', `<div class="st-rc" data-rc><b class="st-rh">${I('lock', 14)} Paid this ${unit}</b>${sb.per.slice(0, 6).map(r => `<div class="r ${r.p < r.d ? 'op' : ''}" data-row><span class="nm">${esc(r.b.name)}</span><span class="am num">${r.p} of ${r.d}</span><span class="tk">${r.p >= r.d ? `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="#2F7A1B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : '<em>Missed</em>'}</span></div>`).join('')}
-          <div class="r tot" data-row><span class="nm">Payments made</span><span class="am num">${sb.paid} of ${sb.due}</span><span class="tk"></span></div></div>`, big, sub),
-        seek(r, t){ const u = stEz(stPh(t, 0, 1.3)), rc = r.querySelector('[data-rc]'); rc.style.clipPath = `inset(0 0 ${(1 - u) * 104}% 0)`; rc.style.transform = `translateY(${-(1 - u) * 22}px)`;
-          r.querySelectorAll('[data-row]').forEach((e, i) => { e.style.opacity = stPh(t, .15 + i * .14, .4 + i * .14); }); } });
-    }
-  }
-  // 5 the biggest change (monthly: a category 25% or more above its 3-month average; semester: the best and the hardest month)
-  if(!sem){
-    const d = stDrift(ym);
-    if(d){
-      // the months sit where they are on the calendar: a month with no data (the demo skips one) is a blank slot and the line has a gap there
-      const mi = y => +y.slice(0, 4) * 12 + +y.slice(5) - 1, m0 = mi(d.yms[0]), span = Math.max(1, mi(d.yms[d.yms.length - 1]) - m0), X = i => 36 + (mi(d.yms[i]) - m0) * (248 / span);
-      const mxv = Math.max(...d.pts) * 1.12, Y = v => 118 - v / mxv * 100, path = d.pts.map((v, i) => `${i && mi(d.yms[i]) - mi(d.yms[i - 1]) === 1 ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' '), worth = stWorth(d.amt - d.avg);
-      out.push({id:'change',
-        build:() => stFrame('The biggest change', `<div class="st-co" data-co><b>${esc(d.label)}</b><span>${ft(d.amt)}</span></div><svg class="st-svg" viewBox="0 0 320 160" preserveAspectRatio="xMidYMid meet">
-          <line x1="20" x2="300" y1="${Y(d.avg).toFixed(1)}" y2="${Y(d.avg).toFixed(1)}" stroke="rgba(255,255,255,.55)" stroke-dasharray="4 4"/>
-          <text x="300" y="${(Y(d.avg) - 6).toFixed(1)}" text-anchor="end" fill="#D4E5CE" font-size="11">3-month average ${ft(Math.round(d.avg))}</text>
-          <path d="${path}" data-line pathLength="1" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 1" stroke-dashoffset="1"/>
-          ${d.pts.map((v, i) => `<circle data-dot="${i}" cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${i === d.pts.length - 1 ? 7 : 4}" fill="${i === d.pts.length - 1 ? '#F5913A' : '#fff'}" ${i === d.pts.length - 1 ? 'stroke="#fff" stroke-width="2.5"' : ''}/>`).join('')}
-          ${d.names.map((n, i) => `<text x="${X(i).toFixed(1)}" y="152" text-anchor="middle" fill="#D4E5CE" font-size="13">${n}</text>`).join('')}</svg>`,
-          `+${d.up}%`, worth ? `That is ${worth}.` : `Up from ${ft(Math.round(d.avg))}.`),
-        seek(r, t){ const u = stEz(stPh(t, 0, 1.2)), n = d.pts.length; stSet(r.querySelector('[data-line]'), {'stroke-dashoffset':1 - u});
-          r.querySelectorAll('[data-dot]').forEach(c => { const i = +c.dataset.dot, last = i === n - 1; c.style.opacity = last ? stPh(t, 1.1, 1.3) : stPh(u, (X(i) - 36) / 248 - .05, (X(i) - 36) / 248); });
-          const co = r.querySelector('[data-co]'), k = stBack(stPh(t, 1.3, 1.9)); co.style.opacity = stPh(t, 1.3, 1.5); co.style.transform = `scale(${.7 + .3 * k})`;
-          r.querySelector('[data-big]').textContent = `+${Math.round(d.up * stEz(stPh(t, .3, 1.5)))}%`; } });
-    }
-  } else if(nm >= 2){
-    const ms = R.yms.map(y => ({y, left:A.by[y].inc - A.by[y].out})), best = ms.reduce((a, b) => b.left > a.left ? b : a), hard = ms.reduce((a, b) => b.left < a.left ? b : a);
-    if(best.y !== hard.y){
-      const mxv = Math.max(...ms.map(m => Math.abs(m.left)), 1), Z = hard.left < 0 ? 72 : 118, bw = Math.min(40, 248 / ms.length - 12), X = i => 36 + (i + .5) * (248 / ms.length), Hh = v => Math.abs(v) / mxv * (hard.left < 0 ? 54 : 96);
-      // every bar carries its forint value (only best and hardest when there are too many bars), and best / hardest also a ▲ / ▼ so the meaning is not colour alone
-      const fz = v => (v < 0 ? '-' : '') + Math.abs(Math.round(v)).toLocaleString('en-US').replace(/,/g, ' '), showV = m => m.y === best.y || m.y === hard.y || ms.length <= 6;
-      out.push({id:'change',
-        build:() => stFrame('Best and hardest month', `<svg class="st-svg" viewBox="0 0 320 160" preserveAspectRatio="xMidYMid meet"><line x1="14" x2="306" y1="${Z}" y2="${Z}" stroke="rgba(255,255,255,.4)"/>
-          ${ms.map((m, i) => { const h = Hh(m.left), c = m.y === best.y ? '#6FCB4A' : m.y === hard.y ? '#F5913A' : 'rgba(255,255,255,.75)';
-            return `<rect data-b="${i}" x="${(X(i) - bw / 2).toFixed(1)}" width="${bw}" rx="4" fill="${c}" y="${Z}" height="0"/>${showV(m) ? `<text data-v="${i}" x="${X(i).toFixed(1)}" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">${m.y === best.y ? '▲ ' : m.y === hard.y ? '▼ ' : ''}${fz(m.left)}</text>` : ''}<text x="${X(i).toFixed(1)}" y="152" text-anchor="middle" fill="#D4E5CE" font-size="13">${stShort(m.y)}</text>`; }).join('')}</svg>`,
-          monthOf(best.y), `Best month, ${ft(best.left)} left over. Hardest was ${monthOf(hard.y)}${hard.left >= 0 ? `, ${ft(hard.left)} left` : `, ${ft(-hard.left)} more out than in`}.`),
-        seek(r, t){ ms.forEach((m, i) => { const u = stEz(stPh(t, .1 + i * .12, .9 + i * .12)), h = Hh(m.left) * u; stSet(r.querySelector(`[data-b="${i}"]`), {y:m.left >= 0 ? Z - h : Z, height:h});
-          const v = r.querySelector(`[data-v="${i}"]`); if(v){ stSet(v, {y:m.left >= 0 ? Z - h - 5 : Z + h + 12}); v.style.opacity = stPh(t, .6 + i * .12, .9 + i * .12); } }); } });
-    }
-  }
-  // 6 what you put aside
-  { const put = A.put, per = Math.max(500, Math.round(S.income.amount * .02 / 500) * 500), L = put > 0 ? Math.min(12, Math.max(1, Math.ceil(A.save / per) || 1)) : 0,
-      rows = [['Your rules', A.rules], ['Round-ups', A.round], ['Interest', A.interest], ['Added by you', A.manual]].filter(r => r[1] > 0), by = A.rules + A.round,
-      onlyInt = put > 0 && A.save <= 0, list = rows.length > 1;   // interest is not a deposit: with only interest there is no coin stack; one row would only repeat the big number
-    out.push({id:'put',
-      build:() => stFrame('What you put aside' + ov, `<div class="st-pt">${onlyInt ? pig('sleepy', 120) : `<div class="st-stw"><span class="pkstack st-stk" style="--L:${L};--st:5px">${Array.from({length:L}, (_, i) => `<i class="${i < 2 ? 'c' : 'n'}" style="--k:${i}" data-ly="${i}"></i>`).join('')}</span></div>`}
-        ${list ? `<ul class="st-cn">${rows.map(([l, v], i) => `<li data-cn="${i}"><small>${l}</small><b class="num">${ft(0)}</b></li>`).join('')}</ul>` : ''}</div>`,
-        ft(put), put <= 0 ? 'No money moved to a goal. Even 500 Ft starts a streak.' : onlyInt ? `Interest only. Nothing moved in this ${unit}.`
-          : [by > 0 ? `Rules and round-ups moved ${ft(by)}.` : '', A.manual > 0 ? `You added ${ft(A.manual)}.` : '', A.interest > 0 ? `Interest added ${ft(A.interest)}.` : ''].filter(Boolean).join(' ')),
-      seek(r, t){ r.querySelectorAll('[data-ly]').forEach(e => { const i = +e.dataset.ly, u = stEz(stPh(t, .1 + i * .07, .4 + i * .07)); e.style.opacity = u; e.style.transform = `translateY(${-(1 - u) * 30}px)`; });
-        if(list) rows.forEach(([, v], i) => { const e = r.querySelector(`[data-cn="${i}"] b`); e.textContent = ft(Math.round(v * stEz(stPh(t, .3 + i * .15, 1.4 + i * .15)))); });
-        r.querySelector('[data-big]').textContent = ft(Math.round(put * stEz(stPh(t, .2, 1.5)))); } }); }
-  // 7 your progress: the goal, the streak, the score, and a late goal with its fix
+  out.push({id:'title', bg:ST_BG[0], build:() => `<div class="st-k">Your ${unit}</div><div class="st-vis st-c">${pig('proud', matchMedia('(max-height:700px)').matches ? 120 : 164)}</div><div class="st-big ${R.name.length > 9 ? 'm' : ''}">${R.name}</div><div class="st-sub">The numbers that matter, in 30 seconds.</div>`});
+  // 2 money in and out
+  if(A.inc > 0 || spent > 0) out.push({id:'inout', bg:ST_BG[1], build:() => stFrame('Money in and out',
+    stBars([['Came in', A.inc, '#FFFFFF'], ['Spent', spent, '#FFB873'], ['Saved', A.save, '#8EE06A']]),
+    left >= 0 ? ft(left) : '−' + ft(-left), left >= 0 ? `left over this ${unit}.` : `more went out than came in. Next ${unit} starts from here.`, '', left < 0)});
+  // 3 where it went: the three biggest card categories
+  { const tot = {}; R.yms.forEach(y => Object.entries(catSpend(y)).forEach(([c, v]) => { tot[c] = (tot[c] || 0) + v; }));
+    const top = Object.entries(tot).sort((a, b) => b[1] - a[1]).slice(0, 3), all = sumVals(tot);
+    if(top.length && all > 0){ const nm = c => SPEND_SHORT[c] || (CATEGORY[c] ? CATEGORY[c][0] : c), first = top[0], share = Math.round(first[1] / all * 100);
+      out.push({id:'where', bg:ST_BG[2], build:() => stFrame('Where your card money went', stBars(top.map(([c, v], i) => [nm(c), v, ['#FFFFFF', '#FFD2A8', '#FFE7D1'][i]])),
+        nm(first[0]), `${share}% of your card spending: ${ft(first[1])}.`)}); } }
+  // 4 put into Persely
+  if(A.save > 0 || A.interest > 0) out.push({id:'put', bg:ST_BG[3], build:() => stFrame('Into Persely', `<div class="st-c">${pig('happy', 120)}</div>`,
+    ft(A.save), A.interest > 0 ? `saved, plus ${ft(A.interest)} interest. Persely now holds ${ft(total())}.` : `saved. Persely now holds ${ft(total())}.`)});
+  // 5 the goal
   { const g = ruleGoal();
-    if(g){
-      const pcc = pctOf(g), pc = pcc.p, sav = pcc.saved, tiny = pcc.tiny, sc = S.analyst.on && S.analyst.accepted && S.scoreHist.length ? {n:scoreNow().t, p:scorePrev().t, held:habitsHeld()} : null, tight = S.goals.filter(isTight)[0], fix = tight ? behindFix(tight) : null,
-        rw = S.rewards[0] && S.rewards[0].id === 'r' + S.months ? S.rewards[0] : null, gm = gMonths(g), R2 = 46, C2 = 2 * Math.PI * R2;
-      const when = (tiny ? 'First step. ' : '') + (gm > 0 ? `On pace for ${inMonths(gm)}.` : gm === 0 ? 'You reached it.' : 'Add a rule to see the date.');
-      // one message (the goal) and one small line under it: a goal that needs a new date (with the button to pick one, in the warning colour and with an icon), else the reward when there is one. The score is in the list, once.
-      const note = tight ? `${esc(tight.name)} needs a new date. Your ${ft(gSaved(tight))} is safe.` : rw ? `Reward earned: ${esc(rw.title.toLowerCase())}.` : '';
-      const listSay = tight ? '' : ` data-say="Streak ${plural(S.streak, 'week')}.${sc ? ` Health score ${sc.n} of 100, ${sc.held} of 4 habits held.` : ''}"`;   // the list is spoken only when there is room
-      out.push({id:'progress', btn:tight ? {label:'Pick a new date', attr:`data-stgoal="${tight.id}"`} : null,
-        build:() => stFrame(esc(g.name), `<div class="st-pr"><div class="st-rg"><svg viewBox="0 0 120 120" width="120" height="120"><circle cx="60" cy="60" r="${R2}" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="14"/><circle data-ring cx="60" cy="60" r="${R2}" fill="none" stroke="#6FCB4A" stroke-width="14" stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="0 ${C2}"/></svg><span class="st-rc2">${I('piggy', 34)}</span></div>
-          <ul class="st-cn"${listSay}><li><small>Streak</small><b class="num"><span class="st-fl">${flame(22, S.streak > 0)}</span><span data-sk>0</span> <span class="st-u">${S.streak === 1 ? 'week' : 'weeks'}</span></b></li>${sc ? `<li><small>Health score</small><b class="num"><span data-sc>${sc.p}</span> <span class="st-u">of 100</span></b><small>${sc.held} of 4 habits held${sc.n !== sc.p ? ` · ${sc.n > sc.p ? '▲' : '▼'} ${Math.abs(sc.n - sc.p)}` : ''}</small></li>` : ''}</ul></div>`,
-          tiny ? ft(sav) : `${pc}%`, when, note, !!tight),
-        seek(r, t){ const u = stEz(stPh(t, 0, 1.4)); stSet(r.querySelector('[data-ring]'), {'stroke-dasharray':`${C2 * pc / 100 * u} ${C2}`});
-          r.querySelector('[data-big]').textContent = tiny ? ft(Math.round(sav * u)) : `${Math.round(pc * u)}%`; r.querySelector('[data-sk]').textContent = Math.round(S.streak * stEz(stPh(t, .3, 1.3)));
-          const e = r.querySelector('[data-sc]'); if(e) e.textContent = Math.round(sc.p + (sc.n - sc.p) * stEz(stPh(t, .4, 1.4))); } });
-    } }
-  // 8 next month and one tip (the projection is the analyst's). The tip comes from tipOf(): a late bill gives Pay now instead, an overspent month gives no saving tip, otherwise
-  // 10% of a regular Fun category's 3-month average moves to the goal every month (Set it up)
-  { const g = ruleGoal(), V = an ? curView() : null, P = V ? V.p : null, T = tipOf(), kind = T ? T.kind : '', bill = kind === 'bill', short = kind === 'short', ten = kind === 'tip' ? T.ten : 0, wk = kind === 'tip' ? T.wk : 0,
-      tip = kind === 'tip' && !S.insightUsed, done = !!(g && S.insightUsed) && !bill && !short, tenDone = done ? (ten || S.insightTen || 0) : 0, mn = P ? monthOf(P.ym) : monthOf(ymAt((S.months || 0) + 1));
-    if(P || tip || done || bill || short){
-      const keys = V ? V.rows.filter(r => r.amt > 0).map(r => r.k) : [], nameOf = k => ST_SEG[k][0], val = k => V.rough ? ft(V.by[k].amt) : V.by[k].pct + '%';   // the same four buckets and numbers as My split and Next month
-      const lead = V ? V.base : '', ln = bill ? T.row.bill.name : '', lnl = /^[A-Z][^A-Z]*$/.test(ln) ? ln.toLowerCase() : ln, many = bill && T.late.length > 1;
-      const big = bill ? (many ? `Pay ${T.late.length} late bills first` : `Pay ${esc(lnl)} first`) : short ? 'A tighter month' : tip ? `Move ${ft(ten)}` : done ? (tenDone ? `Done: ${ft(tenDone)} a month` : 'Done') : V ? (V.rough ? `About ${ft(V.about)} in` : `${V.by.save.pct}% saving`) : '',
-        sub = bill ? `${ft(T.total)}${many ? '' : `, due on the ${ordinal(T.row.bill.day)}`}. Your saving tips wait until it is paid.` : short ? `${ft(T.over)} more went out than came in. No saving tip this month.`
-          : tip ? `10% of ${T.label}, about ${ft(T.amt)} a month, to ${esc(T.g.name)}${wk >= 2 ? `: ${plural(wk, 'week')} sooner` : ''}.` : done ? (tenDone ? `Your tip adds ${ft(tenDone)} a month to ${esc(g.name)}.` : `Your monthly tip is on. It moves to ${esc(g.name)} every month.`) : `${mn}, if it goes like the last months. Tips only: nothing moves by itself.`;
-      out.push({id:'next',
-        btn:bill ? {label:'Pay now', attr:`data-stpay="${T.row.bill.id}"`} : tip ? {label:'Set it up', attr:`data-stinsight="${ten}"`} : null,
-        build:() => stFrame(bill ? 'Next step' : P ? `Next month · ${mn}` : short ? `This ${unit}` : 'One tip', P ? `<div class="st-pj"><b class="st-ph">${lead}</b><div class="st-pb" data-pb role="presentation">${keys.map(k => `<i style="width:${V.by[k].amt / V.B * 100}%;background:${ST_SEG[k][1]}"></i>`).join('')}</div>
-          <ul class="st-lg two">${keys.map((k, i) => `<li data-l="${i}"><i style="background:${ST_SEG[k][1]}"></i><span>${k === 'must' ? I('lock', 14) : ''}${nameOf(k)}</span><b>${val(k)}</b></li>`).join('')}</ul></div>` : `<div class="st-c">${pig(bill || short ? 'concerned' : 'happy', 140)}</div>`,
-          big, sub, P && P.deficit ? `Spending is above income by ${ft(P.deficit)}.` : '', true),
-        seek(r, t){ const pb = r.querySelector('[data-pb]'); if(pb) pb.style.clipPath = `inset(0 ${(1 - stEz(stPh(t, 0, 1.2))) * 100}% 0 0)`;
-          r.querySelectorAll('[data-l]').forEach((e, i) => { e.style.opacity = stPh(t, .5 + i * .1, .8 + i * .1); }); const h = r.querySelector('.st-ph'); if(h) h.style.opacity = stPh(t, 0, .4);
-          if(tip){ const b = r.querySelector('[data-big]'); b.style.opacity = stPh(t, 1, 1.5); } } });
-    } }
-  // a late bill goes first: the bills slide moves up right behind the title
-  if(lateFirst){ const bi = out.findIndex(x => x.id === 'bills'); if(bi > 1) out.splice(1, 0, out.splice(bi, 1)[0]); }
-  // share card
-  const sh = shareData(), shareSay = `Share your ${unit}. Amounts stay private. ${sh.empty ? `Nothing to share this ${unit} yet.` : `${sh.streak > 0 ? `${sh.streak} week streak, without a break. ` : ''}${sh.goals.map(x => `${x.g.name} ${x.p} percent.`).join(' ')}`}`;
-  out.push({id:'share', share:true, end:true, empty:sh.empty, say:shareSay});
+    if(g){ const pc = Math.min(100, Math.round(gSaved(g) / Math.max(1, gTarget(g)) * 100)), gm = gMonths(g), tight = isTight(g);
+      const sub = tight ? `Behind. Pick a new date: your ${ft(gSaved(g))} is safe.` : gm > 0 ? `On pace for ${inMonths(gm)}.` : gm === 0 ? 'You reached it.' : 'Add a saving rule to see the date.';
+      out.push({id:'progress', bg:ST_BG[4], btn:tight ? {label:'Pick a new date', attr:`data-stgoal="${g.id}"`} : null,
+        build:() => stFrame(esc(g.name), `<div class="sx"><div class="sx-r"><span>${ft(gSaved(g))}</span><b class="num">${ft(gTarget(g))}</b><i class="big"><em style="width:${Math.max(2, pc)}%;background:#8EE06A"></em></i></div></div>`, `${pc}%`, sub, '', tight)}); } }
+  // 6 the streak
+  if(S.streak > 0) out.push({id:'streak', bg:ST_BG[5], build:() => stFrame('Your streak', `<div class="st-c">${flame(110, true)}</div>`, plural(S.streak, 'week'), `in a row with some saving. Best so far: ${plural(S.best || S.streak, 'week')}.`)});
+  // 7 one tip, with one button (a late bill comes first)
+  { const T = tipOf();
+    if(T && T.kind === 'bill') out.push({id:'next', bg:ST_BG[6], btn:{label:'Pay now', attr:`data-stpay="${T.row.bill.id}"`}, build:() => stFrame('One thing to do', `<div class="st-c">${pig('worried', 120)}</div>`, `Pay ${esc(T.row.bill.name)}`, `${ft(T.total)} is late. Your saving tips wait until it is paid.`, '', true)});
+    else if(T && T.kind === 'tip' && !S.insightUsed) out.push({id:'next', bg:ST_BG[6], btn:{label:'Set it up', attr:`data-stinsight="${T.ten}"`}, build:() => stFrame('One tip', `<div class="st-c">${pig('happy', 120)}</div>`, `Move ${ft(T.ten)} a month`, `10% of ${T.label} to ${esc(T.g.name)}${T.wk >= 2 ? `: there ${plural(T.wk, 'week')} sooner` : ''}.`)}); }
+  // 8 share card
+  const sh = shareData(), shareSay = `Share your ${unit}. Amounts stay private. ${sh.empty ? `Nothing to share this ${unit} yet.` : `${sh.streak > 0 ? `${sh.streak} week streak. ` : ''}${sh.goals.map(x => `${x.g.name} ${x.p} percent.`).join(' ')}`}`;
+  out.push({id:'share', bg:ST_BG[7], share:true, end:true, empty:sh.empty, say:shareSay});
   return out;
 }
+
 // last slide: a card to share, with progress but no amounts. Nothing sad goes on it: no streak of 0, no goal whose date has passed
 function shareData(){
   const goals = S.goals.filter(g => !isEur(g) && !(isExact(g) && daysTo(g) < 0)).map(g => ({g, p:Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100))})).sort((a,b) => b.p - a.p).slice(0, 2);
@@ -4238,7 +4084,7 @@ function openStory(n){
 function closeStory(){
   S._yearStory = false;
   const el = $('#story'); ST.on = false; ST.away = false; window.__stAway = false; ST.hold.clear(); cancelAnimationFrame(ST.raf); ST.raf = 0; clearTimeout(ST.pt);
-  el.classList.remove('on', 'away', 'held', 'rec'); el.style.transform = ''; el.style.transition = ''; el.innerHTML = ''; mountPig();
+  el.classList.remove('on', 'away', 'held', 'rec'); el.style.transform = ''; el.style.transition = ''; el.style.background = ''; el.innerHTML = ''; mountPig();
 }
 function stGo(i){
   if(i >= ST.slides.length) return closeStory();
@@ -4250,7 +4096,7 @@ function stRender(){
   foot.innerHTML = s.end ? `${s.empty ? '' : `<button class="btn" style="background:#fff;color:var(--green-t)" data-stshare>Share</button>`}<button class="btn w" style="background:none;box-shadow:none;color:#fff" data-stclose>Close</button>`
     : s.btn ? `<button class="btn" data-stbtn ${s.btn.attr}>${s.btn.label}</button>` : '';
   el.querySelector('.st-sr').textContent = `Slide ${ST.i + 1} of ${ST.slides.length}. ${s.say}${s.end ? (s.empty ? ' Button: Close.' : ' Buttons: Share, Close.') : ''}`;
-  el.dataset.slide = s.id; mountPig(); stPaint(true);
+  el.dataset.slide = s.id; el.style.background = s.bg || ''; mountPig(); stPaint(true);
 }
 function stPaint(force){
   if(!ST.on || !ST.slides[ST.i]) return;
@@ -4342,7 +4188,7 @@ const DEMO = [
   {e:'🎓', label:'Junior ends',       title:'Persi · Persely', persi:true, body:'Your Junior package ends in 30 days. Get your salary paid to OTP and keep 3.0% for 12 more months.', url:'grad'},
   {e:'📊', label:'Monthly story',     title:'Persi · Persely', persi:true, body:()=>`Your ${S.period} story is ready. Take a look.`, url:'story'},
   {e:'🏷️', label:'New discount',      title:'New discount',            body:'15% instant discount at Pizzeria Roma. Activate it now!', url:'kedvezmenyek'},
-  {e:'🧾', label:'Bills first',       title:'Persi · Persely', persi:true, body:()=>{ const bf = billsFirst(); return bf.on ? `${bf.text}. Safe to spend is now ${ft(safeToSpend().safe)}.` : bf.total ? `Nothing is late. Safe to spend is now ${ft(safeToSpend().safe)}.` : 'All your must-pay bills are paid. Fun is back on.'; }, url:'hub'}
+  {e:'🧾', label:'Bill late',         title:'Persi · Persely', persi:true, body:()=>{ const bf = billsFirst(); return bf.on ? `${bf.text}. Left to spend this month: ${ft(safeToSpend().safe)}.` : bf.total ? `Nothing is late. Left to spend this month: ${ft(safeToSpend().safe)}.` : 'All your must-pay bills are paid. Fun is back on.'; }, url:'mymoney'}
 ];
 const demo = { delay:0, sound:true, phone:false, locked:false, hidden:false };
 let audioCtx;
@@ -4461,7 +4307,7 @@ function coffee(){
 // one push a day at most (never at night) after a Fun card payment while a bill is open: "Bills first: X Ft still to pay. Safe to spend is now Y Ft."
 function billsPush(delay){
   const bf = bfNow(), day = billToday().ym + '-' + billToday().day; if(!bf.on || S.bfPush === day) return; S.bfPush = day; save();
-  setTimeout(() => notify({title:'Persi · Persely', persi:true, body:`${bf.text}. Safe to spend is now ${ft(safeToSpend().safe)}.`, url:'hub'}), delay || 0);
+  setTimeout(() => notify({title:'Persi · Persely', persi:true, body:`${bf.text}. Left to spend this month: ${ft(safeToSpend().safe)}.`, url:'mymoney'}), delay || 0);
 }
 // demo key B: this month's rent is not paid. The analyst goes on if it was off; the bills-first card, the Fun hold-off, Persi and a push appear. Pay now clears it.
 function billMissed(){
@@ -4471,7 +4317,7 @@ function billMissed(){
   const i = S.tx.findIndex(t => t.a < 0 && payeeKey(t) === b.key && txWhen(t).ym === now.ym);
   if(i >= 0){ const t = S.tx.splice(i, 1)[0]; if(t.note === 'Paid from Bills pocket') S.billsPocket.bal += -t.a; else acc('junior').v += -t.a; }   // the rent was not sent: the money is still here
   delete S.billSkip[b.id]; S.bfDone = false; S.bfPush = now.ym + '-' + now.day; renderAll(); tab('fooldal');
-  notify({title:'Persi · Persely', persi:true, body:`${billsFirst().text}. Safe to spend is now ${ft(safeToSpend().safe)}.`, url:'hub'});
+  notify({title:'Persi · Persely', persi:true, body:`${billsFirst().text}. Left to spend this month: ${ft(safeToSpend().safe)}.`, url:'mymoney'});
 }
 // a friend joins the shared Persely
 function doriJoins(){
@@ -4636,11 +4482,7 @@ function yearHTML(){
       <div class="yr-big num">${ft(total())}</div><div class="u-fs-s">in Persely now · ${ft(A.save)} put aside this year</div></div>
     <div class="sec"><span>What your rate earned</span></div>
     <div class="card yr-bars">${bar(`Persely at ${rateLabel()}`, I0, 'g', 'After 28% tax, on your first 500 000 Ft')}${bar('Persely before, 0.01%', low, 'l', 'What the same money earned until now')}</div>
-    <div class="card yr-sav"><span class="t"><b>Savings account, ${SAV_RATE}%</b><small>${ft(acc('megt').v)} now, after tax</small></span><b class="num u-c-gt">+${ft(sav)}</b></div>
-    <div class="sec"><span>Your money this year</span></div>
-    <div class="card lst">${[['Money in', ft(A.inc)], ['Must-pay bills', `${ft(A.must)}${due ? ` · ${paid} of ${due} on time` : ''}`], ['Everyday essentials', ft(A.ess)], ['Fun', ft(A.fun)], ['Put aside in Persely', ft(A.save)], ['Interest, all accounts', '+' + ft(I0 + sav)]].map(([a, b]) => `<div class="li"><span class="t"><b>${a}</b></span><b class="num">${b}</b></div>`).join('')}</div>
-    <div class="sec"><span>Your goals</span></div><div class="card lst">${goals}</div>
-    ${sc.length ? `<div class="sec"><span>Financial health score</span></div>${flat ? `<div class="card yr-sav"><span class="t"><b>${sc[0]} of 100, every month</b><small>Spending under income, no overdraft, a buffer and regular saving</small></span><b class="num u-c-gt">${sc[0]}</b></div>` : `<div class="card yr-sc"><div class="yr-scb">${sc.map(v => `<i style="--h:${Math.max(6, v)}%"><b>${v}</b></i>`).join('')}</div><small>From ${sc[0]} to ${sc[sc.length - 1]} of 100</small></div>`}` : ''}`;
+    <div class="sec"><span>Your goals</span></div><div class="card lst">${goals}</div>`;
 }
 function renderDemoPanel(){
   const p = $('#demoPanel');
