@@ -1106,6 +1106,7 @@ function demoHistory(){
     mk('2026-09', 22, 'FEKETE MÁRK', 'Instant transfer', 5000, 'money', 'jegy'),
     mk('2026-09', 8, 'REVOLUT TOP-UP', 'Top-up to another app', -1000, 'money'), mk('2026-09', 15, 'H&M REFUND', 'Card refund', 1500, 'tag'), mk('2026-09', 18, 'MEDIAMARKT', 'Card payment', -24900, 'tag'),
     mk('2026-10', 9, 'NAGY DÓRI', 'Instant transfer', 4000, 'money', 'kávé'), mk('2026-10', 23, 'TÓTH LILI', 'Instant transfer', -1000, 'money', 'taxi'));
+  { let k = 0; hist.forEach(t => { if(k < 7 && t.ym === '2026-10' && t.ic === 'food' && t.n !== 'WOLT HUNGARY'){ t.n = 'WOLT HUNGARY'; t.day = 12 + k; t.d = (12 + k) + ' October'; k++; } }); }   // the "Wolt week" for the story
   hist.forEach((t, i) => t.i = i);
   hist.sort((a, b) => b.ym < a.ym ? -1 : b.ym > a.ym ? 1 : b.day - a.day || a.i - b.i);
   hist.forEach(t => delete t.i);
@@ -1501,7 +1502,8 @@ function __checkAnalytics(){
       ok('subscriptions: the usual monthly amount of each (Netflix 3 490 + Spotify 1 790 = 5 280 Ft)', F.subsM === 5280, [F.subsM, F.subsN]);
       ok('spending day: a real weekday and a share under 100%', F.weekday && /day$/.test(F.weekday.name) && F.weekday.pct > 0 && F.weekday.pct < 100, F.weekday);
       ok('days off: never more than the days counted', F.quiet >= 0 && F.quiet <= F.days, [F.quiet, F.days]);
-      ok('the pig reacts on the title, days off and Into Persely only', sl.filter(x => x.pig).map(x => x.id).join() === ['title', 'quiet', 'put'].filter(x => ids.includes(x)).join(), sl.filter(x => x.pig).map(x => x.id));
+      ok('the pig reacts on the title, days off, the Wolt week and Into Persely only', sl.filter(x => x.pig).map(x => x.id).join() === ['title', 'quiet', 'wolt', 'put'].filter(x => ids.includes(x)).join(), sl.filter(x => x.pig).map(x => x.id));
+      ok('Wolt week: the demo month has 7 Wolt orders in one week, and the slide says so', F.wolt.week === 7 && sl.some(x => x.id === 'wolt' && txt(x.build()).includes('7 Wolt orders in one week')), F.wolt);
       const t0 = tipOf();
       ok('tip: regular category, 10% of the 3-month average, never under 1 000 Ft (food and drink -> 1 100)', t0 && t0.kind === 'tip' && t0.cat === 'food' && t0.ten === 1100, t0);
       ok('tip: shown on the Left to spend page, not on Home and not in the story', txt(myMoneyHTML()).includes(fz(t0.ten)) && !/class="card insight"/.test(vFooldal()) && !ids.includes('next'));
@@ -4072,8 +4074,8 @@ function stFacts(R){
   const big = tx.filter(t => !sub(t)).sort((x, y) => x.a - y.a)[0];
   const subsLast = {}; tx.filter(sub).forEach(t => { if(!subsLast[t.n]) subsLast[t.n] = -t.a; });   // S.tx is newest first: the latest amount of each subscription
   const subsM = Object.values(subsLast).reduce((x, y) => x + y, 0), subsN = Object.keys(subsLast).map(shopName);
-  const wolt = tx.filter(t => /WOLT|FOODPANDA/i.test(t.n));
-  return {yms, label, top, weekday:tot ? {name:WEEKDAY[wi], pct:Math.round(wd[wi] / tot * 100)} : null, quiet, days, big, subsM, subsN, wolt:{n:wolt.length, perWeek:days ? wolt.length / (days / 7) : 0, perMonth:days ? Math.round(wolt.length / (days / 30.4)) : 0, avg:wolt.length ? Math.round(wolt.reduce((x, t) => x - t.a, 0) / wolt.length / 100) * 100 : 0}};
+  const wolt = tx.filter(t => /WOLT|FOODPANDA/i.test(t.n)), wdays = wolt.map(t => txWhen(t).day), woltWeek = wdays.reduce((m, d) => Math.max(m, wdays.filter(x => x >= d && x < d + 7).length), 0);
+  return {yms, label, top, weekday:tot ? {name:WEEKDAY[wi], pct:Math.round(wd[wi] / tot * 100)} : null, quiet, days, big, subsM, subsN, wolt:{week:woltWeek, n:wolt.length, perWeek:days ? wolt.length / (days / 7) : 0, perMonth:days ? Math.round(wolt.length / (days / 30.4)) : 0, avg:wolt.length ? Math.round(wolt.reduce((x, t) => x - t.a, 0) / wolt.length / 100) * 100 : 0}};
 }
 function storySlides(){
   const R = stRange(), A = stAgg(R.yms), unit = R.year ? 'year' : R.sem ? 'semester' : 'month', out = [], F = stFacts(R), k = t => t;   // one month, so no date range on the slides
@@ -4090,7 +4092,8 @@ function storySlides(){
   // 6 subscriptions
   if(F.subsM > 0) out.push({id:'subs', bg:ST_BG[5], build:() => stFrame(k('Your subscriptions'), `<div class="st-chips">${F.subsN.map(n => `<span>${esc(n)}</span>`).join('')}</div>`, `${ft(F.subsM)} a month`, `That is ${ft(F.subsM * 12)} a year, on autopilot.`)});
   // 7 food delivery
-  if(F.wolt.n >= 3) out.push({id:'wolt', bg:ST_BG[6], build:() => stFrame(k('Delivered to your door'), `<div class="st-big-n">${F.wolt.n}</div>`, `${F.wolt.n} Wolt orders`, F.wolt.perWeek >= 1.5 ? `About ${Math.round(F.wolt.perWeek)} a week.` : F.wolt.perWeek >= .75 ? 'About one a week.' : `About ${plural(F.wolt.perMonth, 'order')} a month.`)});
+  if(F.wolt.week >= 4) out.push({id:'wolt', bg:ST_BG[6], pig:'jump', build:() => stFrame(k('Your Wolt week'), `<div class="st-big-n">${F.wolt.week}</div>`, `${F.wolt.week} Wolt orders in one week`, F.wolt.week >= 7 ? 'Every single day. The couriers know your door by now.' : 'The couriers know your door by now.')});
+  else if(F.wolt.n >= 3) out.push({id:'wolt', bg:ST_BG[6], build:() => stFrame(k('Delivered to your door'), `<div class="st-big-n">${F.wolt.n}</div>`, `${F.wolt.n} Wolt orders`, 'this month.')});
   // 8 into Persely
   if(A.save > 0 || A.interest > 0) out.push({id:'put', bg:ST_BG[7], pig:'celebrate', build:() => stFrame('Into Persely', `<div class="st-c">${pig('happy', 120)}</div>`,
     ft(A.save), A.interest > 0 ? `saved, plus ${ft(A.interest)} interest. Persely now holds ${ft(total())}.` : `saved. Persely now holds ${ft(total())}.`)});
