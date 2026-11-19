@@ -1544,7 +1544,7 @@ const fresh = () => { const H = demoHistory(); const o = ({
   accounts:[
     {id:'junior', n:'Junior account', no:'11773119 - 10066592', v:87450, h:'Credit limit: 0 Ft'},
     {id:'persely', n:'Persely – Summer holiday', no:'11770116 - 10066592', v:64000, h:'Goal: 134 000 Ft'},
-    {id:'megt', n:'Savings account', no:'11770116 - 10066601', v:120000, h:'Interest: 3.5%'}
+    {id:'megt', n:'Savings account', no:'11770116 - 10066601', v:120000, h:'Interest: 0.5%'}
   ],
   persely:{name:'Summer holiday', target:134000, auto:false, freq:'Monthly', day:'On the 1st of the month', amt:4000},
   disc:{activated:[]},
@@ -1606,7 +1606,7 @@ function vFooldal(){
   <div class="dots">${S.accounts.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>
   ${safeRow()}
   <button class="card hubteaser" data-tab="hub">${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.onboarded && S.streak === 0
-    ? `<b>New in Persely: goals with bonus interest</b><small>Set up in 1 minute</small>`
+    ? `<b>New in Persely: goals with ${rateLabel()} interest</b><small>Set up in 1 minute</small>`
     : `<b style="display:flex;align-items:center;gap:4px">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Safe this week' : 'Ends Sunday. Any amount keeps it going'}</small>`}</span>${I('chev',20)}</button>
   ${insightCard()}
   <div class="sec"><span>My monthly spending</span><a data-go="kiadas">Details ${I('chev',16)}</a></div>
@@ -2409,7 +2409,7 @@ function nextWeek(){
 const MONTH_CARD = 63900, MONTH_ROUND = 3000, MONTH_TX = 30;
 // small month-to-month differences in card spending (index = S.months % 12; index 1 = the first simulated month, kept at 0 for the self-checks). Essentials only go down, so they stay within the split
 const ESS_VAR = [-500, 0, -900, -400, -1600, -200, -1100, -700, -1300, -300, -1000, -600], FUN_VAR = [600, 0, 1800, -1200, 2400, -600, 1500, -1800, 900, -300, 2100, -900];
-const SAV_RATE = 3.5;   // the Savings account's demo rate (shown on its card); interest after tax is credited each simulated month
+const SAV_RATE = 0.5;   // the Savings account's demo rate (shown on its card); interest after tax is credited each simulated month
 function monthStep(quiet){
   const g = ruleGoal(), inc = S.income.amount, planDone = splitView(); let moved = 0, lenBefore = S.tx.length;   // planDone: the split the student saw during the month that ends
   const done = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'});   // the month that just ended
@@ -3705,7 +3705,7 @@ function pkStackSync(st, v){
   st.style.setProperty('--L', L); st.classList.toggle('strap', v >= 500000);
 }
 function amountPicker(k){
-  const o = pkObj(k), v = o.target, chips = [...new Set([o.typeAmt, 50000, 150000, 300000, 1000000].filter(Boolean))].sort((a, b) => a - b).slice(0, 5);
+  const o = pkObj(k), v = o.target, chips = [...new Set([o.typeAmt, 50000, 300000, 1000000, 5000000].filter(Boolean))].sort((a, b) => a - b).slice(0, 5);
   return `<div class="card pk" data-pk="${k}">
     <div class="pkrow"><div class="pkfld"><input class="pkamt" inputmode="numeric" pattern="[0-9 ]*" enterkeyhint="done" autocomplete="off" maxlength="11" value="${v ? pkSpace(v) : ''}" aria-label="Amount you need, in forints. Type it, or use the slider"><span>Ft</span></div>${pkStackHTML(v)}</div>
     <div class="pksl" role="slider" tabindex="0" aria-label="Amount you need" aria-valuemin="${PK_MIN}" aria-valuemax="${PK_MAX}" aria-valuenow="${Math.min(PK_MAX, Math.max(PK_MIN, v))}" aria-valuetext="${pkSpace(v)} forints" style="--p:${(pkPos(v) * 100).toFixed(2)}%"><div class="pkin"><i class="pkfill"></i><b class="pkthumb"></b></div></div>
