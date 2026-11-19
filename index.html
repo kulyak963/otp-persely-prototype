@@ -1743,6 +1743,7 @@ function splitCard(){
    State: S.bills (locks), S.billsConfirmed, S.billSkip {billId: ym} + S.billSkipWhy {billId: 'paid'|'notdue'},
    S.billsPocket {on, bal} (held outside the Junior balance), S.bfDone (Persi's "Bills paid" line), S.bfPush (day of the last bills push). */
 const FAMILY_IN = 60000;   // the family transfer on the 1st (demo)
+const FRIEND_IN_AMT = 3000, FRIEND_IN = [['FEKETE MÁRK', 'jegy'], ['KOVÁCS BENCE', 'mozi'], ['NAGY DÓRI', 'vacsora']];   // a small friend transfer on the 9th of each simulated month (demo)
 const ordinal = n => { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
 const NOBF = {on:false, total:0, count:0, rows:[], urgent:[], text:''};
 const bfNow = () => S.analyst.on ? billsFirst() : NOBF;
@@ -2040,6 +2041,8 @@ function monthStep(quiet){
   { const sv = acc('megt'); if(sv){ const r = Math.round(sv.v * SAV_RATE / 100 / 12 * (1 - TAX)); sv.v += r; S.savInt = (S.savInt || 0) + r; S._savNow = r; } }
   // section 14: the family transfer on the 1st, and the must-pay bills on their days up to "today" (the phone, on the 20th, is still to come). Paid from the Bills pocket while it has money.
   const mday = S.demoDay || 14, brows = [{...stamp(), day:1, d:'1 ' + S.period, n:'KISS ISTVÁN', s:'Incoming transfer', a:FAMILY_IN, ic:'money', ref:'havi támogatás'}]; acc('junior').v += FAMILY_IN;
+  // one small friend transfer in each simulated month, so the "other transfers in" part of the projection never drops to 0 (a different friend each month, so it never reads as a regular income)
+  { const fr = FRIEND_IN[S.months % FRIEND_IN.length]; acc('junior').v += FRIEND_IN_AMT; brows.push({...stamp(), day:9, d:'9 ' + S.period, n:fr[0], s:'Instant transfer', a:FRIEND_IN_AMT, ic:'money', ref:fr[1]}); }
   mustBills().filter(b => b.day <= mday).forEach(b => { const fp = pocketBal() >= b.exp, last = S.tx.find(t => t.a < 0 && payeeKey(t) === b.key);
     if(fp) S.billsPocket.bal -= b.exp; else acc('junior').v -= b.exp;
     brows.push({...stamp(), day:b.day, d:b.day + ' ' + S.period, n:b.key, s:last ? last.s : 'Transfer out', a:-b.exp, ic:last ? last.ic : 'wallet', ...(last && last.ref ? {ref:refBase(last.ref)} : {}), ...(fp ? {note:'Paid from Bills pocket'} : {})}); });
