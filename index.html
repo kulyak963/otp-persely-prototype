@@ -1025,12 +1025,12 @@ function demoHistory(){
       mk(ym, 13, 'FŐGÁZ ZRT.', 'Direct debit', -BILL.gas[i], 'wallet', 'gáz'), mk(ym, 20, 'YETTEL MAGYARORSZÁG', 'Direct debit', -BILL.phone[i], 'wallet', 'telefon'));
     hist.push(mk(ym, 10, 'PERSELY DEPOSIT', 'Between my accounts', -4000, 'piggy'));
   });
-  hist.push(mk('2026-09', 7, 'ATM WITHDRAWAL OTP', 'Cash withdrawal', -1000, 'money'));   // the only cash withdrawal: keeps "Other" small, so the default projection leaves a little
+  hist.push(mk('2026-09', 7, 'ATM WITHDRAWAL OTP', 'Cash withdrawal', -1000, 'money'));   // the only cash withdrawal. "Other" (cash, small transfers, one top-up) averages 1 000 Ft a month, so the main demo state (payday rule and round-ups on) leaves about 1 300 Ft
   hist.push(mk('2026-08', 6, 'TRANSFER TO SAVINGS ACCOUNT', 'Between my accounts', -5000, 'piggy'), mk('2026-08', 17, 'KOVÁCS BENCE', 'Instant transfer', 3000, 'money', 'vacsora'),
-    mk('2026-08', 19, 'TÓTH LILI', 'Instant transfer', -2000, 'money', 'mozi'),
-    mk('2026-09', 22, 'FEKETE MÁRK', 'Instant transfer', 5000, 'money', 'jegy'), mk('2026-09', 11, 'SZŐKE ANNA', 'Instant transfer', -2000, 'money', 'ebéd'),
-    mk('2026-09', 8, 'REVOLUT TOP-UP', 'Top-up to another app', -1500, 'money'), mk('2026-09', 15, 'H&M REFUND', 'Card refund', 1500, 'tag'), mk('2026-09', 18, 'MEDIAMARKT', 'Card payment', -24900, 'tag'),
-    mk('2026-10', 9, 'NAGY DÓRI', 'Instant transfer', 4000, 'money', 'kávé'), mk('2026-10', 23, 'TÓTH LILI', 'Instant transfer', -2000, 'money', 'taxi'), mk('2026-10', 8, 'REVOLUT TOP-UP', 'Top-up to another app', -1500, 'money'));
+    mk('2026-08', 19, 'TÓTH LILI', 'Instant transfer', -1000, 'money', 'mozi'),
+    mk('2026-09', 22, 'FEKETE MÁRK', 'Instant transfer', 5000, 'money', 'jegy'),
+    mk('2026-09', 8, 'REVOLUT TOP-UP', 'Top-up to another app', -1000, 'money'), mk('2026-09', 15, 'H&M REFUND', 'Card refund', 1500, 'tag'), mk('2026-09', 18, 'MEDIAMARKT', 'Card payment', -24900, 'tag'),
+    mk('2026-10', 9, 'NAGY DÓRI', 'Instant transfer', 4000, 'money', 'kávé'), mk('2026-10', 23, 'TÓTH LILI', 'Instant transfer', -1000, 'money', 'taxi'));
   hist.forEach((t, i) => t.i = i);
   hist.sort((a, b) => b.ym < a.ym ? -1 : b.ym > a.ym ? 1 : b.day - a.day || a.i - b.i);
   hist.forEach(t => delete t.i);
@@ -1221,7 +1221,9 @@ function __checkAnalytics(){
   const sB = clone(); sB.tx = sB.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); sB.payday.on = true;
   ok('proportions add to 100% in the default state and after key B (rent not paid)', sum(project(F).pct) === 100 && sum(project(sB).pct) === 100 && project(sB).pct.left >= 0, [project(F).pct, project(sB).pct]);
   const pd = clone(); pd.payday.on = true; const pdp = project(pd);
-  ok('main demo state (payday rule on): small positive amount left, no deficit', pdp.deficit === 0 && pdp.left >= 2000 && pdp.left <= 4000 && pdp.saving === 7500 && sum(pdp.pct) === 100, [pdp.left, pdp.deficit, pdp.pct]);
+  const pdr = clone(); pdr.payday.on = true; pdr.roundup.on = true; const pdrp = project(pdr), p0 = project(F);
+  ok('payday rule on: small positive amount left, no deficit', pdp.deficit === 0 && pdp.left >= 2000 && pdp.left <= 5000 && pdp.saving === 7500 && sum(pdp.pct) === 100, [pdp.left, pdp.deficit, pdp.pct]);
+  ok('main demo state (payday rule and round-ups on, saving 10 500): 1 000 to 4 000 Ft left, no deficit; default state stays positive', pdrp.deficit === 0 && pdrp.left >= 1000 && pdrp.left <= 4000 && pdrp.saving === 7500 + ROUND_EST && p0.deficit === 0 && p0.left > 0 && sum(pdrp.pct) === 100, [pdrp.left, pdrp.deficit, p0.left]);
   const detB = detectRecurring(sB); ok('after key B: all 8 demo bills and both income lines are still found', Object.keys(want).every(k => detB.bills.some(b => b.key === k && b.exp === want[k])) && detB.income.length === 2, detB.bills.map(b => b.key));
   ok('alert: default OFF, after key B ON, after paying the rent OFF', !billsFirst(F).on && billsFirst(sB).on && (() => { const x = JSON.parse(JSON.stringify(sB)); x.tx.unshift({ym:'2026-11', day:14, d:'14 November', n:'SZABÓ DÓRA', s:'Transfer out', a:-42000, ic:'wallet'}); return !billsFirst(x).on; })());
   const sP = clone(), spB = safeToSpend(sP); sP.accounts.find(a => a.id === 'junior').v -= 61000; sP.billsPocket = {on:true, bal:61000}; sP.tx.unshift({ym:'2026-11', day:14, d:'Today', n:'BILLS POCKET', s:'Between my accounts', a:-61000, ic:'wallet'});
@@ -1275,6 +1277,26 @@ function __checkAnalytics(){
     S = clone(); S.analyst.on = true; S.payday.on = true; S.billsPocket = {on:true, bal:61000}; const P2 = paydayPlan(); ok('payday sheet: pocket already holds enough -> nothing to move, saving action only', P2.pocketEnough && P2.toMove === 0 && P2.canSave && P2.left === 67500, P2);
     S = clone(); S.analyst.on = true; S.payday.on = true; S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); acc('junior').v = 30000; const P3 = paydayPlan(); ok('payday sheet: salary does not cover the bills -> covers 1 of 2, saving waits, moves only what it covers (5 550 Ft)', P3.partial && P3.coverN === 1 && P3.toMove === 5550 && !P3.canSave, P3);
     S = clone(); S.analyst.on = true; S.billSkip = {}; mustBills().forEach(b => { S.billSkip[b.id] = billToday().ym; }); ok('payday sheet: no unpaid bills -> the normal payday sheet', !paydayBills() && !SHEETS.payday().includes('Bills still to pay'));
+    // change 5 and 12: one entry path per analytics page from each tab, Friends opt-in
+    { const cnt = (h, k) => (h.match(new RegExp('data-go="' + k + '"', 'g')) || []).length, sheets = (h, k) => (h.match(new RegExp('data-sheet="' + k + '"', 'g')) || []).length, keepF = NEW_PERSELY_IA;
+      S = clone(); S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.onboarded = true; S.billsConfirmed = true; syncSplit();
+      const H = vFooldal(), P = vHub(), mm = myMoneyHTML(), an = SHEETS.analyst();
+      if(keepF){
+        ok('one entry path: Home has one My money card and no direct link to Next month, Must-pay bills or Safe to spend', cnt(H, 'mymoney') === 1 && cnt(H, 'nextmonth') === 0 && cnt(H, 'bills') === 0 && sheets(H, 'safe') === 0, [cnt(H, 'mymoney'), cnt(H, 'nextmonth'), cnt(H, 'bills'), sheets(H, 'safe')]);
+        ok('one entry path: the Persely tab has one My money row and no split, bills or Next month block', cnt(P, 'mymoney') === 1 && cnt(P, 'nextmonth') === 0 && cnt(P, 'bills') === 0 && sheets(P, 'safe') === 0 && !/data-splitopen/.test(P) && !/Bills and next month/.test(P), [cnt(P, 'mymoney'), cnt(P, 'nextmonth'), cnt(P, 'bills')]);
+        ok('My money page holds Safe to spend, My split, Next month, Must-pay bills and Bills pocket, each once', sheets(mm, 'safe') === 1 && /My split/.test(mm) && cnt(mm, 'nextmonth') === 1 && /Must-pay bills/.test(mm) && /Bills pocket/.test(mm) && cnt(mm, 'bills') === 2, [cnt(mm, 'nextmonth'), cnt(mm, 'bills')]);
+        ok('analyst sheet (on): one button to My money, none to Next month or Must-pay bills', cnt(an, 'mymoney') === 1 && cnt(an, 'nextmonth') === 0 && cnt(an, 'bills') === 0);
+        ok('Persely tab row shows Fun used and Safe to spend from the data', (() => { const v = splitView(), pc = Math.round(splitUse().fun / v.by.fun.amt * 100); return myMoneyRow().replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').includes(`Fun ${pc}% used · Safe to spend ${ft(safeToSpend().safe)}`.replace(/\s+/g, ' ')); })(), myMoneyRow());
+        S.analyst.on = false; const Poff = vHub();
+        ok('analyst off: the Persely tab row offers the analyst sheet; Home has no analytics card', sheets(Poff, 'analyst') >= 1 && cnt(Poff, 'mymoney') === 0 && cnt(vFooldal(), 'mymoney') === 0); S.analyst.on = true;
+        const late = clone(); late.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; late.onboarded = true; late.tx = late.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); S = late;
+        ok('late bill: the Bills first card stays on top of Home and the Persely tab', vFooldal().indexOf('Bills first') > -1 && vFooldal().indexOf('Bills first') < vFooldal().indexOf('Balance') && vHub().indexOf('Bills first') > -1 && vHub().indexOf('Bills first') < vHub().indexOf('Total in Persely'));
+      }
+      S = clone(); S.onboarded = true; S.friendsOptIn = false;
+      ok('Friends: hidden until opted in (a link to opt in, no ranking, no toggle); never shown in a fresh state', fresh().friendsOptIn === false && (!keepF || (!/data-frtoggle/.test(vHub()) && /data-frjoin/.test(vHub()) && !/class="fr /.test(vHub()))));
+      S.friendsOptIn = true; S.friendsOpen = true; const FH = vHub();
+      ok('Friends: after opt-in the card shows, ranked by streak only (no amounts)', /data-frtoggle/.test(FH) && !/data-frjoin/.test(FH) && /Compared by weekly streak only/.test(FH) && !/ Ft/.test(friendsCard()));
+    }
   } finally { S = keep; renderAll(); }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   const bad = out.filter(r => !r.pass);
@@ -1295,14 +1317,14 @@ const fresh = () => { const H = demoHistory(); const o = ({
   // financial analyst (opt-in, off by default). split = % of the monthly income base (must, ess, fun, save); only fun is a choice, the rest is refreshed from the data by syncSplit()
   analyst:{on:false, accepted:false, split:{must:44, ess:31, fun:20, save:5}}, txMark:H.old,   // txMark = rows before this month (the Aug-Oct history)
   // analytics (section 14): finished months, bill list (detected, locks kept), Bills pocket (built later; its balance is held outside the Junior balance), remembered categories, bills dismissed for a month, demo "today"
-  closedYm:['2026-08','2026-09','2026-10'], bills:[], billsConfirmed:false, billsPocket:{on:false, bal:0}, catRules:{}, billSkip:{}, billSkipWhy:{}, bfDone:false, bfPush:'', demoDay:14, histV:1,
+  closedYm:['2026-08','2026-09','2026-10'], bills:[], billsConfirmed:false, billsPocket:{on:false, bal:0}, catRules:{}, billSkip:{}, billSkipWhy:{}, bfDone:false, bfPush:'', demoDay:14, histV:2,
   // health score history: one entry per finished month, 1 = the indicator held that month. Score = 25 points per indicator x share of the last 3 months. Rewards earned / goal offers already used
   scoreHist:[{m:'July',earn:1,safe:1,buf:0,goal:0},{m:'August',earn:0,safe:1,buf:0,goal:0},{m:'September',earn:0,safe:1,buf:0,goal:1},{m:'October',earn:1,safe:1,buf:0,goal:1}], rewards:[], goalRewarded:[],   // txMark: how many transactions existed when this month began; this month = S.tx.slice(0, S.tx.length - S.txMark)
   // weekly streak: any amount once a week keeps it (automatic savings count too); it never changes the rate
   week:40, streak:8, best:8, savedWeek:false, skips:1, juniorDays:41, remind:true,
   history:[32,33,34,35,36,37,38,39], skipped:[],
   challenges:{},
-  friends:[{n:'Bence',c:'#3B82C4',s:11,g:62},{n:'Lili',c:'#B45FB0',s:6,g:35},{n:'Márk',c:'#D98A1F',s:3,g:71}],
+  friends:[{n:'Bence',c:'#3B82C4',s:11,g:62},{n:'Lili',c:'#B45FB0',s:6,g:35},{n:'Márk',c:'#D98A1F',s:3,g:71}], friendsOptIn:false, friendsOpen:false,   // hidden until the student taps "Add friends"
   rankBy:'streak', toured:true, hints:{}, monthSaved:23500, months:0, period:'November', interest:0, roundCount:0, roundSum:0, insight:false, insightUsed:false,
   goals:[
     {id:'holiday', name:'Summer holiday', ic:'plane', pace:6000, date:'2027-06-01'},
@@ -1328,14 +1350,22 @@ if(!S.rewards) S.rewards = [];
 if(!S.hints) S.hints = {};   // Persi's one-time hints already shown
 if(!S.goalRewarded) S.goalRewarded = [];
 // state saved before the 3-month history: tag old rows with month + day, add the history behind them (older = further down, so txMark grows by the same number), then find the bills
-if(S.histV !== 1){ try{
+if(!S.histV){ try{
   const H = demoHistory(); S.tx.forEach(t => { if(!t.ym){ const w = txWhen(t); t.ym = w.ym; t.day = w.day; } });
   if(S.months > 0) S.tx = S.tx.concat(H.nov, H.hist), S.txMark = (S.txMark || 0) + H.nov.length + H.hist.length;
   else { H.nov.forEach(e => { const k = e.ym.replace('-', '') * 100 + e.day, at = S.tx.findIndex(t => t.ym.replace('-', '') * 100 + t.day <= k); if(at < 0) S.tx.push(e); else S.tx.splice(at, 0, e); });
     S.tx = S.tx.concat(H.hist); S.txMark = (S.txMark || 0) + H.hist.length; }
   S.closedYm = ['2026-08','2026-09','2026-10'].concat(S.months > 0 ? [ymAt(S.months)] : []);
-  S.histV = 1;
-}catch(e){ S.histV = 1; } }
+  S.histV = 2;
+}catch(e){ S.histV = 2; } }
+// saved history from before the small "Other" payments were lowered (so the main demo state projects a little left): bring the old rows in line. They sit in the older part of S.tx, so txMark shrinks with them
+if(S.histV === 1){ try{
+  const had = S.tx.length;
+  S.tx = S.tx.filter(t => !((t.ym === '2026-09' && t.n === 'SZŐKE ANNA' && t.a === -2000) || (t.ym === '2026-10' && t.n === 'REVOLUT TOP-UP' && t.a === -1500)));
+  S.tx.forEach(t => { if(t.n === 'TÓTH LILI' && t.a === -2000 && (t.ym === '2026-08' || t.ym === '2026-10')) t.a = -1000; if(t.n === 'REVOLUT TOP-UP' && t.ym === '2026-09' && t.a === -1500) t.a = -1000; });
+  S.txMark = Math.max(0, (S.txMark || 0) - (had - S.tx.length)); S.histV = 2;
+}catch(e){ S.histV = 2; } }
+if(S.friendsOptIn === undefined) S.friendsOptIn = !!S.friendsOpen;   // Friends is opt-in: saved state that never opened it stays hidden
 if(!S.closedYm) S.closedYm = ['2026-08','2026-09','2026-10'];
 if(!S.catRules) S.catRules = {};
 if(!S.billSkip) S.billSkip = {};
@@ -1348,6 +1378,9 @@ const CATS = [['food','Food',38200],['cart','Shopping',21400],['bus','Transport'
 const acc = id => S.accounts.find(a=>a.id===id);
 
 /* ================= tab screens ================= */
+/* UX change 5 + 12 (plan: ux-change-plan-persely.md). true: the Persely tab is about saving, the analytics live on one "My money" page (one Home card, one Persely row), and Friends is opt-in.
+   false: the old layout (My split, Bills and next month and Friends in the tab, Next month and Must-pay bills linked from Home). Kept until the run-through. */
+const NEW_PERSELY_IA = true;
 function vFooldal(){
   const spent = CATS.reduce((a,c)=>a+c[2],0), avg = 102400, max = Math.max(...CATS.map(c=>c[2]));
   // gauge: 270° arc, gap at the bottom
@@ -1375,7 +1408,7 @@ function vFooldal(){
     <div class="core"><small>Spent so far</small><b class="num">${ft(spent)}</b></div>
   </div>
   <div class="avg">Average monthly spending: <span class="num">${ft(avg)}</span></div>
-  ${S.analyst.on ? `<div class="lrow"><button class="link lnk44" data-go="nextmonth">Next month ${I('chev',16)}</button><button class="link lnk44" data-go="bills">Must-pay bills ${I('chev',16)}</button></div>` : ''}
+  ${S.analyst.on && !NEW_PERSELY_IA ? `<div class="lrow"><button class="link lnk44" data-go="nextmonth">Next month ${I('chev',16)}</button><button class="link lnk44" data-go="bills">Must-pay bills ${I('chev',16)}</button></div>` : ''}
   ${S.analyst.on && S.analyst.accepted ? '' : `<button class="link lnk44" data-sheet="analyst" style="margin:0 0 0 10px">See how it fits your income ${I('chev',16)}</button>`}
   <div class="sec"><span>What did I spend on this month?</span></div>
   <div class="cats">${CATS.map((c,i)=>`<div class="cat ${i===0?'on':''}"><span class="ic">${I(c[0],26)}</span><span class="cl">${c[1]}</span><span class="col"><i style="height:${c[2]/max*100}%"></i></span><span class="num">${ft(c[2])}</span></div>`).join('')}</div>
@@ -1702,7 +1735,7 @@ function splitCard(){
       <div class="prog" style="margin:7px 0 5px"><i style="width:${Math.min(100,p)}%;${over ? 'background:var(--orange)' : ''}"></i></div>
       <div class="k" style="font-size:0.78125rem">${hold ? `<b style="color:var(--orange-t)">Bills first: ${ft(bf.lateTotal)} late</b> · ${p}% used` : k === 'must' ? `${p}% paid · locked bills` : k === 'save' ? `${p}% moved to Persely · ${saveNote(v)}` : k === 'ess' ? `${p}% used · what is left after the other three` : `${p}% used${k === 'fun' ? dl : ''}`}${over ? ' · over your split' : ''}</div></div>`; }).join('');
   return `${head}<div class="card" style="padding:6px 16px 14px"><div class="fine" style="padding:8px 0 0"><b>${v.base}</b></div>${rows}
-    <button class="li-safe" data-sheet="safe"><span>Safe to spend now</span><b class="num">${ft(safeToSpend().safe)}</b>${I('chev',16)}</button>
+    ${NEW_PERSELY_IA ? '' : `<button class="li-safe" data-sheet="safe"><span>Safe to spend now</span><b class="num">${ft(safeToSpend().safe)}</b>${I('chev',16)}</button>`}
     <div class="fine" style="border-top:1px solid var(--line);padding-top:10px">${S.payday.on ? 'Your saving rules move the Saving amount to Persely.' : 'Your payday rule is off, so Saving does not move by itself. Turn it on in Money in.'} Saving is the payday rule plus any weekly transfer and round-ups. Everyday essentials is what is left of your income.</div></div>`;
 }
 /* ---------- bills: screens, alerts and the Bills pocket (section 14, steps 6-9 and 12) ----------
@@ -1766,9 +1799,16 @@ function bfCard(){
     <div class="bfl"><button class="link lnk44" data-billskip="${b.id}:paid">Already paid elsewhere</button><button class="link lnk44" data-billskip="${b.id}:notdue">Not due this month</button></div></div>`;
 }
 // Home, under the balance: one line with what is really free
+// the one line about bills on the Home card: late, coming up, still to pay, or all paid
+function billsLine(){
+  const bf = bfNow();
+  return bf.on ? `<span style="color:var(--orange-t);font-weight:600">${plural(bf.late.length, 'bill')} late: ${ft(bf.lateTotal)}</span>` : bf.soon.length ? `Coming up: ${comingUp(bf)}` : bf.count ? `${plural(bf.count, 'bill')} still to pay: ${ft(bf.total)}` : 'Must-pay bills are paid';
+}
+// Home (analyst on): the one card that opens My money. New layout: Safe to spend and the state of the bills. Old layout: Safe to spend opens its sheet.
 function safeRow(){
   if(!S.analyst.on) return '';
   const s = safeToSpend();
+  if(NEW_PERSELY_IA) return `<button class="safebtn" data-go="mymoney" data-tour="mymoney"><span class="t"><b>Safe to spend</b><small>${billsLine()}</small></span><b class="num" style="color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</b><span class="chev">${I('chev', 18)}</span></button>`;
   return `<button class="safebtn" data-sheet="safe"><span class="t"><b>Safe to spend</b><small>${s.pocket ? `After bills, your saving rule and groceries. Bills pocket ${ft(s.pocket)} is apart` : 'After bills, your saving rule and groceries'}</small></span><b class="num" style="color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</b><span class="chev">${I('chev', 18)}</span></button>`;
 }
 // Persely tab, under My split: Next month, Must-pay bills, Bills pocket
@@ -1783,6 +1823,24 @@ function billsBlock(){
     ${row('list', 'Must-pay bills', bf.on ? `<span style="color:var(--orange-t);font-weight:600">${bf.text}</span>` : `${plural(n, 'bill')} · ${ft(mustTotal())} a month`, 'bills')}
     ${row('wallet', 'Bills pocket', S.billsPocket.on && S.billsPocket.bal > 0 ? `${ft(S.billsPocket.bal)} set aside · no goal, no interest` : 'Set the bill money aside on payday', 'bills')}
   </div>`;
+}
+// Persely tab: the one row to My money (analyst on), or an offer to turn the analyst on (off)
+function myMoneyRow(){
+  if(!NEW_PERSELY_IA) return '';
+  const chev = `<span class="chev">${I('chev', 20)}</span>`;
+  if(!S.analyst.on) return `<button class="row" data-sheet="analyst"><span class="ic">${I('chart')}</span><span class="t"><b>My money</b><small>Optional: your split, bills and next month</small></span>${chev}</button>`;
+  const sf = safeToSpend(), bf = bfNow();
+  if(!S.analyst.accepted) return `<button class="row" data-go="mymoney"><span class="ic">${I('chart')}</span><span class="t"><b>My money</b><small>Split suggested · Safe to spend ${ft(sf.safe)}</small></span>${chev}</button>`;
+  const v = splitView(), used = splitUse().fun, pc = v.by.fun.amt ? Math.round(used / v.by.fun.amt * 100) : 0;
+  return `<button class="row" data-go="mymoney"><span class="ic">${I('chart')}</span><span class="t"><b>My split</b><small>${bf.on ? 'Fun on hold' : `Fun ${pc}% used`} · Safe to spend ${ft(sf.safe)}</small></span>${chev}</button>`;
+}
+// the My money page: Safe to spend, My split, then Next month, Must-pay bills and Bills pocket
+function myMoneyHTML(){
+  if(!S.analyst.on) return needAnalyst('My money');
+  const s = safeToSpend();
+  return `<button class="safebtn" data-sheet="safe" style="margin-top:8px"><span class="t"><b>Safe to spend</b><small>${s.pocket ? `After bills, your saving rule and groceries. Bills pocket ${ft(s.pocket)} is apart` : 'After bills, your saving rule and groceries'}</small></span><b class="num" style="color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</b><span class="chev">${I('chev', 18)}</span></button>
+  ${splitCard()}
+  ${billsBlock()}`;
 }
 // the same screen text for pages that need the analyst
 const needAnalyst = what => `<div class="card" style="padding:16px;margin-top:8px"><b class="u-fs-m">${what} needs the financial analyst</b><div class="fine u-mt4-b12">It is optional and off right now. Turn it on to see your bills and next month.</div><button class="btn" data-sheet="analyst">See what it measures</button></div>`;
@@ -1918,8 +1976,7 @@ function vHub(){
     ${li('limit', 'Round-ups', S.roundup.on ? `Next 100 Ft, ×2 → ${esc(rgr.name)} · about ${ft(ROUND_EST)} a month` : 'Save the change from card payments', 'roundrule', 'round', S.roundup.on)}
   </div>
 
-  ${splitCard()}
-  ${billsBlock()}
+  ${NEW_PERSELY_IA ? myMoneyRow() : splitCard() + billsBlock()}
 
   ${hintHTML('week')}<div class="sec"><span>Your habits</span></div>
   <div class="card hab" data-tour="week" style="${!S.savedWeek && S.streak ? 'box-shadow:inset 0 0 0 1.5px #FFB27A,var(--sh)' : ''}">
@@ -1931,8 +1988,8 @@ function vHub(){
 
   ${juniorTop ? '' : junior}
 
-  ${friendsCard()}
-  <div style="text-align:center;margin:14px 0 6px"><a class="link" data-sheet="how">How Persely works ${I('chev',16)}</a></div>`;
+  ${!NEW_PERSELY_IA || S.friendsOptIn ? friendsCard() : ''}
+  <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:0 18px;margin:8px 0 6px"><a class="link lnk44" style="display:inline-flex;align-items:center" data-sheet="how">How Persely works ${I('chev',16)}</a>${NEW_PERSELY_IA && !S.friendsOptIn ? addFriendsLink() : ''}</div>`;
 }
 // demo: one week passes
 function nextWeek(){
@@ -2164,6 +2221,7 @@ const PAGES = {
     <div class="sec"><span>Food – Saturday, 8 November</span></div>
     <div class="tx"><span class="ic">${I('food')}</span><span class="t"><b>WOLT HUNGARY</b><span>Card payment</span><em>${I('food',15)} Food</em></span><span class="a num">${sft(-4690)}</span></div>
     ${S.analyst.on && S.analyst.accepted ? '' : `<div class="card"><b class="u-bk-m14">How does this fit your income?</b><div class="fine u-mt4-b12">The analyst shows how your ${ft(S.income.amount)} splits into Essentials, Fun and Saving.</div><button class="btn" data-sheet="analyst">See the suggested split</button></div>`}`;}},
+  mymoney:{title:'My money', html:() => myMoneyHTML()},
   nextmonth:{title:'Next month', html:() => nextMonthHTML()},
   bills:{title:'Must-pay bills', html:() => billsHTML()}
 };
@@ -2363,7 +2421,7 @@ const SHEETS = {
     return `<h2>Financial analyst</h2><div class="u-sheet-sub k">The analyst is turned on.</div>
     ${splitRows}
     <div class="fine u-note-b14">It reads your payments, transfers and income on this OTP account, finds your regular bills, builds your split and gives one insight a month. You can change a payment's category in Transactions. Turn it off and the split, the bills and the tip go away. Nothing is shared.</div>
-    <button class="btn w" data-go="nextmonth">Next month</button><button class="btn w" data-go="bills">Must-pay bills</button><button class="btn w" data-splitopen>Edit my split</button><button class="btn ghost" data-anoff>Turn off the analyst</button>`; },
+    ${NEW_PERSELY_IA ? '<button class="btn w" data-go="mymoney">My money</button>' : '<button class="btn w" data-go="nextmonth">Next month</button><button class="btn w" data-go="bills">Must-pay bills</button>'}<button class="btn w" data-splitopen>Edit my split</button><button class="btn ghost" data-anoff>Turn off the analyst</button>`; },
   // financial health score: four indicators, what they mean, rewards earned
   score:()=>{ const n = scoreNow(), pv = scorePrev(), d = n.t - pv.t;
     return `<h2>Financial health score</h2>
@@ -2701,6 +2759,7 @@ document.addEventListener('click', e=>{
   if('insno' in d){ S.insightUsed = true; renderAll(); return; }
   if('remindtg' in d){ S.remind = !S.remind; renderAll(); toast(S.remind ? 'Weekly reminder on: Sunday 18:00' : 'Weekly reminder off'); return; }
   /* friends */
+  if('frjoin' in d){ S.friendsOptIn = true; S.friendsOpen = true; save(); renderAll(); sheet(SHEETS.addfriend()); return; }
   if('frtoggle' in d){ S.friendsOpen = !S.friendsOpen; save(); renderAll(); return; }
   if(d.nudge){ toast(`Reminder sent to ${d.nudge}`); return; }
   if('invite' in d){ toast('Invite link copied. Send it in any chat'); return; }
@@ -3257,7 +3316,7 @@ const STEPS = ['goal','how','sum'];   // 3 screens: goal, money in, summary with
 const onbMonthly = () => (O.payOn ? incomeShare(O.pct) : 0) + (O.weeklyOn ? Math.round(O.weekly * 52 / 12) : 0) + (O.roundOn ? ROUND_EST : 0);
 // the day the update arrives: nothing set up yet
 function updateDayState(){
-  Object.assign(S, {streak:0, best:0, history:[], skipped:[], savedWeek:false, skips:0, challenges:{}, friends:[], toured:false, hints:{}, monthSaved:4000,
+  Object.assign(S, {streak:0, best:0, history:[], skipped:[], savedWeek:false, skips:0, challenges:{}, friends:[], friendsOptIn:false, friendsOpen:false, toured:false, hints:{}, monthSaved:4000,
     verified:true, bridge:false, payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday',
     insight:false, insightUsed:false});
   S.goals = S.goals.filter(g => g.id === 'holiday' || g.id === 'ps5');
@@ -3266,7 +3325,7 @@ function updateDayState(){
 function week8State(){
   const f = fresh();
   Object.assign(S, {streak:8, best:8, savedWeek:false, skips:1, updateSeen:true, onboarded:true, verified:true,
-    history: Array.from({length:8}, (_,i) => S.week - 8 + i), skipped:[], friends:f.friends, toured:true, hints:Object.fromEntries(HINTS.map(h => [h[0], 1])), monthSaved:23500,
+    history: Array.from({length:8}, (_,i) => S.week - 8 + i), skipped:[], friends:f.friends, friendsOptIn:false, friendsOpen:false, toured:true, hints:Object.fromEntries(HINTS.map(h => [h[0], 1])), monthSaved:23500,
     payday:{on:true, pct:10, ask:true, floor:true}, insight:true, insightUsed:false});
   if(!goalById(S.ruleGoal)) S.ruleGoal = 'holiday';
   S.roundup = {on:true, goal:S.ruleGoal};
@@ -3384,6 +3443,8 @@ function chCard(c, compact){
 
 /* ================= friends: compare habits, never money ================= */
 const SUGGEST = [{n:'Dóra',c:'#E06C75',s:2,g:22},{n:'Ádám',c:'#2BA3A3',s:9,g:54},{n:'Zsófi',c:'#2F9A3F',s:1,g:12},{n:'Gergő',c:'#7A6FD8',s:5,g:40}];
+// Friends is opt-in: nothing about friends shows until the student taps this link (next to How Persely works)
+const addFriendsLink = () => `<button class="link lnk44" data-frjoin data-tour="friends" aria-label="Add friends: compare weekly streaks, nobody sees your balance">Add friends ${I('plus', 16)}</button>`;
 function friendsCard(){   // collapsed and opt-in: nothing is compared until the user opens it; ranked by streak only
   const open = !!S.friendsOpen;
   const head = `<button class="row frhead" data-frtoggle aria-expanded="${open}"><span class="ic">${I('user')}</span><span class="t"><b>Friends</b><small>${open ? 'Compared by weekly streak only. Nobody sees your balance' : 'Compare weekly streaks. Nobody sees your balance'}</small></span><span class="chev frchev ${open ? 'open' : ''}">${I('chev',20)}</span></button>`;
@@ -3889,7 +3950,7 @@ function doriJoins(){
   const g = S.goals.find(x => x.shared);
   if(!g){ toast('Create a shared Persely first: Persely → New → Shared Persely'); return; }
   if(g.members.some(m => m.n === 'Dóri')){ toast('Dóri has already joined'); return; }
-  g.members.push({n:'Dóri', amt:15000, c:'#2F6FB5'}); renderAll();
+  g.members.push({n:'Dóri', amt:15000, c:'#2F6FB5'}); S.friendsOptIn = true; renderAll();   // a friend joined a shared Persely: Friends turns on
   notify({title:'Persi · Persely', persi:true, body:`Dóri joined ${g.name} and added 15 000 Ft. Together: ${ft(gSaved(g))}.`, url:'hub'});
   tab('hub'); S._detail = g.id; pushPage('goal');
 }
