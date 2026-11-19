@@ -1495,7 +1495,7 @@ function __checkAnalytics(){
       ok('story: at most 11 slides, no analytics slides (in and out, where it went, plan, tip)', sl.length <= 11 && !ids.some(x => ['inout', 'where', 'donut', 'bills', 'next', 'change'].includes(x)), ids);
       ok('story: every slide builds without errors and has a background', sl.every(x => x.share || (txt(x.build()).length > 0 && x.bg)), ids);
       ok('story facts: a month with few card payments falls back to the latest months and says which', F.yms.length > 1 && /–/.test(F.label), F.label);
-      ok('top places: at most 3, most visits first, subscriptions are not places', F.top.length <= 3 && F.top.every((x, k) => !k || F.top[k - 1][1] >= x[1]) && !F.top.some(([n]) => /NETFLIX|SPOTIFY/.test(n)), F.top);
+      ok('top places: at most 3, most visits first; subscriptions, transport (BKK pass, MÁV), rides and delivery are not places', F.top.length === 3 && F.top.every((x, k) => !k || F.top[k - 1][1] >= x[1]) && !F.top.some(([n]) => /NETFLIX|SPOTIFY|BKK|MÁV|BOLT|WOLT/.test(n)), F.top);
       ok('subscriptions: the usual monthly amount of each (Netflix 3 490 + Spotify 1 790 = 5 280 Ft)', F.subsM === 5280, [F.subsM, F.subsN]);
       ok('spending day: a real weekday and a share under 100%', F.weekday && /day$/.test(F.weekday.name) && F.weekday.pct > 0 && F.weekday.pct < 100, F.weekday);
       ok('days off: never more than the days counted', F.quiet >= 0 && F.quiet <= F.days, [F.quiet, F.days]);
@@ -4041,8 +4041,8 @@ function stFacts(R){
   const tx = yms.flatMap(rows), cur = ymAt(S.months || 0), today = shownMonth().today;
   const label = yms.length > 1 ? `${stShort(yms[0])} – ${stShort(yms[yms.length - 1])}` : MONTHN[+yms[0].slice(5) - 1];
   const sub = t => classify(t) === 'subs';
-  // top places by visits (subscriptions are not places)
-  const visits = {}; tx.filter(t => !sub(t)).forEach(t => { visits[t.n] = (visits[t.n] || 0) + 1; });
+  // top places by visits: shops and cafés only (subscriptions, transport tickets and passes like BKK or MÁV, rides and delivery are not places)
+  const place = t => !sub(t) && classify(t) !== 'transport' && !/WOLT|FOODPANDA|BOLT/i.test(t.n), visits = {}; tx.filter(place).forEach(t => { visits[t.n] = (visits[t.n] || 0) + 1; });
   const top = Object.entries(visits).sort((x, y) => y[1] - x[1]).slice(0, 3);
   // the weekday with the biggest share of card spending
   const wd = Array(7).fill(0); tx.forEach(t => { const w = txWhen(t); wd[new Date(+w.ym.slice(0, 4), +w.ym.slice(5) - 1, w.day).getDay()] += -t.a; });
