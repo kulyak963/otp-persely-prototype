@@ -468,7 +468,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .yr-hero{padding:18px}.yr-big{font-size:2.25rem;font-weight:800;margin:4px 0 2px;color:var(--ink)}
 .yr-bars{padding:14px 16px}.yr-b{margin:6px 0 12px}.yr-bl{display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-s)}.yr-b small{font-size:var(--fs-xs);color:var(--muted-t)}
 .yr-bt{height:12px;border-radius:6px;background:#E9ECF1;margin:6px 0 4px;overflow:hidden}.yr-bt i{display:block;height:100%;width:var(--w);border-radius:6px;animation:yrg .9s ease-out}
-.yr-bt i.g{background:var(--green)}.yr-bt i.r{background:#8D96A6}.yr-bt i.l{background:#C9CED7}
+.yr-bt i.g{background:var(--green)}.yr-bt i.l{background:#C9CED7}
 @keyframes yrg{from{width:0}}
 .yr-sav{display:flex;align-items:center;gap:10px;padding:14px 16px}.yr-sav .t{flex:1}.yr-sav b{font-size:var(--fs-m)}.yr-sav small{display:block;font-size:var(--fs-xs);color:var(--muted-t)}
 .yr-sc{padding:14px 16px}.yr-scb{display:flex;align-items:flex-end;gap:6px;height:90px;margin-bottom:8px}
@@ -4178,7 +4178,7 @@ function ffClose(){ if(FF.on){ FF.skip = true; if(FF.wake) FF.wake(); } ffEnd();
 function yearMonths(){ return (S.flowLog || []).slice(-Math.min(12, S.months || 0) || -1); }
 function yearHTML(){
   const M = yearMonths(), n = M.length, sum = key => M.reduce((a, m) => a + ffVal(m, key), 0); if(!n) return '<div class="card" style="padding:18px">Fast-forward a month first (O).</div>';
-  const I0 = sum('interest'), rev = Math.round(I0 * 1.8 / (RATE * (1 - TAX))), low = Math.round(I0 * LOW_RATE / RATE), sav = M.reduce((a, m) => a + (m.sav || 0), 0), mx = Math.max(I0, rev, 1);
+  const I0 = sum('interest'), low = Math.round(I0 * LOW_RATE / RATE), sav = M.reduce((a, m) => a + (m.sav || 0), 0), mx = Math.max(I0, 1);
   const bar = (label, v, cls, note) => `<div class="yr-b"><div class="yr-bl"><span>${label}</span><b class="num">+${ft(v)}</b></div><div class="yr-bt"><i class="${cls}" style="--w:${Math.max(1.5, v / mx * 100)}%"></i></div>${note ? `<small>${note}</small>` : ''}</div>`;
   const due = n * dueBills(), paid = M.reduce((a, m) => a + m.billsN, 0);
   const yms = (S.closedYm || []).filter(y => y >= ymAt(1) && y <= ymAt(S.months)).slice(-12), A = stAgg(yms);   // the same totals as the year story
@@ -4187,7 +4187,7 @@ function yearHTML(){
   return `<div class="yr-hero card"><div class="u-k-xs">${M[0].name.slice(0, 3)} ${M[0].ym.slice(0, 4)} – ${M[n - 1].name.slice(0, 3)} ${M[n - 1].ym.slice(0, 4)} · ${plural(n, 'month')}</div>
       <div class="yr-big num">${ft(total())}</div><div class="u-fs-s">in Persely now · ${ft(A.save)} put aside this year</div></div>
     <div class="sec"><span>What your rate earned</span></div>
-    <div class="card yr-bars">${bar(`Persely at ${rateLabel()}`, I0, 'g', 'After 28% tax, on your first 500 000 Ft')}${bar('Revolut Standard, 1.8% after tax', rev, 'r', 'Same balances, for comparison')}${bar('Persely before, 0.01%', low, 'l', 'What the same money earned until now')}</div>
+    <div class="card yr-bars">${bar(`Persely at ${rateLabel()}`, I0, 'g', 'After 28% tax, on your first 500 000 Ft')}${bar('Persely before, 0.01%', low, 'l', 'What the same money earned until now')}</div>
     <div class="card yr-sav"><span class="t"><b>Savings account, ${SAV_RATE}%</b><small>${ft(acc('megt').v)} now, after tax</small></span><b class="num u-c-gt">+${ft(sav)}</b></div>
     <div class="sec"><span>Your money this year</span></div>
     <div class="card lst">${[['Money in', ft(A.inc)], ['Must-pay bills', `${ft(A.must)}${due ? ` · ${paid} of ${due} on time` : ''}`], ['Everyday essentials', ft(A.ess)], ['Fun', ft(A.fun)], ['Put aside in Persely', ft(A.save)], ['Interest, all accounts', '+' + ft(I0 + sav)]].map(([a, b]) => `<div class="li"><span class="t"><b>${a}</b></span><b class="num">${b}</b></div>`).join('')}</div>
