@@ -1383,6 +1383,17 @@ function __checkAnalytics(){
       ok('goal dates on the demo clock: inMonths(5) is a year later after 12 demo months', la[0] === lb[0] && +lb[1] === +la[1] + 1, [a, b]);
     } finally { S = sv; }
   }
+  // edit and delete a goal: only with 0 Ft inside; delete leaves no reference behind; taking money out is an own-account move
+  { const sv3 = S; try{
+    S = clone(); const ps = S.goals.find(g => g.id === 'ps5'); S.payday.on = true; S.weekly.on = true; S.roundup = {on:true, goal:'ps5'}; S.ruleGoal = 'ps5';
+    const gate1 = goalEmpty(ps) === false && removeGoal('ps5') === null && !!goalById('ps5');
+    const u0 = monthUse(ymAt(S.months || 0), S), n0 = S.tx.length, tot = gSaved(ps); withdrawFrom(ps, tot); const u1 = monthUse(ymAt(S.months || 0), S);
+    ok('goal with money inside cannot be deleted or edited; after taking it out (own-account row, income and spending unchanged) it can', gate1 && goalEmpty(ps) && S.tx.length === n0 + 1 && u1.income === u0.income && u1.spendTotal === u0.spendTotal && u1.own !== u0.own && goalIsPlain(ps), [u0.own, u1.own]);
+    const r = removeGoal('ps5'), refs = JSON.stringify([S.ruleGoal, S.roundup.goal, S._detail, S._goal, S._out, S.goalRewarded]).includes('ps5');
+    ok('delete leaves no orphan reference: the goal, its rules (moved to the next goal) and picks are gone, story, share card, pages and sheets still render', !!r && !goalById('ps5') && !refs && !!goalById(S.ruleGoal) && !!goalById(S.roundup.goal) && S.payday.on && (() => { try{ const t = [storySlides().map(x => x.build ? x.build() : '').join(''), shareCard(), PAGES.goal.html(), PAGES.year.html(), vHub(), SHEETS.payrule(), SHEETS.roundrule(), SHEETS.weeklyrule(), SHEETS.hubsave(), SHEETS.hubout()].join(''); return !/ps5|NaN/.test(t); }catch(e){ return String(e); } })() === true, [S.ruleGoal, S.roundup.goal]);
+    S.goals.slice().forEach(g => { if(!goalEmpty(g)) withdrawFrom(g, gSaved(g)); removeGoal(g.id); });
+    ok('delete every goal (also Summer holiday and its Persely account): rules off, tab, Home, story, share card and sheets render without errors', S.goals.length === 0 && !S.payday.on && !S.weekly.on && !S.roundup.on && !acc('persely') && (() => { try{ const t = [vHub(), vFooldal(), storySlides().map(x => x.build ? x.build() : '').join(''), shareCard(), SHEETS.newgoal(), SHEETS.payrule(), SHEETS.weeklyrule(), SHEETS.roundrule()].join(''); return typeof t === 'string'; }catch(e){ return String(e); } })() === true);
+  } finally { S = sv3; } }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   const bad = out.filter(r => !r.pass);
   console.log(`__checkAnalytics: ${out.length - bad.length}/${out.length} passed`); bad.forEach(r => console.log('FAIL', r.name, r.info));
@@ -1649,7 +1660,8 @@ const isEur = g => g.cur === 'EUR';
 const eur = v => '€' + (Math.round(v*100)/100).toLocaleString('en-US');
 const money = (g, v) => isEur(g) ? eur(v) : ft(v);
 const goalById = id => S.goals.find(g => g.id === id);
-const ruleGoal = () => goalById(S.ruleGoal) || S.goals.find(g => !g.shared && !isEur(g)) || S.goals[0];
+const NOGOAL = {id:'', name:'your next goal', ic:'star', saved:0, target:1, pace:0, date:null};   // stands in when every goal is deleted
+const ruleGoal = () => goalById(S.ruleGoal) || S.goals.find(g => !g.shared && !isEur(g)) || S.goals[0] || NOGOAL;
 const gSaved = g => g.id==='holiday' ? acc('persely').v : g.shared ? g.members.reduce((a,m) => a + m.amt, 0) : g.saved;
 const gTarget = g => g.id==='holiday' ? S.persely.target : g.target;
 const mine = g => g.shared ? (g.members.find(m => m.me) || {amt:0}).amt : gSaved(g);
@@ -1763,6 +1775,42 @@ function depositTo(g, v, fromId='junior', how='Between my accounts'){
   }
   return markSaved();
 }
+/* ---------- take out, edit, delete a goal ----------
+   A goal can be edited or deleted only when no money is inside (the balance is 0): take it out first. Take out = the existing withdrawal to the Junior account.
+   Delete removes the goal everywhere and moves or stops every rule that pointed at it (payday rule, weekly transfer, round-ups). */
+const GOAL_ICONS = ['home','plane','car','lock','edu','game','fun','star'];
+const goalEmpty = g => !!g && gSaved(g) === 0;
+const goalIsPlain = g => !!g && !g.shared && !isEur(g);   // edit works on plain Ft goals; shared and euro Perselys can only be deleted
+function withdrawFrom(g, v){   // v in the goal's own currency; returns the forints that arrive on Junior
+  const huf = isEur(g) ? v * EUR_RATE : v;
+  if(g.id === 'holiday') acc('persely').v -= v; else if(g.shared) g.members.find(m => m.me).amt -= v; else g.saved -= v;
+  acc('junior').v += huf;
+  S.tx.unshift({...stamp(), d:'Today', n: isEur(g) ? 'CURRENCY EXCHANGE' : 'PERSELY WITHDRAWAL', s:'Between my accounts', a:huf, ic:'piggy', note:g.name});
+  return huf;
+}
+// where the saving rules go when a goal is deleted: the next plain goal, or nowhere (rules off)
+const ruleHeirOf = id => S.goals.find(x => x.id !== id && goalIsPlain(x));
+function goalRulesOf(g){   // which rules point at this goal
+  const r = []; if(S.payday.on && S.ruleGoal === g.id) r.push('payday rule'); if(S.weekly.on && S.ruleGoal === g.id) r.push('weekly transfer'); if(g.weekly) r.push('own weekly transfer'); if(S.roundup.on && S.roundup.goal === g.id) r.push('round-ups'); return r;
+}
+function removeGoal(id){
+  const g = goalById(id); if(!g || !goalEmpty(g)) return null;
+  const heir = ruleHeirOf(id), moved = [];
+  if(S.ruleGoal === id){
+    if(S.payday.on) moved.push('payday rule'); if(S.weekly.on) moved.push('weekly transfer');
+    if(heir) S.ruleGoal = heir.id; else { S.ruleGoal = ''; S.payday.on = false; S.weekly.on = false; }
+  }
+  if(S.roundup.goal === id){ if(S.roundup.on) moved.push('round-ups'); if(heir) S.roundup.goal = heir.id; else { S.roundup.on = false; S.roundup.goal = ''; } }
+  S.goals = S.goals.filter(x => x.id !== id);
+  if(id === 'holiday') S.accounts = S.accounts.filter(a => a.id !== 'persely' || a.v !== 0);   // its empty Persely account goes with it
+  S.goalRewarded = (S.goalRewarded || []).filter(x => x !== id);
+  ['_detail','_goal','_out'].forEach(k => { if(S[k] === id) S[k] = ''; });
+  if(S._offer === id) S._offer = null;
+  syncSplit();
+  return {name:g.name, moved, heir:heir ? heir.name : ''};
+}
+// the Persely account of the holiday goal comes back when the demo brings that goal back
+function healGoalAccounts(){ if(S.goals.some(g => g.id === 'holiday') && !acc('persely')){ const a = fresh().accounts.find(x => x.id === 'persely'); if(a){ a.v = 0; S.accounts.splice(Math.min(1, S.accounts.length), 0, a); } } }
 /* ---------- Persi's hints (replace the tour) ----------
    One hint at a time, shown above its block on a visit to the Persely tab. It counts as shown when the user taps Got it or leaves the tab.
    S.hints remembers which were shown (reset in fresh()). Nothing shows before onboarding is done. */
@@ -2089,6 +2137,7 @@ function vHub(){
     const right = g.shared ? `<span class="avs">${g.members.map(m=>avatar(m,24)).join('')}</span>` : pc.txt ? `<b class="u-c-gt">${pc.txt}</b>` : '';
     const sub = pc.first && !g.shared ? `${money(g,s)} in · first step · ${forecast(g)}` : `${money(g,s)} of ${money(g,t)} · ${forecast(g)}`;
     return `<div class="gwrap ${fx || bf ? 'fx' : ''}"><button class="card goal" ${attr}><div class="u-rowc"><span class="gic">${I(g.shared ? 'user' : isEur(g) ? 'euro' : g.ic,22)}</span><span class="u-fx0"><b class="u-bk-m">${esc(g.name)}</b><span class="num u-k-sm">${sub}</span></span>${right}</div><div class="prog" style="margin:10px 0 0"><i style="width:${pc.w}%"></i></div></button>${fx ? `<button class="gfix" data-latefix="${g.id}">${fixLabel(fx)}</button>` : bf ? `<button class="gfix" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}</div>`; }).join('')}
+  ${S.goals.length ? '' : `<div class="card"><b class="u-bk-m">No goals yet</b><div class="k" style="margin:4px 0 12px">Set a goal and Persely shows you the month you get there.</div><button class="btn" data-sheet="newgoal">Set a goal</button></div>`}
 
   ${hintHTML('auto')}<div class="sec" data-tour="auto"><span>Money in</span></div>
   <div class="card lst">
@@ -2213,6 +2262,14 @@ function nekedCards(compact){
 }
 
 let nekTab = 0;
+// edit and delete live on the goal page: open only when the balance is 0, otherwise one line says what to do first
+function goalManageHTML(g){
+  if(!goalEmpty(g)){
+    const out = !g.shared && gSaved(g) > 0;
+    return `<div class="card u-mt6" role="group" aria-label="Edit or delete this goal"><div class="k" style="font-size:var(--fs-m);line-height:1.45;color:var(--ink2)">${g.shared ? 'Edit or delete works when everyone has taken their money out.' : 'Take your money out first to edit or delete this goal.'}</div>${out ? `<button class="btn w u-mt12" data-outall="${g.id}" aria-label="Take all ${money(g, gSaved(g))} out of ${esc(g.name)}">Take all ${money(g, gSaved(g))} out</button>` : ''}</div>`;
+  }
+  return `<div class="card u-mt6" role="group" aria-label="Edit or delete this goal"><div class="hero-btns u-m0">${goalIsPlain(g) ? `<button class="btn w" data-gedit="${g.id}" aria-label="Edit ${esc(g.name)}">Edit goal</button>` : ''}<button class="btn w" data-gdel="${g.id}" aria-label="Delete ${esc(g.name)}" style="color:var(--orange-t)">Delete goal</button></div></div>`;
+}
 const PAGES = {
   // one Persely: balance, forecast against its date, its rate, the rules that feed it, members (shared) and activity
   goal:{title:()=> (goalById(S._detail) || {name:'Persely'}).name, html:()=>{
@@ -2226,6 +2283,7 @@ const PAGES = {
       ${!g.shared && !isEur(g) ? `<div class="note" style="margin:12px 0 0;${late ? 'background:#FFF1E6' : ''}">${tight ? (daysTo(g) < 0 ? `<b>Goal date passed: ${ft(toGo(g))} to go.</b> Nothing is lost. Your ${ft(s)} is still yours and still earns interest. Pick a date that fits.` : `<b>Behind: ${ft(toGo(g))} to go by ${daysTo(g) === 1 ? 'tomorrow' : daysTo(g) === 0 ? 'today' : 'the date'}.</b> At about ${ft(Math.round(paceOf(g)/100)*100)} a month this date is out of reach. Moving it is fine, most goals shift.`) : m === 0 ? '<b>Goal reached.</b> Take it out or start a new goal.' : m < 0 ? 'Add a rule below to see when you get there.' : `At your pace (about ${ft(Math.round(paceOf(g)/100)*100)} a month) you get there ${fc.far && fc.n <= 1 ? `<b>${fc.when}</b>` : `in <b>${inMonths(m)}</b>`}${late ? ', <b>after your goal date</b>.' : fc.far ? `, well before your goal date (${fc.dateTxt}).` : '.'}`}</div>${late && (fx || bf || lump) ? `${fx ? `<button class="btn" data-latefix="${g.id}">${fixLabel(fx)}</button>` : ''}${!fx && bf ? `<button class="btn" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}${!fx && lump ? `<button class="btn w" data-behindlump="${g.id}">Add ${ft(lump)} from Junior</button>` : ''}${S.analyst.on && S.analyst.accepted ? '' : '<button class="btn ghost" data-sheet="analyst">Or see what the analyst suggests</button>'}` : ''}` : ''}
       ${isEur(g) ? `<div class="note" style="margin:12px 0 0">Buy euros bit by bit instead of all at once before the trip. Demo rate: 1 € = ${EUR_RATE} Ft.</div>` : ''}
       <div class="hero-btns" style="margin:14px 0 0"><button class="btn" data-pickgoal="${g.id}">Add money</button><button class="btn w" data-outgoal="${g.id}">Take out</button></div></div>`;
+    html += goalManageHTML(g);
     if(g.shared){
       html += `<div class="sec"><span>Who put in what</span></div><div class="card lst">${g.members.map(mb=>`<div class="li">${avatar(mb,32)}<span class="t"><b>${mb.me ? 'Anna (you)' : esc(mb.n)}</b><div class="prog" style="margin:6px 0 0;height:6px"><i style="width:${Math.round(mb.amt / Math.max(1,s) * 100)}%"></i></div></span><b class="num">${ft(mb.amt)}</b></div>`).join('')}</div>
         <div class="card u-card-bul"><ul class="bul sm"><li><b>You can always take out what you put in.</b></li><li>Paying out the whole pot needs everyone to agree.</li><li>Each share earns 3.0% and counts toward that member's own 500 000 Ft limit.</li></ul>
@@ -2243,18 +2301,19 @@ const PAGES = {
     if(acts.length) html += `<div class="sec"><span>Activity</span></div><div class="card lst">${acts.map(x=>`<div class="li"><span class="t"><b>${esc(x.s)}</b><small>${x.d}</small></span><b class="num ${x.a>0?'':'pos'}">${x.a>0?'−':'+'}${isEur(g) && x.n==='CURRENCY EXCHANGE' ? ft(Math.abs(x.a)) : ft(Math.abs(x.a))}</b></div>`).join('')}</div>`;
     return html + `<p class="fine" style="text-align:center;margin:14px 0 4px">Take money out any time, free of charge.</p>`; }},
   // create a goal in 3 steps with a live projection (from the team handoff)
-  create:{title:'New Persely', html:()=>{
+  create:{title:()=> S._draft && S._draft.edit ? 'Edit goal' : 'New Persely', html:()=>{
     const d = S._draft, steps = `<div class="onb-step u-mt6">Step ${d.step} of 3</div>`;
     if(d.step === 1) return `${steps}<h2 class="u-mt4-b12">What are you saving for?</h2>
       <div class="flabel">Name</div><div class="fld"><span class="t"><input id="cgName" maxlength="30" value="${esc(d.name)}" placeholder="e.g. New laptop" autocomplete="off" enterkeyhint="done" aria-label="Goal name"></span></div>
+      ${d.edit ? `<div class="flabel">Icon</div><div class="chips u-mb6" role="group" aria-label="Goal icon">${GOAL_ICONS.map(k => `<button class="chip cgic ${d.ic === k ? 'on' : ''}" data-cgic="${k}" aria-pressed="${d.ic === k}" aria-label="Icon ${k}" style="min-width:var(--tap)">${I(k, 22)}</button>`).join('')}</div>` : ''}
       <div class="flabel">Amount</div>${amountPicker('cg')}
       ${monthPicker('cg')}`;
     if(d.step === 2) return `${steps}<h2 class="u-mt4-b12">How should money get in?</h2>
-      <div class="flabel">Weekly transfer, every Monday</div><div class="chips u-mb6">${[0,1000,2000,5000].map(v=>`<button class="chip ${d.weekly===v?'on':''}" data-cgwk="${v}">${v ? ft(v) : 'None'}</button>`).join('')}</div>
+      <div class="flabel">Weekly transfer, every Monday</div><div class="chips u-mb6">${[...new Set([0,1000,2000,5000,d.weekly])].sort((a,b)=>a-b).map(v=>`<button class="chip ${d.weekly===v?'on':''}" data-cgwk="${v}">${v ? ft(v) : 'None'}</button>`).join('')}</div>
       <button class="opt slim ${d.round?'on':''}" data-cground><span class="t"><b>Round-ups</b><small>Next 100 Ft, ×2 · about ${ft(ROUND_EST)} a month${S.roundup.on ? ` (moves them from ${esc((goalById(S.roundup.goal)||ruleGoal()).name)})` : ''}</small></span><span class="tg ${d.round?'on':''}"></span></button>`;
     const mo = monthsTo(d.date), monthly = d.weekly * 52 / 12 + (d.round ? ROUND_EST : 0), proj = Math.round(monthly * mo), pc = Math.min(100, Math.round(proj / d.target * 100)), short = d.target - proj;
     const extra = short > 0 ? Math.ceil(short / Math.max(1, mo * 4.345) / 500) * 500 : 0, fc = fcCalc(d.target, 0, monthly, d.date);
-    return `${steps}<h2 class="u-mt4-b12">Check and create</h2>
+    return `${steps}<h2 class="u-mt4-b12">${d.edit ? 'Check and save' : 'Check and create'}</h2>
       <div class="card sumcard">${[['Name', esc(d.name)], ['Goal', ft(d.target)], ['By', fDate(d.date)], ['Weekly transfer', d.weekly ? `${ft(d.weekly)} every Monday` : 'None'], ['Round-ups', d.round ? 'Next 100 Ft, ×2' : 'Off']].map(([k,v])=>`<div class="sr"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
       <div class="card"><b class="u-bk-m14">${monthly ? (fc.over ? fc.text : `With these rules: about ${ft(Math.round(proj/1000)*1000)} by ${fDate(d.date)}`) : 'No rules yet. Add a weekly transfer or round-ups to see a forecast.'}</b>
         ${monthly ? `<div class="prog" style="margin:10px 0 6px;height:10px"><i style="width:${pc}%"></i></div><div class="k">${fc.over ? 'On time' : `${pc}% of your goal · ${short > 0 ? `about ${ft(Math.round(short/1000)*1000)} short` : 'on time'}`}</div>` : ''}
@@ -2262,7 +2321,7 @@ const PAGES = {
       <p class="fine" style="margin:0 2px">Earns ${(S.verified||S.bridge) ? '3.0% with your Junior account' : '0.01% (standard rate)'}.</p>`; },
     foot:()=>{ const d = S._draft; if(!d) return '';
       return d.step < 3 ? `<div class="hero-btns u-m0">${d.step > 1 ? '<button class="btn w" data-cgstep="-1">Back</button>' : ''}<button class="btn" data-cgstep="1" ${d.step === 1 && !cleanName(d.name) ? 'disabled' : ''}>Next</button></div>`
-        : `<div class="hero-btns u-m0"><button class="btn w" data-cgstep="-1">Back</button><button class="btn" data-cgcreate>Create Persely</button></div>`; }},
+        : `<div class="hero-btns u-m0"><button class="btn w" data-cgstep="-1">Back</button>${d.edit ? '<button class="btn" data-cgsave>Save changes</button>' : '<button class="btn" data-cgcreate>Create Persely</button>'}</div>`; }},
   // graduation bridge: the retention moment, the 3.0% rate continues if the salary comes to OTP
   grad:{title:'Your 3.0% rate', html:()=>{ const pr = S.payday;
     return `<div class="u-pig-row">${pig('proud',110)}</div>
@@ -2482,12 +2541,20 @@ const SHEETS = {
     <div class="fine u-note-t6">${e ? `Demo rate 1 € = ${EUR_RATE} Ft. Euro Perselys don't get the 3.0% rate.` : S.savedWeek ? 'This week already counts for your streak.' : `Counts for this week: your streak goes to ${S.streak+1}.`}</div>
     <button class="btn" data-hubsave>Add money</button>`; },
   // withdraw: the fear "my money is locked" is answered right here
+  gdel:()=>{ const g = goalById(S._del); if(!g) return '<h2>Delete goal</h2><p class="fine">This goal is already gone.</p>';
+    const rules = goalRulesOf(g), heir = ruleHeirOf(g.id);
+    return `<h2>Delete ${esc(g.name)}?</h2>
+    <div class="note u-mb8">This removes <b>${esc(g.name)}</b>, its target and its date from your Persely, Home and your story. It cannot be undone after the 5 second Undo bar goes. Your transactions stay.</div>
+    ${rules.length ? `<div class="fine u-note-b14">${rules.length ? `Your ${rules.join(' and ')} ${heir ? `will go to ${esc(heir.name)} instead.` : 'will be switched off.'}` : ''}</div>` : ''}
+    <button class="btn" data-gdelok="${g.id}" style="background:var(--orange-t);color:#fff">Delete ${esc(g.name)}</button>
+    <button class="btn ghost" data-closesheet>Keep goal</button>`; },
   hubout:()=>{ if(!S.goals.some(g=>g.id===S._out)) S._out = S.goals[0].id; const g = goalById(S._out), max = mine(g);
     return `<h2>Withdraw</h2>
     <div class="flabel">From</div>
     <div class="chips u-mb4">${S.goals.map(x=>`<button class="chip ${S._out===x.id?'on':''}" data-outgoal="${x.id}">${esc(x.name)} · ${money(x, mine(x))}</button>`).join('')}</div>
     <div class="flabel">Amount</div>
     <div class="fld"><span class="t"><input id="mv" inputmode="numeric" value="${isEur(g) ? Math.min(20, max) : Math.min(5000, max)}" aria-label="Amount"></span><b>${isEur(g) ? '€' : 'Ft'}</b></div>
+    ${max > 0 ? `<div class="chips u-mt0"><button class="chip" data-setv="${max}" aria-label="Take out everything, ${money(g, max)}">All ${money(g, max)}</button></div>` : ''}
     <div class="fine u-note-b14">${g.shared ? `You can take out what you put in: ${ft(max)}. ` : ''}Arrives on your Junior account instantly. No fee. Your streak is not affected.</div>
     <button class="btn" data-hubout>Withdraw</button>`; },
   // payday: the app asks before moving money (the user keeps control)
@@ -2668,7 +2735,8 @@ document.addEventListener('click', e=>{
   if(d.go){ if(sheetOpen()) closeSheet(); pushPage(d.go); return; }
   if('pop' in d){ popPage(); return; }
   if(d.toast){ toast(d.toast); return; }
-  if(d.sheet){ if(RULE_SHEETS.includes(d.sheet)) UNDO.base = snap(); sheet(SHEETS[d.sheet]()); return; }
+  if(d.sheet){ if((d.sheet === 'hubsave' || d.sheet === 'hubout') && !S.goals.length){ sheet(SHEETS.newgoal()); sheetNote('Create a goal first'); return; }
+    if(RULE_SHEETS.includes(d.sheet)) UNDO.base = snap(); sheet(SHEETS[d.sheet]()); return; }
   if(d.setv){ $('#mv').value = d.setv; return; }
   if(d.dmove){
     const v = Math.max(0, parseInt(($('#mv').value||'0').replace(/\D/g,''))||0); if(!v) return;
@@ -2774,12 +2842,30 @@ document.addEventListener('click', e=>{
   if('hubout' in d){
     const v = amt(), g = goalById(S._out) || S.goals[0]; if(!v){ toast('Enter an amount'); return; }
     if(mine(g) < v){ toast(g.shared ? `You can take out up to ${ft(mine(g))}` : `${g.name} has ${money(g, mine(g))}`); return; }
-    const huf = isEur(g) ? v * EUR_RATE : v, before = snap();
-    if(g.id === 'holiday') acc('persely').v -= v; else if(g.shared) g.members.find(m => m.me).amt -= v; else g.saved -= v;
-    acc('junior').v += huf;
-    S.tx.unshift({...stamp(), d:'Today', n: isEur(g) ? 'CURRENCY EXCHANGE' : 'PERSELY WITHDRAWAL', s:'Between my accounts', a:huf, ic:'piggy', note:g.name});
+    const before = snap(), huf = withdrawFrom(g, v);
     closeSheet(); renderAll(); undoable(before, `${ft(huf)} is on your Junior account. No fee`); return;
   }
+  // take everything out of one goal (from its page): the balance goes to 0, so it can be edited or deleted
+  if(d.outall){ const g = goalById(d.outall); if(!g || g.shared || gSaved(g) <= 0) return; const before = snap(), huf = withdrawFrom(g, gSaved(g));
+    renderAll(); undoable(before, `${ft(huf)} is on your Junior account. ${g.name} is empty, so you can edit or delete it`); return; }
+  if(d.gedit){ const g = goalById(d.gedit); if(!goalEmpty(g) || !goalIsPlain(g)) return;
+    const wk = (S.weekly.on && S.ruleGoal === g.id) ? S.weekly.amt : (g.weekly || 0);
+    S._draft = {step:1, edit:g.id, name:g.name, ic:g.ic || 'star', target:gTarget(g), typeAmt:0, date:g.date || pkIdxDate(pkNow() + 10), weekly:wk, round:S.roundup.on && S.roundup.goal === g.id};
+    pushPage('create'); return; }
+  if(d.gdel){ if(!goalEmpty(goalById(d.gdel))) return; S._del = d.gdel; sheet(SHEETS.gdel()); return; }
+  if(d.gdelok){ const g = goalById(d.gdelok); if(!g || !goalEmpty(g)) { closeSheet(); return; } const before = snap(), name = g.name, inPage = stack.some(el => el.dataset.id === 'goal'), r = removeGoal(g.id);
+    S._del = null; closeSheet(); if(inPage) popPage(true); renderAll();
+    undoable(before, `${name} deleted.${r.moved.length ? (r.heir ? ` Your ${r.moved.join(' and ')} now go to ${r.heir}.` : ` Your ${r.moved.join(' and ')} are off.`) : ''}`); return; }
+  if(d.cgic){ keepCgName(); S._draft.ic = d.cgic; refreshPages(); const b = document.querySelector(`[data-cgic="${d.cgic}"]`); if(b) b.focus({preventScroll:true}); return; }
+  if('cgsave' in d){ keepCgName(); const dr = S._draft, g = dr && goalById(dr.edit); if(!g || !goalEmpty(g)){ toast('Take your money out first'); return; }
+    if(!cleanName(dr.name)){ toast('Give your goal a name'); return; }
+    const before = snap(), old = g.name, nm = cleanName(dr.name);
+    g.name = nm; g.ic = dr.ic || g.ic; g.date = dr.date;
+    if(g.id === 'holiday'){ S.persely.name = nm; S.persely.target = dr.target; const a = acc('persely'); if(a){ a.n = 'Persely – ' + nm; a.h = 'Goal: ' + ft(dr.target); } } else g.target = dr.target;
+    if(old !== nm) S.tx.forEach(x => { if(x.note === old) x.note = nm; });
+    if(S.weekly.on && S.ruleGoal === g.id){ if(dr.weekly) S.weekly.amt = dr.weekly; else S.weekly.on = false; g.weekly = 0; } else g.weekly = dr.weekly || 0;
+    if(dr.round){ S.roundup = {on:true, goal:g.id}; } else if(S.roundup.goal === g.id) S.roundup.on = false;
+    syncSplit(); S._draft = null; popPage(true); renderAll(); undoable(before, `${nm} saved`); return; }
   if(d.sharedgoal){ S._shared = d.sharedgoal; sheet(SHEETS.sharedgoal()); return; }
   if(d.shgoal){ S._shGoal = +d.shgoal; keepShName(); sheet(SHEETS.newshared()); restoreShName(); return; }
   if(d.shfirst){ S._shFirst = +d.shfirst; keepShName(); sheet(SHEETS.newshared()); restoreShName(); return; }
@@ -3474,6 +3560,7 @@ function week8State(){
   if(!goalById(S.ruleGoal)) S.ruleGoal = 'holiday';
   S.roundup = {on:true, goal:S.ruleGoal};
   f.goals.forEach(g => { if(!S.goals.some(x => x.id === g.id || x.name === g.name) && S.goals.length < 5) S.goals.push(g); });
+  healGoalAccounts();
   closeWhatsNew(); closeOnb(); renderAll(); toast('Demo: 8 weeks later');
 }
 function showWhatsNew(){
