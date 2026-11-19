@@ -637,10 +637,11 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* Persi: small, one line, no cartoon speech bubble */
 .persi{display:flex;align-items:center;gap:10px;margin:-6px 0 10px}
 .ptot{margin-bottom:14px}
-.ptot .persi{margin:-2px 0 6px;gap:6px}
-.ptot .persi .pig{margin:0 -2px 0 -2px}
-.ptot .persi-t{background:#fff;border-radius:18px 18px 18px 4px;padding:10px 13px;box-shadow:var(--sh);font-size:0.9375rem;line-height:1.35;color:var(--ink)}
-.ptot .persi-t:empty{background:none;box-shadow:none;padding:0}
+.ptot .persi{margin:-2px 0 8px;gap:14px}
+.ptot .persi-t{font-size:0.9375rem;line-height:1.35;color:var(--ink)}
+.ptot .pring .sring-in{width:76px;height:76px;background:#EAF5E4;overflow:visible;box-shadow:0 0 0 3px var(--bg),0 0 0 5.5px #FF7A1A}
+.ptot .pring.seen .sring-in{box-shadow:0 0 0 3px var(--bg),0 0 0 4.5px #C9CED6}
+.pring .pig3d{pointer-events:none;margin:6px 0 0}   /* a tap on Persi opens the story */
 .ptot .sring-in{width:44px;height:44px;font-size:var(--fs-xs);box-shadow:0 0 0 2px #fff,0 0 0 4px #FF7A1A}
 .ptot .sring.seen .sring-in{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #C9CED6}
 .ptot .sring{gap:5px}
@@ -2369,8 +2370,8 @@ function vHub(){
   const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
   return `<div class="tabtitle">Persely</div>
   ${hintHTML('total')}<div class="ptot" data-tour="total">
-    <div class="persi" data-tour="persi">${pig(ps.mood, 100)}${HINT_NOW ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
-      <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
+    <div class="persi" data-tour="persi"><button class="sring pring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story from Persi"><span class="sring-in">${pig(ps.mood, 64)}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button>
+      ${HINT_NOW ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}</div>
     <div class="sec"><span>Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Junior 3.0%' : 'Standard rate'}</span></div>
     <div class="ptot-v num">${ft(tot)}</div>${et ? `<div class="fine" style="text-align:center;margin-top:2px">+ ${eur(et)} in euro goals</div>` : ''}
     <div class="avg">${st ? `<span style="text-align:center"><b class="g">${rateLabel()}</b> · about <span class="num">${ft(yearNet())}</span> a year after tax</span>` : `<span style="text-align:center">0.01% · about <span class="num">${ft(yearNet())}</span> a year</span>`}</div>
