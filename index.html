@@ -80,8 +80,8 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stro
   .homebar{display:block;position:absolute;bottom:9px;left:50%;width:150px;margin-left:-75px;height:5px;border-radius:3px;background:#111;z-index:95;pointer-events:none}
   .phone .stack{top:56px}
   .phone .tabbar{padding-bottom:26px}
-  .page .foot{padding-bottom:34px}
-  .sheet{padding-bottom:34px}
+  .page .foot{padding-bottom:40px}
+  .sheet{padding-bottom:40px}
   .toast{bottom:110px}
   .caption{display:block;margin-top:22px;font-size:var(--fs-s);color:#565B65;text-align:center}
   .phone, .phone *{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='34'%3E%3Ccircle cx='17' cy='17' r='14' fill='rgba(60,60,70,.22)' stroke='rgba(255,255,255,.9)' stroke-width='2'/%3E%3C/svg%3E") 17 17, pointer}
@@ -107,7 +107,7 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stro
 .page .scroll{flex:1;overflow-y:auto;padding:4px 16px 24px;scrollbar-width:none;overscroll-behavior:contain;
   -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14px);mask-image:linear-gradient(to bottom,transparent 0,#000 14px)}
 .page .scroll::-webkit-scrollbar{display:none}
-.page .foot{padding:12px 16px calc(env(safe-area-inset-bottom) + 14px);background:linear-gradient(transparent,var(--bg) 30%)}
+.page .foot{padding:12px 16px calc(env(safe-area-inset-bottom) + 28px);background:linear-gradient(transparent,var(--bg) 30%)}
 
 /* headers */
 .ph{display:flex;align-items:center;justify-content:center;position:relative;height:56px;flex:none;touch-action:none}
@@ -286,7 +286,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* sheet & toast */
 .back{position:absolute;inset:0;z-index:74;background:rgba(30,35,45,.4);display:none;align-items:flex-end}
 .back.on{display:flex}
-.sheet{width:100%;max-height:88%;overflow-y:auto;background:var(--bg);border-radius:24px 24px 0 0;padding:10px 16px calc(env(safe-area-inset-bottom) + 18px);animation:up .22s ease-out}
+.sheet{width:100%;max-height:88%;overflow-y:auto;background:var(--bg);border-radius:24px 24px 0 0;padding:10px 16px calc(env(safe-area-inset-bottom) + 24px);animation:up .22s ease-out}
 .sheet::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:#C7CCD4;margin:0 auto 12px}
 .sheet h2{font-size:var(--fs-l);font-weight:600;text-align:center;margin:0 0 14px}
 @keyframes up{from{transform:translateY(30px);opacity:0}}
@@ -362,8 +362,8 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .onb-body::-webkit-scrollbar{display:none}
 .onb-body h2{font-size:var(--fs-xl);margin:6px 0 8px;letter-spacing:-.3px;line-height:1.2}
 .onb-body .lead{font-size:var(--fs-m);color:var(--ink2);line-height:1.5;margin:0 0 16px}
-.onb-foot{padding:10px 20px calc(env(safe-area-inset-bottom) + 16px);flex:none}
-@media (min-width:760px) and (hover:hover){.onb-foot{padding-bottom:34px}}
+.onb-foot{padding:10px 20px calc(env(safe-area-inset-bottom) + 28px);flex:none}   /* room under the primary button: 28px (was 16) plus the home-indicator inset */
+@media (min-width:760px) and (hover:hover){.onb-foot{padding-bottom:40px}}
 .onb .pig3d{margin:0 auto}
 .opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh);border:2px solid transparent}
 .opt.on{border-color:var(--green);background:#F7FCF4}
@@ -772,21 +772,26 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .pkfill{position:absolute;left:-14px;top:50%;height:8px;margin-top:-4px;border-radius:4px;background:var(--green);width:calc(var(--p) + 14px)}
 .pkthumb{position:absolute;top:50%;left:var(--p);width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(30,40,60,.32),0 0 0 1px rgba(0,0,0,.06)}
 .pksl:focus-visible .pkthumb{box-shadow:0 0 0 3px var(--act),0 2px 6px rgba(30,40,60,.32)}
-.pkchips{margin:2px 0 0;gap:6px;flex-wrap:nowrap}
-.pkchips button.chip{flex:1 1 auto;min-width:0;padding:0 6px;font-size:.8125rem;white-space:nowrap}
-.pkd .fld{cursor:pointer;margin-bottom:8px}
+.pkchips{margin:2px 0 0;gap:8px;flex-wrap:nowrap}
+.pkchips button.chip{flex:1 1 auto;min-width:0;padding:0 8px;font-size:.8125rem;white-space:nowrap}
+.pkd .fld{cursor:pointer;margin-bottom:10px;min-height:64px;padding:12px 18px}
 .pkd .fld .pkl{display:block;font-size:0.78125rem;color:var(--muted-t)}
-.pkd .fld .pks{font-weight:400;color:var(--muted-t);font-size:var(--fs-s)}
+.pkd .fld .pks{font-weight:400;color:var(--muted-t);font-size:var(--fs-s);white-space:nowrap}
 .pkd .fld .chev{color:var(--green-i);display:flex}
-.pkdc{margin:0 0 10px}
+.pkdc{margin:0 0 12px}
 @media (max-width:340px){.pkdc{flex-wrap:wrap}}
 .pkreal{margin:0 0 12px}
 .pkreal.hard{background:var(--orange-l)}
 .pkm{touch-action:none}
-.pkyears{display:flex;margin:0 0 10px;border-bottom:1px solid #DDE1E7}
-.pkyears button{position:relative;flex:1;min-height:var(--tap);font-weight:600;font-size:var(--fs-m);color:var(--muted-t)}
-.pkyears button.on{color:var(--green-t)}
-.pkyears button.on::after{content:"";position:absolute;left:25%;right:25%;bottom:-1px;height:3px;border-radius:3px;background:var(--green)}
+.pkyr{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 8px}
+.pkyr .pkstep{flex:none;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#E9ECF1;color:var(--green-t)}
+.pkyr .pkstep.l svg{transform:rotate(180deg)}
+.pkyr .pkstep:disabled{opacity:.35}
+.pkyv{flex:0 1 140px;text-align:center;font-size:1.5rem;font-weight:700;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+.pkyq{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 12px;padding:0 16px;scroll-snap-type:x proximity;scrollbar-width:none;touch-action:pan-x;overscroll-behavior-x:contain}
+.pkyq::-webkit-scrollbar{display:none}
+.pkyq button.chip{flex:none;min-width:68px;padding:0 12px;scroll-snap-align:center;font-weight:600;font-size:.9375rem}
+.pkyq button.chip.on{font-weight:700}
 .pkgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px}
 .pkgrid button.chip{min-height:48px;font-size:var(--fs-m);font-weight:600;border-radius:12px;padding:0}
 .pkgrid .pkmo.cur{box-shadow:inset 0 0 0 1.5px var(--muted-t)}
@@ -795,7 +800,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* ---------- keyboard: JS sets --app-h to the visible height and body top to the visual viewport offset, so the sticky footers and sheet buttons sit just above the keypad ---------- */
 body{top:var(--vv-top,0px)}
 html.kb .tabbar{display:none}
-html.kb .onb-foot,html.kb .page .foot{padding-bottom:10px}
+html.kb .onb-foot,html.kb .page .foot{padding-bottom:12px}   /* keypad open: the extra room goes, the button sits just above the keys */
 html.kb .sheet{padding-bottom:14px}
 html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
 /* short screens (iPhone SE): onboarding step 1 must show name, amount and date with the button */
@@ -806,16 +811,21 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
   .onb-body .lead{margin:0 0 6px;font-size:var(--fs-s)}
   .onb-body .flabel{margin:8px 2px 4px}
   .onb-body .fld{margin-bottom:6px;padding:2px 16px;min-height:var(--tap)}
+  .onb-body .pkd .fld{min-height:56px;padding:8px 16px}
   .onb-body .card{padding:8px 16px;margin-bottom:6px}
   .onb-body .pk{padding:6px 16px 8px}
   .onb-body .pkfld input{font-size:1.5rem}
   .onb-body .pkstack{height:50px;--st:3px}
-  .onb-body .pkd .fld{margin-bottom:4px}
-  .onb-body .pkdc{margin:0 0 6px}
+  .onb-body .pkd .fld{margin-bottom:8px}
+  .onb-body .pkdc{margin:0 0 8px}
+  .onb-body .pkchips{gap:6px}
   .onb-body .pkreal{margin:0}
   .onb-body .chips{margin:4px 0 0;gap:6px}
+  .onb-body .pkchips{margin:2px 0 0}
   .onb-body .note{padding:8px 12px;margin-bottom:0}
-  .onb-foot{padding-top:6px;padding-bottom:calc(env(safe-area-inset-bottom) + 10px)}
+  .onb-foot{padding-top:6px;padding-bottom:calc(env(safe-area-inset-bottom) + 20px)}
+  .page .foot{padding-bottom:calc(env(safe-area-inset-bottom) + 20px)}
+  .pkgrid button.chip{min-height:44px}
 }
 </style>
 </head>
@@ -2627,10 +2637,11 @@ document.addEventListener('click', e=>{
   // amount and month pickers (shared by onboarding and New Persely)
   if(d.pkamt){ const k = pkKind(t); pkSet(k, +d.pkamt); return; }
   if(d.pkdate){ const k = pkKind(t); pkObj(k).date = d.pkdate; pkSync(k); return; }
-  if('pkmonth' in d){ const k = pkKind(t), o = pkObj(k), now = pkNow(), idx = Math.min(now + 36, Math.max(now + 1, pkDateIdx(o.date)));
-    PKM = {k, year:Math.floor(idx / 12), sel:o.date}; sheet(SHEETS.month()); return; }
-  if(d.pkyear){ PKM.year = +d.pkyear; $('#sheet').innerHTML = SHEETS.month(); const b = $(`#sheet [data-pkyear="${PKM.year}"]`); if(b) b.focus(); return; }
-  if(d.pkmo){ PKM.sel = pkIdxDate(+d.pkmo); $('#sheet').innerHTML = SHEETS.month(); const b = $(`#sheet [data-pkmo="${d.pkmo}"]`); if(b) b.focus(); return; }
+  if('pkmonth' in d){ const k = pkKind(t), o = pkObj(k), now = pkNow(), idx = Math.min(pkLast(), Math.max(now + 1, pkDateIdx(o.date)));
+    PKM = {k, year:Math.floor(idx / 12), sel:o.date}; sheet(SHEETS.month()); pkYearsView(); return; }
+  if(d.pkyear || d.pkystep){ const y0 = Math.floor(pkNow() / 12), y1 = Math.floor(pkLast() / 12);
+    PKM.year = Math.min(y1, Math.max(y0, d.pkystep ? PKM.year + (+d.pkystep) : +d.pkyear)); pkSheetRender(d.pkystep ? [`[data-pkystep="${d.pkystep}"]:not(:disabled)`, `[data-pkystep="${-d.pkystep}"]`] : `[data-pkyear="${PKM.year}"]`); return; }
+  if(d.pkmo){ PKM.sel = pkIdxDate(+d.pkmo); pkSheetRender(`[data-pkmo="${d.pkmo}"]`); return; }
   if('pkdone' in d){ pkObj(PKM.k).date = PKM.sel; closeSheet(); pkSync(PKM.k); const b = document.querySelector(`[data-pk="${PKM.k}"] [data-pkmonth]`); if(b) b.focus({preventScroll:true}); return; }
   if(d.cgwk !== undefined && d.cgwk !== ''){ S._draft.weekly = +d.cgwk; refreshPages(); return; }
   if('cground' in d){ S._draft.round = !S._draft.round; refreshPages(); return; }
@@ -3240,11 +3251,13 @@ const pkSpace = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const pkShort = v => v >= 1000000 ? `${v / 1000000} M Ft` : `${v / 1000}k Ft`;
 const pkReduced = () => window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
 const pkNow = () => { const d = new Date(); return d.getFullYear() * 12 + d.getMonth(); };
+const PK_YEARS = 50, pkLast = () => pkNow() + PK_YEARS * 12;   // furthest goal date: 50 years from this month (keeps dates representable and the maths sane)
 const pkDateIdx = s => +s.slice(0, 4) * 12 + (+s.slice(5, 7) - 1);
 const pkIdxDate = i => `${Math.floor(i / 12)}-${String(i % 12 + 1).padStart(2, '0')}-01`;
 const pkMonthName = s => new Date(s + 'T12:00:00').toLocaleDateString('en-GB', {month:'long', year:'numeric'});
 const pkMonthShort = s => new Date(s + 'T12:00:00').toLocaleDateString('en-GB', {month:'short', year:'numeric'});
 const pkIn = n => n <= 0 ? 'this month' : n === 1 ? 'next month' : n < 24 ? `in ${n} months` : `in ${Math.floor(n / 12)} years${n % 12 ? ` ${n % 12} month${n % 12 > 1 ? 's' : ''}` : ''}`;
+const pkInS = n => n >= 60 && n % 12 ? `in about ${Math.round(n / 12)} years` : pkIn(n);   // short form for the date row: long spans do not wrap on a 360 px screen
 // what the amount and date ask of a week: the same maths as the forecast on the next step
 function pkMath(target, date){
   const m = Math.max(.5, monthsTo(date)), wk = Math.ceil(target / (m * 4.345) / 100) * 100, cap = incomeShare(10) * 12 / 52 + 5000;   // payday rule + 5 000 Ft a week
@@ -3273,7 +3286,7 @@ function monthPicker(k){
   const o = pkObj(k), n = pkDateIdx(o.date) - pkNow(), now = pkNow(), y = Math.floor(now / 12), mo = now % 12;
   const quick = [['In 6 months', pkIdxDate(now + 6)], ['Next summer (June)', pkIdxDate((mo < 5 ? y : y + 1) * 12 + 5)], ['In a year', pkIdxDate(now + 12)]];
   return `<div class="pkd" data-pk="${k}">
-    <button class="fld" data-pkmonth aria-haspopup="dialog" aria-label="By when? ${pkMonthName(o.date)}, ${pkIn(n)}. Change month"><span class="t"><span class="pkl">By when?</span><b>${pkMonthName(o.date)}</b> <span class="pks">· ${pkIn(n)}</span></span><span class="chev">${I('chev', 20)}</span></button>
+    <button class="fld" data-pkmonth aria-haspopup="dialog" aria-label="By when? ${pkMonthName(o.date)}, ${pkIn(n)}. Change month"><span class="t"><span class="pkl">By when?</span><b>${pkMonthName(o.date)}</b> <span class="pks">· ${pkInS(n)}</span></span><span class="chev">${I('chev', 20)}</span></button>
     <div class="chips pkchips pkdc">${quick.map(([l, v]) => `<button class="chip ${o.date === v ? 'on' : ''}" data-pkdate="${v}" aria-pressed="${o.date === v}">${l}</button>`).join('')}</div></div>
     <div class="note pkreal ${o.target && pkMath(o.target, o.date).hard ? 'hard' : ''}" data-pk="${k}" role="status">${pkRealHTML(o)}</div>`;
 }
@@ -3289,7 +3302,7 @@ function pkSync(k, from){
       r.querySelectorAll('[data-pkamt]').forEach(b => { const on = +b.dataset.pkamt === v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
     } else if(r.classList.contains('pkd')){
       const n = pkDateIdx(o.date) - pkNow(), f = r.querySelector('.fld');
-      f.querySelector('b').textContent = pkMonthName(o.date); f.querySelector('.pks').textContent = `· ${pkIn(n)}`;
+      f.querySelector('b').textContent = pkMonthName(o.date); f.querySelector('.pks').textContent = `· ${pkInS(n)}`;
       f.setAttribute('aria-label', `By when? ${pkMonthName(o.date)}, ${pkIn(n)}. Change month`);
       r.querySelectorAll('[data-pkdate]').forEach(b => { const on = b.dataset.pkdate === o.date; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
     } else if(r.classList.contains('pkreal')){
@@ -3300,15 +3313,32 @@ function pkSync(k, from){
 function pkSet(k, v, from){ pkObj(k).target = v; pkSync(k, from); }
 // month sheet: tentative choice until Done; tapping outside or swiping down closes without changing
 let PKM = {k:'onb', year:0, sel:''};
+// years: a stepper (‹ 2031 ›) plus a scrolling row of quick years (the next 8, then every 5th year), up to PK_YEARS from now
 function pkMonthSheet(){
-  const o = pkObj(PKM.k), now = pkNow(), y0 = Math.floor(now / 12), r = pkMath(o.target, PKM.sel), n = pkDateIdx(PKM.sel) - now;
+  const o = pkObj(PKM.k), now = pkNow(), last = pkLast(), y0 = Math.floor(now / 12), y1 = Math.floor(last / 12), r = pkMath(o.target, PKM.sel), n = pkDateIdx(PKM.sel) - now;
   const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], full = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const years = [...new Set([...Array.from({length: 8}, (_, i) => y0 + i), ...Array.from({length: y1 - y0 + 1}, (_, i) => y0 + i).filter(y => y % 5 === 0 && y > y0 + 7)])].filter(y => y <= y1);
   return `<div class="pkm"><h2>By when?</h2>
-    <div class="pkyears" role="group" aria-label="Year">${[0,1,2,3].map(i => `<button class="${PKM.year === y0 + i ? 'on' : ''}" data-pkyear="${y0 + i}" aria-pressed="${PKM.year === y0 + i}">${y0 + i}</button>`).join('')}</div>
-    <div class="pkgrid" role="group" aria-label="Month in ${PKM.year}">${names.map((nm, m) => { const idx = PKM.year * 12 + m, ok = idx > now && idx <= now + 36, on = idx === pkDateIdx(PKM.sel);
+    <div class="pkyr" role="group" aria-label="Year">
+      <button class="pkstep l" data-pkystep="-1" ${PKM.year <= y0 ? 'disabled' : ''} aria-label="Previous year, ${PKM.year - 1}">${I('chev', 22)}</button>
+      <b class="pkyv" role="status" aria-label="Year ${PKM.year}">${PKM.year}</b>
+      <button class="pkstep" data-pkystep="1" ${PKM.year >= y1 ? 'disabled' : ''} aria-label="Next year, ${PKM.year + 1}">${I('chev', 22)}</button></div>
+    <div class="pkyq" role="group" aria-label="Quick years, scroll sideways for later ones">${years.map(y => `<button class="chip ${PKM.year === y ? 'on' : ''}" data-pkyear="${y}" aria-pressed="${PKM.year === y}">${y}</button>`).join('')}</div>
+    <div class="pkgrid" role="group" aria-label="Month in ${PKM.year}">${names.map((nm, m) => { const idx = PKM.year * 12 + m, ok = idx > now && idx <= last, on = idx === pkDateIdx(PKM.sel);
       return `<button class="chip pkmo ${on ? 'on' : ''} ${idx === now ? 'cur' : ''}" data-pkmo="${idx}" ${ok ? '' : 'disabled'} aria-pressed="${on}" aria-label="${full[m]} ${PKM.year}${idx === now ? ', this month, not available' : !ok ? ', not available' : ''}">${nm}</button>`; }).join('')}</div>
     <div class="note pkreal ${r.hard ? 'hard' : ''}" role="status">${pkIn(n).replace(/^in /, '')} · about <b class="${r.hard ? 'late' : ''}">${ft(r.wk)} a week</b>${r.hard ? `<div class="fine">That is a lot for a week. A later date makes it easier.</div>` : ''}</div>
     <button class="btn" data-pkdone>Done</button></div>`;
+}
+// redraw the open sheet but keep the quick-years scroll position, then put focus back on a control
+function pkSheetRender(focus){
+  const old = $('#sheet .pkyq'), sl = old ? old.scrollLeft : 0;
+  $('#sheet').innerHTML = SHEETS.month(); pkYearsView(sl);
+  const b = [].concat(focus || []).map(f => $('#sheet').querySelector(f)).find(Boolean); if(b) b.focus({preventScroll:true});
+}
+function pkYearsView(sl){
+  const q = $('#sheet .pkyq'); if(!q) return;
+  if(sl != null) q.scrollLeft = sl;
+  const on = q.querySelector('.on'); if(on) q.scrollTo({left: on.offsetLeft - (q.clientWidth - on.offsetWidth) / 2, behavior: sl == null || pkReduced() ? 'auto' : 'smooth'});
 }
 function coinSound(){   // a short coin clink, once, when the slider is let go
   if(!demo.sound) return;
