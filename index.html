@@ -221,6 +221,18 @@ button.avatar{border:0;cursor:pointer}
 .tx .a.p{color:var(--green-t)}
 .filter{display:inline-flex;align-items:center;gap:6px;background:var(--card);box-shadow:var(--sh);border-radius:22px;min-height:var(--tap);padding:0 16px;color:var(--green-t);font-size:var(--fs-s);font-weight:600}
 .filter svg{width:16px;height:16px}
+.txq{display:flex;align-items:center;gap:8px;background:var(--card);box-shadow:var(--sh);border-radius:14px;min-height:var(--tap);padding:0 6px 0 14px;margin-bottom:12px;color:var(--ink2)}
+.txq input{flex:1;min-width:0;border:0;outline:0;background:none;font-size:1rem;min-height:var(--tap)}
+.txq .xq[hidden]{display:none}
+.txq .xq{display:flex;align-items:center;justify-content:center;width:var(--tap);height:var(--tap);color:var(--ink2)}
+.txfr{display:flex;align-items:center;gap:8px;margin:0 0 6px}
+.txfr .chs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0;padding:2px 0}
+.txfr .chs::-webkit-scrollbar{display:none}
+.txfr .chs button.chip{white-space:nowrap;flex:none;gap:6px}
+.txfr .chs button.chip svg{width:14px;height:14px}
+.txempty{text-align:center;color:var(--muted-t);padding:28px 16px}
+.txempty .btn{margin:14px 0 0}
+.txmore{width:100%;margin:4px 0 12px}
 
 /* transfer */
 .qa{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:6px 0 18px}
@@ -801,7 +813,9 @@ button.trust{min-height:var(--tap);align-items:center;width:100%;text-align:left
 .mp-g b{display:flex;align-items:center;gap:7px;font-size:var(--fs-m)}
 .mp-g span{font-size:0.78125rem;color:var(--muted-t);white-space:nowrap}
 .mp-r{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:9px;font-size:0.875rem}
-.mp-r .num{white-space:nowrap}.mp-r small{color:var(--muted-t);font-size:0.78125rem}
+.mp-r .num{white-space:nowrap}
+button.mp-r{width:100%;min-height:var(--tap);align-items:center;margin-top:0;text-align:left}
+.mp-r .chev{display:inline-flex;vertical-align:middle;color:var(--muted-t)}.mp-r small{color:var(--muted-t);font-size:0.78125rem}
 .mp-bar{height:6px;border-radius:3px;background:#E3E6EC;margin-top:4px;overflow:hidden}.mp-bar i{display:block;height:100%;border-radius:3px}
 .mp-card>.mp-g:first-child{margin-top:0;padding-top:0;border-top:0}
 /* Money in each month: the small panel under the Persely balance (the Home gauge, scaled down) */
@@ -1029,6 +1043,7 @@ const P = {
   sched:'<rect x="3" y="5" width="15" height="14" rx="1.5"/><path d="M3 9.5h15M7 3v3.5M14 3v3.5"/><circle cx="17.5" cy="17" r="4" fill="#fff"/><path d="M17.5 15v2.2l1.4 1"/>',
   hist:'<rect x="3" y="7" width="14" height="12" rx="1.5"/><path d="M7 11h6M7 15h4M15 3.5l3 2.5-3 2.5M18 6h-6"/>',
   filter:'<path d="M4 5h16l-6 7.5V19l-4-2v-4.5z"/>',
+  search:'<circle cx="11" cy="11" r="6"/><path d="m15.5 15.5 5 5"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.01"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M4.2 7.5l2.1 1.2M17.7 15.3l2.1 1.2M4.2 16.5l2.1-1.2M17.7 8.7l2.1-1.2"/><circle cx="12" cy="12" r="6.6"/>',
   user:'<circle cx="10" cy="8" r="3.5"/><path d="M3.5 19c.8-3.3 3.4-5 6.5-5"/><path d="M14 15h7M14 18h7"/>',
@@ -1314,7 +1329,7 @@ const outLine = () => { const mo = shownMonth(); return `<div class="avg spair">
 function catBars(sp){
   const rows = Object.entries(sp).sort((a, b) => b[1] - a[1]).slice(0, 5), max = Math.max(1, ...rows.map(r => r[1]));
   if(!rows.length) return `<div class="card fine" style="padding:14px 16px">No card payments yet this month.</div>`;
-  return `<div class="cats" style="--n:${rows.length}">${rows.map(([c, v], i) => `<div class="cat ${i === 0 ? 'on' : ''}"><span class="ic">${I(SPEND_IC[c] || 'tag', 26)}</span><span class="cl">${SPEND_SHORT[c] || CATEGORY[c][0]}</span><span class="col"><i style="height:${v / max * 100}%"></i></span><span class="num">${ft(v)}</span></div>`).join('')}</div>`;
+  return `<div class="cats" style="--n:${rows.length}">${rows.map(([c, v], i) => `<button class="cat ${i === 0 ? 'on' : ''}" ${CATEGORY[c] && SPEND_CATS.includes(c) ? `data-fcat="${c}" aria-label="${CATEGORY[c][0]} ${ft(v)}. See these payments"` : ''}><span class="ic">${I(SPEND_IC[c] || 'tag', 26)}</span><span class="cl">${SPEND_SHORT[c] || CATEGORY[c][0]}</span><span class="col"><i style="height:${v / max * 100}%"></i></span><span class="num">${ft(v)}</span></button>`).join('')}</div>`;
 }
 /* ---------- next-month projection ---------- */
 const lrPct = (vals, total) => { const raw = vals.map(v => v / total * 100), fl = raw.map(Math.floor); let rest = 100 - fl.reduce((a, b) => a + b, 0);
@@ -2197,6 +2212,65 @@ function __checkAnalytics(){
     } catch(e){ ok('chk-phase7: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); while(stack.length) popPage(true); S = sv15; cur = cur15; stack.push(...stk15); demo.locked = lock15; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views15[i])); }
   }
+  { // Phase 8: Transactions (flow plan B4, C7; decision D14): search, chips, a real Filter sheet, every row opens its detail, category passed in, recategorise with Undo
+    const sv16 = S, cur16 = cur, stk16 = stack.splice(0), lock16 = demo.locked, views16 = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')); demo.locked = false;
+    const pl = h => String(h).replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').replace(/\s+/g, ' '), nt = t => String(t).replace(/\s+/g, ' ').trim(), clk = sel => { const b = $(sel); if(b) b.click(); return !!b; };
+    const reset = kind => { hideBanners(); while(stack.length) popPage(true); try{ closeOnb(); }catch(e){} try{ closeStory(); }catch(e){} closeSheet(); MQ.q = []; hideChip(true); hideToast(true); txReset(); txMode = 0; S = fresh(kind); SETUP_COLLAPSED = false; renderAll(); };
+    const typeQ = v => { const f = $('#txq'); f.value = v; f.dispatchEvent(new Event('input', {bubbles:true})); };
+    const rowsOn = () => [...document.querySelectorAll('#txres .tx')];
+    try{
+      // chk-tx-search: typing "rent" finds the Rent share payment (own bill label), a payee name works, an unknown word shows the empty state with Clear, Clear brings the list back
+      reset('existing'); tab('tranzakciok'); const all0 = rowsOn().length, field = !!$('#txq');
+      typeQ('rent'); const rent = rowsOn().map(r => nt(r.textContent)), hasRent = rent.length > 0 && rent.some(x => /^Rent share\s*SZABÓ DÓRA/.test(x)) && rent.length < all0, keepsField = document.activeElement !== null && $('#txq') && $('#txq').value === 'rent';
+      typeQ('lidl'); const lidl = rowsOn().length > 0 && rowsOn().every(r => /LIDL/.test(r.textContent));
+      typeQ('xyzq'); const emp = nt($('#txres').textContent), empty = /^No payments match 'xyzq'\s*Clear$/.test(emp) && !!$('#txres [data-txclr]');
+      clk('#txres [data-txclr]'); const back = rowsOn().length === all0 && $('#txq').value === '';
+      ok('chk-tx-search: Transactions has a search field; "rent" finds the Rent share payment by its own label, a payee name works, an unknown word says "No payments match \'xyzq\'" with Clear, and Clear brings the full list back', field && hasRent && keepsField && lidl && empty && back, [field, all0, rent.length, lidl, emp, back]);
+
+      // chk-tx-chips: the five chips narrow the list and show as active chips that remove their filter; Pending says "No pending transactions."
+      reset('existing'); tab('tranzakciok'); const nAll = txRows().length, names = [...document.querySelectorAll('#txchips .chip')].map(c => nt(c.textContent));
+      clk('#txchips [data-txtog="pers"]'); const pr = rowsOn(), pers = pr.length > 0 && pr.length < nAll && pr.length === txRows().length && pr.every(r => /PERSELY|CURRENCY/.test(r.textContent)) && $('#txchips [data-txtog="pers"]').classList.contains('on');
+      clk('#txchips [data-txtog="pers"]'); clk('#txchips [data-txtog="bills"]'); const bl = rowsOn(), bills = bl.length > 0 && bl.length < nAll && bl.some(r => /Rent share/.test(r.textContent)); clk('#txchips [data-txtog="bills"]');
+      txF.dir = 'in'; renderView('tranzakciok'); const inn = rowsOn(), dirIn = inn.length > 0 && inn.every(r => /\+ /.test(r.querySelector('.a').textContent)) && /Money in/.test($('#txchips').textContent); clk('#txchips [data-txrm="dir"]'); const dirOff = txRows().length === nAll && /In\/Out/.test($('#txchips').textContent);
+      txF.date = 'this'; renderView('tranzakciok'); const th = txRows().length; txF.date = 'older'; renderView('tranzakciok'); const ol = txRows().length; txReset(); renderView('tranzakciok');
+      txF.cat = 'groceries'; renderView('tranzakciok'); const gr = rowsOn(), cat = gr.length > 0 && gr.length < nAll && gr.every(r => /LIDL|SPAR|ALDI|PENNY|Groceries/i.test(r.textContent)); txReset(); renderView('tranzakciok');
+      clk('[data-txmode="1"]'); const pend = /No pending transactions\./.test(nt($('#v-tranzakciok').textContent)); clk('[data-txmode="0"]');
+      ok('chk-tx-chips: the chips are Category, Date, In/Out, Persely and Bills; Persely and Bills narrow the list, In/Out shows only money in and its chip removes it, Date and Category narrow it, and Pending says "No pending transactions."', ['Category', 'Date', 'In/Out', 'Persely', 'Bills'].every((n, i) => names[i] === n) && pers && bills && dirIn && dirOff && th > 0 && th < nAll && ol > 0 && ol < nAll && th + ol <= nAll && cat && pend, [names, nAll, pr.length, bl.length, inn.length, th, ol, gr.length, pend]);
+
+      // chk-tx-filter-real: the Filter button opens a real sheet with Category, Date, In or out and Only show, plus Apply, Clear and Close; nothing changes until Apply; active filters show as chips
+      reset('existing'); tab('tranzakciok'); const n0 = rowsOn().length; clk('#v-tranzakciok .filter'); const sh0 = nt($('#sheet').textContent), realSheet = sheetOpen() && /Filter/.test(sh0) && /Category/.test(sh0) && /Date/.test(sh0) && /In or out/.test(sh0) && /Only show/.test(sh0) && /Apply/.test(sh0) && /Clear/.test(sh0) && /Close/.test(sh0) && !$('#toast').classList.contains('on');
+      clk('#sheet [data-txfd="cat|groceries"]'); clk('#sheet [data-txfd="dir|out"]'); const untilApply = rowsOn().length === n0 && !txF.cat;
+      clk('#sheet [data-txfclear]'); const cleared = !txDraft.cat && !txDraft.dir; clk('#sheet [data-txfd="cat|groceries"]'); clk('#sheet [data-txfd="dir|out"]'); clk('#sheet [data-txfapply]');
+      const ap = rowsOn(), applied = !sheetOpen() && ap.length > 0 && ap.length < n0 && txF.cat === 'groceries' && txF.dir === 'out' && /Groceries/.test($('#txchips').textContent) && /Money out/.test($('#txchips').textContent) && $('#txchips [data-txrm="cat"]').classList.contains('on');
+      clk('#v-tranzakciok .filter'); clk('#sheet [data-closesheet]'); const closed = !sheetOpen() && txF.cat === 'groceries';
+      ok('chk-tx-filter-real: Filter opens a real sheet (Category, Date, In or out, Only show; Apply, Clear, Close), nothing changes until Apply, Clear empties the choices, Apply narrows the list and shows the choices as active chips, Close keeps the old filters', realSheet && untilApply && cleared && applied && closed, [realSheet, untilApply, cleared, applied, closed, ap.length, n0]);
+
+      // chk-tx-rows-tappable: every row opens a detail with the full date, type, category and amount, with the analyst on or off; own-account rows too; Persely rows say "Added to [goal]" and link to the goal, with one line on the sign
+      const tapAll = on => { reset('existing'); S.analyst.on = on; renderAll(); tab('tranzakciok'); const rs = rowsOn(), bad = []; S.tx.forEach((t, i) => { S._txi = i; const h = nt(pl(SHEETS.txd())); if(!/Payment/.test(h) || !/Date \d{1,2} [A-Z][a-z]+ \d{4}/.test(h) || !/Type /.test(h) || !/Amount /.test(h)) bad.push([i, h.slice(0, 80)]); }); return {n:S.tx.length, shown:rs.length, bad, btns:rs.length === TX_STEP && rs.every(r => r.tagName === 'BUTTON' && r.hasAttribute('data-txd'))}; };
+      const onT = tapAll(true), offT = tapAll(false);
+      reset('existing'); tab('tranzakciok'); clk('#txres [data-txd]'); const opens = sheetOpen() && /Payment/.test($('#sheet').textContent); closeSheet();
+      const pi = S.tx.findIndex(t => t.n === 'PERSELY DEPOSIT' && S.goals.some(g => g.name === t.note)), pt = S.tx[pi], pg = S.goals.find(g => g.name === pt.note); S._txi = pi; const pd = nt(pl(SHEETS.txd())); sheet(SHEETS.txd());
+      const persOk = new RegExp('Added to ' + pg.name).test(pd) && !!$(`#sheet [data-goal="${pg.id}"]`) && /Here it is .*4 000 Ft because the money left your Junior account/.test(pd) && /On the goal page it is \+4 000 Ft/.test(pd) && (pl($('#sheet').innerHTML).match(/On the goal page/g) || []).length === 1; clk(`#sheet [data-goal="${pg.id}"]`); const goalPage = !sheetOpen() && stack.length && stack[stack.length - 1].dataset.id === 'goal'; while(stack.length) popPage(true);
+      const si = S.tx.findIndex(t => t.n === 'SZABÓ DÓRA'); S._txi = si; const rd = nt(pl(SHEETS.txd())); const billOk = /Your label Rent share/.test(rd) && /Paid to SZABÓ DÓRA/.test(rd);
+      ok('chk-tx-rows-tappable: every Transactions row is a button that opens its detail (full date, type, amount, category), with the analyst on or off, own-account rows too; a Persely row says "Added to [goal]", links to the goal page and explains the sign in one line; a bill row shows Your label and Paid to', onT.n > 150 && onT.shown === TX_STEP && onT.bad.length === 0 && onT.btns && offT.n === onT.n && offT.bad.length === 0 && offT.btns && opens && persOk && goalPage && billOk, [onT.n, onT.bad.slice(0, 3), offT.bad.slice(0, 3), opens, persOk, goalPage, billOk]);
+
+      // chk-tx-category-passin: a category bar on Spending and on Home opens Transactions with that category chip on; it clears with the chip, and on leaving the tab
+      reset('existing'); tab('fooldal'); const hb = $('#v-fooldal .cat[data-fcat]'), hc = hb && hb.dataset.fcat; hb && hb.click(); const fromHome = cur === 'tranzakciok' && txF.cat === hc && rowsOn().length > 0 && rowsOn().length < S.tx.length && $('#txchips [data-txrm="cat"]').textContent.includes(CATEGORY[hc][0]);
+      tab('fooldal'); const leftClears = !txF.cat && !txQ; pushPage('mymoney'); const sb = $('.page .mp-r[data-fcat]:not([data-fcat="persely"])'), sc = sb && sb.dataset.fcat; sb && sb.click(); const fromSpend = cur === 'tranzakciok' && txF.cat === sc && !stack.length && rowsOn().length > 0 && rowsOn().every(r => r.dataset.txd !== undefined);
+      clk('#txchips [data-txrm="cat"]'); const chipClears = !txF.cat && txRows().length === S.tx.length && /Category/.test($('#txchips').textContent); tab('fooldal');
+      ok('chk-tx-category-passin: tapping a category bar on Home or a category row on Spending opens Transactions with that category chip on and a shorter list; removing the chip or leaving the tab clears it', !!hb && !!sb && fromHome && leftClears && fromSpend && chipClears, [hc, sc, fromHome, leftClears, fromSpend, chipClears]);
+
+      // chk-recat-undo: Change category opens a picker; choosing one shows "Moved to Everyday essentials · N% used" with the real percentage and an Undo chip that reverses only this move
+      reset('existing'); S.analyst.on = true; const li2 = S.tx.findIndex(t => t.n === 'LIDL MAGYARORSZÁG' && !t.parts && txWhen(t).ym === shownMonth().ym && classify(t) === 'groceries'); S._txi = li2;
+      const cat0 = classify(S.tx[li2]), heldRules = JSON.stringify(S.catRules); S.tx.unshift({...stamp(), d:'Today', n:'WOLT HUNGARY', s:'Card payment', a:-9000, ic:'food'}); S._txi = 0; renderAll();
+      sheet(SHEETS.txd()); clk('#sheet [data-txcat2]'); const picker = /Category/.test($('#sheet').textContent) && !!$('#sheet [data-setcat="groceries"]');
+      const bg0 = JSON.stringify(S.accounts), other = S.tx[1].cat; clk('#sheet [data-setcat="groceries"]'); const u2 = splitUse(), want = Math.round(u2.ess / splitBudget('ess') * 100), chip = nt($('#uchip').textContent);
+      const moved = classify(S.tx[0]) === 'groceries' && UCH.on && chip === `Moved to Everyday essentials · ${want}% usedUndo` && want > 0;
+      S.catRules.ZZ = 'food'; /* a later, separate change must stay */ clk('#uchip [data-undo]'); const undone = classify(S.tx[0]) === 'food' && !S.tx[0].cat && S.catRules['WOLT HUNGARY'] === undefined && S.catRules.ZZ === 'food' && JSON.stringify(S.accounts) === bg0 && S.tx[1].cat === other && !UCH.on;
+      ok('chk-recat-undo: Change category then a category shows "Moved to Everyday essentials · N% used" (N is the real share of the Everyday essentials budget) with a 10 s Undo chip; Undo puts back only that payment\'s category and its payee rule, and a later change stays', picker && moved && undone && UNDO_MS === 10000, [picker, moved, undone, chip, want]);
+    } catch(e){ ok('chk-phase8: the new checks ran without errors', false, String(e && e.stack || e)); }
+    finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); txReset(); while(stack.length) popPage(true); S = sv16; cur = cur16; stack.push(...stk16); demo.locked = lock16; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views16[i])); }
+  }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
   const bad = out.filter(r => !r.pass);
@@ -2418,20 +2492,57 @@ function vUtalas(){
 
 let txMode = 0;
 const txBill = t => t.a < 0 && ['card', 'debit', 'out'].includes(txType(t)) ? (S.bills || []).find(x => x.key === payeeKey(t) && !x.ignored) : null;
+/* ---------- Transactions: search, chips, Filter sheet (D14) ----------
+   Search matches the payee and the student's own bill label (and a goal name). Chips: Category, Date, In/Out, Persely, Bills. The list is drawn in chunks of 50
+   so 191 rows stay fast; typing only redraws the list, never the search field. Screen state (not saved): txQ, txF, txN. */
+const TX_STEP = 50, TX_BLANK = {cat:'', date:'', dir:'', pers:false, bills:false};
+let txQ = '', txF = {...TX_BLANK}, txN = TX_STEP, txDraft = null;
+const TX_DATES = {this:'This month', last:'Last month', older:'Earlier'}, TX_DIRS = {in:'Money in', out:'Money out'};
+const TX_CAT_GROUPS = [['Must-pay', ['housing','utilities','pass','phone','insurance']], ['Essentials', ['groceries','transport','edu','health']], ['Fun', ['food','shopping','fun','travel','subs']], ['Other', ['other']]];
+const txNorm = x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const txIsPers = t => /^(PERSELY|CURRENCY EXCHANGE)/.test(t.n || '') || (txType(t) === 'own' && S.goals.some(g => g.name === t.note));
+const txHas = f => !!(f.cat || f.date || f.dir || f.pers || f.bills);
+function txReset(){ txQ = ''; txF = {...TX_BLANK}; txN = TX_STEP; txDraft = null; }
+function txMatch(t, q, ym0, ym1){
+  if(q.length){ const bl = txBill(t), hay = txNorm(t.n + ' ' + (bl ? bl.name : '') + ' ' + (t.note || '')); if(!q.every(w => hay.includes(w))) return false; }
+  const f = txF;
+  if(f.cat && classify(t) !== f.cat && !(t.parts && t.parts.cats && t.parts.cats[f.cat])) return false;
+  if(f.date){ const y = txWhen(t).ym; if(f.date === 'this' ? y !== ym0 : f.date === 'last' ? y !== ym1 : y >= ym1) return false; }
+  if(f.dir && (f.dir === 'in' ? t.a <= 0 : t.a >= 0)) return false;
+  if(f.pers && !txIsPers(t)) return false;
+  if(f.bills && !(txBill(t) || t.n === 'BILLS POCKET')) return false;
+  return true;
+}
+function txRows(){   // the rows that match the search and chips: [transaction, index in S.tx]
+  const q = txNorm(txQ).split(/\s+/).filter(Boolean), ym0 = shownMonth().ym, ym1 = ymAt((S.months || 0) - 1), out = [];
+  S.tx.forEach((t, i) => { if(txMatch(t, q, ym0, ym1)) out.push([t, i]); });
+  return out;
+}
+function txResHTML(){
+  const rows = txRows();
+  if(!rows.length) return `<div class="card txempty" id="txempty">${txQ.trim() ? `No payments match '${esc(txQ.trim())}'` : 'No payments match these filters.'}<button class="btn w" data-txclr>Clear</button></div>`;
+  let last = null, html = '';
+  rows.slice(0, txN).forEach(([t, i]) => {
+    const dl = txDate(t); if(dl !== last){ html += `<div class="dh">${esc(dl)}</div>`; last = dl; }
+    const c = S.analyst.on && !t.parts && txType(t) !== 'own' ? CATEGORY[classify(t)] : null, bl = txBill(t);   // the user's own bill label ("Rent share") with the bank payee as the second line
+    html += `<button class="tx" data-txd="${i}"><span class="ic">${I(t.ic)}</span><span class="t"><b${bl ? ' class="own"' : ''}>${bl ? esc(bl.name) : t.n}</b>${bl ? `<span class="txp">${esc(t.n)}</span>` : ''}<span>${t.s}</span>${t.note?`<em>${I('piggy',15)} ${t.note}</em>`:''}${c && txType(t) !== 'in' ? `<em>${I('chart',15)} ${c[0]} · ${catLabel(classify(t))}</em>` : ''}</span><span class="a num ${t.a>0?'p':''}">${sft(t.a)}</span><span class="chev">${I('chev',18)}</span></button>`;
+  });
+  if(rows.length > txN) html += `<button class="btn w txmore" data-txmore>Show more (${rows.length - txN} left)</button>`;
+  return html;
+}
+function txChipsHTML(){
+  const f = txF, on = (k, label) => `<button class="chip on" data-txrm="${k}" aria-label="Remove filter ${esc(label)}">${esc(label)} ${I('close',14)}</button>`, off = (k, label) => `<button class="chip" data-txfilter="${k}">${label}</button>`;
+  return (f.cat ? on('cat', CATEGORY[f.cat][0]) : off('cat', 'Category')) + (f.date ? on('date', TX_DATES[f.date]) : off('date', 'Date')) + (f.dir ? on('dir', TX_DIRS[f.dir]) : off('dir', 'In/Out'))
+    + `<button class="chip ${f.pers ? 'on' : ''}" data-txtog="pers" aria-pressed="${f.pers}">Persely</button><button class="chip ${f.bills ? 'on' : ''}" data-txtog="bills" aria-pressed="${f.bills}">Bills</button>`;
+}
+function txRefresh(){ const r = $('#txres'); if(r) r.innerHTML = txResHTML(); const x = $('#txqx'); if(x) x.hidden = !txQ; }
 function vTranz(){
-  let last='', html='';
-  if(txMode===0){
-    S.tx.forEach((t,i)=>{
-      if(t.d!==last){ html+=`<div class="dh">${t.d}</div>`; last=t.d; }
-      const tap = S.analyst.on && txType(t) !== 'own', c = tap && !t.parts ? CATEGORY[classify(t)] : null;   // analyst on: every payment opens its detail (category, repeats monthly, change category)
-      const bl = txBill(t);   // a bill payment shows the user's own label ("Rent share") with the bank payee as the second line
-      html+=`<${tap?'button':'div'} class="tx" ${tap?`data-txd="${i}"`:''}><span class="ic">${I(t.ic)}</span><span class="t"><b${bl ? ' class="own"' : ''}>${bl ? esc(bl.name) : t.n}</b>${bl ? `<span class="txp">${esc(t.n)}</span>` : ''}<span>${t.s}</span>${t.note?`<em>${I('piggy',15)} ${t.note}</em>`:''}${c && txType(t) !== 'in' ? `<em>${I('chart',15)} ${c[0]} · ${catLabel(classify(t))}</em>` : ''}</span><span class="a num ${t.a>0?'p':''}">${sft(t.a)}</span>${tap?`<span class="chev">${I('chev',18)}</span>`:''}</${tap?'button':'div'}>`;
-    });
-  } else html = `<div class="card" style="text-align:center;color:var(--muted-t);padding:28px 16px">No pending transactions.</div>`;
-  return `<div class="tabtitle">Transactions</div>
-  <div class="seg"><button class="${txMode===0?'on':''}" data-txmode="0">Completed</button><button class="${txMode===1?'on':''}" data-txmode="1">Pending</button></div>
-  <button class="filter" data-demo="Filter">${I('filter')} Filter</button>
-  ${html}`;
+  const head = `<div class="tabtitle">Transactions</div>
+  <div class="seg"><button class="${txMode===0?'on':''}" data-txmode="0">Completed</button><button class="${txMode===1?'on':''}" data-txmode="1">Pending</button></div>`;
+  if(txMode === 1) return head + `<div class="card" style="text-align:center;color:var(--muted-t);padding:28px 16px">No pending transactions.</div>`;
+  return head + `<label class="txq">${I('search',20)}<input id="txq" type="text" value="${esc(txQ)}" placeholder="Search payments" aria-label="Search payments" autocomplete="off" autocorrect="off" enterkeyhint="search"><button class="xq" id="txqx" data-txqclr aria-label="Clear search" ${txQ ? '' : 'hidden'}>${I('close',18)}</button></label>
+  <div class="txfr"><button class="filter" data-txfilter="">${I('filter')} Filter</button><div class="chs" id="txchips">${txChipsHTML()}</div></div>
+  <div id="txres">${txResHTML()}</div>`;
 }
 
 function vKartyaim(){
@@ -3048,9 +3159,12 @@ const SHEETS_BILLS = {
   txd:() => { const t = S.tx[S._txi]; if(!t) return ''; const ty = txType(t), cat = classify(t), w = txWhen(t), b = ty === 'in' ? null : (S.bills || []).find(x => x.key === payeeKey(t) && !x.ignored);
     const inc = ty === 'in' ? detectRecurring().income.find(i => i.key === payeeKey(t)) : null, rec = b || inc, canCat = !t.parts && ['card', 'refund', 'out', 'debit', 'cash', 'topup'].includes(ty);
     const li = (l, v) => `<div class="li"><span class="t"><b>${l}</b></span><span style="text-align:right;font-size:var(--fs-s)">${v}</span></div>`;
+    const isP = txIsPers(t), pers = isP ? S.goals.find(g => g.name === t.note) : null, added = t.a < 0, gn = t.note || 'Persely', dateFull = fDate(`${w.ym}-${String(w.day).padStart(2, '0')}`);
     return `<h2>Payment</h2><div class="u-sheet-sub"><b style="text-transform:uppercase;font-size:var(--fs-s)">${esc(t.n)}</b> <span class="num k">${sft(t.a)}</span></div>
     ${rec ? `<div class="u-tc" style="margin:-4px 0 10px"><span class="pill ok">Repeats monthly · about ${ft(rec.exp)} on the ${ordinal(rec.day)}</span></div>` : ''}
-    <div class="card lst">${txBill(t) ? li('Your label', esc(txBill(t).name)) + li('Paid to', esc(t.n)) : ''}${li('Date', `${w.day} ${monthOf(w.ym)}`)}${li('Type', t.s)}${t.ref ? li('Reference', esc(t.ref)) : ''}${t.parts ? li('Split', `Essentials ${ft(t.parts.ess)} · Fun ${ft(t.parts.fun)}`) : li('Category', ty === 'in' ? 'Income' : ty === 'own' ? 'Saving: not spending' : `${CATEGORY[cat][0]} · ${catLabel(cat)}`)}</div>
+    <div class="card lst">${txBill(t) ? li('Your label', esc(txBill(t).name)) + li('Paid to', esc(t.n)) : ''}${li('Date', dateFull)}${li('Type', t.s)}${li('Amount', sft(t.a))}${t.ref ? li('Reference', esc(t.ref)) : ''}${t.parts ? li('Split', `Essentials ${ft(t.parts.ess)} · Fun ${ft(t.parts.fun)}`) : li('Category', ty === 'in' ? 'Income' : ty === 'own' ? 'Saving: not spending' : `${CATEGORY[cat][0]} · ${catLabel(cat)}`)}</div>
+    ${isP ? `${pers ? `<button class="card lst" data-goal="${pers.id}" style="width:100%;text-align:left"><span class="li"><span class="t"><b>${added ? 'Added to' : 'Withdrawn from'} ${esc(pers.name)}</b><small>Open the goal</small></span><span class="chev">${I('chev', 18)}</span></span></button>` : `<div class="card lst"><div class="li"><span class="t"><b>${added ? 'Added to' : 'Withdrawn from'} ${esc(gn)}</b></span></div></div>`}
+    <div class="fine u-note-b12" id="txsign">${added ? `Here it is ${sft(t.a)} because the money left your Junior account. On the goal page it is +${ft(-t.a)} because it went into the goal.` : `Here it is ${sft(t.a)} because the money came back to your Junior account. On the goal page it is \u2212${ft(t.a)} because it left the goal.`}</div>` : ''}
     ${b ? `<button class="opt slim ${b.locked ? 'on' : ''}" data-lockbill="${b.id}" data-resheet="txd"><span class="t"><b class="u-fs-14">This is a must-pay bill</b><small>Bills first watches it</small></span><span class="tg ${b.locked ? 'on' : ''}"></span></button>` : ''}
     ${ty === 'cash' || ty === 'topup' ? `<div class="fine u-note-b12">${ty === 'cash' ? 'Cash is unknown: the app cannot see what you buy with it.' : 'Money moved to another app is unknown, so it is shown apart.'}</div>` : ''}
     ${canCat ? `<button class="btn" data-txcat2>Change category</button>` : ''}<button class="btn ghost" data-closesheet>Close</button>`; }
@@ -3091,7 +3205,7 @@ function planTips(m){
 function planHTML(m){
   const mo = m.mo;
   const bar = (spent, plan, col, k) => { const p = plan ? Math.min(100, spent / plan * 100) : 0, over = k !== 'save' && spent > plan; return `<div class="mp-bar" aria-hidden="true"><i style="width:${p}%;background:${over ? 'var(--orange)' : col}"></i></div>`; };
-  const rowOf = (r, g) => `<div class="mp-r"><span style="display:flex;align-items:center;gap:7px"><span class="dotc" style="background:${r.col};width:9px;height:9px"></span>${r.name}</span><span class="num">${r.spent === null ? `${ft(r.plan)} <small>planned, not moved</small>` : `${ft(r.spent)} <small>of ${ft(r.plan)}</small>`}</span></div>${r.spent === null ? '' : bar(r.spent, r.plan, r.col, g.k)}`;
+  const rowOf = (r, g) => { const go = SPEND_CATS.includes(r.c) || r.c === 'persely', tg = go ? 'button' : 'div'; return `<${tg} class="mp-r" ${go ? `data-fcat="${r.c}" aria-label="${esc(r.name)}. See these payments"` : ''}><span style="display:flex;align-items:center;gap:7px"><span class="dotc" style="background:${r.col};width:9px;height:9px"></span>${r.name}</span><span class="num">${r.spent === null ? `${ft(r.plan)} <small>planned, not moved</small>` : `${ft(r.spent)} <small>of ${ft(r.plan)}</small>`}${go ? ` <span class="chev" aria-hidden="true">${I('chev', 14)}</span>` : ''}</span></${tg}>${r.spent === null ? '' : bar(r.spent, r.plan, r.col, g.k)}`; };
   // one block, the four groups once. Saving is shown as an amount a month (no percentage). Groups with categories open and close.
   const head = g => `<b><span class="dotc" style="background:${BKT_COL[g.k]}"></span>${g.k === 'must' ? I('lock', 14) : ''}${g.name}</b><span class="num">${g.k === 'save' ? `${ft(g.plan)} a month` : `${ft(g.spent)} ${g.note} of ${ft(g.plan)}`}</span>`;
   const grp = g => g.rows.length
@@ -3495,6 +3609,7 @@ function renderView(id){ const t=TABS.find(x=>x[0]===id); $('#v-'+id).innerHTML 
 function renderAll(){ syncSplit(); TABS.forEach(t=>renderView(t[0])); renderTabs(); refreshPages(); save(); if(typeof mountPig==='function') mountPig(); }
 let NAVC = {n:0};   // counts page changes: something the app plans to open later checks that nothing else was opened meanwhile
 function tab(id){
+  if(cur === 'tranzakciok' && id !== 'tranzakciok') txReset();   // search and chips (also a category passed in from Spending) clear when the student leaves the tab
   if(cur === 'fooldal' && id !== 'fooldal') anNoteSeen();
   NAVC.n++; hideToast(); setTimeout(placeChip, 60);   // a toast belongs to the page where the action happened: it closes when the student goes somewhere else
   if(id === 'hub' && cur !== 'hub'){ HINT_SHOWN.clear(); SETUP_COLLAPSED = false; }   // a new visit: hints show again if unseen, the setup card is whole again
@@ -3826,6 +3941,14 @@ const SHEETS = {
       <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:6px"><button class="chip sq" data-splitinv="-1000" ${inv <= 0 ? 'disabled' : ''} aria-label="Less for investing">−</button><b class="num" style="min-width:92px;text-align:center;font-size:1rem">${ft(inv)}</b><button class="chip sq" data-splitinv="1000" ${inv + 1000 > by.save.amt ? 'disabled' : ''} aria-label="More for investing">+</button></div>
       <div class="fine" style="margin-top:6px">A plan only: nothing is bought for you. It shows on your monthly plan.</div></div>`; })()}
     <button class="btn" data-splitsave>Save my split</button><button class="btn ghost" data-splitsuggest>Use the suggestion: Fun ${suggestSplit().fun}%</button>`; },
+  // the Filter sheet on Transactions: the same options as the chips; nothing changes until Apply
+  txfilter:()=>{ const f = txDraft || txF, ch = (k, v, label) => `<button class="chip ${f[k] === v ? 'on' : ''}" data-txfd="${k}|${v}" aria-pressed="${f[k] === v}">${label}</button>`;
+    return `<h2>Filter</h2><div class="u-sheet-sub">Pick what to show. Nothing changes until you tap Apply.</div>
+    <div class="flabel">Category</div>${TX_CAT_GROUPS.map(([l, ks]) => `<div class="fine" style="margin:6px 0 0">${l}</div><div class="chips u-mb4">${ks.map(c => ch('cat', c, CATEGORY[c][0])).join('')}</div>`).join('')}
+    <div class="flabel">Date</div><div class="chips u-mb4">${Object.entries(TX_DATES).map(([v, l]) => ch('date', v, l)).join('')}</div>
+    <div class="flabel">In or out</div><div class="chips u-mb4">${Object.entries(TX_DIRS).map(([v, l]) => ch('dir', v, l)).join('')}</div>
+    <div class="flabel">Only show</div><div class="chips u-mb4"><button class="chip ${f.pers ? 'on' : ''}" data-txfd="pers|1" aria-pressed="${!!f.pers}">Persely moves</button><button class="chip ${f.bills ? 'on' : ''}" data-txfd="bills|1" aria-pressed="${!!f.bills}">Bills</button></div>
+    <button class="btn" data-txfapply>Apply</button><button class="btn w" data-txfclear>Clear</button><button class="btn ghost" data-closesheet>Close</button>`; },
   // recategorise one card payment
   txcat:()=>{ const t = S.tx[S._txi]; if(!t) return '';
     const cur = classify(t), card = isCardTx(t) || txType(t) === 'refund';
@@ -4026,6 +4149,17 @@ document.addEventListener('click', e=>{
     send(); return;
   }
   if(d.txmode){ txMode=+d.txmode; renderView('tranzakciok'); return; }
+  /* Transactions: search, chips, Filter sheet, category passed in from Spending */
+  if(d.fcat){ txReset(); if(d.fcat === 'persely') txF.pers = true; else txF.cat = d.fcat; txMode = 0; tab('tranzakciok'); return; }
+  if('txclr' in d){ txReset(); renderView('tranzakciok'); return; }
+  if('txqclr' in d){ txQ = ''; txN = TX_STEP; const f = $('#txq'); if(f){ f.value = ''; f.focus({preventScroll:true}); } txRefresh(); return; }
+  if('txmore' in d){ txN += TX_STEP; txRefresh(); return; }
+  if(d.txrm){ txF[d.txrm] = ''; txN = TX_STEP; renderView('tranzakciok'); return; }
+  if(d.txtog){ txF[d.txtog] = !txF[d.txtog]; txN = TX_STEP; renderView('tranzakciok'); return; }
+  if('txfilter' in d){ txDraft = {...txF}; sheet(SHEETS.txfilter()); return; }
+  if(d.txfd){ const [k, v] = d.txfd.split('|'); if(!txDraft) txDraft = {...txF}; txDraft[k] = k === 'pers' || k === 'bills' ? !txDraft[k] : (txDraft[k] === v ? '' : v); const st = $('#sheet').scrollTop; sheet(SHEETS.txfilter()); $('#sheet').scrollTop = st; return; }
+  if('txfclear' in d){ txDraft = {...TX_BLANK}; const st = $('#sheet').scrollTop; sheet(SHEETS.txfilter()); $('#sheet').scrollTop = st; return; }
+  if('txfapply' in d){ txF = {...(txDraft || txF)}; txDraft = null; txN = TX_STEP; closeSheet(); renderView('tranzakciok'); return; }
   if('freeze' in d){ S.frozen=!S.frozen; renderAll(); toast(S.frozen?'Your card is temporarily blocked':'Your card is active again'); return; }
   if(d.perktab){ perkTab = +d.perktab; refreshPages(); return; }
   if(d.perk){ S._perk = d.perk; sheet(SHEETS.perk()); return; }
@@ -4206,9 +4340,9 @@ document.addEventListener('click', e=>{
     const sv = splitView(); S.analyst.invest = Math.min(sp.inv !== undefined ? sp.inv : (S.analyst.invest || 0), sv.by.save.amt);
     closeSheet(); renderAll(); undoable(before, `Split saved: Fun ${sv.by.fun.pct}%, Saving ${sv.by.save.pct}%. Payday rule is now ${sp.rule}% of each salary`); return; }
   if(d.txcat !== undefined){ S._txi = +d.txcat; sheet(SHEETS.txcat()); return; }
-  if(d.setcat){ const t = S.tx[S._txi]; if(!t) return; t.cat = d.setcat; S.catRules[payeeKey(t)] = d.setcat; closeSheet(); renderAll();
-    const u = splitUse(), cc = CATEGORY[d.setcat], b = cc[1], bud = b && S.analyst.accepted ? splitBudget(b) : 0, pc = bud ? Math.round(u[b] / bud * 100) : 0;
-    toast(b ? `Moved to ${cc[2] === 'must' ? 'Must-pay' : bucketName(b)}${S.analyst.accepted ? `. ${bucketName(b)}: ${pc}% used` : ''}` : `Category: ${cc[0]}`); return; }
+  if(d.setcat){ const t = S.tx[S._txi]; if(!t) return; const before = snap(); t.cat = d.setcat; S.catRules[payeeKey(t)] = d.setcat; closeSheet(); renderAll();
+    const u = splitUse(), cc = CATEGORY[d.setcat], b = cc[1], must = cc[2] === 'must', bud = b && !must && S.analyst.accepted ? splitBudget(b) : 0, pc = bud ? Math.round(u[b] / bud * 100) : 0;
+    undoable(before, b ? `Moved to ${must ? 'Must-pay' : bucketName(b)}${bud ? ` · ${pc}% used` : ''}` : `Moved to ${cc[0]}`); return; }
   /* money in: payday rule, weekly transfer, round-ups */
   if('paymove' in d){
     const g = ruleGoal(), v = incomeShare(S.payday.pct);
@@ -4348,6 +4482,7 @@ document.addEventListener('keydown', e => {
     if(nv !== null){ e.preventDefault(); if(nv !== v) pkSet(k, nv); } return; }
   if(e.key === 'Enter' && e.target.classList && e.target.classList.contains('pkamt')){ e.preventDefault(); e.target.blur(); }
 });
+document.addEventListener('input', e => { if(e.target && e.target.id === 'txq'){ txQ = e.target.value; txN = TX_STEP; txRefresh(); } });   // Transactions search: only the list is redrawn, the field keeps its focus
 document.addEventListener('input', e => {
   const t = e.target; if(!t.classList || !t.classList.contains('pkamt')) return;
   const before = t.value.slice(0, t.selectionStart || 0).replace(/\D/g, '').length, n = +t.value.replace(/\D/g, '').slice(0, 8) || 0;
