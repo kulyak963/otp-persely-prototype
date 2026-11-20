@@ -938,7 +938,7 @@ button.cat{background:none;border:0;padding:4px 0;font:inherit;border-radius:12p
 .src-c.chips.eq,.subopts .chips.eq:has([data-onbwkcust]){grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.src-c.chips.eq .chip,.subopts .chips.eq:has([data-onbwkcust]) .chip{padding-left:2px;padding-right:2px;font-size:.8125rem;min-width:0}
 .stp{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0 4px}.stp b{min-width:84px;text-align:center;font-size:1.125rem}
 .stp button{width:40px;height:40px;border-radius:50%;background:var(--bg);font-size:1.375rem;font-weight:700;color:var(--green-t)}
-.srcs-add{display:block;margin:6px 0 2px}.srcs-tot{margin:6px 2px 2px}
+.srcs-add{display:block;margin:6px 0 0}.srcs-hint{margin:0 0 4px 2px}.srcs-tot{margin:6px 2px 2px}
 .src-add{border-top:1px solid var(--line);padding:10px 0 4px}
 .limline{display:flex;align-items:center;gap:12px;width:100%;margin:10px 0 2px;padding:8px 14px;border-radius:14px;background:#fff;box-shadow:var(--sh);text-align:left;border-left:4px solid var(--green)}
 .limline .t{display:flex;flex-direction:column;flex:none}.limline b{font-size:var(--fs-s)}.limline small{font-size:var(--fs-xs);color:var(--muted-t)}
@@ -3546,13 +3546,15 @@ document.addEventListener('click', e=>{
   if(d.onbscust){ O.cust[d.onbscust] = true; renderOnb(); return; }
   if(d.onbsstep){ const [id, st] = d.onbsstep.split(':'), cl = v => Math.max(1, Math.min(50, v + (+st)));
     if(id === 'salary') O.pct = cl(O.pct); else { const x = O.extra.find(e => e.id === id); if(x) x.pct = cl(x.pct); } renderOnb(); return; }
-  if('onbaddsrc' in d){ O.addSrc = {type:'Scholarship', amt:30000, day:10}; renderOnb(); return; }
-  if(d.onbsrctype){ O.addSrc.type = d.onbsrctype; renderOnb(); return; }
+  if('onbaddsrc' in d){ const fam = O.extra.find(x => x.id === 'family' && !x.on && !x.added); O.addSrc = fam ? {type:'Family transfer', amt:fam.amt, day:fam.day} : {type:'Scholarship', amt:30000, day:10}; renderOnb(); return; }
+  if(d.onbsrctype){ const fam = O.extra.find(x => x.id === 'family'); O.addSrc.type = d.onbsrctype; if(d.onbsrctype === 'Family transfer' && fam){ O.addSrc.amt = fam.amt; O.addSrc.day = fam.day; } else if(O.addSrc.amt === (fam && fam.amt)){ O.addSrc.amt = 30000; O.addSrc.day = 10; } renderOnb(); return; }
   if(d.onbsrcamt){ O.addSrc.amt = Math.max(5000, Math.min(500000, O.addSrc.amt + (+d.onbsrcamt))); renderOnb(); return; }
   if(d.onbsrcday){ O.addSrc.day = +d.onbsrcday; renderOnb(); return; }
   if('onbsrccancel' in d){ O.addSrc = null; renderOnb(); return; }
-  if('onbsrcok' in d){ const a = O.addSrc, from = a.type === 'Scholarship' ? 'your university' : a.type === 'Part-time job' ? 'your employer' : 'another payer';
-    O.extra.push({id:'s' + Date.now(), name:a.type, from, day:a.day, amt:a.amt, on:true, pct:10}); O.addSrc = null; renderOnb(); return; }
+  if('onbsrcok' in d){ const a = O.addSrc, fam = O.extra.find(x => x.id === 'family');
+    if(a.type === 'Family transfer' && fam) Object.assign(fam, {on:true, added:true, amt:a.amt, day:a.day});
+    else { const from = a.type === 'Scholarship' ? 'your university' : a.type === 'Part-time job' ? 'your employer' : 'another payer'; O.extra.push({id:'s' + Date.now(), name:a.type, from, day:a.day, amt:a.amt, on:true, pct:10, added:true}); }
+    O.addSrc = null; renderOnb(); return; }
   if('onbwkcust' in d){ O.wkCust = true; O.weeklyOn = true; renderOnb(); return; }
   if(d.onbwkstep){ O.weekly = Math.max(500, Math.min(50000, O.weekly + (+d.onbwkstep))); O.wkCust = true; renderOnb(); return; }
   if(d.onbweekly){ O.weekly = +d.onbweekly; O.weeklyOn = true; O.wkCust = false; renderOnb(); return; }
@@ -4111,7 +4113,7 @@ function onbSrcRow(id, name, sub, on, pct){
 function onbAddSrc(){
   const a = O.addSrc;
   return `<div class="src-add"><div class="flabel" style="margin-top:0">What is it?</div>
-    <div class="chips u-m0">${['Scholarship', 'Part-time job', 'Other'].map(t => `<button class="chip ${a.type === t ? 'on' : ''}" data-onbsrctype="${t}">${t}</button>`).join('')}</div>
+    <div class="chips u-m0">${(O.extra.some(x => x.id === 'family' && !x.on && !x.added) ? ['Family transfer'] : []).concat(['Scholarship', 'Part-time job', 'Other']).map(t => `<button class="chip ${a.type === t ? 'on' : ''}" data-onbsrctype="${t}">${t}</button>`).join('')}</div>${a.type === 'Family transfer' ? '<div class="fine" style="margin-top:6px">We see it every month from Kiss István.</div>' : ''}
     <div class="flabel">How much a month?</div><div class="stp"><button data-onbsrcamt="-5000">−</button><b class="num">${ft(a.amt)}</b><button data-onbsrcamt="5000">+</button></div>
     <div class="flabel">Around which day?</div><div class="chips u-m0">${[1, 5, 10, 15, 20, 25].map(dd => `<button class="chip ${a.day === dd ? 'on' : ''}" data-onbsrcday="${dd}">${ordinalDay(dd)}</button>`).join('')}</div>
     <div class="hero-btns u-mt12"><button class="btn w" data-onbsrccancel>Cancel</button><button class="btn" data-onbsrcok>Add</button></div></div>`;
@@ -4178,8 +4180,8 @@ function renderOnb(){
     body = `<div class="onb-step">Step 2 of ${n}</div><h2>How should money get in?</h2><p class="lead">Switch on what suits you. Change it any time.</p>
       <div class="srcs"><div class="srcs-h"><b>Payday rule</b> <span class="rec">Recommended</span><small>A share of each income, the day it arrives. We ask first.</small></div>
         ${onbSrcRow('salary', 'Salary', `${ft(S.income.amount)} · around the 5th · from your employer`, O.payOn, O.pct)}
-        ${(O.extra || []).map(x => onbSrcRow(x.id, x.name, `${ft(x.amt)} · around the ${ordinalDay(x.day)} · from ${esc(x.from)}`, x.on, x.pct)).join('')}
-        ${O.addSrc ? onbAddSrc() : '<button class="link lnk44 srcs-add" data-onbaddsrc>+ Add a scholarship or another income</button>'}
+        ${(O.extra || []).filter(x => x.on || x.added).map(x => onbSrcRow(x.id, x.name, `${ft(x.amt)} · around the ${ordinalDay(x.day)} · from ${esc(x.from)}`, x.on, x.pct)).join('')}
+        ${O.addSrc ? onbAddSrc() : '<button class="link lnk44 srcs-add" data-onbaddsrc>+ Add another income</button><div class="fine srcs-hint">Family transfer, scholarship or a part-time job</div>'}
         <div class="fine srcs-tot">${O.payOn || onbExtra() ? `Together: about <b>${ft((O.payOn ? incomeShare(O.pct) : 0) + onbExtra())}</b> a month into your goal.` : 'Switch on an income to save a share of it.'}</div></div>
       ${tg(O.weeklyOn, 'data-onbwk', 'Weekly transfer', 'The same amount every Monday.',
         `<div class="chips eq u-m0">${[1000,2000,3000,5000].map(x=>`<button class="chip ${!O.wkCust && O.weekly===x?'on':''}" data-onbweekly="${x}">${ft(x)}</button>`).join('')}<button class="chip ${O.wkCust || ![1000,2000,3000,5000].includes(O.weekly) ? 'on' : ''}" data-onbwkcust>Custom</button></div>
