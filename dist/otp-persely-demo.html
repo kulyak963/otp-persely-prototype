@@ -2408,10 +2408,11 @@ function __checkAnalytics(){
       // SIMPLE_PERSELY: no ring at all before month end (no grey ring), at month end the ring around Persi (sp-ring) opens the story
       const ringOff = () => SIMPLE_PERSELY ? !/sp-ring|class="sring|data-storywait/.test(vHub()) : /sring off/.test(vHub()) && !/data-story[ >]/.test(vHub().match(/<[^>]*sring off[^>]*>/)[0]) && /Your story arrives on 30 November 2026/.test(vHub());
       const ringOn = () => SIMPLE_PERSELY ? /<button class="sp-ring[^"]*" data-story data-persi-ring/.test(vHub()) && !/data-storywait|class="sring/.test(vHub()) : /data-story/.test(vHub().match(/<[^>]*class="sring[^"]*"[^>]*>/)[0]) && !/sring off/.test(vHub());
-      reset('existing'); tab('hub'); const ring0 = pl(vHub()), off0 = ringOff(), card0 = /Your November is ready/.test(vFooldal());
-      S.monthEnd = true; renderAll(); const on1 = ringOn(), card1 = /Your November is ready/.test(pl(vFooldal()));
+      const STC = SIMPLE_PERSELY ? /Your November story is here/ : /Your November is ready/;   // SIMPLE_PERSELY: plan 2f, "Your November story is here"
+      reset('existing'); tab('hub'); const ring0 = pl(vHub()), off0 = ringOff(), card0 = STC.test(vFooldal());
+      S.monthEnd = true; renderAll(); const on1 = ringOn(), card1 = STC.test(pl(vFooldal()));
       openStory(); stGo(3); const was3 = ST.i === 3; closeStory(); openStory(); const restarted = ST.i === 0 && ST.t === 0; closeStory();
-      const homeAfter = !/Your November is ready/.test(vFooldal()) && (SIMPLE_PERSELY ? /sp-ring seen/ : /sring seen/).test(vHub());
+      const homeAfter = !STC.test(vFooldal()) && (SIMPLE_PERSELY ? /sp-ring seen/ : /sring seen/).test(vHub());
       const dm0 = DEMO_ON; setDemoMode(true); S.monthEnd = false; S.storySeen = false; unlockPhone(); dispatchEvent(new KeyboardEvent('keydown', {key:'m'})); const keyM = S.monthEnd === true && ST.on === true; closeStory();
       reset('existing'); dispatchEvent(new KeyboardEvent('keydown', {key:'e'})); const keyE = S.monthEnd === true && ST.on === true && S.period === 'Autumn semester'; closeStory(); reset('existing'); setDemoMode(dm0);
       S.monthEnd = true; monthStep(true); const cleared = S.monthEnd === false;
@@ -2849,9 +2850,7 @@ function __checkAnalytics(){
       const fr = [...hubF, ...confF, homeT, persiT], all = fr.join(' '), sents = fr.flatMap(f => f.split(/[.!?·](?!\d)/)).map(x => toks(x).length);
       ok('chk-simple-first-run-words: at most 25 words on each first-run screen (tab, confirm screen for each of the 4 tiles, reward; amounts and dates are numbers, not words), Persi at most 8 words, sentences at most 12 words, no "deadline", verb first on the button', wTab.length <= 25 && Object.values(wConf).every(n => n <= 25) && wRw <= 25 && toks(persiT).length <= 8 && sents.every(n => n <= 12) && !/deadline/i.test(all) && /^Save /.test(btnT), {wTab:wTab.length, wConf, wRw, persi:toks(persiT).length, maxSent:Math.max(...sents), longest:fr.flatMap(f => f.split(/[.!?·](?!\d)/)).sort((a, b) => toks(b).length - toks(a).length)[0]});
       // later phases own the other chk-simple-* checks; these three are stubs until their phase is built
-      ok('chk-simple-grade (stub, Phase 4: in-app FK grade ≤ 4 for tab and first-run texts)', true, 'stub');
       ok('chk-simple-analyst-line (stub, Phase 6: Learn more and Turn off equal; the Phase 1 one line is checked in chk-analyst-notice)', true, 'stub');
-      ok('chk-simple-hu-keys (stub, Phase 4: every new string has a HU key)', true, 'stub');
     } catch(e){ ok('chk-simple-phase1: the Simple Persely checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); spHideReward(true); }catch(e){} while(stack.length) popPage(true); spLeg(false); S = svS; cur = curS; stack.push(...stkS); demo.locked = lockS;
       try{ Object.keys(O).forEach(k => delete O[k]); Object.assign(O, JSON.parse(OS)); closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', viewsS[i])); }
@@ -2938,6 +2937,7 @@ function __checkAnalytics(){
     } catch(e){ ok('chk-simple-phase3: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); S = svR; cur = curR; stack.push(...stkR); demo.locked = lockR; try{ Object.keys(O).forEach(k => delete O[k]); Object.assign(O, JSON.parse(oR)); closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', viewsR[i])); }
   }
+  if(SIMPLE_PERSELY && typeof spGradeChecks === 'function') spGradeChecks(ok);   // Phase 4 copy pass: chk-simple-grade and chk-simple-hu-keys (js/14c-simple-copy.js)
   // chk-palette: one colour palette. Scans the stylesheet (outside :root) and the app script for colour literals: only the documented exceptions may stay
   // (Mastercard logo, iPhone frame hardware, pure black), rgb()/rgba() only as black or white with alpha, no 0x colour ints; PALETTE holds a real #RRGGBB
   // for every token, --ink-rgb equals --ink, theme-color equals --bg, and the spending categories stay told apart.
@@ -3265,7 +3265,7 @@ const storyDateTxt = () => { const mo = shownMonth(); return `${mo.last} ${mo.na
 function storyCard(){
   if(!storyReady() || S.storySeen) return '';
   const nm = S.period === 'Autumn semester' ? 'Autumn semester' : S.period;
-  return `<button class="card hubteaser storycard" data-story data-tour="storycard">${pig('proud', 52)}<span><b>Your ${esc(nm)} is ready</b><small>Take a look. It takes about a minute</small></span>${I('chev',20)}</button>`;
+  return `<button class="card hubteaser storycard" data-story data-tour="storycard">${pig('proud', 52)}<span><b>${SIMPLE_PERSELY ? `Your ${esc(nm)} story is here` : `Your ${esc(nm)} is ready`}</b><small>Take a look. It takes about a minute</small></span>${I('chev',20)}</button>`;
 }
 // the ring on the Persely tab: active at month end, grey before it with the date it arrives
 function storyRing(){
@@ -3477,7 +3477,7 @@ function vKartyaim(){
   <button class="row" data-saverules="rr"><span class="ic">${I('piggy')}</span><span class="t">Round-ups: ${rg.length ? `on → ${rg.map(g => esc(g.name)).join(', ')}` : 'off'}<small class="g">${rg.length > 1 ? 'Shared equally. ' : ''}Set on each goal's page</small></span><span class="lnk44 u-edit">Edit</span></button>
   <button class="row" data-demo="Change daily limit"><span class="ic">${I('limit')}</span><span class="t">Change daily limit</span>${chev}</button>
   <button class="row" data-demo="View card details"><span class="ic">${I('eye')}</span><span class="t">View card details</span>${chev}</button>
-  <button class="row" data-go="perks"><span class="ic">${I('tag')}</span><span class="t">Discounts<small class="g">${5-S.disc.activated.length} offers waiting for activation</small></span>${chev}</button>
+  <button class="row" data-go="perks"><span class="ic">${I('tag')}</span><span class="t">Discounts<small class="g">${SIMPLE_PERSELY ? plural(5 - S.disc.activated.length, 'deal') + ' to turn on' : `${5-S.disc.activated.length} offers waiting for activation`}</small></span>${chev}</button>
   <button class="row" data-demo="Click to Pay"><span class="ic">${I('ctp')}</span><span class="t">Click to Pay</span>${chev}</button>`;
 }
 
@@ -4018,7 +4018,7 @@ function analysisRow(){
   return row('data-go="mymoney"', `Card spending ${ft(cardSpending())} of ${ft(plan)} planned`);
 }
 // Persely tab rows after the habits: Perks (Discounts and My rewards) and Your year (only after 12 months, C4.1)
-const perksRow = () => `<button class="row" data-go="perks"><span class="ic">${I('gift')}</span><span class="t"><b>Perks</b><small>${DISC.length - S.disc.activated.length} offers waiting for activation · ${plural(S.rewards.length, 'reward')}</small></span><span class="chev">${I('chev', 20)}</span></button>`;
+const perksRow = () => `<button class="row" data-go="perks"><span class="ic">${I('gift')}</span><span class="t"><b>Perks</b><small>${SIMPLE_PERSELY ? plural(DISC.length - S.disc.activated.length, 'deal') + ' to turn on' : `${DISC.length - S.disc.activated.length} offers waiting for activation · ${plural(S.rewards.length, 'reward')}`}</small></span><span class="chev">${I('chev', 20)}</span></button>`;
 const yearRow = () => (S.months || 0) >= 12 ? `<button class="row" data-go="year"><span class="ic">${I('star')}</span><span class="t"><b>Your year</b><small>12 months in Persely</small></span><span class="chev">${I('chev', 20)}</span></button>` : '';
 /* The ONE Spending page (C2, D3), in this order: 1 Safe to spend, 2 month circle (Card spending, Total out, days left, month end projection),
    3 Bills row, 4 My plan (categories expandable, one Edit), 5 Persi's tips, 6 Next month row, 7 Latest card payments, 8 footer with the analyst switch.
@@ -4281,7 +4281,7 @@ function setupCard(){   // the 500 000 Ft cap and the end date in the line below
   if(SETUP_COLLAPSED) return `<button class="setup" data-setupopen><span class="u-ico-g">${I('star',24)}</span><span class="u-fx1"><b>Pick a goal when you're ready</b></span><span class="u-ico-g">${I('chev',20)}</span></button>`;
   return `<div class="card setupcard" id="setupcard"><h2>What are you saving for?</h2>
     <!-- CONFIRM WITH OTP -->
-    <div class="k">3.0% a year on up to 500 000 Ft with your Junior account until ${juniorEndLabel()}</div>
+    <div class="k">${typeof spOn === 'function' && spOn() ? `3.0% a year on up to ${ft(CAP)}. Until ${juniorEndLabel()}.` : `3.0% a year on up to 500 000 Ft with your Junior account until ${juniorEndLabel()}`}</div>
     ${S.draft ? `<button class="row" data-onbresume><span class="ic">${I('star')}</span><span class="t">Continue your draft<small>${esc(S.draft.name || 'Your goal')}, ${ft(S.draft.target)}</small></span><span class="chev">${I('chev',20)}</span></button>` : ''}
     <div class="wn-grid three">${Object.entries(GOAL_PRESETS).map(([k,g]) => `<button data-tilepick="${k}">${I(g.ic,24)}${g.label}</button>`).join('')}<button data-tilepick="custom">${I('plus',24)}Something else</button></div>
     <button class="later" data-setuplater>Not now</button></div>`;
@@ -5117,7 +5117,7 @@ function hubsaveSimple(){
     <div class="flabel">Amount</div>
     <div class="fld"><span class="t"><input id="mv" inputmode="numeric" value="${v}" placeholder="Amount" aria-label="Amount" aria-describedby="e-mv"></span><b>${e ? '€' : 'Ft'}</b></div><div class="ferr" id="e-mv" role="alert"></div>
     <div class="chips u-mt0 hsamt" role="group" aria-label="Amount">${chips.map(x=>`<button class="chip ${+v === x ? 'on' : ''}" data-setv="${x}" aria-pressed="${+v === x}">${e ? eur(x) : ft(x)}</button>`).join('')}</div>
-    ${open ? `<div class="flabel">From</div>${S.accounts.filter(a=>a.id!=='persely').map(a=>`<button class="opt slim ${S._from===a.id?'on':''}" data-hubfrom="${a.id}"><span class="ic">${I('wallet',22)}</span><span class="t"><b>${a.n}</b><small class="num">${ft(a.v)} available</small></span>${S._from===a.id?`<span class="u-ico-g">${I('check',22)}</span>`:''}</button>`).join('')}`
+    ${open ? `<div class="flabel">From</div>${S.accounts.filter(a=>a.id!=='persely').map(a=>`<button class="opt slim ${S._from===a.id?'on':''}" data-hubfrom="${a.id}"><span class="ic">${I('wallet',22)}</span><span class="t"><b>${a.n}</b><small class="num">You have ${ft(a.v)}</small></span>${S._from===a.id?`<span class="u-ico-g">${I('check',22)}</span>`:''}</button>`).join('')}`
       : `<div class="hsfrom"><span>From ${esc(fromName(S._from))}</span><span aria-hidden="true">·</span><button class="link lnk44" data-hubchange aria-label="Change the account or the goal">Change</button></div>`}
     <div class="fine u-note-t6">${e ? `Demo rate 1 € = ${EUR_RATE} Ft. Euro goals don't get the Junior rate.` : S.savedWeek ? 'This week already counts for your streak.' : `Counts for this week: your streak goes to ${S.streak+1}.`}</div>
     <button class="btn" data-hubsave>${v ? `Add ${money(g, +v)}` : 'Add money'}</button>
@@ -5645,7 +5645,7 @@ async function pushRefresh(){
 function remindRow(){
   pushInfo(); if(PUSH.on || PUSH.perm === 'granted') return '';
   const can = PUSH.supported && !window.__STANDALONE && PUSH.perm !== 'denied' && (PUSH.standalone || !PUSH.ios);
-  const txt = can ? '<b>Reminders are off.</b> Turn on notifications to get your Sunday reminder.' : PUSH.ios && !PUSH.standalone && PUSH.perm !== 'denied' && !window.__STANDALONE ? '<b>No reminders yet:</b> add the app to your Home Screen to get them. You can still save any time.' : PUSH.perm === 'denied' ? '<b>No reminders:</b> you can still save any time. To get them back, allow notifications for this app in your phone Settings.' : '<b>No reminders:</b> you can still save any time.';
+  const txt = can ? (SIMPLE_PERSELY ? '<b>Reminders are off.</b> Turn them on to get a nudge on Sunday.' : '<b>Reminders are off.</b> Turn on notifications to get your Sunday reminder.') : PUSH.ios && !PUSH.standalone && PUSH.perm !== 'denied' && !window.__STANDALONE ? '<b>No reminders yet:</b> add the app to your Home Screen to get them. You can still save any time.' : PUSH.perm === 'denied' ? (SIMPLE_PERSELY ? '<b>No reminders.</b> You can still save any time. To get them back, turn on notifications in your phone Settings.' : '<b>No reminders:</b> you can still save any time. To get them back, allow notifications for this app in your phone Settings.') : '<b>No reminders:</b> you can still save any time.';
   return `<div class="rem"><span class="rem-i">${I('bell', 18)}</span><span class="rem-t">${txt}</span>${can ? '<button class="btn sm rem-b" data-pushon>Turn on</button>' : ''}</div>`;
 }
 const b64 = s => { const p='='.repeat((4-s.length%4)%4), r=atob((s+p).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from([...r].map(c=>c.charCodeAt(0))); };
@@ -6525,7 +6525,7 @@ window.__story = {
 /* ================= Settings, inbox, Perks (Phase 6: D11, D12) ================= */
 const NOTIF_TOGGLES = [   // [key, title, subtitle]; "streak" is the weekly reminder (S.remind)
   ['bills', 'Bills due', 'Late bills and bills coming up'], ['streak', 'Sunday streak reminder', 'Sunday 18:00, only if the week is still open'], ['payday', 'Payday', 'When your salary arrives'],
-  ['story', 'Monthly story', 'When your month story is ready'], ['card', 'Card payments', 'Each card payment and your balance'], ['incoming', 'Incoming transfers', 'Money that arrives on your account']];
+  ['story', 'Monthly story', SIMPLE_PERSELY ? 'When your month story is here' : 'When your month story is ready'], ['card', 'Card payments', 'Each card payment and your balance'], ['incoming', 'Incoming transfers', 'Money that arrives on your account']];
 if(SIMPLE_PERSELY) NOTIF_TOGGLES.push(['junior', 'Junior ends', 'At 90, 30 and 7 days before'], ['goal', 'Goal milestones', 'At 25, 50, 75 and 100%'], ['mkt', 'Offers and perks', 'Only with your OK. Off until you turn it on']);
 const notifOn = kind => !kind ? true : kind === 'streak' ? !!S.remind : kind === 'mkt' ? S.notif.mkt === true : S.notif[kind] !== false;
 const hhmm = (d = new Date()) => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
@@ -6589,7 +6589,7 @@ function settingsHTML(){
   const n = S.notif, ch = `<span class="chev">${I('chev', 18)}</span>`;
   const row = (ic, title, sub, attr) => `<button class="set-row" ${attr}><span class="ic">${I(ic, 22)}</span><span class="t">${title}${sub ? `<small>${sub}</small>` : ''}</span>${ch}</button>`;
   const srow = (ic, title, sub, on, attr) => `<div class="set-row"><span class="ic">${I(ic, 22)}</span><span class="t">${title}${sub ? `<small>${sub}</small>` : ''}</span>${swBtn(on, attr, title)}</div>`;
-  const junior = S.bridge ? `Keeping 3.0% until ${juniorEndLabel(12)}` : `Junior package until ${juniorEndLabel()}`;
+  const junior = S.bridge ? `Keeping 3.0% until ${juniorEndLabel(12)}` : SIMPLE_PERSELY ? `Your 3.0% ends on ${juniorEndLabel()}` : `Junior package until ${juniorEndLabel()}`;   // SIMPLE_PERSELY: plan 2f item 6
   const quiet = n.quiet ? `<div class="qh"><label>From<input type="time" value="${n.qfrom}" data-qh="qfrom" aria-label="Quiet hours from"></label><label>To<input type="time" value="${n.qto}" data-qh="qto" aria-label="Quiet hours to"></label></div>
     <div class="fine" style="padding:0 var(--sp-4) var(--sp-3)">Between ${n.qfrom} and ${n.qto} notifications arrive silently. You can still read them in the inbox.</div>` : '';
   // Phase 6 (plan 2h): the bell left the Home header, so the inbox opens from here (the More page gets its own row later)
@@ -6601,7 +6601,7 @@ function settingsHTML(){
       ${typeof spOn === 'function' && spOn() ? srow('bell', 'Sound', 'A coin sound when you save. Silent mode mutes it', S.sound !== false, 'data-sw="sound"') : ''}
       ${srow('sched', 'Weekly reminder', 'Sunday 18:00, only if the week is still open', !!S.remind, 'data-sw="remind"')}
       ${srow('analyst', 'Financial analyst', S.analyst.on ? 'On. It reads your transactions for Safe to spend and bills' : 'Off. Safe to spend is a simpler estimate', S.analyst.on, 'data-sw="analyst"')}
-      ${row('star', 'Junior status', junior + ' · Keep my 3.0%', 'data-go="grad"')}</div>
+      ${row('star', 'Junior status', junior + (SIMPLE_PERSELY ? ' · Keep your 3.0%' : ' · Keep my 3.0%'), 'data-go="grad"')}</div>
   ${ruleDefaultsHTML(srow)}</div>
   <div class="set-sec" data-sec="notif"><div class="sec"><span>Notifications</span></div>
     ${pushStatusBlock()}
@@ -6641,7 +6641,7 @@ const DEMO = [
     ? {e:'🎯', label:'Goal milestone',    title:'Persi · Persely', persi:true, kind:'goal', pri:3, body:() => { const m = milestoneNow(); return m ? `${m.g.name} is ${m.pct}% saved: ${ft(m.saved)} of ${ft(m.target)}.` : null; }, none:'You have no goals in Persely yet. Add one first.', url:'hub'}
     : {e:'👯', label:'Friend saved too',  title:'Persi · Persely', persi:true, body:()=>{ const f = realFriends()[0]; return f ? `${f} saved 5 000 Ft this week. Your turn?` : null; }, none:'You have no friends in Persely yet. Add one first.', url:'hub'},   // real friends only
   {e:'🎓', label:'Junior ends',       title:'Persi · Persely', persi:true, kind:SIMPLE_PERSELY ? 'junior' : undefined, pri:2, body:()=> SIMPLE_PERSELY ? `Your Junior package ends on ${juniorEndLabel()}. Get your salary paid to OTP to keep your 3.0% on the first 500 000 Ft for 12 more months.` : `Your Junior package ends on ${juniorEndLabel()}. Get your salary paid to OTP and keep my 3.0% on the first 500 000 Ft for 12 more months.`, url:'grad'},
-  {e:'📊', label:'Monthly story',     title:'Persi · Persely', persi:true, kind:'story', pri:5, body:()=>`Your ${S.period} story is ready. Take a look.`, url:'story'},
+  {e:'📊', label:'Monthly story',     title:'Persi · Persely', persi:true, kind:'story', pri:5, body:()=> SIMPLE_PERSELY ? `Your ${S.period} story is here.` : `Your ${S.period} story is ready. Take a look.`, url:'story'},
   SIMPLE_PERSELY   // marketing: not the Persi channel, its own switch (off by default), no urgency
     ? {e:'🏷️', label:'New discount',      title:'Perks', kind:'mkt', pri:7, body:'Pizzeria Roma: 15% off. You can turn it on in Perks.', url:'perks'}
     : {e:'🏷️', label:'New discount',      title:'New discount',            body:'15% instant discount at Pizzeria Roma. Activate it now!', url:'perks'},
@@ -6957,7 +6957,7 @@ function ffLandHTML(){
   const head = FF.stop ? 'Your Junior package ends' : FF.mode === 'year' && S.months >= 12 ? 'One year with Persely' : `${plural(n, 'month')} later`;
   const btn = FF.stop ? `<button class="btn" data-ffgrad>See what's next</button>` : FF.mode === 'year' && S.months >= 12 ? `<button class="btn" data-ffyear>See your year</button>` : `<button class="btn" data-ffdone>Continue</button>`;
   return `<div class="ff-ck">${span}</div><h2 class="ff-h">${head}</h2>
-    ${FF.stop ? `<p class="fine" style="text-align:center;margin:-6px 0 var(--sp-3)">Month ${S.months}: have your salary paid into OTP and keep my 3.0% on the first 500 000 Ft for 12 more months.</p>` : ''}
+    ${FF.stop ? `<p class="fine" style="text-align:center;margin:-6px 0 var(--sp-3)">Month ${S.months}: have your salary paid into OTP and keep ${SIMPLE_PERSELY ? 'your' : 'my'} 3.0% on the first 500 000 Ft for 12 more months.</p>` : ''}
     <div class="card lst">${[['Money in', ft(S2('in'))], [`Bills paid${due ? ` · ${paid} of ${due} on time` : ''}`, ft(S2('bills'))], ['Card spending', ft(S2('spent'))], ['Put aside in Persely', ft(S2('saved'))], [`Interest at ${rateLabel()}, after tax`, '+' + ft(S2('interest'))]].map(([a, b]) => `<div class="li"><span class="t"><b>${a}</b></span><b class="num">${b}</b></div>`).join('')}
       <div class="li"><span class="t"><b>Now in Persely</b></span><b class="num u-c-gt">${ft(total())}</b></div></div>${btn}`;
 }
@@ -7357,7 +7357,7 @@ function moreHTML(){
   ${S.goals.map(goalCardHTML).join('')}
   ${spRow('data-sheet="newgoal"', I('plus'), 'New goal', 'Up to 5 goals')}
   ${hasShared ? '' : spRow('data-sheet="newshared"', I('user'), 'Share a goal', 'Save together with friends')}
-  ${hasEur ? '' : spRow('data-neweur', I('euro'), 'Save in euro', 'For Erasmus and travel. No Junior rate')}
+  ${hasEur ? '' : spRow('data-neweur', I('euro'), 'Save in euro', 'For Erasmus and trips. No Junior rate')}
   ${plainGoals().length ? `<div class="sec" data-more="rules"><span>Saving rules</span></div>
   <div class="card lst srlist">${plainGoals().map(g => `<button class="li" data-goalrules="${g.id}" aria-label="${esc(g.name)}: ${rulesLine(g)}. Change"><span class="ic">${I(g.ic)}</span><span class="t"><b>${esc(g.name)}</b><small>${rulesLine(g)}</small></span><span class="chev">${I('chev', 18)}</span></button>`).join('')}</div>
   ${spRow('data-sheet="moneyin" data-more="moneyin"', I('coins'), m.total ? `<span class="num">${ft(m.total)}</span> a month moves in by itself` : 'Nothing moves in by itself yet', m.ask ? 'Payday asks first' : 'Each goal has its own rules')}` : ''}
@@ -7369,7 +7369,7 @@ function moreHTML(){
   ${spRow('data-go="habits" data-more="habits"', flame(24, S.streak > 0), 'Habits', `Week ${spWeekN()}${sc}`)}
   ${analysisRow()}
   ${perksRow()}
-  ${S.friendsOptIn ? friendsCard() : spRow('data-frjoin data-more="friends"', I('user'), 'Add friends', 'Compare weekly streaks. Nobody sees your balance')}
+  ${S.friendsOptIn ? friendsCard() : spRow('data-frjoin data-more="friends"', I('user'), 'Add friends', "See your friends' streaks. Nobody sees your money")}
   ${yearRow()}
   <div class="sec" data-more="account"><span>Account</span></div>
   ${spRow('data-go="inbox" data-more="notif"', I('bell'), 'Notifications', S.inbox && S.inbox.some(n => !n.read) ? 'New messages' : 'Your messages')}
@@ -7377,7 +7377,7 @@ function moreHTML(){
   ${spRow('data-go="kartyaim" data-more="cards"', I('cards'), 'My cards', 'Block it and see your Discounts')}
   <div class="sec" data-more="help"><span>Help and settings</span></div>
   ${spRow('data-sheet="how" data-more="how"', I('info'), 'How Persely works', '')}
-  ${spRow('data-settings="persely" data-more="settings"', I('gear'), 'Persely settings', 'Reminders and default rules')}`;
+  ${spRow('data-settings="persely" data-more="settings"', I('gear'), 'Persely settings', 'Sunday nudge and rules for new goals')}`;
 }
 // Habits: the old "Your habits" card (8 weeks, best, skips, reminders notice, health score with its line) and the rewards
 function habitsHTML(){
@@ -7388,7 +7388,7 @@ function habitsHTML(){
       return `<div class="${on ? 'on' : ''} ${sk ? 'sk' : ''} ${w === S.week ? 'today' : ''}"><i>${on ? '✓' : sk ? '–' : ''}</i><span>${w === S.week ? 'Now' : ''}</span></div>`; }).join('')}</div>
     ${remindRow()}${scoreRow()}
   </div>
-  <div class="card u-card-bul"><ul class="bul sm"><li>Save any amount once a week. Automatic savings count too.</li><li>You get 1 skip week for every 4 weeks. A missed week uses it by itself.</li><li>The streak never changes your rate.</li></ul></div>
+  <div class="card u-card-bul"><ul class="bul sm"><li>Save any amount once a week. Your saving rules count too.</li><li>You get 1 skip week for every 4 weeks. A missed week uses it by itself.</li><li>The streak never changes your rate.</li></ul></div>
   ${spRow('data-go="perks" data-rewards', I('gift'), 'My rewards', plural(S.rewards.length, 'reward'))}`;
 }
 PAGES.persmore = {title:'More', html:() => moreHTML()};
@@ -7492,6 +7492,508 @@ function simpleTabChecks(ok){
   } catch(e){ ok('chk-simple-tab: the simple tab checks ran without errors', false, String(e && e.stack || e)); }
   finally { HINT_FORCE = hf0; HINT_SHOWN.clear(); SP_AWAY = away0; hideChip(true); hideToast(true); closeSheet(); while(stack.length) popPage(true); S = sv; cur = cur0; stack.push(...stk); demo.locked = lock0; try{ renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views[i])); }
 }
+/* ================= Simple Persely, Phase 4: the copy pass checks (docs/simple-persely-plan.md 2f, 2g; docs/simple-persely-phase4-notes.md) =================
+   Only with SIMPLE_PERSELY on (called from __checkAnalytics in js/03). Nothing here changes the app; it reads the screens.
+   chk-simple-grade: every visible text of the new screens is FK grade 4 or lower (fkGrade, js/01), 12 words or fewer per sentence,
+     Persi 8 words or fewer, no hyphen in a subtitle, no "deadline", no urgency words, full dates, amounts as "50 000 Ft".
+   chk-simple-hu-keys: every string of the simple version in SP_STRINGS (js/hu-strings.js) has a Hungarian draft in HU. */
+
+// Texts that keep a grade above 4 on purpose. FK is not reliable for very short labels, and these are fixed terms (glossary, legal, OTP product names).
+// Each entry: [exact text or regex, reason]. Texts of one word are never graded (FK of one word says nothing: "Withdraw" is 8.4).
+const SP_GRADE_WL = [
+  [/^(Rate and safety|Settings for this goal|Persely settings|Deposit protection|Standard rate|How Persely works)$/, 'name of a screen or a fixed term (glossary)'],
+  [/^(Payday rule|Weekly transfer|Round-ups)( for this goal)?$/, 'name of a saving rule (glossary, chk-glossary-terms)'],
+  [/^Notifications$|^Your messages$|^New messages$/, 'standard label'],
+  [/^Junior account$|^From Junior account$|^OTP Junior account$/, 'OTP product name'],
+  [/^Save in euro$/, 'short label; "euro" counts 3 syllables in FK'],
+  [/^(Saving rules|Savings account|Financial health score|Between my accounts)$/, 'fixed term: a screen or product name used across the app'],
+  [/^(Trip|Phone or tech|Safety net|Something else|New phone)$/, 'first-run tile names (decision D10)'],
+  [/^\d{1,2} [A-Z][a-z]+ \d{4}$/, 'a full date on its own (the glossary asks for full dates; month names inflate FK)'],
+  [/^\d\.\d% until \d{1,2} [A-Z][a-z]+ \d{4}$/, 'the rate and its end date, one part of the honesty line (the whole line is FK 3.4, plan 2f)'],
+  [/^Your [A-Z][a-z]+( semester)? story is here\.?$/, 'plan 2f wording ("Your November story is here."); FK 5.2 only from the 3 syllable month name in 5 words'],
+];
+const spWL = t => SP_GRADE_WL.some(([r]) => r instanceof RegExp ? r.test(t) : r === t);
+
+// visible texts of a screen: text nodes grouped by their nearest ancestor that is not display:inline (so "about <b>1 380 Ft</b> a year" stays one text)
+function spScreenTexts(root, where){
+  if(!root) return [];
+  const m = new Map(), w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n;
+  while((n = w.nextNode())){
+    const p = n.parentElement; if(!p || !n.nodeValue.trim()) continue;
+    if(p.closest('.vhid,[aria-hidden="true"],script,style,svg,.pig3d,[hidden],.num-only') || !p.getClientRects().length) continue;
+    let b = p; while(b !== root && b.parentElement && getComputedStyle(b).display === 'inline') b = b.parentElement;
+    const r = m.get(b) || {t:'', small:b.tagName === 'SMALL' || b.classList.contains('fine') || b.classList.contains('k'), persi:!!b.closest('.sp-say,.persi-t,.spnudge')}; r.t += n.nodeValue; m.set(b, r);
+  }
+  return [...m.values()].map(r => ({where, t:r.t.replace(/\s+/g, ' ').trim(), small:r.small, persi:r.persi})).filter(x => /[A-Za-z]/.test(x.t));
+}
+// one text against the copy rules; goal names are the student's own words, so they are read as "goal"
+function spCopyIssues(x, names){
+  let t = x.t; names.forEach(nm => { if(nm) t = t.split(nm).join('goal'); });
+  const g = fkGrade(t), out = [];
+  if(g.words > 1 && g.grade > 4 && !spWL(x.t)) out.push('grade ' + g.grade);
+  if(g.longest > 12) out.push(g.longest + ' words');
+  if(x.persi && g.longest > 8) out.push('Persi ' + g.longest + ' words');
+  if(x.small && /[A-Za-z]-[A-Za-z]|\s-\s/.test(t.replace(/Round-ups/g, ''))) out.push('hyphen');
+  if(/deadline/i.test(t)) out.push('deadline');
+  if(/\bnow!|hurry|last chance|only today|don't miss|act fast|expires soon/i.test(t)) out.push('urgency');
+  if(/\b\d{1,2} (Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b/.test(t)) out.push('short date');
+  if(/\d{4,}\s?Ft|\bHUF\b|\d,\d{3}\s?Ft/.test(t)) out.push('amount format');
+  return out.length ? {where:x.where, t:x.t, grade:g.grade, why:out.join(', ')} : null;
+}
+
+function spGradeChecks(ok){
+  const sv = S, cur0 = cur, stk = stack.splice(0), lock0 = demo.locked, views = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')), o0 = JSON.stringify(O), away0 = SP_AWAY; demo.locked = false;
+  const clk = sel => { const b = $(sel); if(b) b.click(); return !!b; };
+  const reset = kind => { hideBanners(); while(stack.length) popPage(true); try{ closeOnb(); }catch(e){} try{ spHideReward(true); }catch(e){} closeSheet(); MQ.q = []; hideChip(true); hideToast(true);
+    Object.assign(SP, {celebrated:false, forceOffline:false, forceFail:false, forceRM:null, last:null}); S = fresh(kind); SETUP_COLLAPSED = false; SP_AWAY = 0; renderAll(); tab('fooldal'); };
+  const showHub = () => { closeSheet(); while(stack.length) popPage(true); renderAll(); tab('hub'); renderView('hub'); return $('#v-hub'); };
+  const top = () => stack.length ? stack[stack.length - 1] : null;
+  const all = [], add = (root, where) => { all.push(...spScreenTexts(root, where)); };
+  try{
+    // first run: the tab, the confirm screen for each tile, the New goal sheet, the reward
+    reset('new'); add(showHub(), 'first run tab');
+    SP_TILES.forEach(([k]) => { spOpen(k); add($('#onb'), 'confirm ' + k); clk('#onb [data-spchg="amt"]'); add($('#onb'), 'confirm ' + k + ', Change'); O.sp = false; closeOnb(); });
+    spOpen('travel'); clk('#onb [data-spsave]'); add($('#sprw'), 'reward'); spHideReward(true);
+    sheet(SHEETS.newgoal()); add($('#sheet'), 'New goal sheet'); closeSheet();
+    tab('fooldal'); add(showHub(), 'tab after the first deposit (nudge)');
+    // the tab with goals, in several states
+    const states = [['existing seed', () => {}], ['welcome back', () => { S.juniorDays = 300; S.savedWeek = true; SP_AWAY = 5; }], ['week open', () => { S.juniorDays = 300; S.savedWeek = false; }],
+      ['goal reached', () => { const f = goalById('fest'); f.saved = f.target; }], ['payday asked', () => { setMain(S, 'pay', true); S.payOpen = true; }], ['month end', () => { S.juniorDays = 300; S.monthEnd = true; }],
+      ['one goal', () => { S.goals = [S.goals.find(g => g.id === 'fest')]; S.ruleGoal = 'fest'; S.juniorDays = 300; }], ['Graduate', () => { S.bridge = true; }]];
+    states.forEach(([n, f]) => { reset('existing'); f(); add(showHub(), 'tab: ' + n); });
+    // More, Habits, Rate and safety, goal page, Add money
+    reset('existing'); S.analyst.on = true; S.months = 12; showHub(); clk('#v-hub [data-go="persmore"]'); add(top(), 'More');
+    clk('.page:last-child .scroll [data-go="habits"]'); add(top(), 'Habits'); while(stack.length) popPage(true);
+    reset('existing'); sheet(SHEETS.ratesafe()); add($('#sheet'), 'Rate and safety'); closeSheet();
+    reset('existing'); S.bridge = true; sheet(SHEETS.ratesafe()); add($('#sheet'), 'Rate and safety (Graduate)'); closeSheet();
+    reset('existing'); const gs = S.goals.filter(g => !g.shared && !isEur(g)).slice(0, 2);
+    gs.forEach(g => { S._detail = g.id; S._gset = g.id; pushPage('goal'); add(top(), 'goal page ' + g.id); while(stack.length) popPage(true); });
+    S.goals.push({id:'tz', name:'New bike', ic:'star', target:80000, saved:0, date:'2027-09-01', rules:{pay:{on:false, pct:10}, wk:{on:false, amt:1000, day:'mon'}, rr:{on:false}}}); S._detail = 'tz'; S._gset = 'tz'; pushPage('goal'); add(top(), 'goal page, empty goal'); while(stack.length) popPage(true);
+    reset('existing'); showHub(); clk('#v-hub .sp-add'); add($('#sheet'), 'Add money'); clk('#sheet [data-hubchange]'); add($('#sheet'), 'Add money, Change'); closeSheet();
+    reset('existing'); S.goals = [S.goals[0]]; renderAll(); showHub(); clk('#v-hub .sp-add'); add($('#sheet'), 'Add money, one goal'); closeSheet();
+    // Persi: every sentence the priority can say (the same constructed states as chk-simple-persi-priority)
+    const base = {goals:2, reached:'', payAsk:0, juniorDays:300, bridge:false, keepPending:false, storyNew:false, period:'November', savedWeek:true, weekday:3, weekN:4, awayDays:0, total:12000};
+    [{goals:0}, {reached:'Summer holiday'}, {payAsk:7500}, {juniorDays:85}, {juniorDays:0}, {storyNew:true}, {savedWeek:false, weekday:0}, {}, {awayDays:3, total:1000}, {reached:'A very long goal name for my trip'}]
+      .forEach(o => all.push({where:'Persi priority', t:persiLine({...base, ...o}).text, persi:true}));
+    const names = [...new Set([...fresh('existing').goals.map(g => g.name), 'New bike', 'Summer holiday', 'A very long goal name for my trip'])].sort((a, b) => b.length - a.length);
+    const uniq = [...new Map(all.map(x => [x.t + '|' + !!x.persi + '|' + !!x.small, x])).values()];
+    const bad = uniq.map(x => spCopyIssues(x, names)).filter(Boolean).sort((a, b) => b.grade - a.grade);
+    const graded = uniq.filter(x => fkGrade(x.t).words > 1 && !spWL(x.t)).map(x => fkGrade(x.t).grade).sort((a, b) => b - a);
+    const screens = new Set(uniq.map(x => x.where.replace(/ \w+$|,.*$/, ''))).size;
+    ok('chk-simple-grade: every visible text on the new screens (first run tab, confirm screen for the 4 tiles, reward, the tab in 8 states, More, Habits, Rate and safety, goal page with its settings open, Add money, every Persi priority sentence) is FK grade 4 or lower (one-word labels and the documented SP_GRADE_WL terms excepted), 12 words or fewer per sentence, Persi 8 or fewer, no hyphen in a subtitle, no "deadline", no urgency words, full dates, amounts as "50 000 Ft"',
+      bad.length === 0 && uniq.length > 80, {texts:uniq.length, screens, worst:bad.slice(0, 8).map(b => `${b.where}: "${b.t.slice(0, 48)}" (${b.why})`), nBad:bad.length, maxGraded:graded[0]});
+    window.__spGradeLast = {bad, uniq};   // demo and docs: the full list of the last run
+  } catch(e){ ok('chk-simple-grade: the copy checks ran without errors', false, String(e && e.stack || e)); }
+  finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); spHideReward(true); }catch(e){} while(stack.length) popPage(true); SP_AWAY = away0; S = sv; cur = cur0; stack.push(...stk); demo.locked = lock0;
+    Object.assign(SP, {celebrated:false, forceOffline:false, forceFail:false, forceRM:null});
+    try{ Object.keys(O).forEach(k => delete O[k]); Object.assign(O, JSON.parse(o0)); closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views[i])); }
+  spHuChecks(ok);
+}
+
+// chk-simple-hu-keys: SP_STRINGS (English) and HU (Hungarian drafts) live in js/hu-strings.js
+function spHuChecks(ok){
+  try{
+    const en = typeof SP_STRINGS === 'object' ? SP_STRINGS : {}, hu = typeof HU === 'object' ? HU : {}, keys = Object.keys(en);
+    const missing = keys.filter(k => !(k in hu)), empty = keys.filter(k => k in hu && !String(hu[k]).trim());
+    const names = keys.filter(k => ['Persely', 'Persi'].some(nm => new RegExp('\\b' + nm + '\\b').test(en[k]) && !new RegExp(nm).test(hu[k] || '')));
+    const ph = keys.filter(k => { const a = (en[k].match(/\{\w+\}/g) || []).sort().join(), b = (String(hu[k] || '').match(/\{\w+\}/g) || []).sort().join(); return a !== b; });
+    const fmt = keys.filter(k => /\d\.\d%/.test(hu[k] || '') || /\b(January|September|November)\b/.test(hu[k] || ''));   // HU uses "3,0%" and Hungarian month names
+    // the strings on screen are the registered ones: every Persi priority sentence matches a registered template
+    const tpl = s => new RegExp('^' + s.replace(/[.*+?^$()|[\]\\]/g, '\\$&').replace(/\{\w+\}/g, '.+') + '$');
+    const base = {goals:2, reached:'', payAsk:0, juniorDays:300, bridge:false, keepPending:false, storyNew:false, period:'November', savedWeek:true, weekday:3, weekN:4, awayDays:0, total:12000};
+    const persi = [{goals:0}, {reached:'Trip'}, {reached:'A very long goal name for my trip'}, {payAsk:7500}, {juniorDays:85}, {juniorDays:0}, {storyNew:true}, {savedWeek:false, weekday:0}, {}, {awayDays:3}].map(o => persiLine({...base, ...o}).text);
+    const unreg = persi.filter(t => !Object.values(en).some(s => tpl(s).test(t)));
+    const draft = typeof HU_DRAFT === 'string' && /DRAFT: native speaker and OTP terms to verify/.test(HU_DRAFT);
+    // the HU proxy (plan 2g, team-chosen, not a validated index) on the glance strings: 8 words or fewer per sentence, at most 1 word over 12 letters per sentence
+    const sentsHU = s => String(s).split(/(?<=[!?]|[^\d}]\.)\s+|\s*·\s*/).map(x => x.trim()).filter(x => /\p{L}/u.test(x));
+    const proxy = keys.filter(k => /^(persi|fr|tab|hon|common|add|more)\./.test(k)).filter(k => sentsHU(hu[k]).some(x => { const w = x.split(/\s+/).filter(Boolean); return w.length > 8 || w.filter(y => (y.match(/\p{L}/gu) || []).length > 12).length > 1; }));
+    ok('chk-simple-hu-keys: every string of the simple version registered in SP_STRINGS (js/hu-strings.js) has a Hungarian draft in HU, none empty; "Persely" and "Persi" stay as names; {placeholders} match; HU uses the decimal comma and Hungarian month names; the glance strings (Persi, first run, tab, honesty line, Add money, More) keep the HU proxy (8 words or fewer per sentence, at most 1 word over 12 letters); every Persi priority sentence is a registered string; the table is marked as a draft to verify',
+      keys.length >= 60 && !missing.length && !empty.length && !names.length && !ph.length && !fmt.length && !proxy.length && !unreg.length && draft, {keys:keys.length, missing:missing.slice(0, 6), empty, names, ph, fmt, proxy, unreg, draft});
+  } catch(e){ ok('chk-simple-hu-keys: the check ran without errors', false, String(e && e.stack || e)); }
+}
+/* ================= Simple Persely: the string table (docs/simple-persely-plan.md 2f, 2g; docs/simple-persely-hu.md) =================
+   DATA ONLY. Nothing in the app reads HU yet: there is no language switch (decision D14: Hungarian before hallway round 2).
+   SP_STRINGS: every English string of the simple version (first run, the tab, Persi, More, Habits, Rate and safety, goal page, Add money,
+     the Phase 3 pushes and the Phase 4 copy fixes), keyed. {placeholders} are filled by the app: {amount} "1 000 Ft", {date} a full date,
+     {goal} the goal name, {n} a number, {month} a month name, {rate} "3.0%", {pct} a percent number, {days} "85 days", {account} an account name.
+   HU: the Hungarian draft for every key. Formats: decimal comma "3,0%", dates "2027. szeptember 10.", a non breaking space in "1 000 Ft"
+     (the app's ft() would need ft(n).replace(' ', ' ') for HU), "Persely" and "Persi" stay as names.
+     Placeholders in HU take the Hungarian suffix after them ("{amount}-ot" = "1 000 Ft-ot"); {month} in HU is the adjective form ("novemberi"),
+     {date}-ig is "2027. szeptember 10-ig". The article a / az before {goal} or {n} depends on the first sound: the drafts avoid it where they can.
+   chk-simple-hu-keys (js/14c-simple-copy.js) checks that every SP_STRINGS key has a non empty HU value with the same placeholders.
+   Optional helper spT(key, fallback): returns the English string (the UI is not rewired). */
+const HU_DRAFT = 'DRAFT: native speaker and OTP terms to verify';
+const SP_STRINGS = {
+  // Persi: one sentence from the priority (persiLine, js/14b-simple-tab.js), 8 words or fewer
+  'persi.first': "Hi! Let's save your first {amount}.",
+  'persi.reached': 'You did it! {goal} is full.',
+  'persi.reachedShort': 'You did it! Your goal is full.',
+  'persi.payday': 'Payday! Save {amount}?',
+  'persi.junior': 'Keep your 3.0%? {days} left.',
+  'persi.juniorToday': 'Keep your 3.0%? It ends today.',
+  'persi.story': 'Your {month} story is here.',
+  'persi.storyShort': 'Your story is here.',
+  'persi.week': 'Add any amount to keep week {n}.',
+  'persi.default': 'Nice! Your money is safe here.',
+  'persi.back': 'Welcome back. Your {amount} is safe.',
+  'persi.nudge': 'Want a nudge on Sunday?',
+  'persi.payAsk': 'Persi will ask on payday.',
+  'common.yes': 'Yes',
+  'common.notNow': 'Not now',
+  'common.change': 'Change',
+  'common.learnMore': 'Learn more',
+  'common.great': 'Great',
+  'common.close': 'Close',
+  // first run (js/14b-simple-persely.js)
+  'fr.homeCard': 'Save your first {amount}',
+  'fr.question': 'What are you saving for?',
+  'fr.tileTrip': 'Trip',
+  'fr.tileTech': 'Phone or tech',
+  'fr.tileSafety': 'Safety net',
+  'fr.tileOther': 'Something else',
+  'fr.nameTech': 'New phone',
+  'fr.nameOther': 'My goal',
+  'fr.yourGoal': 'Your goal',
+  'fr.moreGoals': 'More goals',
+  'fr.upTo5': 'Up to 5 Perselys.',
+  'fr.saveNow': 'Save {amount} now',
+  'fr.amountNow': '{amount} now',
+  'fr.fromJunior': 'From your Junior account',
+  'fr.payAsks': 'On payday, Persi asks to save {pct}%',
+  'fr.paySaves': 'On payday, Persi saves {pct}%',
+  'fr.createGoal': 'Create goal',
+  'fr.noDeposit': 'No deposit',
+  'fr.also': 'Also: {list}',
+  'fr.offline': 'No connection. Try again.',
+  'fr.fail': 'That did not work. Your money did not move. Try again.',
+  'fr.weekDone': 'Week {n} done',
+  'fr.saved': '{amount} saved!',
+  'fr.undo': '{goal}: {amount} saved. Week {n}',
+  // the honesty line (plan 2e)
+  'hon.line': '{rate} until {date} · Withdraw any time · Protected',
+  'hon.standard': 'Standard rate 0.01%',
+  // the tab (js/14b-simple-tab.js)
+  'tab.saved': 'Saved',
+  'tab.add': 'Add money',
+  'tab.withdraw': 'Withdraw',
+  'tab.week': 'Week {n}',
+  'tab.once': 'Save once a week',
+  'tab.more': 'More: goals, rules, rate',
+  'tab.of': 'of {amount}',
+  // More (PAGES.persmore)
+  'more.goals': 'Goals',
+  'more.goalsPct': '{pct}% of what your goals need',
+  'more.goalsNone': 'Set a goal to see how far you are',
+  'more.newGoal': 'New goal',
+  'more.upTo5': 'Up to 5 goals',
+  'more.share': 'Share a goal',
+  'more.shareSub': 'Save together with friends',
+  'more.euro': 'Save in euro',
+  'more.euroSub': 'For Erasmus and trips. No Junior rate',
+  'more.rules': 'Saving rules',
+  'more.moneyIn': '{amount} a month moves in by itself',
+  'more.moneyInNone': 'Nothing moves in by itself yet',
+  'more.payAsks': 'Payday asks first',
+  'more.ownRules': 'Each goal has its own rules',
+  'more.rate': 'Your rate',
+  'more.rateRow': 'Rate and safety',
+  'more.rateSub': '{rate} · about {amount} a year after tax',
+  'more.keep': 'Keep my 3.0%',
+  'more.juniorEnds': 'Your 3.0% ends on {date}',
+  'more.juniorEnded': 'Your Junior package ended today',
+  'more.you': 'You',
+  'more.habits': 'Habits',
+  'more.score': 'Health score {n} of 100',
+  'more.perks': 'Perks',
+  'more.deals': '{n} deals to turn on',
+  'more.friends': 'Add friends',
+  'more.friendsSub': "See your friends' streaks. Nobody sees your money",
+  'more.year': 'Your year',
+  'more.yearSub': '12 months in Persely',
+  'more.account': 'Account',
+  'more.notif': 'Notifications',
+  'more.notifNew': 'New messages',
+  'more.notifSub': 'Your messages',
+  'more.bills': 'Bills',
+  'more.billsSub': 'See what is due and pay it',
+  'more.cards': 'My cards',
+  'more.cardsSub': 'Block it and see your Discounts',
+  'more.help': 'Help and settings',
+  'more.how': 'How Persely works',
+  'more.settings': 'Persely settings',
+  'more.settingsSub': 'Sunday nudge and rules for new goals',
+  // Habits (PAGES.habits)
+  'hab.streak': '{n}-week streak',
+  'hab.rule1': 'Save any amount once a week. Your saving rules count too.',
+  'hab.rule2': 'You get 1 skip week for every 4 weeks. A missed week uses it by itself.',
+  'hab.rule3': 'The streak never changes your rate.',
+  'hab.rewards': 'My rewards',
+  'hab.score': 'Financial health score',
+  'hab.scoreLine': 'Spend less than you get. Stay above zero. Keep a little extra. Save often.',
+  'hab.noReminders': 'No reminders. You can still save any time. To get them back, turn on notifications in your phone Settings.',
+  'hab.remindersOff': 'Reminders are off. Turn them on to get a nudge on Sunday.',
+  // Rate and safety (SHEETS.ratesafe)
+  'rs.title': 'Rate and safety',
+  'rs.rate': 'You get 3.0% a year on up to {amount}. It ends on {date}.',
+  'rs.together': 'All your forint goals count together.',
+  'rs.rateOff': 'You get 0.01% a year now. Junior customers get 3.0% on up to {amount}.',
+  'rs.tax': 'Tax',
+  'rs.taxLine': '28% tax comes off the interest. So you keep about 2.2%. We pay it every month.',
+  'rs.money': 'Your money',
+  'rs.moneyLine': 'Withdraw any time, for free. No fees.',
+  'rs.keep': 'Keep 3.0% for 12 more months',
+  'rs.keepLine': "Your first salary must come to OTP within 6 months. If not, you get the standard rate after 30 days' notice.",
+  'rs.standard': 'Standard rate',
+  'rs.standardLine': 'Others get 0.01% a year.',
+  'rs.protected': 'Protected',
+  'rs.protectedLine': 'A state scheme protects your money up to a limit.',
+  'rs.depprot': 'Deposit protection',
+  'rs.per100k': 'What {amount} earns in a year, after tax',
+  'rs.perYear': '{amount} a year after tax',
+  'rs.savings': 'Savings account',
+  'rs.old': 'Old account',
+  'rs.compare': 'The Savings account pays a bit more: 3.5%. Persely pays 3.0%. Both are taxed. Persely keeps each goal apart. You can withdraw any time, for free.',
+  'rs.howSub': 'Streak and saving rules',
+  'rs.howRate': 'You get 3.0% on up to {amount} until {date}.',
+  // goal page (goalPageSimple)
+  'goal.settings': 'Settings for this goal',
+  'goal.settingsSub': 'Rules and rate. Edit or delete.',
+  'goal.settingsSubShort': 'Edit or delete.',
+  'goal.earns': 'This goal earns about {amount} a year, after tax.',
+  'goal.empty': 'Add money and it starts to earn 3.0%.',
+  'goal.rateSub': '3.0% a year on up to {amount}. Until {date}.',
+  'goal.late': 'At this pace you get there in {month}. That is after your date.',
+  'goal.early': 'At this pace you get there in {month}. That is before your date.',
+  'goal.noRule': 'Add money or turn on a rule. Then you see when you get there.',
+  'goal.reached': 'Reached. Choose what to do above.',
+  'goal.reachedCont': 'Reached. Your rules keep adding here.',
+  'goal.passed': 'Your date has passed. {amount} to go. Nothing is lost, pick a new date.',
+  'goal.date': 'Goal date: {date}',
+  'goal.weekly': '{amount} by {month} needs about {n} a week.',
+  'goal.done': 'You did it: {goal} is fully saved',
+  'goal.keepSaving': 'Keep saving',
+  'goal.edit': 'Edit goal',
+  'goal.delete': 'Delete goal',
+  'goal.activity': 'Activity',
+  'goal.rulesFor': 'Saving rules for this goal',
+  'rule.pay': 'Payday rule',
+  'rule.weekly': 'Weekly transfer',
+  'rule.round': 'Round-ups',
+  // Add money (hubsaveSimple)
+  'add.title': 'Add money',
+  'add.to': 'To',
+  'add.toGoal': 'To {goal}',
+  'add.amount': 'Amount',
+  'add.from': 'From',
+  'add.fromAcc': 'From {account}',
+  'add.have': 'You have {amount}',
+  'add.counts': 'Counts for this week: your streak goes to {n}.',
+  'add.counted': 'This week already counts for your streak.',
+  'add.button': 'Add {amount}',
+  'add.first': 'Start your streak?',
+  // pushes and the Phase 4 leftovers (js/13-settings-demo.js, js/14-fastforward.js, js/05, js/07)
+  'push.payday': "Salary's in. Save {amount}?",
+  'push.junior': 'Your Junior package ends on {date}. Get your salary paid to OTP to keep your 3.0% on the first 500 000 Ft for 12 more months.',
+  'push.goal': '{goal} is {pct}% saved: {amount} of {n}.',
+  'push.story': 'Your {month} story is here.',
+  'push.perks': 'Pizzeria Roma: 15% off. You can turn it on in Perks.',
+  'card.story': 'Your {month} story is here',
+  'set.junior': 'Your 3.0% ends on {date} · Keep your 3.0%',
+  'set.storySub': 'When your month story is here',
+  'set.sound': 'Sound',
+  'set.soundSub': 'A coin sound when you save. Silent mode mutes it',
+  'set.juniorEnds': 'Junior ends',
+  'set.juniorEndsSub': 'At 90, 30 and 7 days before',
+  'set.goalMilestones': 'Goal milestones',
+  'set.goalMilestonesSub': 'At 25, 50, 75 and 100%',
+  'set.offers': 'Offers and perks',
+  'set.offersSub': 'Only with your OK. Off until you turn it on',
+  'ff.keep': 'Month {n}: have your salary paid into OTP and keep your 3.0% on the first 500 000 Ft for 12 more months.',
+  'an.line': 'Your analyst reads your OTP payments to show Safe to spend. Nothing leaves OTP.',
+  'an.off': 'Turn off'
+};
+// DRAFT: native speaker and OTP terms to verify (every value below is a machine draft; "Befizetés" / "Kivétel" must match the OTP app's wording)
+const HU = {
+  'persi.first': 'Szia! Tegyük félre az első {amount}-ot!',
+  'persi.reached': 'Megcsináltad! Teljesült a cél: {goal}.',
+  'persi.reachedShort': 'Megcsináltad! Teljesült a célod.',
+  'persi.payday': 'Fizetésnap! Félreteszel {amount}-ot?',
+  'persi.junior': 'Megtartod a 3,0%-ot? Még {days} van.',
+  'persi.juniorToday': 'Megtartod a 3,0%-ot? Ma lejár.',
+  'persi.story': 'Itt a {month} történeted.',
+  'persi.storyShort': 'Itt a történeted.',
+  'persi.week': 'Bármennyi jó, és megvan a {n}. hét.',
+  'persi.default': 'Szuper! Itt biztonságban van a pénzed.',
+  'persi.back': 'Szia újra! A {amount} biztonságban van.',
+  'persi.nudge': 'Szóljak vasárnap?',
+  'persi.payAsk': 'Persi fizetésnapon kérdez.',
+  'common.yes': 'Igen',
+  'common.notNow': 'Most nem',
+  'common.change': 'Módosítás',
+  'common.learnMore': 'Részletek',
+  'common.great': 'Szuper',
+  'common.close': 'Bezárás',
+  'fr.homeCard': 'Tedd félre az első {amount}-ot',
+  'fr.question': 'Mire gyűjtesz?',
+  'fr.tileTrip': 'Utazás',
+  'fr.tileTech': 'Telefon, kütyü',
+  'fr.tileSafety': 'Tartalék',
+  'fr.tileOther': 'Valami más',
+  'fr.nameTech': 'Új telefon',
+  'fr.nameOther': 'Saját cél',
+  'fr.yourGoal': 'A célod',
+  'fr.moreGoals': 'További célok',
+  'fr.upTo5': 'Legfeljebb 5 Persely.',
+  'fr.saveNow': 'Félreteszek {amount}-ot',
+  'fr.amountNow': 'Most {amount}',
+  'fr.fromJunior': 'A Junior számládról',
+  'fr.payAsks': 'Fizetésnapon Persi megkérdezi, félretegyen-e {pct}%-ot',
+  'fr.paySaves': 'Fizetésnapon Persi félretesz {pct}%-ot',
+  'fr.createGoal': 'Cél létrehozása',
+  'fr.noDeposit': 'Befizetés nélkül',
+  'fr.also': 'Még: {list}',
+  'fr.offline': 'Nincs kapcsolat. Próbáld újra.',
+  'fr.fail': 'Ez nem sikerült. A pénzed nem mozdult. Próbáld újra.',
+  'fr.weekDone': 'Megvan a {n}. hét',
+  'fr.saved': '{amount} félretéve!',
+  'fr.undo': '{goal}: {amount} félretéve. {n}. hét',
+  'hon.line': '{rate} {date}-ig · Bármikor kiveheted · Betétbiztosítás',
+  'hon.standard': 'Alapkamat: 0,01%',
+  'tab.saved': 'Félretéve',
+  'tab.add': 'Befizetés',
+  'tab.withdraw': 'Kivétel',
+  'tab.week': '{n}. hét',
+  'tab.once': 'Hetente egyszer tegyél félre',
+  'tab.more': 'Továbbiak: célok, szabályok, kamat',
+  'tab.of': '{amount}-ból',
+  'more.goals': 'Célok',
+  'more.goalsPct': 'A céljaidhoz kellő összeg {pct}%-a megvan',
+  'more.goalsNone': 'Adj meg egy célt, és látod, hol tartasz',
+  'more.newGoal': 'Új cél',
+  'more.upTo5': 'Legfeljebb 5 cél',
+  'more.share': 'Közös cél',
+  'more.shareSub': 'Gyűjts együtt a barátaiddal',
+  'more.euro': 'Gyűjts euróban',
+  'more.euroSub': 'Erasmusra és utazásra. Junior kamat nélkül',
+  'more.rules': 'Gyűjtési szabályok',
+  'more.moneyIn': 'Havonta {amount} érkezik magától',
+  'more.moneyInNone': 'Még semmi nem érkezik magától',
+  'more.payAsks': 'Fizetésnapon előbb kérdezünk',
+  'more.ownRules': 'Minden célnak saját szabálya van',
+  'more.rate': 'A kamatod',
+  'more.rateRow': 'Kamat és biztonság',
+  'more.rateSub': '{rate} · adózás után évente kb. {amount}',
+  'more.keep': 'Megtartom a 3,0%-ot',
+  'more.juniorEnds': 'A 3,0%-od lejár: {date}',
+  'more.juniorEnded': 'A Junior csomagod ma lejárt',
+  'more.you': 'Te',
+  'more.habits': 'Szokások',
+  'more.score': 'Pénzügyi egészség: {n} / 100',
+  'more.perks': 'Előnyök',
+  'more.deals': '{n} bekapcsolható ajánlat',
+  'more.friends': 'Barátok hozzáadása',
+  'more.friendsSub': 'Lásd a barátaid sorozatát. A pénzed senki nem látja',
+  'more.year': 'Az éved',
+  'more.yearSub': '12 hónap a Perselyben',
+  'more.account': 'Fiók',
+  'more.notif': 'Értesítések',
+  'more.notifNew': 'Új üzenetek',
+  'more.notifSub': 'Az üzeneteid',
+  'more.bills': 'Számlák',
+  'more.billsSub': 'Nézd meg, mi esedékes, és fizesd be',
+  'more.cards': 'Kártyáim',
+  'more.cardsSub': 'Letilthatod, és látod a kedvezményeid',
+  'more.help': 'Súgó és beállítások',
+  'more.how': 'Így működik a Persely',
+  'more.settings': 'Persely beállítások',
+  'more.settingsSub': 'Vasárnapi emlékeztető és szabályok új célokhoz',
+  'hab.streak': '{n} hetes sorozat',
+  'hab.rule1': 'Hetente egyszer tegyél félre bármennyit. A szabályaid is számítanak.',
+  'hab.rule2': '4 hetente jár 1 kihagyható hét. Egy kimaradt hét magától felhasználja.',
+  'hab.rule3': 'A sorozat soha nem változtat a kamatodon.',
+  'hab.rewards': 'Jutalmaim',
+  'hab.score': 'Pénzügyi egészség',
+  'hab.scoreLine': 'Költs kevesebbet, mint amennyit kapsz. Maradj nulla felett. Legyen egy kis tartalék. Gyűjts gyakran.',
+  'hab.noReminders': 'Nincs emlékeztető. Bármikor félretehetsz. Ha újra kéred, kapcsold be az értesítéseket a telefon beállításaiban.',
+  'hab.remindersOff': 'Az emlékeztetők ki vannak kapcsolva. Kapcsold be, és vasárnap szólok.',
+  'rs.title': 'Kamat és biztonság',
+  'rs.rate': 'Évi 3,0%-ot kapsz, legfeljebb {amount} összegig. Lejár: {date}.',
+  'rs.together': 'Az összes forintos célod együtt számít.',
+  'rs.rateOff': 'Most évi 0,01%-ot kapsz. A Junior ügyfelek 3,0%-ot kapnak, legfeljebb {amount} összegig.',
+  'rs.tax': 'Adó',
+  'rs.taxLine': 'A kamatból 28% adó jön le. Így kb. 2,2% marad. Havonta fizetjük.',
+  'rs.money': 'A pénzed',
+  'rs.moneyLine': 'Bármikor kiveheted, ingyen. Nincs díj.',
+  'rs.keep': '3,0% még 12 hónapig',
+  'rs.keepLine': 'Az első fizetésed 6 hónapon belül érkezzen az OTP-hez. Ha nem, 30 napos értesítés után alapkamatot kapsz.',
+  'rs.standard': 'Alapkamat',
+  'rs.standardLine': 'Mások évi 0,01%-ot kapnak.',
+  'rs.protected': 'Védett',
+  'rs.protectedLine': 'Állami betétbiztosítás védi a pénzed, egy határig.',
+  'rs.depprot': 'Betétbiztosítás',
+  'rs.per100k': 'Mennyit hoz {amount} egy év alatt, adózás után',
+  'rs.perYear': 'Évi {amount} adózás után',
+  'rs.savings': 'Megtakarítási számla',
+  'rs.old': 'Régi számla',
+  'rs.compare': 'A Megtakarítási számla kicsit többet fizet: 3,5%. A Persely 3,0%-ot fizet. Mindkettő adózik. A Persely minden célt külön tart. Bármikor kiveheted, ingyen.',
+  'rs.howSub': 'Sorozat és gyűjtési szabályok',
+  'rs.howRate': '3,0%-ot kapsz, legfeljebb {amount} összegig, {date}-ig.',
+  'goal.settings': 'A cél beállításai',
+  'goal.settingsSub': 'Szabályok és kamat. Szerkesztés vagy törlés.',
+  'goal.settingsSubShort': 'Szerkesztés vagy törlés.',
+  'goal.earns': 'Ez a cél adózás után évente kb. {amount}-ot hoz.',
+  'goal.empty': 'Tegyél be pénzt, és 3,0%-ot kezd hozni.',
+  'goal.rateSub': 'Évi 3,0%, legfeljebb {amount} összegig. {date}-ig.',
+  'goal.late': 'Ilyen tempóban {month} éred el. Ez a dátumod után van.',
+  'goal.early': 'Ilyen tempóban {month} éred el. Ez a dátumod előtt van.',
+  'goal.noRule': 'Tegyél be pénzt, vagy kapcsolj be egy szabályt. Utána látod, mikor éred el.',
+  'goal.reached': 'Elérted. Fent választhatsz, mi legyen.',
+  'goal.reachedCont': 'Elérted. A szabályaid tovább gyűjtenek ide.',
+  'goal.passed': 'A dátumod elmúlt. Még {amount} hiányzik. Semmi nem vész el, válassz új dátumot.',
+  'goal.date': 'Céldátum: {date}',
+  'goal.weekly': '{amount} {month} kb. heti {n} kell.',
+  'goal.done': 'Megcsináltad: {goal} teljesen megvan',
+  'goal.keepSaving': 'Gyűjtök tovább',
+  'goal.edit': 'Cél szerkesztése',
+  'goal.delete': 'Cél törlése',
+  'goal.activity': 'Mozgások',
+  'goal.rulesFor': 'A cél gyűjtési szabályai',
+  'rule.pay': 'Fizetésnapi szabály',
+  'rule.weekly': 'Heti átutalás',
+  'rule.round': 'Kerekítés',
+  'add.title': 'Befizetés',
+  'add.to': 'Hová',
+  'add.toGoal': 'Ide: {goal}',
+  'add.amount': 'Összeg',
+  'add.from': 'Honnan',
+  'add.fromAcc': 'Innen: {account}',
+  'add.have': 'Egyenleg: {amount}',
+  'add.counts': 'Erre a hétre számít: a sorozatod {n} lesz.',
+  'add.counted': 'Ez a hét már beszámít a sorozatodba.',
+  'add.button': '{amount} befizetése',
+  'add.first': 'Elkezded a sorozatot?',
+  'push.payday': 'Megjött a fizetés. Félreteszel {amount}-ot?',
+  'push.junior': 'A Junior csomagod lejár: {date}. Ha a fizetésed az OTP-hez érkezik, 12 hónapig megtarthatod a 3,0%-ot az első 500 000 Ft-ig.',
+  'push.goal': '{goal}: {pct}% megvan, {amount} / {n}.',
+  'push.story': 'Itt a {month} történeted.',
+  'push.perks': 'Pizzeria Roma: 15% kedvezmény. Az Előnyöknél bekapcsolhatod.',
+  'card.story': 'Itt a {month} történeted',
+  'set.junior': 'A 3,0%-od lejár: {date} · Tartsd meg a 3,0%-ot',
+  'set.storySub': 'Amikor itt a havi történeted',
+  'set.sound': 'Hang',
+  'set.soundSub': 'Pénzcsörgés, amikor félreteszel. Néma módban nem szól',
+  'set.juniorEnds': 'Lejár a Junior',
+  'set.juniorEndsSub': '90, 30 és 7 nappal előtte',
+  'set.goalMilestones': 'Cél mérföldkövei',
+  'set.goalMilestonesSub': '25, 50, 75 és 100%-nál',
+  'set.offers': 'Ajánlatok és előnyök',
+  'set.offersSub': 'Csak ha engeded. Kikapcsolva, amíg be nem kapcsolod',
+  'ff.keep': '{n}. hónap: ha a fizetésed az OTP-hez érkezik, még 12 hónapig megtartod a 3,0%-ot az első 500 000 Ft-ig.',
+  'an.line': 'Az elemző az OTP-s fizetéseidből számolja, mennyit költhetsz. Semmi nem hagyja el az OTP-t.',
+  'an.off': 'Kikapcsolás'
+};
+// optional helper: the app stays English for now, so spT() returns the English string (fallback when the key is unknown)
+const spT = (key, fallback) => (key in SP_STRINGS ? SP_STRINGS[key] : fallback !== undefined ? fallback : key);
 /* ================= loading screen =================
    Shown on every start, then fades out. The status bar stays light (full-screen mode, see the head). */
 let splashTimer;

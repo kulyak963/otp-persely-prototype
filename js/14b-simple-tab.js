@@ -92,7 +92,7 @@ function moreHTML(){
   ${S.goals.map(goalCardHTML).join('')}
   ${spRow('data-sheet="newgoal"', I('plus'), 'New goal', 'Up to 5 goals')}
   ${hasShared ? '' : spRow('data-sheet="newshared"', I('user'), 'Share a goal', 'Save together with friends')}
-  ${hasEur ? '' : spRow('data-neweur', I('euro'), 'Save in euro', 'For Erasmus and travel. No Junior rate')}
+  ${hasEur ? '' : spRow('data-neweur', I('euro'), 'Save in euro', 'For Erasmus and trips. No Junior rate')}
   ${plainGoals().length ? `<div class="sec" data-more="rules"><span>Saving rules</span></div>
   <div class="card lst srlist">${plainGoals().map(g => `<button class="li" data-goalrules="${g.id}" aria-label="${esc(g.name)}: ${rulesLine(g)}. Change"><span class="ic">${I(g.ic)}</span><span class="t"><b>${esc(g.name)}</b><small>${rulesLine(g)}</small></span><span class="chev">${I('chev', 18)}</span></button>`).join('')}</div>
   ${spRow('data-sheet="moneyin" data-more="moneyin"', I('coins'), m.total ? `<span class="num">${ft(m.total)}</span> a month moves in by itself` : 'Nothing moves in by itself yet', m.ask ? 'Payday asks first' : 'Each goal has its own rules')}` : ''}
@@ -104,7 +104,7 @@ function moreHTML(){
   ${spRow('data-go="habits" data-more="habits"', flame(24, S.streak > 0), 'Habits', `Week ${spWeekN()}${sc}`)}
   ${analysisRow()}
   ${perksRow()}
-  ${S.friendsOptIn ? friendsCard() : spRow('data-frjoin data-more="friends"', I('user'), 'Add friends', 'Compare weekly streaks. Nobody sees your balance')}
+  ${S.friendsOptIn ? friendsCard() : spRow('data-frjoin data-more="friends"', I('user'), 'Add friends', "See your friends' streaks. Nobody sees your money")}
   ${yearRow()}
   <div class="sec" data-more="account"><span>Account</span></div>
   ${spRow('data-go="inbox" data-more="notif"', I('bell'), 'Notifications', S.inbox && S.inbox.some(n => !n.read) ? 'New messages' : 'Your messages')}
@@ -112,7 +112,7 @@ function moreHTML(){
   ${spRow('data-go="kartyaim" data-more="cards"', I('cards'), 'My cards', 'Block it and see your Discounts')}
   <div class="sec" data-more="help"><span>Help and settings</span></div>
   ${spRow('data-sheet="how" data-more="how"', I('info'), 'How Persely works', '')}
-  ${spRow('data-settings="persely" data-more="settings"', I('gear'), 'Persely settings', 'Reminders and default rules')}`;
+  ${spRow('data-settings="persely" data-more="settings"', I('gear'), 'Persely settings', 'Sunday nudge and rules for new goals')}`;
 }
 // Habits: the old "Your habits" card (8 weeks, best, skips, reminders notice, health score with its line) and the rewards
 function habitsHTML(){
@@ -123,7 +123,7 @@ function habitsHTML(){
       return `<div class="${on ? 'on' : ''} ${sk ? 'sk' : ''} ${w === S.week ? 'today' : ''}"><i>${on ? '✓' : sk ? '–' : ''}</i><span>${w === S.week ? 'Now' : ''}</span></div>`; }).join('')}</div>
     ${remindRow()}${scoreRow()}
   </div>
-  <div class="card u-card-bul"><ul class="bul sm"><li>Save any amount once a week. Automatic savings count too.</li><li>You get 1 skip week for every 4 weeks. A missed week uses it by itself.</li><li>The streak never changes your rate.</li></ul></div>
+  <div class="card u-card-bul"><ul class="bul sm"><li>Save any amount once a week. Your saving rules count too.</li><li>You get 1 skip week for every 4 weeks. A missed week uses it by itself.</li><li>The streak never changes your rate.</li></ul></div>
   ${spRow('data-go="perks" data-rewards', I('gift'), 'My rewards', plural(S.rewards.length, 'reward'))}`;
 }
 PAGES.persmore = {title:'More', html:() => moreHTML()};

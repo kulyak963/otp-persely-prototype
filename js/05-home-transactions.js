@@ -20,7 +20,7 @@ const storyDateTxt = () => { const mo = shownMonth(); return `${mo.last} ${mo.na
 function storyCard(){
   if(!storyReady() || S.storySeen) return '';
   const nm = S.period === 'Autumn semester' ? 'Autumn semester' : S.period;
-  return `<button class="card hubteaser storycard" data-story data-tour="storycard">${pig('proud', 52)}<span><b>Your ${esc(nm)} is ready</b><small>Take a look. It takes about a minute</small></span>${I('chev',20)}</button>`;
+  return `<button class="card hubteaser storycard" data-story data-tour="storycard">${pig('proud', 52)}<span><b>${SIMPLE_PERSELY ? `Your ${esc(nm)} story is here` : `Your ${esc(nm)} is ready`}</b><small>Take a look. It takes about a minute</small></span>${I('chev',20)}</button>`;
 }
 // the ring on the Persely tab: active at month end, grey before it with the date it arrives
 function storyRing(){
@@ -232,7 +232,7 @@ function vKartyaim(){
   <button class="row" data-saverules="rr"><span class="ic">${I('piggy')}</span><span class="t">Round-ups: ${rg.length ? `on → ${rg.map(g => esc(g.name)).join(', ')}` : 'off'}<small class="g">${rg.length > 1 ? 'Shared equally. ' : ''}Set on each goal's page</small></span><span class="lnk44 u-edit">Edit</span></button>
   <button class="row" data-demo="Change daily limit"><span class="ic">${I('limit')}</span><span class="t">Change daily limit</span>${chev}</button>
   <button class="row" data-demo="View card details"><span class="ic">${I('eye')}</span><span class="t">View card details</span>${chev}</button>
-  <button class="row" data-go="perks"><span class="ic">${I('tag')}</span><span class="t">Discounts<small class="g">${5-S.disc.activated.length} offers waiting for activation</small></span>${chev}</button>
+  <button class="row" data-go="perks"><span class="ic">${I('tag')}</span><span class="t">Discounts<small class="g">${SIMPLE_PERSELY ? plural(5 - S.disc.activated.length, 'deal') + ' to turn on' : `${5-S.disc.activated.length} offers waiting for activation`}</small></span>${chev}</button>
   <button class="row" data-demo="Click to Pay"><span class="ic">${I('ctp')}</span><span class="t">Click to Pay</span>${chev}</button>`;
 }
 

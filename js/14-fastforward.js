@@ -129,7 +129,7 @@ function ffLandHTML(){
   const head = FF.stop ? 'Your Junior package ends' : FF.mode === 'year' && S.months >= 12 ? 'One year with Persely' : `${plural(n, 'month')} later`;
   const btn = FF.stop ? `<button class="btn" data-ffgrad>See what's next</button>` : FF.mode === 'year' && S.months >= 12 ? `<button class="btn" data-ffyear>See your year</button>` : `<button class="btn" data-ffdone>Continue</button>`;
   return `<div class="ff-ck">${span}</div><h2 class="ff-h">${head}</h2>
-    ${FF.stop ? `<p class="fine" style="text-align:center;margin:-6px 0 var(--sp-3)">Month ${S.months}: have your salary paid into OTP and keep my 3.0% on the first 500 000 Ft for 12 more months.</p>` : ''}
+    ${FF.stop ? `<p class="fine" style="text-align:center;margin:-6px 0 var(--sp-3)">Month ${S.months}: have your salary paid into OTP and keep ${SIMPLE_PERSELY ? 'your' : 'my'} 3.0% on the first 500 000 Ft for 12 more months.</p>` : ''}
     <div class="card lst">${[['Money in', ft(S2('in'))], [`Bills paid${due ? ` · ${paid} of ${due} on time` : ''}`, ft(S2('bills'))], ['Card spending', ft(S2('spent'))], ['Put aside in Persely', ft(S2('saved'))], [`Interest at ${rateLabel()}, after tax`, '+' + ft(S2('interest'))]].map(([a, b]) => `<div class="li"><span class="t"><b>${a}</b></span><b class="num">${b}</b></div>`).join('')}
       <div class="li"><span class="t"><b>Now in Persely</b></span><b class="num u-c-gt">${ft(total())}</b></div></div>${btn}`;
 }
