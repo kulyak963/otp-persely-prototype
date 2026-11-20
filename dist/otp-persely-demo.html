@@ -486,7 +486,7 @@ button.avatar{border:0;cursor:pointer}
 .yr-hero{padding:18px}.yr-big{font-size:2.25rem;font-weight:800;margin:4px 0 2px;color:var(--ink)}
 .yr-bars{padding:14px 16px}.yr-b{margin:6px 0 12px}.yr-bl{display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-s)}.yr-b small{font-size:var(--fs-xs);color:var(--muted-t)}
 .yr-bt{height:12px;border-radius:6px;background:#E9ECF1;margin:6px 0 4px;overflow:hidden}.yr-bt i{display:block;height:100%;width:var(--w);border-radius:6px;animation:yrg .9s ease-out}
-.yr-bt i.g{background:var(--green)}.yr-bt i.l{background:#C9CED7}
+.yr-bt i.g{background:var(--green)}.yr-bt i.g2{background:#2467A0}.yr-bt i.l{background:#C9CED7}.yr-v{margin-top:4px;line-height:1.45}
 @keyframes yrg{from{width:0}}
 .yr-sav{display:flex;align-items:center;gap:10px;padding:14px 16px}.yr-sav .t{flex:1}.yr-sav b{font-size:var(--fs-m)}.yr-sav small{display:block;font-size:var(--fs-xs);color:var(--muted-t)}
 .yr-sc{padding:14px 16px}.yr-scb{display:flex;align-items:flex-end;gap:6px;height:90px;margin-bottom:8px}
@@ -744,6 +744,12 @@ button.trust{min-height:var(--tap);align-items:center;width:100%;text-align:left
 .u-pd-msg{font-size:var(--fs-s);line-height:1.45;color:var(--ink2);margin:10px 0 12px}
 .u-pd-no{display:flex;margin:0 auto}
 .lrow{display:flex;flex-wrap:wrap;gap:0 14px;margin:0 0 0 10px}
+.safebig{padding:14px 16px;margin:8px 0 6px}.safebig .t small:first-child{font-size:var(--fs-s);color:var(--ink2)}.safebig .t b{display:block;font-size:2rem;font-weight:700;line-height:1.15;margin:2px 0}
+.spair{gap:6px;flex-wrap:wrap;margin:8px 0 2px}.spair b{color:var(--ink);font-weight:700}.avg.proj{margin:2px 0 8px;font-weight:600;color:var(--ink)}.avg.spair::before,.avg.proj::before{display:none}
+.mp-d{display:block}.mp-d>summary{list-style:none;cursor:pointer;min-height:var(--tap);align-items:center}.mp-d>summary::-webkit-details-marker{display:none}.mp-d>summary .chev{display:inline-flex;transform:rotate(90deg);color:var(--green-i);transition:transform .2s}.mp-d[open]>summary .chev{transform:rotate(-90deg)}.mp-n{margin:2px 0 6px}
+.annote{border:1.5px solid var(--green);box-shadow:none;margin-top:6px;padding:14px 16px}.annote .fine{margin:4px 0 10px}.anbtns{display:flex;gap:8px}.anbtns .btn{flex:1;margin:0;min-height:var(--tap)}
+.anfoot{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0 6px;margin:14px 0 8px;font-size:var(--fs-s);color:var(--ink2)}
+.sring.off{background:none;border:0;padding:0;font:inherit}
 .safebtn{display:flex;align-items:center;gap:10px;width:100%;min-height:var(--tap);padding:8px 16px;margin:0 0 12px;background:var(--card);border-radius:14px;box-shadow:var(--sh);text-align:left}
 .safebtn .t{flex:1;min-width:0;font-size:var(--fs-m);color:var(--ink2)}.safebtn .t small{display:block;font-size:var(--fs-xs);color:var(--muted-t);margin-top:1px;line-height:1.3}
 .safebtn .num{white-space:nowrap}.safebtn .chev{color:var(--green-i);display:flex}
@@ -1252,6 +1258,23 @@ function avgSpend(){
   const ym = ymAt(S.months || 0), yms = (S.closedYm || []).filter(y => y < ym).slice(-3);
   return yms.length ? Math.round(yms.reduce((a, y) => a + sumVals(catSpend(y)), 0) / yms.length / 100) * 100 : 0;
 }
+// Card spending = card payments of the month (catSpend). Total out = all money that left the Junior account that month except own-account moves
+// (Persely, Bills pocket, currency, interest): card, direct debits, transfers out, cash. The two are always shown with these two names (D3).
+const cardSpending = (ym = shownMonth().ym) => sumVals(catSpend(ym));
+function totalOut(ym = shownMonth().ym){ let v = 0; S.tx.forEach(t => { if(t.a < 0 && txWhen(t).ym === ym && txType(t) !== 'own') v -= t.a; }); return v; }
+/* Month end projection (C2.2), from data the app already has:
+     left at month end = balance now (Junior account)
+                       - must-pay bills still unpaid this month (what Safe to spend subtracts, less the Bills pocket)
+                       - average daily card spending x days left in the month
+     average daily card spending = card spending so far this month / the day of the month it is now (the demo "today").
+   Income still to come is not counted (salary and family money have arrived by then); a late bill counts as unpaid. Rounded to 100 Ft. A guide, not a promise. */
+function monthEndLeft(){
+  const mo = shownMonth(), s = safeToSpend(), daily = mo.today ? cardSpending(mo.ym) / mo.today : 0;
+  return {left:Math.round((s.balance - s.unpaidBills - daily * mo.left) / 100) * 100, daily, mo};
+}
+const projLine = () => { const p = monthEndLeft(); return p.left >= 0 ? `At this pace you finish the month with about ${ft(p.left)} left.` : `At this pace you finish the month about ${ft(-p.left)} short.`; };
+// the line under the month circle on Home and Spending: Total out, the days left
+const outLine = () => { const mo = shownMonth(); return `<div class="avg spair"><span>Total out <b class="num">${ft(totalOut(mo.ym))}</b></span><span class="sd" aria-hidden="true">·</span><span>${mo.left === 0 ? 'Last day' : plural(mo.left, 'day') + ' left'}</span></div>`; };
 // category bars ("What did I spend on this month?"): the five biggest this month
 function catBars(sp){
   const rows = Object.entries(sp).sort((a, b) => b[1] - a[1]).slice(0, 5), max = Math.max(1, ...rows.map(r => r[1]));
@@ -1324,12 +1347,13 @@ function groceriesOf(ym, st = S){ let v = 0; st.tx.forEach(t => { if(txWhen(t, s
 const groceriesProtected = (st = S) => { const m = (st.closedYm || []).slice(-3).map(y => groceriesOf(y, st)); return m.length ? Math.max(0, Math.min(...m)) : 0; };
 // safeToSpend() -> {safe, balance, unpaidBills, savingRule, groceries (protected amount still to be spent this month), pocket (held outside the balance, never counted)}
 // safe = Junior balance - unpaid must-pay bills (less what the Bills pocket covers) - the saving rule not yet moved this month - groceries still protected
+// analyst off (D10 fallback): the simpler estimate, balance minus the upcoming direct debits (the unpaid bills). Bills stay; the saving rule and the groceries are not read.
 function safeToSpend(st = S){
-  const now = billToday(st), bal = balanceOf(st), bf = billsFirst(st), pocket = st.billsPocket && st.billsPocket.on ? st.billsPocket.bal : 0;
-  let rule = 0; if(st.payday.on){ let moved = 0; st.tx.forEach(t => { if(txType(t) === 'own' && t.a < 0 && /^PERSELY DEPOSIT/.test(t.n) && txWhen(t, st).ym === now.ym) moved -= t.a; });
+  const now = billToday(st), bal = balanceOf(st), bf = billsFirst(st), pocket = st.billsPocket && st.billsPocket.on ? st.billsPocket.bal : 0, simple = !!(st.analyst && !st.analyst.on);
+  let rule = 0; if(st.payday.on && !simple){ let moved = 0; st.tx.forEach(t => { if(txType(t) === 'own' && t.a < 0 && /^PERSELY DEPOSIT/.test(t.n) && txWhen(t, st).ym === now.ym) moved -= t.a; });
     rule = Math.max(0, Math.round(st.income.amount * st.payday.pct / 100) - moved); }
-  const groceries = Math.max(0, groceriesProtected(st) - groceriesOf(now.ym, st)), unpaid = Math.max(0, bf.total - pocket);
-  return {safe:bal - unpaid - rule - groceries, balance:bal, unpaidBills:unpaid, savingRule:rule, groceries, pocket};
+  const groceries = simple ? 0 : Math.max(0, groceriesProtected(st) - groceriesOf(now.ym, st)), unpaid = Math.max(0, bf.total - pocket);
+  return {safe:bal - unpaid - rule - groceries, balance:bal, unpaidBills:unpaid, savingRule:rule, groceries, pocket, simple};
 }
 /* ---------- console self-checks: window.__checkAnalytics() ---------- */
 function __checkAnalytics(){
@@ -1409,7 +1433,7 @@ function __checkAnalytics(){
     { const tr = S.tx.length; const d = JSON.parse(JSON.stringify(S)); S.analyst.split.fun = 25; syncSplit(); ok('all screens agree after Fun is changed to 25% (Everyday essentials gives way)', agree().length === 0 && splitView().by.fun.pct === 25 && splitView().by.ess.pct === 28, [agree(), splitView().rows.map(r => r.pct)]); S = d; syncSplit(); }
     S = clone(); S.analyst.on = true; S.onboarded = true;
     ok('bills first card, push text and Persi line when the rent is unpaid', (() => { S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); return bfNow().on && bfCard().includes('Rent share is late: ' + ft(42000) + ' (due on the 2nd)') && bfCard().includes('Coming up: Phone ' + ft(5550) + ' on the 20th') && persiSays().text === 'Rent share is late: ' + ft(42000) + ' (due on the 2nd).'; })());
-    ok('analyst off: no bills-first card or Persi line', (() => { S.analyst.on = false; const r = !bfNow().on && bfCard() === ''; S.analyst.on = true; return r; })());
+    ok('analyst off: the bills-first card and the Persi line stay (bills stay on, D10); only the analyst parts go', (() => { S.analyst.on = false; const r = bfNow().on && bfCard() !== '' && persiSays().text.includes(bfNow().text) && !splitCard(); S.analyst.on = true; return r; })());
     S.billsPocket = {on:true, bal:61000}; const j0 = balanceOf(), r1 = payBill('szab-d-ra');
     ok('pay from the Bills pocket: pocket 61 000 -> 19 000, Junior balance untouched, rent paid, bills first off', r1.fromPocket && S.billsPocket.bal === 19000 && balanceOf() === j0 && !bfNow().on && billStatus(billById('szab-d-ra')).st === 'paid', [r1, S.billsPocket]);
     S = clone(); S.analyst.on = true; const j1 = balanceOf(); ok('move 61 000 Ft to the Bills pocket: Junior -61 000, pocket 61 000, an own-account row (not spending)', pocketMove(61000) && balanceOf() === j1 - 61000 && pocketBal() === 61000 && txType(S.tx[0]) === 'own' && safeToSpend().pocket === 61000);
@@ -1443,11 +1467,11 @@ function __checkAnalytics(){
       if(keepF){
         ok('one entry path: Home reaches Spending from Safe to spend and Details only (the one page), has no direct link to Next month or Must-pay bills (the Pay a bill shortcut is the one way to the bills list) and no Safe to spend sheet', cnt(H, 'mymoney') === 2 && cnt(H, 'nextmonth') === 0 && cnt(H, 'bills') === 1 && sheets(H, 'safe') === 0, [cnt(H, 'mymoney'), cnt(H, 'nextmonth'), cnt(H, 'bills'), sheets(H, 'safe')]);
         ok('one entry path: the Persely tab has one Spending row and no split, bills or Next month block', cnt(P, 'mymoney') === 1 && cnt(P, 'kiadas') === 0 && cnt(P, 'nextmonth') === 0 && cnt(P, 'bills') === 0 && sheets(P, 'safe') === 0 && !/data-splitopen/.test(P) && !/Bills and next month/.test(P), [cnt(P, 'mymoney'), cnt(P, 'nextmonth'), cnt(P, 'bills')]);
-        ok('Spending page holds Safe to spend, My split, Next month, Must-pay bills and Bills pocket, each once', sheets(mm, 'safe') === 1 && /My split/.test(mm) && cnt(mm, 'nextmonth') === 1 && /Must-pay bills/.test(mm) && /Bills pocket/.test(mm) && cnt(mm, 'bills') === 2, [cnt(mm, 'nextmonth'), cnt(mm, 'bills')]);
+        ok('Spending page holds Safe to spend, Bills, My plan and Next month, each once, and no second copy of the four buckets (no My split, no Bills pocket block)', sheets(mm, 'safe') === 1 && !/My split/.test(mm) && cnt(mm, 'nextmonth') === 1 && cnt(mm, 'bills') === 1 && (mm.match(/My plan for/g) || []).length === 1 && (mm.replace(/<[^>]+>/g, ' ').match(/Everyday essentials/g) || []).length <= 2 && !/Bills pocket/.test(mm), [cnt(mm, 'nextmonth'), cnt(mm, 'bills'), (mm.replace(/<[^>]+>/g, ' ').match(/Everyday essentials/g) || []).length]);
         ok('analyst sheet (on): one button to Spending, none to Next month or Must-pay bills', cnt(an, 'mymoney') === 1 && cnt(an, 'nextmonth') === 0 && cnt(an, 'bills') === 0);
-        ok('Persely tab row shows what is spent of what is planned, from the data', (() => { const v = splitView(), t = analysisRow().replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '); return t.includes('Spending') && t.includes(`${ft(sumVals(catSpend(shownMonth().ym)))} spent of ${ft(v.by.ess.amt + v.by.fun.amt)} planned`.replace(/\s+/g, ' ')) && !/My money/.test(P + mm + an); })(), analysisRow());
+        ok('Persely tab row shows what is spent of what is planned, from the data', (() => { const v = splitView(), t = analysisRow().replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '); return t.includes('Spending') && t.includes(`Card spending ${ft(sumVals(catSpend(shownMonth().ym)))} of ${ft(v.by.ess.amt + v.by.fun.amt)} planned`.replace(/\s+/g, ' ')) && !/My money/.test(P + mm + an); })(), analysisRow());
         S.analyst.on = false; const Poff = vHub();
-        ok('analyst off: the Persely tab row (Spending) opens the one Spending page, which offers the analyst sheet; Home has no analytics card', cnt(Poff, 'mymoney') === 1 && sheets(myMoneyHTML(), 'analyst') >= 1 && !/safebtn/.test(vFooldal())); S.analyst.on = true;
+        ok('analyst off: the Persely tab row (Spending) opens the one Spending page, which offers Turn on in place of the plan and keeps Safe to spend (simple) and Bills; Home keeps its Safe to spend row', cnt(Poff, 'mymoney') === 1 && /Turn on to see your plan/.test(myMoneyHTML()) && /data-anon/.test(myMoneyHTML()) && sheets(myMoneyHTML(), 'safe') === 1 && /safebtn/.test(vFooldal())); S.analyst.on = true;
         const late = clone(); late.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; late.onboarded = true; late.tx = late.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); S = late;
         ok('late bill: the Bills first card stays on top of Home and is gone from the Persely tab (D13)', vFooldal().indexOf('Bills first') > -1 && vFooldal().indexOf('Bills first') < vFooldal().indexOf('Balance') && vHub().indexOf('Bills first') === -1);
       }
@@ -1470,8 +1494,8 @@ function __checkAnalytics(){
         S.payday.on = true; S.payday.ask = true; S.goals.forEach(g => { g.date = null; });
         ok('Money in panel: no goal with a date, so no need line; payday asks first is said', (() => { const t = plain(moneyInPanel()); return !/goals need/.test(t) && !/Enough for every goal date/.test(t) && t.includes('Payday rule') && t.includes('payday asks first'); })());
         S = clone(); S.onboarded = true; S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.billsConfirmed = true; syncSplit();
-        const sp0 = sumVals(catSpend(shownMonth().ym)), core = h => { const x = h.match(/Spent so far<\/small><b class="num">([^<]*)</); return x ? x[1] : ''; };
-        ok('Home "Spent so far" = Spending "Spent so far" = the category total of the month on screen', sp0 > 0 && core(vFooldal()) === ft(sp0) && core(myMoneyHTML()) === ft(sp0) && PAGES.kiadas.html().includes(`<b class="num u-fs-22">${ft(sp0)}</b>`), [sp0, core(vFooldal()), core(myMoneyHTML())]);
+        const sp0 = sumVals(catSpend(shownMonth().ym)), core = h => { const x = h.match(/Card spending<\/small><b class="num">([^<]*)</); return x ? x[1] : ''; };
+        ok('Home "Card spending" = Spending "Card spending" = the category total of the month on screen', sp0 > 0 && core(vFooldal()) === ft(sp0) && core(myMoneyHTML()) === ft(sp0) && PAGES.kiadas.html().includes(`<b class="num u-fs-22">${ft(sp0)}</b>`), [sp0, core(vFooldal()), core(myMoneyHTML())]);
         monthStep(true); const sp1 = sumVals(catSpend(shownMonth().ym));
         ok('after one simulated month Home and Spending still show the same total, built from parts.cats', sp1 > 0 && S.tx.find(t => t.parts).parts.cats && sumVals(S.tx.find(t => t.parts).parts.cats) === S.tx.find(t => t.parts).parts.ess + S.tx.find(t => t.parts).parts.fun && core(vFooldal()) === ft(sp1) && core(myMoneyHTML()) === ft(sp1), [sp1, core(vFooldal()), core(myMoneyHTML())]);
         ok('spreadCats adds up exactly to the amount for Everyday essentials and Fun', [36900, 36000, 27000, 28800, 12345].every(a => ['ess', 'fun'].every(b => sumVals(spreadCats(a, b)) === a)));
@@ -1547,7 +1571,7 @@ function __checkAnalytics(){
         const heroOk = x => { const d = document.createElement('div'); d.innerHTML = x.build(); const sp = stSay(x).replace(/\s+/g, ' '); return [...d.querySelectorAll('.st-big')].every(e => sp.includes(e.textContent.replace(/\s+/g, ' ').trim())); };
         ok('VoiceOver text is built from the screen text: at most 25 words per slide (a figure like 145 000 Ft is one word), every spoken hero is on screen', say.every(([id, t]) => wc(t) <= 25) && sl.filter(x => x.build).every(heroOk), [say.map(([i, t]) => [i, wc(t)]), sl.filter(x => x.build && !heroOk(x)).map(x => x.id)]);
         const pg = sl.find(x => x.id === 'progress'), pgh = pg ? pg.build() : '', pgw = pg ? stWords(pg) : 0, pgt = txt(pgh);
-        ok('progress slide: the score is shown once, a positive line is not in the warning colour, a late goal has the fix (Pick a new date) on screen and no "date passed"', pg && (pgt.match(/of 100/g) || []).length <= 1 && !/date passed|to go/.test(pgt) && (!/needs a new date/.test(pgt) || (pg.btn && pg.btn.label === 'Pick a new date' && /class="st-n w"/.test(pgh))) && (/needs a new date/.test(pgt) || !/class="st-n w"/.test(pgh)) && pgw <= 20, [pgw, pgt.slice(0, 160)]);
+        ok('progress slide: the score is shown once, a positive line is not in the warning colour, a late goal has the fix (Pick a new date) on screen and no "date passed"', pg && (pgt.match(/of 100/g) || []).length <= 1 && !/date passed|to go/.test(pgt) && (!/needs a new date/i.test(pgt) || (pg.btn && pg.btn.label === 'Pick a new date' && /class="st-n w"/.test(pgh))) && (/needs a new date/i.test(pgt) || !/class="st-n w"/.test(pgh)) && pgw <= 20, [pgw, pgt.slice(0, 160)]);
         const keep = S.tx; S.tx = S.tx.filter(t => !(txType(t) === 'own' && t.a < 0 && !/^(BILLS POCKET|CURRENCY)/i.test(t.n)));
         const pu = sd => txt(storySlides().find(x => x.id === 'put').build()); const put0 = pu(); S.tx = keep;
         ok('put aside: never "added by you" when nothing was added (interest only, or nothing)', !/added by you/i.test(put0) && /Interest only|No money moved/.test(put0) && !/added by you/i.test(pu()), put0);
@@ -1899,7 +1923,7 @@ function __checkAnalytics(){
       // Bills: the Pay a bill shortcut; More > Notifications; Financial analyst switch; Your year; create goal
       tab('fooldal'); clk('#v-fooldal .short [data-go="bills"]'); E.bills = top() === 'bills'; while(stack.length) popPage(true);
       tab('tovabbiak'); clk('#v-tovabbiak [data-go="ertesitesek"]'); E.notif = top() === 'ertesitesek'; while(stack.length) popPage(true);
-      tab('tovabbiak'); const an0 = S.analyst.on; clk('#v-tovabbiak .mi.sw [data-sw="analyst"]'); E.analyst = an0 && S.analyst.on === false; hideChip(true); S.analyst.on = true; renderAll();
+      tab('tovabbiak'); const an0 = S.analyst.on; clk('#v-tovabbiak .mi.sw [data-sw="analyst"]'); E.analyst = an0 && sheetOpen() && !!document.querySelector('#sheet [data-anoffgo]'); clk('#sheet [data-anoffgo]'); E.analyst = E.analyst && S.analyst.on === false; hideChip(true); closeSheet(); S.analyst.on = true; renderAll();
       tab('hub'); clk('#v-hub .sec [data-sheet="newgoal"]'); E.create = sheetOpen() && document.querySelectorAll('#sheet [data-tilepick]').length >= 6; closeSheet();
       S.months = 12; renderAll(); tab('hub'); clk('#v-hub [data-go="year"]'); E.year = top() === 'year'; S.months = 0; while(stack.length) popPage(true);
       tab('hub'); E.homeToTab = (() => { tab('fooldal'); clk('#v-fooldal .hubteaser'); return cur === 'hub'; })();
@@ -1907,6 +1931,88 @@ function __checkAnalytics(){
       ok('chk-entry-map: every feature of table 3.6 that exists now has its one primary entry and only the allowed links: Spending (Home Safe to spend, Home Details, Persely tab row, More), Add money (tab, Home shortcut, goal page, Transfer > Between my accounts with From and To choosers), Saving rules (tab, goal page, Transfer > Scheduled and recurring), Previous transfers, Card (Home, More: block switch at 44 px, Round-ups, Discounts), Pay a bill, Notifications, Financial analyst switch, Create goal, Your year, Home > Persely tab', bad.length === 0, [bad, E]);
     } catch(e){ ok('chk-phase4: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); S = sv12; cur = cur12; stack.push(...stk12); demo.locked = lock12; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views12[i])); }
+  }
+  { // Phase 5: one Spending page, analyst on by default, story at month end, year page (flow plan C2, C3, C4, A5-3; decisions D3, D10)
+    const sv13 = S, cur13 = cur, stk13 = stack.splice(0), lock13 = demo.locked, views13 = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')); demo.locked = false;
+    const pl = h => String(h).replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').replace(/\s+/g, ' '), nt = t => String(t).replace(/\s+/g, ' ').trim(), clk = sel => { const b = $(sel); if(b) b.click(); return !!b; };
+    const reset = kind => { while(stack.length) popPage(true); try{ closeOnb(); }catch(e){} try{ closeStory(); }catch(e){} closeSheet(); MQ.q = []; hideChip(true); hideToast(true); S = fresh(kind); SETUP_COLLAPSED = false; renderAll(); };
+    const top = () => stack.length ? stack[stack.length - 1].dataset.id : '', cnt = (h, k) => (h.match(new RegExp('data-go="' + k + '"', 'g')) || []).length;
+    const toastNow5 = () => nt($('#toast').textContent);
+    const lateRent = () => { S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); };
+    try{
+      // chk-analyst-default-on: both seeds start with the analyst on; the opt-in entries are gone; bills, due dates, the late warning and recategorising work from the start
+      reset('new'); const sN = fresh('new').analyst, sE = fresh('existing').analyst; tab('fooldal');
+      const H0 = pl(vFooldal()), bf0 = billsFirst(), tx0 = S.tx.findIndex(t => txType(t) === 'card' && !t.parts); S._txi = tx0;
+      const optIns = [vFooldal(), vHub(), myMoneyHTML(), vTovabbiak()].map(h => (h.match(/data-sheet="analyst"/g) || []).length);
+      lateRent(); renderAll();
+      ok('chk-analyst-default-on: the Financial analyst is on in both seeds (new and existing), Safe to spend, bills and due dates show from the start, a late bill shows its warning on Home, a payment can be recategorised, and the opt-in entries are gone (only the More switch row opens the analyst sheet)', sN.on && sE.on && sN.accepted && sE.accepted && /Safe to spend/.test(H0) && bf0.rows.length >= 6 && bf0.rows.every(r => r.bill.day > 0) && bfNow().on && /late/.test(pl(vFooldal())) && /Change category/.test(pl(SHEETS.txd())) && optIns[0] === 0 && optIns[1] === 0 && optIns[2] === 0 && optIns[3] === 1, [sN.on, sE.on, bf0.rows.length, optIns, bfNow().on]);
+
+      // chk-analyst-notice: shown once on the first Home view, What it reads and Turn off (with a confirm), gone after it has been dealt with or left
+      reset('new'); tab('fooldal'); const n1 = pl(vFooldal()), raw1 = vFooldal(), has1 = !!document.querySelector('#v-fooldal .annote');
+      clk('#v-fooldal [data-anread]'); const readT = pl($('#sheet').innerHTML), readOk = /Payee names, amounts and dates of your card and bank payments/.test(readT) && /Nothing leaves the bank/.test(readT); closeSheet();
+      const gone1 = !/annote/.test(vFooldal()) && S.anNote === true;
+      reset('new'); tab('fooldal'); tab('hub'); const gone2 = S.anNote === true && !/annote/.test(vFooldal());
+      reset('new'); tab('fooldal'); clk('#v-fooldal [data-anask]'); const cf = pl($('#sheet').innerHTML), askOk = /Turn off the Financial analyst\?/.test(cf) && cf.includes('Safe to spend becomes a simpler estimate; bills stay on.') && S.analyst.on === true;
+      clk('#sheet [data-closesheet]'); const keep = S.analyst.on === true; sheet(SHEETS.anoffcfm()); clk('#sheet [data-anoffgo]'); const offOk = S.analyst.on === false; hideChip(true);
+      reset('existing'); const foot = pl(myMoneyHTML());
+      tab('tovabbiak'); clk('#v-tovabbiak .mi.sw [data-sw="analyst"]'); const sw3 = sheetOpen() && S.analyst.on === true && /Turn off the Financial analyst\?/.test(pl($('#sheet').innerHTML)); closeSheet();
+      ok('chk-analyst-notice: first Home view shows "Your Financial analyst is on. It reads your transactions to show Safe to spend, bills and categories." with What it reads and Turn off, once (gone after a button or after leaving Home), the lawful-basis comment is in the markup, Turn off asks first ("Safe to spend becomes a simpler estimate; bills stay on."), the switch also lives in More and the Spending footer ("Financial analyst is on · Turn off")', has1 && n1.includes('Your Financial analyst is on.') && n1.includes('It reads your transactions to show Safe to spend, bills and categories.') && /What it reads/.test(n1) && /Turn off/.test(n1) && /CONFIRM WITH OTP \/ LEGAL: lawful basis/.test(raw1) && readOk && gone1 && gone2 && askOk && keep && offOk && /Financial analyst is on · Turn off/.test(foot) && sw3, {has1, readOk, gone1, gone2, askOk, keep, offOk, foot: foot.slice(-80), sw3});
+
+      // chk-analyst-off-fallback: off = Safe to spend is balance minus the upcoming direct debits, bills stay, only categories and the plan are hidden
+      reset('existing'); const onS = safeToSpend(); S.analyst.on = false; renderAll(); const offS = safeToSpend(), mmOff = myMoneyHTML(); S.payday.on = true;
+      const offS2 = safeToSpend(); S.payday.on = false; lateRent(); renderAll(); const home2 = pl(vFooldal()), bills2 = pl(billsHTML());
+      S.analyst.on = true; S.closedYm = []; const first = pl(myMoneyHTML()); S.analyst.on = true;
+      ok('chk-analyst-off-fallback: analyst off keeps Safe to spend (simple: balance minus bills still to pay, no saving rule or groceries), keeps the bills page and the late-bill card, hides only the plan ("Turn on to see your plan"); a first month says "We need a few weeks of payments to suggest a plan."', offS.simple && offS.safe === offS.balance - offS.unpaidBills && offS2.safe === offS.safe && onS.safe <= offS.safe && /Safe to spend/.test(pl(mmOff)) && /Turn on to see your plan/.test(pl(mmOff)) && !/My plan for/.test(mmOff) && /simpler estimate/.test(pl(mmOff)) && /late/.test(home2) && !/needs the financial analyst/.test(bills2) && /Must-pay bills/.test(bills2) && /Financial analyst is off · Turn on/.test(pl(mmOff)) && first.includes('We need a few weeks of payments to suggest a plan.'), [onS.safe, offS, offS2.safe, first.slice(0, 160)]);
+
+      // chk-sts-top: Safe to spend is the first card of the Spending page, with the real number, visible without scrolling
+      reset('existing'); tab('fooldal'); clk('#v-fooldal .safebtn'); const pg = stack[stack.length - 1], sc = pg ? pg.querySelector('.scroll') : null, card = sc ? sc.querySelector('.safebig') : null;
+      const r1 = card ? card.getBoundingClientRect() : null, r2 = sc ? sc.getBoundingClientRect() : null, sts = safeToSpend().safe;
+      const order = (() => { const h = myMoneyHTML(), ix = ['safebig', 'class="gauge"', 'data-go="bills"', 'My plan for', "Persi's tips", 'data-go="nextmonth"', 'Latest card payments', 'anfoot'].map(k => h.indexOf(k)); return ix.every((x, i) => x > -1 && (i === 0 || x > ix[i - 1])) || ix; })();
+      ok('chk-sts-top: the Spending page opens with the Safe to spend card (the real number and "A guide, not a limit"), fully visible without scrolling, and the blocks follow the C2 order (circle, Bills, My plan, tips, Next month, Latest card payments, footer)', top() === 'mymoney' && card && nt(card.textContent).includes(nt(ft(sts))) && /A guide, not a limit/.test(card.textContent) && r1.top >= r2.top && r1.bottom <= r2.bottom && order === true, [top(), sts, r1 && r1.bottom, r2 && r2.bottom, order]);
+      clk('#v-fooldal .safebtn') || 0; while(stack.length) popPage(true);
+
+      // chk-two-spend-numbers: Card spending and Total out on Home and Spending (the same), Total out leaves out own-account moves, "Spent" never stands alone
+      reset('existing'); const ym5 = shownMonth().ym, cs = cardSpending(), to = totalOut(), hh = nt(pl(vFooldal())), mm5 = nt(pl(myMoneyHTML())); const tx5 = S.tx.length;
+      S.tx.unshift({...stamp(), d:'Today', n:'PERSELY DEPOSIT', s:'Between my accounts', a:-5000, ic:'wallet'}); const toOwn = totalOut(); S.tx.shift();
+      S.tx.unshift({...stamp(), d:'Today', n:'SZABÓ DÓRA', s:'Transfer out', a:-1000, ic:'wallet'}); const toOut = totalOut(); S.tx.shift();
+      const spentBad = [hh, mm5, pl(nextMonthHTML()), pl(billsHTML()), pl(vHub()), pl(SHEETS.safe())].map(t => (t.match(/\bSpent\b(?! on)/g) || []).length + (t.match(/\bspent so far\b/gi) || []).length);
+      ok('chk-two-spend-numbers: Home and Spending both show "Card spending" and "Total out" with the same two figures; Total out (all money out except own-account moves) is more than Card spending, ignores a Persely deposit and counts a transfer out; "Spent" never appears alone', cs === sumVals(catSpend(ym5)) && to > cs && toOwn === to && toOut === to + 1000 && hh.includes(nt('Card spending ' + ft(cs))) && hh.includes(nt('Total out ' + ft(to))) && mm5.includes(nt('Card spending ' + ft(cs))) && mm5.includes(nt('Total out ' + ft(to))) && /\d+ days? left/.test(mm5) && S.tx.length === tx5 && spentBad.every(x => x === 0), [cs, to, toOwn, toOut, spentBad]);
+      // the projection: balance now - bills still to pay - average daily card spending x days left
+      { const pj = monthEndLeft(), s5 = safeToSpend(), mo5 = shownMonth(), want = Math.round((s5.balance - s5.unpaidBills - cardSpending() / mo5.today * mo5.left) / 100) * 100;
+        ok('month end projection: "At this pace you finish the month with about X Ft left", X = balance now - unpaid must-pay bills - average daily card spending x days left (rounded to 100 Ft), shown once under the circle', pj.left === want && (mm5.includes(nt(`At this pace you finish the month with about ${ft(want)} left.`)) || mm5.includes(nt(`about ${ft(-want)} short`))), [pj.left, want, mm5.slice(0, 0)]); }
+
+      // chk-story-month-end: the ring and the Home card exist only at month end; the demo keys M and E still reach it; a new month clears it; reopening restarts
+      reset('existing'); tab('hub'); const ring0 = pl(vHub()), off0 = /sring off/.test(vHub()) && !/data-story[ >]/.test(vHub().match(/<[^>]*sring off[^>]*>/)[0]) && /Your story arrives on 30 November 2026/.test(vHub()), card0 = /Your November is ready/.test(vFooldal());
+      S.monthEnd = true; renderAll(); const on1 = /data-story/.test(vHub().match(/<[^>]*class="sring[^"]*"[^>]*>/)[0]) && !/sring off/.test(vHub()), card1 = /Your November is ready/.test(pl(vFooldal()));
+      openStory(); stGo(3); const was3 = ST.i === 3; closeStory(); openStory(); const restarted = ST.i === 0 && ST.t === 0; closeStory();
+      const homeAfter = !/Your November is ready/.test(vFooldal()) && /sring seen/.test(vHub());
+      S.monthEnd = false; S.storySeen = false; unlockPhone(); dispatchEvent(new KeyboardEvent('keydown', {key:'m'})); const keyM = S.monthEnd === true && ST.on === true; closeStory();
+      reset('existing'); dispatchEvent(new KeyboardEvent('keydown', {key:'e'})); const keyE = S.monthEnd === true && ST.on === true && S.period === 'Autumn semester'; closeStory(); reset('existing');
+      S.monthEnd = true; monthStep(true); const cleared = S.monthEnd === false;
+      ok('chk-story-month-end: before month end the ring is grey and not a story button ("Your story arrives on 30 November 2026") and Home has no story card; at month end the ring opens the story and Home shows "Your November is ready" until it is watched; demo key M and E reach it; a new month clears it; reopening a watched story restarts at slide 1', off0 && !card0 && on1 && card1 && was3 && restarted && homeAfter && keyM && keyE && cleared, {off0, card0, on1, card1, was3, restarted, homeAfter, keyM, keyE, cleared});
+
+      // chk-story-see-details: the last slide has See details (opens Spending), Share (preview) and Close; the dense slides are longer; the progress slide is about one goal
+      reset('existing'); S.monthEnd = true; renderAll(); openStory(); const last = ST.slides.length - 1; stGo(last); const ft5 = nt($('#story .st-foot').textContent), btns = [...document.querySelectorAll('#story .st-foot button')].map(b => nt(b.textContent));
+      const dur = id => { const x = ST.slides.find(y => y.id === id); return x ? x.dur : 0; }, others = ST.slides.filter(x => !x.end && !x.slow && !x.fixed).map(x => x.dur), slowOk = dur('bills') >= 4 && dur('progress') >= 4;
+      const prog = ST.slides.find(x => x.id === 'progress'), progT = prog ? pl(prog.build()) : '', gNames = S.goals.filter(g => progT.includes(g.name)).length;
+      clk('#story [data-stshare]'); const shareT = toastNow5(); hideToast(true);
+      clk('#story [data-stdetails]'); const det = top() === 'mymoney' && !ST.on; while(stack.length) popPage(true);
+      ok('chk-story-see-details: the last slide offers See details, Share (preview) and Close; See details closes the story and opens the Spending page; Share shows the standard demo toast; the bills and progress slides run at least 4 s; the progress slide names one goal', btns.join() === 'See details,Share (preview),Close' && det && /Share is not part of this demo/.test(shareT) && slowOk && prog && gNames === 1, [btns, det, shareT, dur('bills'), dur('progress'), gNames]);
+
+      // chk-year-entry: the Your year rows exist after 12 months (Persely tab and More Persely group), not before; the page opens from both
+      reset('existing'); for(let i = 0; i < 11; i++) monthStep(true); renderAll(); const before12 = !/data-go="year"/.test(vHub()) && !/Your year/.test(vTovabbiak());
+      monthStep(true); renderAll(); const hubRow = /data-go="year"/.test(vHub()), moreRow = /Your year/.test(vTovabbiak()), flow = S.flowLog.length;
+      tab('tovabbiak'); clk('#v-tovabbiak [data-go="year"]'); const m1 = top() === 'year'; while(stack.length) popPage(true); tab('hub'); clk('#v-hub [data-go="year"]'); const m2 = top() === 'year'; const yh = nt($('#stack .page:last-child') ? $('#stack .page:last-child').textContent : '');
+      while(stack.length) popPage(true);
+      ok('chk-year-entry: Your year is on the Persely tab and in the More Persely group only after 12 months and opens the year page from both', before12 && hubRow && moreRow && m1 && m2 && /What your rate earned/.test(yh), {before12, hubRow, moreRow, m1, m2, flow});
+
+      // chk-compare-per-100k: Persely 3.0%, Savings account 3.5% and the old 0.01% per 100 000 Ft on one bar scale, one sentence on rate, tax and access; reached goals say Reached, capped; the score once; reward sheets wait
+      const g0 = S.goals.find(g => g.id === 'ps5') || S.goals.find(g => !isEur(g)); const keepSaved = g0.saved; g0.saved = gTarget(g0) + 59000; const Y = yearHTML(), Yt = nt(pl(Y)); g0.saved = keepSaved;
+      const w = [...Y.matchAll(/--w:([\d.]+)%/g)].map(x => +x[1]), reach = nt(`${g0.name} ${ft(gTarget(g0))} of ${ft(gTarget(g0))}`);
+      pushPage('year'); let held = false; qSheet(() => '<h2>Reward test</h2>', 'rtest'); held = !sheetOpen() && MQ.q.some(x => x.id === 'rtest'); popPage(true); mqPump(); const released = sheetOpen() && /Reward test/.test($('#sheet').innerHTML); closeSheet(); MQ.q = [];
+      ok('chk-compare-per-100k: "What your rate earned" is per 100 000 Ft after 28% tax for Persely 3.0% (2 160 Ft), Savings account 3.5% (2 520 Ft) and the old 0.01% (7 Ft) on the same bar scale, with one conclusion sentence on rate, tax and access that does not say Persely earns more; an overfunded goal shows Reached with the amount capped at its target; the health score is shown once as first month against last month; reward sheets wait until the year page closes', /Per 100 000 Ft for a year, after tax/.test(Yt) && /Persely, 3\.0% \+2 160 Ft/.test(Yt) && /Savings account, 3\.5% \+2 520 Ft/.test(Yt) && /Before Persely, 0\.01% \+7 Ft/.test(Yt) && w.length === 3 && Math.abs(w[0] / w[1] - 2160 / 2520) < .01 && w[2] < 2 && /pays the higher rate, 3\.5% against 3\.0%/.test(Yt) && /28% tax/.test(Yt) && /withdraw any time/.test(Yt) && !/Persely (pays|earns) more/.test(Yt) && /Reached/.test(Yt) && Yt.includes(reach) && (Yt.match(/First month \d+, last month \d+ of 100/g) || []).length === 1 && (Yt.match(/Financial health score/g) || []).length === 1 && held && released, {w, held, released, tail: Yt.slice(-200)});
+    } catch(e){ ok('chk-phase5: the new checks ran without errors', false, String(e && e.stack || e)); }
+    finally { hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeStory(); }catch(e){} try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); S = sv13; cur = cur13; stack.push(...stk13); demo.locked = lock13; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views13[i])); }
   }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
@@ -1927,8 +2033,8 @@ const seedExisting = () => { const H = demoHistory(); const o = ({
   income:{amount:75000, day:5},        // money the bank sees coming in around the 5th (salary, scholarship, family)
   // money in: payday rule (share of each payment of 10 000 Ft or more, asks first), weekly transfer, round-ups
   payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday',
-  // financial analyst (opt-in, off by default). split = % of the monthly income base (must, ess, fun, save); only fun is a choice, the rest is refreshed from the data by syncSplit()
-  analyst:{on:false, accepted:false, split:{must:44, ess:31, fun:20, save:5}}, txMark:H.old,   // txMark = rows before this month (the Aug-Oct history)
+  // financial analyst: ON BY DEFAULT with an easy switch off (D10; CONFIRM WITH OTP / LEGAL: lawful basis). accepted:true = the split on screen is the suggestion, no opt-in step. anNote = the first-run notice on Home was dealt with. split = % of the monthly income base (must, ess, fun, save); only fun is a choice, the rest is refreshed from the data by syncSplit()
+  analyst:{on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}, anNote:false, monthEnd:false, txMark:H.old,   // txMark = rows before this month (the Aug-Oct history)
   // analytics (section 14): finished months, bill list (detected, locks kept), Bills pocket (built later; its balance is held outside the Junior balance), remembered categories, bills dismissed for a month, demo "today"
   closedYm:['2026-08','2026-09','2026-10'], bills:[], billsConfirmed:false, billsPocket:{on:false, bal:0}, catRules:{}, billSkip:{}, billSkipWhy:{}, bfDone:false, bfPush:'', demoDay:14, histV:3,
   // health score history: one entry per finished month, 1 = the indicator held that month. Score = 25 points per indicator x share of the last 3 months. Rewards earned / goal offers already used
@@ -2006,6 +2112,32 @@ const acc = id => S.accounts.find(a=>a.id===id);
 /* UX change 5 + 12 (plan: ux-change-plan-persely.md). true: the Persely tab is about saving, the analytics live on one "Spending analysis" page (one Home card, one Persely row), and Friends is opt-in.
    false: the old layout (My split, Bills and next month and Friends in the tab, Next month and Must-pay bills linked from Home). Kept until the run-through. */
 const NEW_PERSELY_IA = true;
+/* First-run notice (A5 item 3, D10): the analyst is on by default, so Home says so once, with What it reads and Turn off.
+   It goes away when one of its buttons is used or when the student leaves Home (anNoteSeen). */
+// CONFIRM WITH OTP / LEGAL: lawful basis for default-on processing of transaction data; wording is not final.
+function anNoticeCard(){
+  if(S.anNote || !S.analyst.on) return '';
+  return `<div class="card annote" role="region" aria-label="Financial analyst"><!-- CONFIRM WITH OTP / LEGAL: lawful basis -->
+    <b>Your Financial analyst is on.</b>
+    <div class="fine">It reads your transactions to show Safe to spend, bills and categories.</div>
+    <div class="anbtns"><button class="btn w" data-anread>What it reads</button><button class="btn ghost" data-anask>Turn off</button></div></div>`;
+}
+function anNoteSeen(){ if(!S.anNote && document.querySelector('#v-fooldal .annote')){ S.anNote = true; save(); } }
+// the story exists only at month end (C3, D3). S.monthEnd is the demo month clock: the demo keys M and E set it, +1 month (O) starts a new month and clears it.
+const storyReady = () => !!S.monthEnd;
+const storyDateTxt = () => { const mo = shownMonth(); return `${mo.last} ${mo.name} ${mo.year}`; };   // full date: "30 November 2026" (glossary: no short or year-less dates)
+// Home card "Your November is ready": month end only, until the story has been watched
+function storyCard(){
+  if(!storyReady() || S.storySeen) return '';
+  const nm = S.period === 'Autumn semester' ? 'Autumn semester' : S.period;
+  return `<button class="card hubteaser storycard" data-story data-tour="storycard">${pig('proud', 52)}<span><b>Your ${esc(nm)} is ready</b><small>Take a look. It takes about a minute</small></span>${I('chev',20)}</button>`;
+}
+// the ring on the Persely tab: active at month end, grey before it with the date it arrives
+function storyRing(){
+  const lab = S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase();
+  if(storyReady()) return `<button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${lab}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button>`;
+  return `<button class="sring off" data-storywait data-tour="story" aria-label="Your story arrives on ${storyDateTxt()}" title="Your story arrives on ${storyDateTxt()}"><span class="sring-in">${lab}</span><small>At month end</small></button>`;
+}
 function vFooldal(){
   const mo = shownMonth(), sp = catSpend(mo.ym), spent = sumVals(sp), avg = avgSpend() || spent;
   // gauge: 270° arc, gap at the bottom
@@ -2013,6 +2145,7 @@ function vFooldal(){
   return `
   <div class="hhead"><button class="avatar" data-demo="Profile" aria-label="Profile and Settings">${S.ini}</button><b>${S.name}</b><button class="bell" data-go="ertesitesek" aria-label="Notifications">${I('bell',26)}</button><button class="mail" data-go="neked" aria-label="For you">${I('mail',26)}</button></div>
   ${bfCard()}
+  ${anNoticeCard()}
   <div class="sec"><span>Balance</span><a data-go="szamlaim">All accounts ${I('chev',16)}</a></div>
   <div class="accs" id="accs">${S.accounts.map(a => a.id === 'persely'
     ? `<button class="acc" data-tab="hub"><div class="n">Persely · total</div><div class="v num">${ft(total())}</div><div class="h">${S.goals.length ? plural(S.goals.filter(g => !isEur(g)).length,'goal') : 'No goals yet'}${eurTotal() ? ` + ${eur(eurTotal())}` : ''}</div></button>`
@@ -2025,6 +2158,7 @@ function vFooldal(){
   <button class="card hubteaser" ${S.goals.length ? 'data-tab="hub"' : 'data-sheet="newgoal"'}>${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.goals.length
     ? `<b>Start your first goal</b><small>Pick what you are saving for</small>`
     : `<b style="display:flex;align-items:center;gap:4px">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Safe this week' : 'Ends Sunday. Any amount keeps it going'}</small>`}</span>${I('chev',20)}</button>
+  ${storyCard()}
   ${insightCard()}
   <div class="sec"><span>My monthly spending</span><a data-go="mymoney">Details ${I('chev',16)}</a></div>
   <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${mo.label}</div>
@@ -2033,9 +2167,10 @@ function vFooldal(){
       <circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>
       <circle cx="125" cy="125" r="${R}" fill="none" stroke="#52AE30" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc*p} ${C}"/>
     </svg>
-    <div class="core"><small>Spent so far</small><b class="num">${ft(spent)}</b></div>
+    <div class="core"><small>Card spending</small><b class="num">${ft(spent)}</b></div>
   </div>
-  <div class="avg">Average monthly spending: <span class="num">${ft(avg)}</span></div>
+  ${outLine()}
+  <div class="avg">Average card spending a month: <span class="num">${ft(avg)}</span></div>
   ${S.analyst.on && !NEW_PERSELY_IA ? `<div class="lrow"><button class="link lnk44" data-go="nextmonth">Next month ${I('chev',16)}</button><button class="link lnk44" data-go="bills">Must-pay bills ${I('chev',16)}</button></div>` : ''}
   ${S.analyst.on && S.analyst.accepted ? '' : `<button class="link lnk44" data-sheet="analyst" style="margin:0 0 0 10px">See how it fits your income ${I('chev',16)}</button>`}
   <div class="sec"><span>What did I spend on this month?</span></div>
@@ -2144,6 +2279,7 @@ function vTovabbiak(){
   ${it('tag','Discounts','data-go="kedvezmenyek"')}${it('gift','My partners')}
   <div class="mi sw"><button class="mi-main" data-sheet="analyst">${I('analyst')}<span>Financial analyst</span></button>${swBtn(S.analyst.on, 'data-sw="analyst"', 'Financial analyst')}</div>
   ${it('mail','For you','data-go="neked"')}
+  ${(S.months || 0) >= 12 ? it('star','Your year','data-go="year"') : ''}
   <div class="sec"><span>Help</span></div>
   ${it('bell','Notifications','data-go="ertesitesek"')}
   ${it('info','How Persely works','data-sheet="how"')}
@@ -2520,7 +2656,7 @@ const FAMILY_IN = FAMILY_AMT;   // the family transfer on the 1st (demo)
 const FRIEND_IN_AMT = 3000, FRIEND_IN = [['FEKETE MÁRK', 'jegy'], ['KOVÁCS BENCE', 'mozi'], ['NAGY DÓRI', 'vacsora']];   // a small friend transfer on the 9th of each simulated month (demo)
 const ordinal = n => { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
 const NOBF = {on:false, total:0, count:0, rows:[], urgent:[], text:''};
-const bfNow = () => S.analyst.on ? billsFirst() : NOBF;
+const bfNow = () => billsFirst();   // bills stay on when the analyst is off (D10)
 const pocketBal = () => S.billsPocket && S.billsPocket.on ? S.billsPocket.bal : 0;
 const billById = id => (S.bills || []).find(b => b.id === id);
 const GROUPN = {must:'Must-pay', flex:'Essentials', fun:'Fun', subs:'Subscriptions', save:'Saving', other:'Other', in:'Income'};
@@ -2536,7 +2672,7 @@ const billPill = s => s.st === 'paid' || s.st === 'skipped' ? 'ok' : s.st === 'l
 const mustTotal = () => mustBills().reduce((a, b) => a + b.exp, 0);
 const pocketOffer = () => Math.max(0, mustTotal() - pocketBal());   // "Move X Ft to Bills pocket": a month of must-pay bills (61 000 Ft in the demo)
 // the payday sheet becomes "Bills first" when the analyst is on and a must-pay bill is still open (an automatic payday rule keeps moving by itself)
-const paydayBills = () => S.analyst.on && billsFirst().count > 0 && !(S.payday.on && !S.payday.ask);
+const paydayBills = () => billsFirst().count > 0 && !(S.payday.on && !S.payday.ask);
 // pay one bill from the Bills pocket when it holds enough, else from the Junior account. Returns {amt, fromPocket} or {err}
 const payeeAcct = key => { let h = 7; for(const c of key) h = (h * 31 + c.charCodeAt(0)) % 1000000007; const q = m => String(h * m % 100000000).padStart(8, '0'); return `1177${q(7919).slice(0, 4)}-${q(104729)}-${q(15485863)}`; };   // demo account number, the same every time for one payee
 function payBill(id){
@@ -2582,7 +2718,6 @@ function billsLine(){
 }
 // Home (analyst on): the one card that opens Spending analysis. New layout: Safe to spend and the state of the bills. Old layout: Safe to spend opens its sheet.
 function safeRow(){
-  if(!S.analyst.on) return '';
   const s = safeToSpend();
   if(NEW_PERSELY_IA) return `<button class="safebtn" data-go="mymoney" data-tour="mymoney"><span class="t"><b>Safe to spend</b><small>${billsLine()}</small></span><b class="num" style="color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</b><span class="chev">${I('chev', 18)}</span></button>`;
   return `<button class="safebtn" data-sheet="safe"><span class="t"><b>Safe to spend</b><small>${s.pocket ? `After bills, your saving rule and groceries. Bills pocket ${ft(s.pocket)} is apart` : 'After bills, your saving rule and groceries'}</small></span><b class="num" style="color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</b><span class="chev">${I('chev', 18)}</span></button>`;
@@ -2604,30 +2739,45 @@ function billsBlock(){
 function analysisRow(){
   if(!NEW_PERSELY_IA) return '';
   const chev = `<span class="chev">${I('chev', 20)}</span>`, row = (go, sub) => `<button class="row" ${go}><span class="ic">${I('chart')}</span><span class="t"><b>Spending</b><small>${sub}</small></span>${chev}</button>`;
-  if(!S.analyst.on) return row('data-go="mymoney"', 'See where your money goes this month');
   const sf = safeToSpend(), bf = bfNow();
-  if(!S.analyst.accepted) return row('data-go="mymoney"', `Split suggested · Safe to spend ${ft(sf.safe)}`);
+  if(!S.analyst.on) return row('data-go="mymoney"', `Safe to spend ${ft(sf.safe)} · Turn on the analyst for your plan`);
   if(bf.on) return row('data-go="mymoney"', `Fun on hold · Safe to spend ${ft(sf.safe)}`);
-  const v = splitView(), spent = sumVals(catSpend(shownMonth().ym)), plan = v.by.ess.amt + v.by.fun.amt;
-  return row('data-go="mymoney"', `${ft(spent)} spent of ${ft(plan)} planned`);
+  const v = splitView(), plan = v.by.ess.amt + v.by.fun.amt;
+  return row('data-go="mymoney"', `Card spending ${ft(cardSpending())} of ${ft(plan)} planned`);
 }
 // Persely tab rows after the habits: Perks (the Discounts page until the Perks page exists) and Your year (only after 12 months, C4.1)
 const perksRow = () => `<button class="row" data-go="kedvezmenyek"><span class="ic">${I('gift')}</span><span class="t"><b>Discounts</b><small>${DISC.length - S.disc.activated.length} offers waiting for activation</small></span><span class="chev">${I('chev', 20)}</span></button>`;
 const yearRow = () => (S.months || 0) >= 12 ? `<button class="row" data-go="year"><span class="ic">${I('star')}</span><span class="t"><b>Your year</b><small>12 months in Persely</small></span><span class="chev">${I('chev', 20)}</span></button>` : '';
-// the Spending analysis page: the circle and categories for the month, the plan and tips, then Safe to spend, My split, Next month, Must-pay bills and Bills pocket
+/* The ONE Spending page (C2, D3), in this order: 1 Safe to spend, 2 month circle (Card spending, Total out, days left, month end projection),
+   3 Bills row, 4 My plan (categories expandable, one Edit), 5 Persi's tips, 6 Next month row, 7 Latest card payments, 8 footer with the analyst switch.
+   Analyst off: Safe to spend (simple) and bills stay; only the plan and categories are hidden ("Turn on to see your plan"). */
+function safeCard(){
+  const s = safeToSpend();
+  return `<button class="safebtn safebig" data-sheet="safe" data-tour="mymoney" aria-label="Safe to spend ${ft(s.safe)}. A guide, not a limit. Opens how it is worked out"><span class="t"><small>Safe to spend</small><b class="num" style="color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</b><small>A guide, not a limit${s.simple ? ' · simpler estimate' : ''}</small></span><span class="chev">${I('chev', 18)}</span></button>`;
+}
+function billsRow(){
+  const found = (S.bills || []).filter(b => !b.ignored).length, sub = !S.billsConfirmed && found ? `We found ${plural(found, 'regular payment')} · Confirm my bills` : billsLine();
+  return `<div class="prow"><button class="row" data-go="bills" data-tour="billsrow"><span class="ic">${I('list')}</span><span class="t"><b>Bills</b><small>${sub}</small></span><span class="chev">${I('chev', 20)}</span></button></div>`;
+}
+function nextMonthRow(){
+  const v = curView();
+  return `<div class="prow"><button class="row" data-go="nextmonth"><span class="ic">${I('chart')}</span><span class="t"><b>Next month</b><small>${v.rough ? `About ${ft(v.B)} in · a rough guess` : `About ${ft(v.about)} in, spread like My plan`}</small></span><span class="chev">${I('chev', 20)}</span></button></div>`;
+}
+function analystFoot(){
+  const on = S.analyst.on;
+  return `<div class="anfoot" data-tour="anfoot"><span>Financial analyst is ${on ? 'on' : 'off'}</span><span aria-hidden="true">·</span>${on ? '<button class="link lnk44" data-anask>Turn off</button>' : '<button class="link lnk44" data-anon>Turn on</button>'}<span aria-hidden="true">·</span><button class="link lnk44" data-sheet="anread">What it reads</button></div>`;
+}
 function myMoneyHTML(){
-  if(!S.analyst.on) return PAGES.kiadas.html();   // analyst off: the same page shows the month's categories and the offer to turn the analyst on
-  const s = safeToSpend(), mo = shownMonth(), sp = catSpend(mo.ym), m = S.analyst.accepted ? planModel() : null;
-  return `<div class="sec"><span>Spent in ${mo.name}</span></div>
-  <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${mo.label}</div>
+  const an = S.analyst.on, mo = shownMonth(), enough = project().months >= 1, m = an && enough ? planModel() : null;
+  return `${safeCard()}
   ${analysisGauge(m)}
-  <div class="sec"><span>What did I spend on this month?</span></div>
-  ${catBars(sp)}
-  ${m ? planHTML(m) + planTipsHTML(m) : ''}
-  <button class="safebtn" data-sheet="safe" style="margin-top:8px"><span class="t"><b>Safe to spend</b><small>${s.pocket ? `After bills, your saving rule and groceries. Bills pocket ${ft(s.pocket)} is apart` : 'After bills, your saving rule and groceries'}</small></span><b class="num" style="color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</b><span class="chev">${I('chev', 18)}</span></button>
-  ${splitCard()}
-  ${billsBlock()}
-  ${recentCards()}`;
+  ${billsRow()}
+  ${!an ? `<div class="sec"><span>My plan</span></div><div class="card" style="padding:16px" data-tour="plan"><b class="u-fs-m">Turn on to see your plan</b><div class="fine u-mt4-b12">Categories and your monthly plan need the Financial analyst. Safe to spend and bills stay on.</div><button class="btn" data-anon>Turn on</button></div>`
+    : !enough ? `<div class="sec"><span>My plan</span></div><div class="card" style="padding:16px" data-tour="plan"><b class="u-fs-m">We need a few weeks of payments to suggest a plan.</b><div class="fine u-mt4-b12">Safe to spend and your bills already work.</div></div>`
+    : planHTML(m) + planTipsHTML(m)}
+  ${an && enough ? nextMonthRow() : ''}
+  ${recentCards()}
+  ${analystFoot()}`;
 }
 // the same screen text for pages that need the analyst
 const needAnalyst = what => `<div class="card" style="padding:16px;margin-top:8px"><b class="u-fs-m">${what} needs the financial analyst</b><div class="fine u-mt4-b12">It is optional and off right now. Turn it on to see your bills and next month.</div><button class="btn" data-sheet="analyst">See what it measures</button></div>`;
@@ -2650,10 +2800,10 @@ function nextMonthHTML(){
   <div class="card lst"><button class="li" data-go="bills"><span class="t"><b>Must-pay bills (${mustBills().length})</b><small>Rent, utilities, pass, phone · at their usual amounts</small></span><b class="num">${ft(p.mustPay)}</b><span class="chev">${I('chev', 18)}</span></button>
     ${p.cats.filter(c => c.amt > 0 && c.group !== 'save').map(c => `<div class="li"><span class="t"><b>${c.label}</b><small>${GROUPN[c.group]} · last ${c.hist.length} months</small></span>${spk(c.hist)}<b class="num" style="min-width:78px;text-align:right">${ft(c.amt)}</b></div>`).join('')}</div>
   ${p.oneOffs.length ? `<div class="sec"><span>Left out: one-off payments</span></div><div class="card lst">${p.oneOffs.map(o => `<div class="li"><span class="t"><b>${esc(titleCase(o.name))}</b><small>${o.label} · ${monthOf(o.ym)} · more than 3 times the usual, so it is not repeated</small></span><b class="num">${ft(o.amt)}</b></div>`).join('')}</div>` : ''}
+  <button class="btn w" data-planback>Back to My plan</button>
   <div class="fine u-note-b14">A guess from your last ${p.months} months: recent months count more. Income only counts what comes regularly, plus the lowest of the others. These are the same four buckets as My split: Fun is your choice, Saving is your saving rules, Everyday essentials is what is left. Tips only: nothing is blocked and nothing moves by itself.</div>`;
 }
 function billsHTML(){
-  if(!S.analyst.on) return needAnalyst('Must-pay bills');
   const bf = billsFirst(), rows = bf.rows, sf = safeToSpend(), paid = rows.reduce((a, r) => a + (r.s.st === 'paid' || r.s.st === 'less' ? r.s.paid : 0), 0);
   const others = (S.bills || []).filter(b => !b.locked && !b.ignored).map(b => ({bill:b, s:billStatus(b)}));
   const offer = pocketOffer(), pk = S.billsPocket;
@@ -2693,7 +2843,8 @@ const SHEETS_BILLS = {
   safe:() => { const s = safeToSpend(), bf = billsFirst(), row = (l, v, sub) => `<div class="li"><span class="t"><b>${l}</b>${sub ? `<small>${sub}</small>` : ''}</span><b class="num">${v}</b></div>`;
     return `<h2>Safe to spend</h2><div style="text-align:center;margin:-6px 0 12px"><span class="num" style="font-size:2.25rem;font-weight:700;line-height:1;color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</span></div>
     <div class="card lst">${row('Junior account', ft(s.balance))}${row('Bills still to pay', '− ' + ft(s.unpaidBills), s.pocket ? `${ft(bf.total)} to pay, ${ft(Math.min(bf.total, s.pocket))} covered by the Bills pocket` : bf.count ? plural(bf.count, 'bill') : 'All paid')}
-      ${row('Saving rule to move', '− ' + ft(s.savingRule), S.payday.on ? 'Your payday rule, this month' : 'Payday rule is off')}${row('Groceries kept free', '− ' + ft(s.groceries), 'The lowest of your last 3 months')}</div>
+      ${s.simple ? '' : `${row('Saving rule to move', '− ' + ft(s.savingRule), S.payday.on ? 'Your payday rule, this month' : 'Payday rule is off')}${row('Groceries kept free', '− ' + ft(s.groceries), 'The lowest of your last 3 months')}`}</div>
+    ${s.simple ? `<div class="fine u-note-b12">A simpler estimate: your balance minus the direct debits still to come. Turn the Financial analyst on for a closer figure that also leaves room for your saving rule and groceries.</div><button class="link lnk44" data-anon>Turn on the Financial analyst</button>` : ''}
     ${s.pocket ? `<div class="fine u-note-b12">Bills pocket: ${ft(s.pocket)}. It is held apart for bills, so it is not part of the balance above.</div>` : ''}
     <div class="fine u-note-b14">A guide, not a limit. No card is declined and no money is held without your tap.</div>
     <button class="btn" data-go="bills">Must-pay bills</button><button class="btn ghost" data-closesheet>Close</button>`; },
@@ -2720,8 +2871,8 @@ function planModel(){
     return keys.map((c, i) => ({c, name:SPEND_SHORT[c] || CATEGORY[c][0], plan:pl[c] || 0, spent:sp[c] || 0, col:tint(BKT_COL[b], Math.min(.6, i * .14))})).sort((x, y) => y.plan - x.plan); };
   const groups = [
     {k:'must', name:'Must-pay bills', plan:v.by.must.amt, spent:mustPaid(), rows:[], note:'paid'},
-    {k:'ess', name:'Everyday essentials', plan:v.by.ess.amt, spent:0, rows:cats('ess'), note:'spent'},
-    {k:'fun', name:'Fun', plan:v.by.fun.amt, spent:0, rows:cats('fun'), note:'spent'},
+    {k:'ess', name:'Everyday essentials', plan:v.by.ess.amt, spent:0, rows:cats('ess'), note:'used'},
+    {k:'fun', name:'Fun', plan:v.by.fun.amt, spent:0, rows:cats('fun'), note:'used'},
     {k:'save', name:'Saving', plan:v.by.save.amt, spent:use.save, note:'saved', rows:[{c:'persely', name:'Persely', plan:v.by.save.amt - inv, spent:use.save, col:BKT_COL.save}].concat(inv ? [{c:'invest', name:'Investing', plan:inv, spent:null, col:'#7A6FD8'}] : [])}
   ];
   groups.forEach(g => { if(g.k === 'ess' || g.k === 'fun') g.spent = g.rows.reduce((a, r) => a + r.spent, 0); });
@@ -2744,10 +2895,14 @@ function planTips(m){
 function planHTML(m){
   const mo = m.mo;
   const bar = (spent, plan, col, k) => { const p = plan ? Math.min(100, spent / plan * 100) : 0, over = k !== 'save' && spent > plan; return `<div class="mp-bar" aria-hidden="true"><i style="width:${p}%;background:${over ? 'var(--orange)' : col}"></i></div>`; };
-  const grp = g => `<div class="mp-g"><b><span class="dotc" style="background:${BKT_COL[g.k]}"></span>${g.k === 'must' ? I('lock', 14) : ''}${g.name}</b><span class="num">${ft(g.spent)} ${g.note} of ${ft(g.plan)}</span></div>
-    ${g.rows.length ? g.rows.map(r => `<div class="mp-r"><span style="display:flex;align-items:center;gap:7px"><span class="dotc" style="background:${r.col};width:9px;height:9px"></span>${r.name}</span><span class="num">${r.spent === null ? `${ft(r.plan)} <small>planned, not moved</small>` : `${ft(r.spent)} <small>of ${ft(r.plan)}</small>`}</span></div>${r.spent === null ? '' : bar(r.spent, r.plan, r.col, g.k)}`).join('') : bar(g.spent, g.plan, BKT_COL[g.k], g.k)}`;
+  const rowOf = (r, g) => `<div class="mp-r"><span style="display:flex;align-items:center;gap:7px"><span class="dotc" style="background:${r.col};width:9px;height:9px"></span>${r.name}</span><span class="num">${r.spent === null ? `${ft(r.plan)} <small>planned, not moved</small>` : `${ft(r.spent)} <small>of ${ft(r.plan)}</small>`}</span></div>${r.spent === null ? '' : bar(r.spent, r.plan, r.col, g.k)}`;
+  // one block, the four groups once. Saving is shown as an amount a month (no percentage). Groups with categories open and close.
+  const head = g => `<b><span class="dotc" style="background:${BKT_COL[g.k]}"></span>${g.k === 'must' ? I('lock', 14) : ''}${g.name}</b><span class="num">${g.k === 'save' ? `${ft(g.plan)} a month` : `${ft(g.spent)} ${g.note} of ${ft(g.plan)}`}</span>`;
+  const grp = g => g.rows.length
+    ? `<details class="mp-d"><summary class="mp-g">${head(g)}<span class="chev" aria-hidden="true">${I('chev', 16)}</span></summary>${g.k === 'save' ? `<div class="fine mp-n">${ft(g.spent)} moved to Persely so far this month</div>` : ''}${g.rows.map(r => rowOf(r, g)).join('')}</details>${g.k === 'save' ? '' : bar(g.spent, g.plan, BKT_COL[g.k], g.k)}`
+    : `<div class="mp-g">${head(g)}</div>${bar(g.spent, g.plan, BKT_COL[g.k], g.k)}`;
   const v = curView(), few = v.rough || v.n < 3;
-  return `<div class="sec"><span>My plan for ${mo.name}</span><a class="lnk44" data-plangear>Edit ${I('chev',16)}</a></div>
+  return `<div class="sec" data-tour="plan"><span>My plan for ${mo.name}</span><a class="lnk44" data-plangear>Edit ${I('chev',16)}</a></div>
   <div class="card mp-card" style="padding:16px">
     ${m.groups.map(grp).join('')}
     ${few ? `<div class="fine" style="margin:12px 0 0">${v.label}</div>` : ''}
@@ -2761,29 +2916,32 @@ function planTipsHTML(m){
   return `<div class="sec"><span>Persi's tips for ${m.mo.name}</span></div>
   <div class="card lst">${tips.map(t => `<div class="li"><span class="t" style="line-height:1.45;font-size:0.875rem">${t}</span></div>`).join('')}</div>`;
 }
-// the Spending analysis circle, drawn like the Home gauge (270 degrees, round caps, grey track, soft core).
-// With a plan: Everyday essentials spent, then Fun spent, over what the plan has for both. Without one: spent so far against the usual month, as Home.
+// the Spending circle, drawn like the Home gauge (270 degrees, round caps, grey track, soft core). The core is Card spending; Total out and the days left are under it, then the month end projection.
+// With a plan: Everyday essentials spent, then Fun spent, over what the plan has for both. Without one: card spending against the usual month, as Home.
 function analysisGauge(m){
-  const mo = shownMonth(), spent = sumVals(catSpend(mo.ym)), R = 104, C = 2 * Math.PI * R, arc = C * .75;
+  const mo = shownMonth(), spent = cardSpending(mo.ym), R = 104, C = 2 * Math.PI * R, arc = C * .75;
   const ring = (len, col) => len > 0 ? `<circle cx="125" cy="125" r="${R}" fill="none" stroke="${col}" stroke-width="16" stroke-linecap="round" stroke-dasharray="${len} ${C}"/>` : '';
-  let fill, line, over = false;
+  let fill, line = '', over = false;
   if(m){
     const P = m.groups[1].plan + m.groups[2].plan, e = m.groups[1].spent, f = m.groups[2].spent, pe = P ? Math.min(1, e / P) : 0, pf = P ? Math.min(1 - pe, f / P) : 0;
     fill = ring(arc * (pe + pf), BKT_COL.fun) + ring(arc * pe, BKT_COL.ess);
     over = e + f > P;
-    line = over ? `<span class="num">${ft(e + f - P)}</span> over the plan · ${plural(mo.left, 'day')} left` : `Planned for everyday and fun: <span class="num">${ft(P)}</span> · ${plural(mo.left, 'day')} left`;
+    line = over ? `<span class="num">${ft(e + f - P)}</span> over the plan for everyday and fun` : `Planned for everyday and fun: <span class="num">${ft(P)}</span>`;
   } else {
     const avg = avgSpend() || spent;
     fill = ring(arc * Math.min(1, spent / (avg * 1.15)), '#52AE30');
-    line = `Average monthly spending: <span class="num">${ft(avg)}</span>`;
+    line = `Average card spending a month: <span class="num">${ft(avg)}</span>`;
   }
-  return `<div class="gauge">
+  return `<div class="sec"><span>${mo.label}</span></div>
+  <div class="gauge">
     <svg viewBox="0 0 250 250" style="transform:rotate(135deg)" aria-hidden="true">
       <circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>${fill}
     </svg>
-    <div class="core"><small>Spent so far</small><b class="num">${ft(spent)}</b></div>
+    <div class="core"><small>Card spending</small><b class="num">${ft(spent)}</b></div>
   </div>
+  ${outLine()}
   <div class="avg"${over ? ' style="color:var(--orange-t)"' : ''}><span style="text-align:center">${line}</span></div>
+  <div class="avg proj" data-tour="proj"><span style="text-align:center">${projLine()}</span></div>
   ${m ? `<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:4px 14px;margin:0 0 4px;font-size:0.78125rem;color:var(--ink2)"><span class="u-rowc" style="gap:6px"><span class="dotc" style="background:${BKT_COL.ess}"></span>Everyday essentials</span><span class="u-rowc" style="gap:6px"><span class="dotc" style="background:${BKT_COL.fun}"></span>Fun</span></div>` : ''}`;
 }
 /* ---------- Money in each month: the one summary of what your rules move into Persely, under the balance ----------
@@ -2858,7 +3016,7 @@ function vHubNew(){
   ${setupCard()}
   ${hintHTML('total')}<div class="ptot" data-tour="total">
     <div class="persi" data-tour="persi">${pig('happy', 48)}${hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>Hi, I'm Persi. Let's pick a goal.</span></div>`}
-      <span class="sring off" data-tour="story" role="img" aria-label="Your story starts at the end of the month"><span class="sring-in">${S.period.slice(0,3).toUpperCase()}</span><small>At month end</small></span></div>
+      ${storyRing()}</div>
     <div class="sec wrapsec"><span>Total in Persely</span><span class="pill ok">${juniorPill()}</span></div>
     <div class="gauge">
       <svg viewBox="0 0 250 250" style="transform:rotate(135deg)" aria-hidden="true"><circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/></svg>
@@ -2882,7 +3040,7 @@ function vHub(){
   return `<div class="tabtitle">Persely</div>
   ${hintHTML('total')}<div class="ptot" data-tour="total">
     <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
-      <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
+      ${storyRing()}</div>
     <div class="sec wrapsec"><span>Total in Persely</span><span class="pill ${st?'ok':''}">${juniorPill()}</span></div>
     <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${gl.length ? `${Math.round(gp * 100)}% of what your goals need` : 'Set a goal to fill the ring'}${et ? ` · + ${eur(et)} in euro goals` : ''}</div>
     <div class="gauge">
@@ -2956,7 +3114,7 @@ function monthStep(quiet){
   const done = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'});   // the month that just ended
   S.txMark = S.tx.length;   // a new month starts: the split use counts from here
   S.months++; if(!S.closedYm.includes(ymAt(S.months))) S.closedYm.push(ymAt(S.months));   // the simulated month is a full month for the projection
-  S.period = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'}); S.storySeen = false;
+  S.period = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'}); S.storySeen = false; S.monthEnd = false;   // a new month: the story is not ready until its month end
   // four weeks pass; the rules keep the streak alive
   const ran = S.payday.on || S.weekly.on || S.roundup.on || S.goals.some(x => x.weekly);
   for(let i = 0; i < 4; i++){ S.week++; if(ran){ S.streak++; S.best = Math.max(S.best, S.streak); S.history.push(S.week); } else S.streak = 0; }
@@ -3158,6 +3316,7 @@ function renderView(id){ const t=TABS.find(x=>x[0]===id); $('#v-'+id).innerHTML 
 function renderAll(){ syncSplit(); TABS.forEach(t=>renderView(t[0])); renderTabs(); refreshPages(); save(); if(typeof mountPig==='function') mountPig(); }
 let NAVC = {n:0};   // counts page changes: something the app plans to open later checks that nothing else was opened meanwhile
 function tab(id){
+  if(cur === 'fooldal' && id !== 'fooldal') anNoteSeen();
   NAVC.n++; hideToast(); setTimeout(placeChip, 60);   // a toast belongs to the page where the action happened: it closes when the student goes somewhere else
   if(id === 'hub' && cur !== 'hub'){ HINT_SHOWN.clear(); SETUP_COLLAPSED = false; }   // a new visit: hints show again if unseen, the setup card is whole again
   cur=id; document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on', v.id==='v-'+id));
@@ -3177,6 +3336,7 @@ const ROUTE_TAB = {persely:'hub', megtakaritas:'hub'}, ROUTE_PAGE = {kiadas:'mym
 function pushPage(id){
   if(ROUTE_TAB[id]){ closeSheet(); tab(ROUTE_TAB[id]); return; }
   if(ROUTE_PAGE[id]) id = ROUTE_PAGE[id];
+  anNoteSeen();
   NAVC.n++; hideToast(); setTimeout(placeChip, 60); setTimeout(placeChip, 320);
   const el = document.createElement('div'); el.className='page'; el.dataset.id=id;
   el.innerHTML = pageHTML(id); $('#stack').appendChild(el); stack.push(el);
@@ -3185,6 +3345,7 @@ function pushPage(id){
 function popPage(instant){
   const el = stack.pop(); if(!el) return;
   NAVC.n++; hideToast(); setTimeout(placeChip, 60); setTimeout(placeChip, 320);
+  if(el.dataset.id === 'year' && MQ.q.length) setTimeout(mqPump, 300);   // the queued reward sheets come after the year page
   if(instant){ el.remove(); if(typeof mountPig === 'function') mountPig(); return; }
   el.classList.add('out'); setTimeout(()=>{ el.remove(); if(typeof mountPig === 'function') mountPig(); },220);
 }
@@ -3215,8 +3376,8 @@ function demoToast(name){ toast(demoText(name), {demo:name}); }
 function toast(m, o){ if(sheetOpen()){ sheetNote(m); return; } MQ.q = MQ.q.filter(x => x.k !== 'toast'); MQ.q.push({k:'toast', m, o}); mqPump(); }
 function mqPump(){
   if(MQ.banner || demo.locked || window.__ffOn) return;   // nothing pops up during a fast-forward; the queue continues after it
-  const open = sheetOpen(), hasToast = MQ.q.some(x => x.k === 'toast');
-  const si = MQ.q.findIndex(x => x.k === 'sheet' && (!x.late || (!hasToast && !MQ.toast)));
+  const open = sheetOpen(), hasToast = MQ.q.some(x => x.k === 'toast'), onYear = stack.length > 0 && stack[stack.length - 1].dataset.id === 'year';   // N7: reward and goal sheets wait until the year page is closed
+  const si = onYear ? -1 : MQ.q.findIndex(x => x.k === 'sheet' && (!x.late || (!hasToast && !MQ.toast)));
   if(si >= 0){
     if(open || MQ.toast) return;
     const it = MQ.q.splice(si, 1)[0], html = it.fn();
@@ -3406,12 +3567,17 @@ const SHEETS = {
     <button class="opt slim ${p.floor?'on':''}" data-prfloor><span class="t"><b class="u-fs-14">Always keep 20 000 Ft on my account</b><small>If money is tight, less or nothing moves</small></span><span class="tg ${p.floor?'on':''}"></span></button>
     <div class="fine u-note-t6">From a ${ft(S.income.amount)} salary: ${ft(incomeShare(p.pct))}.${S.analyst.on ? ' It is the biggest part of Saving in your monthly split, with any weekly transfer and round-ups.' : ''}</div>
     <button class="btn" data-pron>${p.on ? 'Save' : 'Turn on'}</button>${p.on ? '<button class="btn ghost" data-proff>Turn off</button>' : ''}`; },
-  // the full consent list, opened from "What it reads" on the analyst sheet
+  // what the analyst reads: opened from the first-run notice, the analyst sheet and the Spending footer
   anread:()=>{
-    return `<h2>What it reads</h2><div class="fine u-sheet-sub">Optional. Off unless you turn it on.</div>
-    <div class="card u-card-bul"><ul class="bul sm"><li>Your card payments, transfers, direct debits and income on this OTP account</li><li>Your regular bills, found from the last 3 months, and a guess for next month</li><li>Your monthly split: Must-pay, Everyday essentials, Fun and Saving, and one insight a month</li><li>Names of people you pay are only used to sort your payments</li></ul></div>
-    <div class="fine u-note-b14">Saving is your payday rule (${S.payday.pct}% of each salary) plus any weekly transfer and round-ups: ${S.payday.on ? `you already move ${S.payday.pct}% of each salary to ${esc(ruleGoal().name)}.` : `using this split turns the payday rule on at ${S.payday.pct}%, and it asks you first each time.`} Bills first only tells you: nothing is blocked and nothing moves unless you agree. Your data is not shared with anyone outside OTP. You can turn it off any time.</div>
-    <button class="btn" data-sheet="analyst">Back</button>`; },
+    return `<h2>What it reads</h2><div class="fine u-sheet-sub">The Financial analyst is on by default. You can turn it off any time.</div>
+    <div class="card u-card-bul"><ul class="bul sm"><li>Payee names, amounts and dates of your card and bank payments on this OTP account</li><li>It uses them to show Safe to spend, your regular bills, your categories and a plan for next month</li><li>Nothing leaves the bank. Your data is not shared with anyone outside OTP</li></ul></div>
+    <div class="fine u-note-b14">Saving is your payday rule (${S.payday.pct}% of each salary) plus any weekly transfer and round-ups. Bills only tell you: nothing is blocked and nothing moves unless you agree. Turn it off and Safe to spend becomes a simpler estimate, bills stay on.</div>
+    <!-- CONFIRM WITH OTP / LEGAL: lawful basis and wording -->
+    <button class="btn" data-closesheet>Close</button>${S.analyst.on ? '<button class="btn ghost" data-anask>Turn off</button>' : '<button class="btn ghost" data-anon>Turn on</button>'}`; },
+  // Turn off asks first (D10): what changes, what stays
+  anoffcfm:()=>`<h2>Turn off the Financial analyst?</h2>
+    <div class="u-an-l"><p>Safe to spend becomes a simpler estimate; bills stay on.</p><p>Your categories and plan are hidden until you turn it on again.</p></div>
+    <div class="hero-btns u-an-b"><button class="btn eq" data-anoffgo>Turn off</button><button class="btn eq" data-closesheet>Keep it on</button></div>`,
   // financial analyst: opt-in, two equal choices, the suggested split under three short lines; after Turn on: Use this split / Change it
   analyst:()=>{ const a = S.analyst, v = curView();
     const splitRows = `<div class="fine" style="margin:0 2px 6px"><b>${v.base}</b></div><div class="card lst">${v.rows.map(r => `<div class="li"><span class="dotc" style="background:${r.col}"></span><span class="t"><b>${r.k === 'must' ? I('lock', 14) + ' ' : ''}${r.name}</b>${r.k === 'save' ? `<small>${saveNote(v)}</small>` : ''}</span><b class="num">${bPct(v, r.k) ? bPct(v, r.k) + ' · ' : ''}${ft(r.amt)}</b></div>`).join('')}</div>`;
@@ -3425,7 +3591,7 @@ const SHEETS = {
     ${splitRows}
     <div class="fine u-note-b14">Saving is your payday rule (${S.payday.pct}% of your ${ft(S.income.amount)} salary) plus any weekly transfer and round-ups: ${S.payday.on ? `you already move ${S.payday.pct}% of each salary to ${esc(ruleGoal().name)}.` : `accepting turns the payday rule on at ${S.payday.pct}% and it asks you first each time.`} Changing the payday rule changes Saving here too.</div>
     <div class="hero-btns u-an-b"><button class="btn eq" data-anaccept>Use this split</button><button class="btn eq" data-splitopen>Change it</button></div><button class="link lnk44 u-an-read" data-anoff>Turn off the analyst</button>`;
-    return `<h2>Financial analyst</h2><div class="u-sheet-sub k">The analyst is turned on.</div>
+    return `<h2>Financial analyst</h2><div class="u-sheet-sub k">The Financial analyst is on.</div>
     ${splitRows}
     <div class="fine u-note-b14">It reads your payments, transfers and income on this OTP account, finds your regular bills, builds your split and gives one insight a month. You can change a payment's category in Transactions. Turn it off and the split, the bills and the tip go away. Nothing is shared.</div>
     ${NEW_PERSELY_IA ? '<button class="btn w" data-go="mymoney">Spending</button>' : '<button class="btn w" data-go="nextmonth">Next month</button><button class="btn w" data-go="bills">Must-pay bills</button>'}<button class="btn w" data-splitopen>Edit my split</button><button class="btn ghost" data-anoff>Turn off the analyst</button>`; },
@@ -3622,9 +3788,9 @@ document.addEventListener('click', e=>{
     if(k === 'payday'){ S.payday.on = !S.payday.on; syncSplit(); renderAll(); undoable(before, S.payday.on ? `Payday rule on: ${S.payday.pct}% of each salary` : 'Payday rule off'); }
     else if(k === 'weekly'){ S.weekly.on = !S.weekly.on; renderAll(); undoable(before, S.weekly.on ? `${ft(S.weekly.amt)} every Monday` : 'Weekly transfer off'); }
     else if(k === 'round'){ S.roundup.on = !S.roundup.on; renderAll(); undoable(before, S.roundup.on ? `Round-ups on: they go to ${(goalById(S.roundup.goal)||ruleGoal()).name}` : 'Round-ups off'); }
-    else if(k === 'analyst'){   // turning it on needs the consent sheet (what it measures); turning it off is one tap
-      if(S.analyst.on){ S.analyst.on = false; renderAll(); undoable(before, 'Analyst off. Your split and tips are hidden'); }
-      else sheet(SHEETS.analyst()); }
+    else if(k === 'analyst'){   // on by default (D10): turning it off asks first, turning it on is one tap
+      if(S.analyst.on) sheet(SHEETS.anoffcfm());
+      else { S.analyst.on = true; S.analyst.accepted = true; renderAll(); undoable(before, 'Financial analyst on'); } }
     return; }
   if(d.tab){ closeSheet(); tab(d.tab); return; }
   if(d.go){ if(sheetOpen()) closeSheet(); pushPage(d.go); return; }
@@ -3814,8 +3980,13 @@ document.addEventListener('click', e=>{
   if('claimoffer' in d){ const g = goalById(S._offer); if(g){ const travel = g.ic === 'plane';
       S.rewards.unshift({id:'o' + g.id, title: travel ? 'Travel partner offer' : '5% cashback at a partner', note: travel ? '8% back on one booking. Up to 10 000 Ft.' : 'Up to 2 000 Ft back.', why:`Reached ${g.name}`}); }
     S._offer = null; closeSheet(); renderAll(); toast('Offer added to your rewards'); return; }
-  if('anon' in d){ S.analyst.on = true; renderAll(); sheet(SHEETS.analyst()); toast('Analyst on'); return; }
-  if('anoff' in d){ const before = snap(); S.analyst.on = false; closeSheet(); renderAll(); undoable(before, 'Analyst off. Your split and tips are hidden'); return; }
+  if('anon' in d){ const before = snap(); S.analyst.on = true; S.analyst.accepted = true; closeSheet(); renderAll(); undoable(before, 'Financial analyst on'); return; }
+  if('anread' in d){ S.anNote = true; save(); renderView('fooldal'); sheet(SHEETS.anread()); return; }
+  if('anask' in d || 'anoff' in d){ S.anNote = true; save(); renderView('fooldal'); sheet(SHEETS.anoffcfm()); return; }   // Turn off always asks first
+  if('anoffgo' in d){ const before = snap(); S.analyst.on = false; S.anNote = true; closeSheet(); renderAll(); undoable(before, 'Financial analyst off. Safe to spend is a simpler estimate'); return; }
+  if('storywait' in d){ toast(`Your story arrives on ${storyDateTxt()}.`); return; }
+  if('planback' in d){ popPage(); setTimeout(() => { const t = stack.length ? stack[stack.length - 1] : null, el = t && t.querySelector('[data-tour="plan"]'); if(el) el.scrollIntoView({block:'start'}); }, 260); return; }
+  if('stdetails' in d){ closeStory(); pushPage('mymoney'); return; }
   if('anaccept' in d){ const before = snap(), sg = suggestSplit(), turnedOn = !S.payday.on;
     S.analyst.split = {must:sg.must, ess:sg.ess, fun:sg.fun, save:sg.save}; S.analyst.accepted = true; if(turnedOn) S.payday.on = true;
     closeSheet(); renderAll(); undoable(before, `Split saved: Fun ${sg.fun}%, Saving ${sg.save}%. Saving is your payday rule${turnedOn ? ', now on' : ''}`);
@@ -4793,7 +4964,7 @@ function storySlides(){
       const big = !open ? `All ${n} bills paid` : bf.on ? (lt.length === 1 ? `${esc(lt[0].bill.name)} is late` : `${lt.length} bills are late`) : `${n - open} of ${n} bills paid`;
       const sub = (!open ? `${ft(paidTot)} went to bills.` : bf.on ? `${ft(bf.lateTotal)}${lt.length === 1 ? `, due on the ${ordinal(lt[0].bill.day)}` : ' in total'}.${sn.length === 1 ? ` ${esc(sn[0].bill.name)} ${ft(sn[0].s.left)} is due ${dn(sn[0])}.` : sn.length > 1 ? ` ${sn.length} more bills are due soon.` : ''}` : `${names} ${open > 1 ? 'are' : 'is'} due later: ${ft(bf.total)}.`) + (S.billsPocket && S.billsPocket.on ? ` Bills pocket: ${ft(pk)}.` : '');
       const shown = rows.slice(0, 6), more = rows.length - shown.length;
-      out.push({id:'bills', btn:bf.on ? {label:'Pay now', attr:`data-stpay="${bf.late[0].bill.id}"`} : null,
+      out.push({id:'bills', slow:true, btn:bf.on ? {label:'Pay now', attr:`data-stpay="${bf.late[0].bill.id}"`} : null,
         build:() => stFrame('Must-pay bills', `<div class="st-rc" data-rc><b class="st-rh">${I('lock', 14)} Must-pay bills</b>${shown.map(r => { const s = r.s, ok = s.st === 'paid' || s.st === 'skipped';
           return `<div class="r ${ok ? '' : 'op'}" data-row><span class="nm">${esc(r.bill.name)}</span><span class="am num">${ft(r.bill.exp)}</span><span class="tk">${ok ? `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="#2F7A1B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : `<em>${s.over ? 'Late' : s.days < 0 ? 'Due now' : s.days === 0 ? 'Today' : `In ${plural(s.days, 'day')}`}</em>`}</span></div>`; }).join('')}
           ${more > 0 ? `<div class="r" data-row><span class="nm">${more} more</span></div>` : ''}<div class="r tot" data-row><span class="nm">Total</span><span class="am num">${ft(tot)}</span><span class="tk"></span></div>
@@ -4857,15 +5028,15 @@ function storySlides(){
         if(list) rows.forEach(([, v], i) => { const e = r.querySelector(`[data-cn="${i}"] b`); e.textContent = ft(Math.round(v * stEz(stPh(t, .3 + i * .15, 1.4 + i * .15)))); });
         r.querySelector('[data-big]').textContent = ft(Math.round(put * stEz(stPh(t, .2, 1.5)))); } }); }
   // 7 your progress: the goal, the streak, the score, and a late goal with its fix
-  { const g = ruleGoal();
+  { const tg0 = S.goals.filter(isTight)[0], g = tg0 || ruleGoal();   // one goal only: the goal that needs a date when there is one, else the goal the rules feed (C3.2)
     if(g){
-      const pcc = pctOf(g), pc = pcc.p, sav = pcc.saved, tiny = pcc.tiny, sc = S.analyst.on && S.analyst.accepted && S.scoreHist.length ? {n:scoreNow().t, p:scorePrev().t, held:habitsHeld()} : null, tight = S.goals.filter(isTight)[0], fix = tight ? behindFix(tight) : null,
+      const pcc = pctOf(g), pc = pcc.p, sav = pcc.saved, tiny = pcc.tiny, sc = S.analyst.on && S.analyst.accepted && S.scoreHist.length ? {n:scoreNow().t, p:scorePrev().t, held:habitsHeld()} : null, tight = tg0, fix = tight ? behindFix(tight) : null,
         rw = S.rewards[0] && S.rewards[0].id === 'r' + S.months ? S.rewards[0] : null, gm = gMonths(g), R2 = 46, C2 = 2 * Math.PI * R2;
       const when = (tiny ? 'First step. ' : '') + (gm > 0 ? `On pace for ${inMonths(gm)}.` : gm === 0 ? 'You reached it.' : 'Add a rule to see the date.');
       // one message (the goal) and one small line under it: a goal that needs a new date (with the button to pick one, in the warning colour and with an icon), else the reward when there is one. The score is in the list, once.
-      const note = tight ? `${esc(tight.name)} needs a new date. Your ${ft(gSaved(tight))} is safe.` : rw ? `Reward earned: ${esc(rw.title.toLowerCase())}.` : '';
+      const note = tight ? `Needs a new date. Your ${ft(gSaved(tight))} is safe.` : rw ? `Reward earned: ${esc(rw.title.toLowerCase())}.` : '';
       const listSay = tight ? '' : ` data-say="Streak ${plural(S.streak, 'week')}.${sc ? ` Health score ${sc.n} of 100, ${sc.held} of 4 habits held.` : ''}"`;   // the list is spoken only when there is room
-      out.push({id:'progress', btn:tight ? {label:'Pick a new date', attr:`data-stgoal="${tight.id}"`} : null,
+      out.push({id:'progress', slow:true, btn:tight ? {label:'Pick a new date', attr:`data-stgoal="${tight.id}"`} : null,
         build:() => stFrame(esc(g.name), `<div class="st-pr"><div class="st-rg"><svg viewBox="0 0 120 120" width="120" height="120"><circle cx="60" cy="60" r="${R2}" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="14"/><circle data-ring cx="60" cy="60" r="${R2}" fill="none" stroke="#6FCB4A" stroke-width="14" stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="0 ${C2}"/></svg><span class="st-rc2">${I('piggy', 34)}</span></div>
           <ul class="st-cn"${listSay}><li><small>Streak</small><b class="num"><span class="st-fl">${flame(22, S.streak > 0)}</span><span data-sk>0</span> <span class="st-u">${S.streak === 1 ? 'week' : 'weeks'}</span></b></li>${sc ? `<li><small>Health score</small><b class="num"><span data-sc>${sc.p}</span> <span class="st-u">of 100</span></b><small>${sc.held} of 4 habits held${sc.n !== sc.p ? ` · ${sc.n > sc.p ? '▲' : '▼'} ${Math.abs(sc.n - sc.p)}` : ''}</small></li>` : ''}</ul></div>`,
           tiny ? ft(sav) : `${pc}%`, when, note, !!tight),
@@ -4928,7 +5099,7 @@ const ST = {on:false, i:0, t:0, slides:[], total:0, hold:new Set(), raf:0, last:
 const stRoot = s => { const d = document.createElement('div'); d.className = 'st-body'; d.innerHTML = s.share ? shareCard() : s.build(); if(s.seek) s.seek(d, ST_END); return d; };
 const stNum = t => t.replace(/-?\d[\d \u00a0]*\d( Ft)?|\d( Ft)?/g, 'N');   // a figure such as 145 000 Ft is one word to read
 const stWords = s => stNum([...stRoot(s).querySelectorAll('.st-big,.st-sub,.st-n')].map(e => e.textContent).join(' ')).split(/\s+/).filter(Boolean).length;   // the words to read on screen
-const stDur = s => s.end ? 0 : Math.min(7, 2.5 + ST_WPS * stWords(s));
+const stDur = s => s.end ? 0 : s.slow ? Math.min(10, 4 + ST_WPS * 1.4 * stWords(s)) : Math.min(7, 2.5 + ST_WPS * stWords(s));   // dense slides (the bills receipt, the progress slide) get longer: at least 4 s, at most 10 s
 function stSay(s){
   if(s.share) return s.say;   // the share card reads from its own data (shareData), the same one that draws it
   const piece = e => (e.dataset && e.dataset.say ? e.dataset.say : e.textContent).replace(/▲/g, 'up').replace(/▼/g, 'down').replace(/\s*·\s*/g, ', ').replace(/\s+/g, ' ').trim();
@@ -4964,9 +5135,9 @@ function stGo(i){
 function stRender(){
   const s = ST.slides[ST.i], el = $('#story'), body = el.querySelector('.st-body'), foot = el.querySelector('.st-foot');
   body.innerHTML = s.share ? shareCard() : s.build(); body.setAttribute('aria-hidden', s.share ? 'false' : 'true'); body.classList.toggle('share', !!s.share);
-  foot.innerHTML = s.end ? `${s.empty ? '' : `<button class="btn" style="background:#fff;color:var(--green-t)" data-stshare>Share (preview)</button>`}<button class="btn w" style="background:none;box-shadow:none;color:#fff" data-stclose>Close</button>`
+  foot.innerHTML = s.end ? `<button class="btn" style="background:#fff;color:var(--green-t)" data-stdetails>See details</button>${s.empty ? '' : `<button class="btn w" style="background:rgba(255,255,255,.18);box-shadow:none;color:#fff" data-stshare>Share (preview)</button>`}<button class="btn w" style="background:none;box-shadow:none;color:#fff" data-stclose>Close</button>`
     : s.btn ? `<button class="btn" data-stbtn ${s.btn.attr}>${s.btn.label}</button>` : '';
-  el.querySelector('.st-sr').textContent = `Slide ${ST.i + 1} of ${ST.slides.length}. ${s.say}${s.end ? (s.empty ? ' Button: Close.' : ' Buttons: Share, Close.') : ''}`;
+  el.querySelector('.st-sr').textContent = `Slide ${ST.i + 1} of ${ST.slides.length}. ${s.say}${s.end ? (s.empty ? ' Buttons: See details, Close.' : ' Buttons: See details, Share, Close.') : ''}`;
   el.dataset.slide = s.id; mountPig(); stPaint(true);
 }
 function stPaint(force){
@@ -5202,10 +5373,12 @@ function doriJoins(){
   tab('hub'); S._detail = g.id; pushPage('goal');
 }
 // end of the autumn semester: two months pass, then the semester story opens
+// demo key M: jump to month end (the story is ready), then play it. The story is not offered before month end otherwise (C3.1).
+function demoStory(){ unlockPhone(); S.monthEnd = true; renderAll(); tab('hub'); openStory(); }
 function endSemester(){
   unlockPhone(); closeSheet();
   monthStep(true); monthStep(true);
-  S.period = 'Autumn semester'; S.storySeen = false; renderAll(); tab('hub'); openStory();
+  S.period = 'Autumn semester'; S.storySeen = false; S.monthEnd = true; renderAll(); tab('hub'); openStory();
 }
 // graduation / the Junior package ends: the bridge offer
 function graduation(){ unlockPhone(); closeSheet(); S.juniorDays = 0; renderAll(); tab('hub'); pushPage('grad'); }
@@ -5343,7 +5516,7 @@ function ffLandHTML(){
   const btn = FF.stop ? `<button class="btn" data-ffgrad>See what's next</button>` : FF.mode === 'year' && S.months >= 12 ? `<button class="btn" data-ffyear>See your year</button>` : `<button class="btn" data-ffdone>Continue</button>`;
   return `<div class="ff-ck">${span}</div><h2 class="ff-h">${head}</h2>
     ${FF.stop ? `<p class="fine" style="text-align:center;margin:-6px 0 12px">Month ${S.months}: have your salary paid into OTP and keep my 3.0% on the first 500 000 Ft for 12 more months.</p>` : ''}
-    <div class="card lst">${[['Money in', ft(S2('in'))], [`Bills paid${due ? ` · ${paid} of ${due} on time` : ''}`, ft(S2('bills'))], ['Spent', ft(S2('spent'))], ['Put aside in Persely', ft(S2('saved'))], [`Interest at ${rateLabel()}, after tax`, '+' + ft(S2('interest'))]].map(([a, b]) => `<div class="li"><span class="t"><b>${a}</b></span><b class="num">${b}</b></div>`).join('')}
+    <div class="card lst">${[['Money in', ft(S2('in'))], [`Bills paid${due ? ` · ${paid} of ${due} on time` : ''}`, ft(S2('bills'))], ['Card spending', ft(S2('spent'))], ['Put aside in Persely', ft(S2('saved'))], [`Interest at ${rateLabel()}, after tax`, '+' + ft(S2('interest'))]].map(([a, b]) => `<div class="li"><span class="t"><b>${a}</b></span><b class="num">${b}</b></div>`).join('')}
       <div class="li"><span class="t"><b>Now in Persely</b></span><b class="num u-c-gt">${ft(total())}</b></div></div>${btn}`;
 }
 const dueBills = () => mustBills().filter(b => b.day <= (S.demoDay || 14)).length;   // bills that fall due by the demo "today" (the 14th) of each simulated month
@@ -5351,21 +5524,26 @@ function ffClose(){ if(FF.on){ FF.skip = true; if(FF.wake) FF.wake(); } ffEnd();
 function yearMonths(){ return (S.flowLog || []).slice(-Math.min(12, S.months || 0) || -1); }
 function yearHTML(){
   const M = yearMonths(), n = M.length, sum = key => M.reduce((a, m) => a + ffVal(m, key), 0); if(!n) return '<div class="card" style="padding:18px">Fast-forward a month first (O).</div>';
-  const I0 = sum('interest'), low = Math.round(I0 * LOW_RATE / RATE), sav = M.reduce((a, m) => a + (m.sav || 0), 0), mx = Math.max(I0, 1);
-  const bar = (label, v, cls, note) => `<div class="yr-b"><div class="yr-bl"><span>${label}</span><b class="num">+${ft(v)}</b></div><div class="yr-bt"><i class="${cls}" style="--w:${Math.max(1.5, v / mx * 100)}%"></i></div>${note ? `<small>${note}</small>` : ''}</div>`;
+  const I0 = sum('interest'), sav = M.reduce((a, m) => a + (m.sav || 0), 0);
+  // What your rate earned, per 100 000 Ft for a year, after 28% tax, all three on the same bar scale (C4.2). Same amount for every row, so the rates are what differ.
+  const P100 = 100000, net = r => Math.round(P100 * r / 100 * (1 - TAX)), R3 = [['Persely', RATE, 'g', 'On your first 500 000 Ft with your Junior package'], ['Savings account', SAV_RATE, 'g2', 'Interest credited each month'], ['Before Persely', LOW_RATE, 'l', 'What the same money earned until now']], mx = Math.max(...R3.map(r => net(r[1])), 1);
+  const bar = ([label, r, cls, note]) => `<div class="yr-b"><div class="yr-bl"><span>${label}, ${r.toFixed(r < 1 ? 2 : 1)}%</span><b class="num">+${ft(net(r))}</b></div><div class="yr-bt"><i class="${cls}" style="--w:${Math.max(1.5, net(r) / mx * 100)}%"></i></div><small>${note}</small></div>`;
+  // CONFIRM WITH OTP: whether Persely may be shown beside a higher Savings account rate, and the Savings account access terms. The sentence does not claim Persely earns more.
+  const verdict = `The Savings account pays the higher rate, ${SAV_RATE}% against ${RATE.toFixed(1)}%, both after the same 28% tax, while Persely keeps each goal apart and you can withdraw any time.`;
   const due = n * dueBills(), paid = M.reduce((a, m) => a + m.billsN, 0);
   const yms = (S.closedYm || []).filter(y => y >= ymAt(1) && y <= ymAt(S.months)).slice(-12), A = stAgg(yms);   // the same totals as the year story
-  const sc = []; for(let k = 3; k <= S.scoreHist.length; k++) sc.push(scoreOf(S.scoreHist.slice(0, k)).t); const flat = sc.length && Math.min(...sc) === Math.max(...sc);
-  const goals = S.goals.filter(g => !isEur(g)).map(g => { const p = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100)); return `<div class="li"><span class="t"><b>${esc(g.name)}</b><small>${ft(gSaved(g))} of ${ft(gTarget(g))}</small><span class="prog" style="display:block;margin:6px 0 0"><i style="width:${p}%"></i></span></span><b class="num u-c-gt">${p}%</b></div>`; }).join('');
+  const goals = S.goals.filter(g => !isEur(g)).map(g => { const sv = gSaved(g), tg = gTarget(g), done = sv >= tg, p = Math.min(100, Math.round(sv / tg * 100));   // a reached goal shows the target, not the surplus
+    return `<div class="li"><span class="t"><b>${esc(g.name)}</b><small>${ft(Math.min(sv, tg))} of ${ft(tg)}</small><span class="prog" style="display:block;margin:6px 0 0"><i style="width:${p}%"></i></span></span>${done ? '<span class="pill ok">Reached</span>' : `<b class="num u-c-gt">${p}%</b>`}</div>`; }).join('');
+  // the health score once: the first month of the year against the last
+  const H = S.scoreHist || [], sFirst = H.length ? scoreOf(H.slice(0, Math.max(1, H.length - n + 1))).t : null, sLast = H.length ? scoreOf(H).t : null;
   return `<div class="yr-hero card"><div class="u-k-xs">${M[0].name.slice(0, 3)} ${M[0].ym.slice(0, 4)} – ${M[n - 1].name.slice(0, 3)} ${M[n - 1].ym.slice(0, 4)} · ${plural(n, 'month')}</div>
       <div class="yr-big num">${ft(total())}</div><div class="u-fs-s">in Persely now · ${ft(A.save)} put aside this year</div></div>
     <div class="sec"><span>What your rate earned</span></div>
-    <div class="card yr-bars">${bar(`Persely at ${rateLabel()}`, I0, 'g', 'After 28% tax, on your first 500 000 Ft')}${bar('Persely before, 0.01%', low, 'l', 'What the same money earned until now')}</div>
-    <div class="card yr-sav"><span class="t"><b>Savings account, ${SAV_RATE}%</b><small>${ft(acc('megt').v)} now, after tax</small></span><b class="num u-c-gt">+${ft(sav)}</b></div>
+    <div class="card yr-bars"><div class="k" style="margin-bottom:8px">Per 100 000 Ft for a year, after tax</div>${R3.map(bar).join('')}<div class="fine yr-v">${verdict}<!-- CONFIRM WITH OTP --></div></div>
     <div class="sec"><span>Your money this year</span></div>
     <div class="card lst">${[['Money in', ft(A.inc)], ['Must-pay bills', `${ft(A.must)}${due ? ` · ${paid} of ${due} on time` : ''}`], ['Everyday essentials', ft(A.ess)], ['Fun', ft(A.fun)], ['Put aside in Persely', ft(A.save)], ['Interest, all accounts', '+' + ft(I0 + sav)]].map(([a, b]) => `<div class="li"><span class="t"><b>${a}</b></span><b class="num">${b}</b></div>`).join('')}</div>
-    <div class="sec"><span>Your goals</span></div><div class="card lst">${goals}</div>
-    ${sc.length ? `<div class="sec"><span>Financial health score</span></div>${flat ? `<div class="card yr-sav"><span class="t"><b>${sc[0]} of 100, every month</b><small>Spending under income, no overdraft, a buffer and regular saving</small></span><b class="num u-c-gt">${sc[0]}</b></div>` : `<div class="card yr-sc"><div class="yr-scb">${sc.map(v => `<i style="--h:${Math.max(6, v)}%"><b>${v}</b></i>`).join('')}</div><small>From ${sc[0]} to ${sc[sc.length - 1]} of 100</small></div>`}` : ''}`;
+    <div class="sec"><span>Your goals</span></div><div class="card lst">${goals || '<div class="li"><span class="t"><small>No goals yet</small></span></div>'}</div>
+    ${sFirst !== null ? `<div class="sec"><span>Financial health score</span></div><div class="card yr-sav"><span class="t"><b>First month ${sFirst}, last month ${sLast} of 100</b><small>Spending under income, no overdraft, a buffer and regular saving</small></span><b class="num ${sLast > sFirst ? 'u-c-gt' : ''}">${sLast > sFirst ? '▲ ' + (sLast - sFirst) : sLast < sFirst ? '▼ ' + (sFirst - sLast) : 'No change'}</b></div>` : ''}`;
 }
 function renderDemoPanel(){
   const p = $('#demoPanel');
@@ -5409,7 +5587,7 @@ $('#demoPanel').addEventListener('click', e=>{
   else if('dyear' in d) fastForward(S.months < 12 ? 12 - S.months : 12, 'year');
   else if('dsem' in d) endSemester();
   else if('dgrad' in d) graduation();
-  else if('dstory' in d){ unlockPhone(); tab('hub'); openStory(); }
+  else if('dstory' in d) demoStory();
   else if('dtour' in d){ unlockPhone(); showHints(); }
   else if('dupdate' in d) demoUpdateDay();
   else if('djump' in d) week8State();
@@ -5444,7 +5622,7 @@ addEventListener('keydown', e=>{
   else if(k === 'y') fastForward(S.months < 12 ? 12 - S.months : 12, 'year');
   else if(k === 'e') endSemester();
   else if(k === 'g') graduation();
-  else if(k === 'm'){ unlockPhone(); tab('hub'); openStory(); }
+  else if(k === 'm') demoStory();
   else if(k === 't'){ unlockPhone(); showHints(); }
   else if(k === 'u') demoUpdateDay();
   else if(k === 'j') week8State();
