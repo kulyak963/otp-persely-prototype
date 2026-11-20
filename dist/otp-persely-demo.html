@@ -885,6 +885,11 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
 /* simplification pass: Persely total, money plan, story bars */
 button.cat{background:none;border:0;padding:4px 0;font:inherit;border-radius:12px}button.cat:active{background:var(--green-l)}
 .cd-hero{padding:16px;margin-top:14px}.cd-top{display:flex;align-items:center;gap:14px}.cd-top b{display:block;font-size:2rem;font-weight:800;letter-spacing:-.5px;line-height:1.1}.cd-top small{display:block;color:var(--muted-t);font-size:var(--fs-s)}
+.cd-top{position:relative}.cd-gear{position:absolute;right:-4px;top:-4px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted-t)}.cd-gear:active{background:var(--bg)}
+.cl-list .cl-r{padding:10px 12px}.cl-r.cur{background:var(--green-l)}.cl-r .t{flex:1;min-width:0}
+.cl-st{display:flex;align-items:center;gap:6px;flex:none}.cl-st b{min-width:46px;text-align:center;font-size:var(--fs-m)}
+.cl-st button{width:34px;height:34px;border-radius:50%;background:var(--bg);font-size:1.25rem;font-weight:700;color:var(--green-t);display:flex;align-items:center;justify-content:center}
+.cl-left.over{color:var(--orange-t)}.cl-sum{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:12px 2px 0;font-size:var(--fs-s)}
 .cd-lim{margin-top:14px}.cd-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
 .cd-tiles div{background:var(--bg);border-radius:12px;padding:9px 10px;display:flex;flex-direction:column}.cd-tiles small{font-size:var(--fs-xs);color:var(--muted-t);font-weight:600}.cd-tiles b{font-size:1.125rem;font-weight:800}.cd-tiles span{font-size:var(--fs-xs);color:var(--muted-t)}
 .cd-tiles div.over b{color:var(--orange-t)}
@@ -2234,11 +2239,25 @@ function myMoneyHTML(){
 // over or under it, what is left this month and per day, and the shops.
 const catTitle = c => SPEND_SHORT[c] || (CATEGORY[c] ? CATEGORY[c][0] : c);
 function catLimit(c){
-  const sv = splitView(), b = CATEGORY[c] ? CATEGORY[c][1] : null, lim = b && sv.by[b] ? (spreadCats(sv.by[b].amt, b)[c] || 0) : 0;
-  return {lim, B:sv.B || 0, bucket:b, bucketPct:b && sv.by[b] ? sv.by[b].pct : 0};
+  const sv = splitView(), b = CATEGORY[c] ? CATEGORY[c][1] : null, plan = b && sv.by[b] ? (spreadCats(sv.by[b].amt, b)[c] || 0) : 0, B = sv.B || 0;
+  const own = S.catPct && S.catPct[c] != null ? S.catPct[c] : null, lim = own != null ? Math.round(B * own / 100 / 10) * 10 : plan;
+  return {lim, plan, B, own, bucket:b, bucketPct:b && sv.by[b] ? sv.by[b].pct : 0};
+}
+// the categories that get a limit: everyday essentials and fun
+const LIMIT_CATS = ['groceries', 'transport', 'health', 'edu', 'food', 'shopping', 'fun', 'travel', 'subs'];
+const catPctOf = c => { const L = catLimit(c); return L.own != null ? L.own : (L.B ? Math.round(L.plan / L.B * 200) / 2 : 0); };   // in 0.5% steps
+function catLimitsSheet(){
+  const B = splitView().B || 1, rows = LIMIT_CATS.map(c => ({c, p:catPctOf(c), own:S.catPct && S.catPct[c] != null})), tot = rows.reduce((a, r) => a + r.p, 0), must = splitView().by.must.pct;
+  const fmt = p => (Math.round(p * 10) / 10).toFixed(1).replace(/\.0$/, '') + '%';
+  return `<h2>Your limits</h2><p class="fine" style="margin:-4px 0 12px">Each category as a share of your income (${ft(B)} a month). Change any of them.</p>
+    <div class="card lst cl-list">${rows.map(r => `<div class="li cl-r ${r.c === S._cat ? 'cur' : ''}"><span class="ic">${I(SPEND_IC[r.c] || 'tag')}</span><span class="t"><b>${catTitle(r.c)}</b><small>${ft(catLimit(r.c).lim)} a month${r.own ? ' · set by you' : ''}</small></span>
+      <span class="cl-st"><button data-catpm="${r.c}:-1" aria-label="Less for ${catTitle(r.c)}">−</button><b class="num">${fmt(r.p)}</b><button data-catpm="${r.c}:1" aria-label="More for ${catTitle(r.c)}">+</button></span></div>`).join('')}</div>
+    <div class="cl-sum"><span>Everyday and fun limits</span><b class="num">${fmt(tot)} of your income</b></div>
+    ${(() => { const left = Math.round((100 - must - tot) * 10) / 10; return `<div class="fine cl-left ${left < 0 ? 'over' : ''}" style="margin:4px 2px 12px">Must-pay bills take about ${must}%. ${left >= 0 ? `That leaves <b>${fmt(left)}</b> for saving.` : `<b>That is ${fmt(-left)} more than your income.</b>`}</div>`; })()}
+    <div class="hero-btns u-m0"><button class="btn w" data-catreset>Reset to suggested</button><button class="btn" data-closesheet>Done</button></div>`;
 }
 function catDetailHTML(c){
-  const mo = shownMonth(), v = catSpend(mo.ym)[c] || 0, {lim, B, bucket, bucketPct} = catLimit(c), inc = B || S.income.amount || 1;
+  const mo = shownMonth(), v = catSpend(mo.ym)[c] || 0, {lim, B, own, bucket, bucketPct} = catLimit(c), inc = B || S.income.amount || 1;
   const pc = x => (Math.round(x / inc * 1000) / 10).toFixed(1).replace(/\.0$/, '') + '%';
   const left = lim - v, over = lim > 0 && left < 0, used = lim ? Math.round(v / lim * 100) : 0, near = !over && used >= 80, perDay = mo.left > 0 && left > 0 ? Math.floor(left / mo.left / 10) * 10 : 0;
   const card = t => !t.parts && (txType(t) === 'card' || txType(t) === 'refund') && classify(t) === c;
@@ -2251,12 +2270,12 @@ function catDetailHTML(c){
     : over ? `<b>Over the limit by ${ft(-left)}.</b> Nothing is blocked; next month's plan starts fresh.`
     : `<b>${ft(left)} left</b> for ${catTitle(c).toLowerCase()} this month${perDay ? ` · about ${ft(perDay)} a day for ${plural(mo.left, 'day')}` : ''}.`;
   return `<div class="card cd-hero">
-    <div class="cd-top"><span class="cd-ic">${I(SPEND_IC[c] || 'tag', 28)}</span><div><small>Spent in ${mo.name}</small><b class="num">${ft(v)}</b><small>${pc(v)} of your income</small></div></div>
+    <div class="cd-top"><span class="cd-ic">${I(SPEND_IC[c] || 'tag', 28)}</span><button class="cd-gear" data-catset="${c}" aria-label="Change your limits">${I('gear', 20)}</button><div><small>Spent in ${mo.name}</small><b class="num">${ft(v)}</b><small>${pc(v)} of your income</small></div></div>
     ${lim ? `<div class="cd-lim"><div class="mp2-h"><b>Limit ${ft(lim)}</b><span class="num">${used}% used</span></div><div class="mp2-bar"><i style="width:${Math.min(100, used)}%;background:${col}"></i></div></div>` : ''}
     <div class="cd-tiles"><div><small>Spent</small><b>${pc(v)}</b><span>of income</span></div><div><small>Limit</small><b>${lim ? pc(lim) : '–'}</b><span>of income</span></div><div class="${over ? 'over' : ''}"><small>${over ? 'Over by' : 'Left'}</small><b>${lim ? ft(Math.abs(left)) : '–'}</b><span>this month</span></div></div>
     <div class="cd-status ${over ? 'over' : near ? 'near' : ''}">${status}</div>
   </div>
-  <div class="fine cd-inc">Your income this month: <b>${ft(inc)}</b> (salary ${ft(salary)}${rest ? ` + other transfers ${ft(rest)}` : ''}). ${lim ? `The limit is your plan: ${bucket === 'fun' ? 'fun gets' : 'everyday essentials get'} ${bucketPct}% of your income, shared out the way you usually spend.` : ''}</div>
+  <div class="fine cd-inc">Your income this month: <b>${ft(inc)}</b> (salary ${ft(salary)}${rest ? ` + other transfers ${ft(rest)}` : ''}). ${own != null ? `You set this limit: ${own}% of your income.` : lim ? `The limit is your plan: ${bucket === 'fun' ? 'fun gets' : 'everyday essentials get'} ${bucketPct}% of your income, shared out the way you usually spend.` : ''}</div>
   ${tip ? `<div class="card insight"><div class="hrow"><span class="pill ok">Persi's tip</span></div><div class="u-tip-p">Move 10% of ${tip.label} (${ft(tip.ten)}) to ${esc(tip.g.name)} each month${tip.wk >= 1 ? ` and get there <b>${plural(tip.wk, 'week')} sooner</b>` : ''}.</div><div class="hero-btns u-m0"><button class="btn" data-insyes="${tip.ten}">Move 10% a month</button></div></div>` : ''}
   <div class="fine" style="text-align:center;margin:12px 8px 20px">A plan, not a hard limit.</div>`;
 }
@@ -3291,6 +3310,12 @@ document.addEventListener('click', e=>{
   if('claimoffer' in d){ const g = goalById(S._offer); if(g){ const travel = g.ic === 'plane';
       S.rewards.unshift({id:'o' + g.id, title: travel ? 'Travel partner offer' : '5% cashback at a partner', note: travel ? '8% back on one booking. Up to 10 000 Ft.' : 'Up to 2 000 Ft back.', why:`Reached ${g.name}`}); }
     S._offer = null; closeSheet(); renderAll(); toast('Offer added to your rewards'); return; }
+  if(d.catset){ S._cat = d.catset; sheet(catLimitsSheet()); return; }
+  if(d.catpm){ const [c, dir] = d.catpm.split(':'), now = catPctOf(c); S.catPct = S.catPct || {}; S.catPct[c] = Math.max(0, Math.round((now + 0.5 * (+dir)) * 2) / 2);
+    const sh = $('#sheet'), top = sh.scrollTop; sheet(catLimitsSheet()); sh.scrollTop = top; save(); refreshPages(); renderView('fooldal');
+    if(typeof beStep === 'function' && !beQuiet()){ if(!BE.cur || BE.cur.title !== 'Anna changes her limits') beEp('Anna changes her limits'); beStep('an', `${catTitle(c)}: ${S.catPct[c]}% of her income (${ft(catLimit(c).lim)} a month)`, 'Budget service · limits'); }
+    return; }
+  if('catreset' in d){ S.catPct = {}; const sh = $('#sheet'), top = sh.scrollTop; sheet(catLimitsSheet()); sh.scrollTop = top; save(); refreshPages(); toast('Limits back to the suggested plan'); return; }
   if(d.catd){ if(sheetOpen()) closeSheet(); S._cat = d.catd; pushPage('catd'); return; }
   if('planopen' in d){ if(sheetOpen()) closeSheet(); pushPage('mymoney'); return; }
   if('planon' in d){ S.analyst.on = true; if(!S.analyst.accepted){ const sg = suggestSplit(); S.analyst.split = {must:sg.must, ess:sg.ess, fun:sg.fun, save:sg.save}; S.analyst.accepted = true; } renderAll(); return; }
