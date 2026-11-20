@@ -212,6 +212,10 @@ button.avatar{border:0;cursor:pointer}
 .tx .t{flex:1;min-width:0}
 .tx .t b{display:block;font-size:var(--fs-s);font-weight:700;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tx .t span{font-size:var(--fs-s);color:var(--ink2)}
+.tx .t b.own{text-transform:none}
+.tx .t .txp{display:block;text-transform:uppercase;font-size:var(--fs-xs);color:var(--muted-t);letter-spacing:.02em}
+.bfmore{margin:6px 0 2px}
+.bfmore summary{color:var(--ink2)}
 .tx .t em{display:flex;align-items:center;gap:4px;font-style:normal;font-size:0.78125rem;color:var(--green-t);margin-top:2px}
 .tx .a{font-weight:700;font-size:0.875rem;white-space:nowrap}
 .tx .a.p{color:var(--green-t)}
@@ -765,7 +769,7 @@ button.trust{min-height:var(--tap);align-items:center;width:100%;text-align:left
 .bfl{display:flex;flex-wrap:wrap;gap:0 10px;margin:2px 0 -6px}
 .bfd summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:var(--tap);cursor:pointer;list-style:none;font-size:var(--fs-m);line-height:1.35}
 .bfd summary::-webkit-details-marker{display:none}
-.bfd[open] .chev{transform:rotate(90deg)}
+.bfd[open] summary .chev{transform:rotate(90deg)}
 .bfd-r{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:var(--tap);text-align:left;border-top:1px solid var(--line)}
 .bfd-r small{display:block;color:var(--muted-t);font-size:var(--fs-s)}
 .bfu{margin:2px 0 8px}
@@ -1469,7 +1473,7 @@ function __checkAnalytics(){
     S.billsPocket = {on:true, bal:61000}; const j0 = balanceOf(), r1 = payBill('szab-d-ra');
     ok('pay from the Bills pocket: pocket 61 000 -> 19 000, Junior balance untouched, rent paid, bills first off', r1.fromPocket && S.billsPocket.bal === 19000 && balanceOf() === j0 && !bfNow().on && billStatus(billById('szab-d-ra')).st === 'paid', [r1, S.billsPocket]);
     S = clone(); S.analyst.on = true; const j1 = balanceOf(); ok('move 61 000 Ft to the Bills pocket: Junior -61 000, pocket 61 000, an own-account row (not spending)', pocketMove(61000) && balanceOf() === j1 - 61000 && pocketBal() === 61000 && txType(S.tx[0]) === 'own' && safeToSpend().pocket === 61000);
-    ok('pocket offer is the month of must-pay bills (61 000) and 0 once the pocket holds it', pocketOffer() === 0 && (() => { S.billsPocket.bal = 0; return pocketOffer() === 61000; })());
+    ok('pocket offer is the unpaid bills (47 550), not the month total (61 000), and 0 once the pocket holds it', pocketOffer() === 0 && (() => { S.billsPocket.bal = 0; const tx0 = S.tx; S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); const r = pocketOffer() === 47550 && mustTotal() === 61000; S.tx = tx0; return r; })());
     S = clone(); S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.payday.on = true; S.billsConfirmed = true; monthStep(true);
     const uu = splitUse(), nb = billsFirst(), fam = S.tx.find(t => t.n === 'KISS ISTVÁN' && t.ym === ymAt(1));
     ok('+1 month: Everyday essentials 36 900 and Fun 27 000 are inside the split, reward earned, score 50 -> 75', uu.ess === 36900 && uu.fun === 27000 && !!S._rw && S._rw.essB >= 36900 && S._rw.funB >= 27000 && scoreNow().t === 75 && scorePrev().t === 50, [uu, scoreNow().t, S._rw]);
@@ -2139,6 +2143,60 @@ function __checkAnalytics(){
     } catch(e){ ok('chk-phase6: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideBanners(); setDemoMode(dm14); hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeStory(); }catch(e){} try{ closeOnb(); }catch(e){} perkTab = 0; while(stack.length) popPage(true); S = sv14; cur = cur14; stack.push(...stk14); demo.locked = lock14; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views14[i])); }
   }
+  { // Phase 7: Bills (flow plan B6, C2.8; decision D13): late card on Home only with two actions, skips in the bill sheet with a confirm, pocket defaults to the unpaid amount, no Bills self-link, own bill label in Transactions
+    const sv15 = S, cur15 = cur, stk15 = stack.splice(0), lock15 = demo.locked, views15 = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')); demo.locked = false;
+    const pl = h => String(h).replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').replace(/\s+/g, ' '), nt = t => String(t).replace(/\s+/g, ' ').trim(), clk = sel => { const b = $(sel); if(b) b.click(); return !!b; };
+    const reset = kind => { hideBanners(); while(stack.length) popPage(true); try{ closeOnb(); }catch(e){} try{ closeStory(); }catch(e){} closeSheet(); MQ.q = []; hideChip(true); hideToast(true); S = fresh(kind); SETUP_COLLAPSED = false; renderAll(); };
+    const late = () => { reset('existing'); S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); S.bfPush = billToday().ym + '-' + billToday().day; renderAll(); };
+    const cardOf = h => (h.match(/<div class="card bfc">[\s\S]*?<\/div><\/div>/) || [''])[0];
+    try{
+      // chk-latecard-home-only: the late-bill card is on Home with the real text and exactly two actions (Pay now, All bills); it is not on the Persely tab, the Bills page or the Spending page
+      late(); const hc = cardOf(vFooldal()), hct = nt(pl(hc)), acts = (hc.match(/<button/g) || []).length;
+      const two = /Rent share is late: 42 000 Ft \(due on the 2nd\)/.test(hct) && acts === 2 && /data-paybill="szab-d-ra"/.test(hc) && /data-go="bills"/.test(hc) && />Pay now</.test(hc) && />All bills</.test(hc) && !/data-billskip/.test(hc);
+      const hubNo = !/class="card bfc"|Bills first/.test(vHub()), billsNo = !/class="card bfc"/.test(billsHTML()), spendNo = !/class="card bfc"/.test(myMoneyHTML());
+      ok('chk-latecard-home-only: the late-bill card is on Home only, reads "Rent share is late: 42 000 Ft (due on the 2nd)" with two actions (Pay now, All bills) and no skip links; the Persely tab, the Bills page and the Spending page do not show it', two && hubNo && billsNo && spendNo, [hct, acts, hubNo, billsNo, spendNo]);
+
+      // chk-skip-in-sheet: the skips live in the bill sheet under More options; each opens a confirm that states the effect on Safe to spend; nothing changes until Confirm; Confirm skips with an Undo chip
+      late(); const sf0 = safeToSpend().safe; S._bill = 'szab-d-ra'; const b0 = nt(pl(SHEETS.bill())); sheet(SHEETS.bill()); const sh = $('#sheet').innerHTML;
+      const inSheet = /More options/.test(b0) && (sh.match(/data-billskipask=/g) || []).length === 2 && !/data-billskip="/.test(sh) && /Already paid elsewhere/.test(b0) && /Not due this month/.test(b0) && /Usual amount 42 000 Ft/.test(b0) && /Due on the 2nd/.test(b0) && /must-pay bill/.test(b0) && !!$('#sheet [data-paybill]') && !!$('#sheet details.bfmore:not([open])');
+      clk('#sheet [data-billskipask="szab-d-ra:notdue"]'); const cf = nt($('#sheet').textContent), cfOk = /Safe to spend goes up by 42 000 Ft this month/.test(cf) && !!$('#sheet [data-billskip="szab-d-ra:notdue"]') && !S.billSkip['szab-d-ra'] && safeToSpend().safe === sf0;
+      clk('#sheet [data-billopen]'); const back = /More options/.test(nt($('#sheet').textContent)) && !S.billSkip['szab-d-ra'];
+      clk('#sheet [data-billskipask="szab-d-ra:paid"]'); const cf2 = /Safe to spend goes up by 42 000 Ft this month/.test(nt($('#sheet').textContent)); clk('#sheet [data-billskip]');
+      const done = S.billSkip['szab-d-ra'] === billToday().ym && S.billSkipWhy['szab-d-ra'] === 'paid' && !bfNow().on && safeToSpend().safe === sf0 + 42000 && !sheetOpen() && UCH.on && !!$('#uchip [data-undo]');
+      clk('#uchip [data-undo]'); const undone = !S.billSkip['szab-d-ra'] && bfNow().on && safeToSpend().safe === sf0; hideChip(true);
+      ok('chk-skip-in-sheet: Already paid elsewhere and Not due this month sit in the bill sheet under More options (with usual amount, due day, must-pay switch and Pay now); each asks first with "Safe to spend goes up by 42 000 Ft this month"; Back changes nothing; Confirm skips and shows the Undo chip; Undo puts the bill back', inSheet && cfOk && back && cf2 && done && undone, [inSheet, cfOk, back, cf2, done, undone]);
+
+      // chk-pocket-unpaid: the Bills page summary, the status chips and the pocket section use the unpaid amount
+      late(); pushPage('bills'); const pg = nt(pl($('.page').innerHTML)), chips = [...document.querySelectorAll('.page [data-chip]')].map(x => x.dataset.chip), chipOf = id => (document.querySelector(`.page [data-billopen="${id}"] [data-chip]`) || {dataset:{}}).dataset.chip;
+      const sum = /61 000 Ft this month · 13 450 Ft paid · 47 550 Ft still to pay/.test(pg), chipsOk = chipOf('szab-d-ra') === 'Late' && chipOf('yettel-magyarorsz-g') === 'Due' && chips.includes('Paid') && chips.every(c => ['Paid', 'Due', 'Late', 'Skipped', 'Paid less'].includes(c));
+      const sect = /Move 47 550 Ft \(unpaid\) to Bills pocket/.test(pg) && !/Move 61 000 Ft/.test(pg) && pocketOffer() === 47550; const j0 = balanceOf();
+      clk('.page [data-pocketmove]'); const moved = pocketBal() === 47550 && balanceOf() === j0 - 47550 && pocketOffer() === 0 && !/Move [\d ]+ Ft \(unpaid\)/.test(nt(pl($('.page').innerHTML))); hideChip(true);
+      while(stack.length) popPage(true);
+      ok('chk-pocket-unpaid: the Bills page reads "61 000 Ft this month · 13 450 Ft paid · 47 550 Ft still to pay", bill rows carry Paid / Due / Late chips, and the Bills pocket section offers "Move 47 550 Ft (unpaid) to Bills pocket" (not the 61 000 Ft month total); one tap moves exactly 47 550 Ft', sum && chipsOk && sect && moved, [sum, chips, sect, moved, pg.slice(0, 300)]);
+
+      // chk-no-bills-selflink: no link on the Bills page leads to the Bills page; the Spending page has one Bills row; the allowed entries are kept
+      late(); pushPage('bills'); const pb = $('.page').innerHTML, selfFree = !/data-go="bills"/.test(pb) && !/class="card bfc"/.test(pb); while(stack.length) popPage(true);
+      const spend = (myMoneyHTML().match(/data-go="bills"/g) || []).length, homeAll = /data-go="bills"/.test(cardOf(vFooldal())), shortcut = /class="short"[\s\S]*?data-go="bills"[\s\S]*?Pay a bill/.test(vFooldal()), safeEntry = /data-go="bills"/.test(SHEETS.safe());
+      ok('chk-no-bills-selflink: the Bills page has no link to itself (no All bills, no late card); the Spending page has exactly one Bills row; Home keeps All bills on the late card and the Pay a bill shortcut, and the Safe to spend sheet keeps its Must-pay bills button', selfFree && spend === 1 && homeAll && shortcut && safeEntry, [selfFree, spend, homeAll, shortcut, safeEntry]);
+
+      // chk-bills-due-toggle: Settings > Notifications "Bills due" switches the bill reminder pushes off and on
+      late(); S.notif.bills = false; const n0 = S.inbox.length, off = notify({title:'Persi · Persely', persi:true, body:'x', kind:'bills'}) === false && S.inbox.length === n0; hideBanners();
+      S.notif.bills = true; const on = notify({title:'Persi · Persely', persi:true, body:'x', kind:'bills'}) !== false && S.inbox.length === n0 + 1; hideBanners(); const gated = /notifOn\(n\.kind\)/.test(notify.toString());
+      ok('chk-bills-due-toggle: the Bills due switch in Settings > Notifications gates bill reminder pushes: off sends and lists nothing, on sends and lists it', off && on && gated && NOTIF_TOGGLES.some(x => x[0] === 'bills' && /Bills due/.test(x[1])), [off, on, gated]);
+
+      // chk-own-bill-label: a bill payment shows the user's own label in Transactions with the bank payee as its second line
+      reset('existing'); const html = vTranz(), row = (html.match(/<[^>]*class="tx"[^>]*>(?:(?!<\/button>)[\s\S])*?SZABÓ DÓRA[\s\S]*?<\/button>/) || [''])[0], rt = nt(pl(row));
+      tab('tranzakciok'); const own = /^Rent share SZABÓ DÓRA /.test(rt) && /class="txp">SZABÓ DÓRA</.test(row);
+      S.analyst.on = true; renderAll(); const i = S.tx.findIndex(t => t.n === 'SZABÓ DÓRA'); S._txi = i; const dt = nt(pl(SHEETS.txd())), det = /Your label Rent share/.test(dt) && /Paid to SZABÓ DÓRA/.test(dt); const card = !/class="tx"[^>]*><span class="ic">[^<]*<svg[\s\S]*?<b class="own">LIDL/.test(html);
+      tab('fooldal');
+      ok('chk-own-bill-label: in Transactions a bill payment shows the user\'s own label ("Rent share") with the bank payee (SZABÓ DÓRA) as the second line; the payment detail lists Your label and Paid to; other payments keep the payee name', own && det && card, [rt, own, det]);
+
+      // chk-safe-late-why: Safe to spend explains in one line why a late bill does not change it
+      late(); const sg = nt(pl(SHEETS.safe())); reset('existing'); const sg2 = nt(pl(SHEETS.safe()));
+      ok('chk-safe-late-why: while a bill is late the Safe to spend sheet says in one line that it does not change because an unpaid bill was already taken off; with nothing late the line is absent', /Rent share is late, but Safe to spend does not change/.test(sg) && !/does not change/.test(sg2), [sg.slice(-300)]);
+    } catch(e){ ok('chk-phase7: the new checks ran without errors', false, String(e && e.stack || e)); }
+    finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); while(stack.length) popPage(true); S = sv15; cur = cur15; stack.push(...stk15); demo.locked = lock15; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views15[i])); }
+  }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
   const bad = out.filter(r => !r.pass);
@@ -2359,13 +2417,15 @@ function vUtalas(){
 }
 
 let txMode = 0;
+const txBill = t => t.a < 0 && ['card', 'debit', 'out'].includes(txType(t)) ? (S.bills || []).find(x => x.key === payeeKey(t) && !x.ignored) : null;
 function vTranz(){
   let last='', html='';
   if(txMode===0){
     S.tx.forEach((t,i)=>{
       if(t.d!==last){ html+=`<div class="dh">${t.d}</div>`; last=t.d; }
       const tap = S.analyst.on && txType(t) !== 'own', c = tap && !t.parts ? CATEGORY[classify(t)] : null;   // analyst on: every payment opens its detail (category, repeats monthly, change category)
-      html+=`<${tap?'button':'div'} class="tx" ${tap?`data-txd="${i}"`:''}><span class="ic">${I(t.ic)}</span><span class="t"><b>${t.n}</b><span>${t.s}</span>${t.note?`<em>${I('piggy',15)} ${t.note}</em>`:''}${c && txType(t) !== 'in' ? `<em>${I('chart',15)} ${c[0]} · ${catLabel(classify(t))}</em>` : ''}</span><span class="a num ${t.a>0?'p':''}">${sft(t.a)}</span>${tap?`<span class="chev">${I('chev',18)}</span>`:''}</${tap?'button':'div'}>`;
+      const bl = txBill(t);   // a bill payment shows the user's own label ("Rent share") with the bank payee as the second line
+      html+=`<${tap?'button':'div'} class="tx" ${tap?`data-txd="${i}"`:''}><span class="ic">${I(t.ic)}</span><span class="t"><b${bl ? ' class="own"' : ''}>${bl ? esc(bl.name) : t.n}</b>${bl ? `<span class="txp">${esc(t.n)}</span>` : ''}<span>${t.s}</span>${t.note?`<em>${I('piggy',15)} ${t.note}</em>`:''}${c && txType(t) !== 'in' ? `<em>${I('chart',15)} ${c[0]} · ${catLabel(classify(t))}</em>` : ''}</span><span class="a num ${t.a>0?'p':''}">${sft(t.a)}</span>${tap?`<span class="chev">${I('chev',18)}</span>`:''}</${tap?'button':'div'}>`;
     });
   } else html = `<div class="card" style="text-align:center;color:var(--muted-t);padding:28px 16px">No pending transactions.</div>`;
   return `<div class="tabtitle">Transactions</div>
@@ -2796,9 +2856,13 @@ function billPaidOn(id){ const b = billById(id); if(!b) return ''; const now = b
   S.tx.forEach(t => { if(t.a < 0 && ['card', 'debit', 'out'].includes(txType(t)) && payeeKey(t) === b.key){ const w = txWhen(t); if(w.ym === now.ym && (!last || w.day > last.day)) last = w; } });
   return last ? ` ${last.day} ${MONTHN[+now.ym.slice(5) - 1].slice(0, 3)}` : ''; }
 function billLabel(s, id){ return s.st === 'skipped' ? ((S.billSkipWhy || {})[id] === 'paid' ? 'Already paid elsewhere' : 'Not due this month') : s.st === 'paid' ? 'Paid' + billPaidOn(id) : s.label; }
+// the status chip: Paid, Due, Late, Skipped (and Paid less); billLabel keeps the long wording for the sheet and the sub line
+const billChip = s => s.st === 'paid' ? 'Paid' : s.st === 'skipped' ? 'Skipped' : s.st === 'late' ? 'Late' : s.st === 'less' ? 'Paid less' : 'Due';
 const billPill = s => s.st === 'paid' || s.st === 'skipped' ? 'ok' : s.st === 'late' || s.st === 'less' ? 'open' : '';
 const mustTotal = () => mustBills().reduce((a, b) => a + b.exp, 0);
-const pocketOffer = () => Math.max(0, mustTotal() - pocketBal());   // "Move X Ft to Bills pocket": a month of must-pay bills (61 000 Ft in the demo)
+const pocketOffer = () => Math.max(0, billsFirst().total - pocketBal());   // "Move X Ft (unpaid) to Bills pocket": the bills still to pay this month (47 550 Ft in the demo), not the month total
+// what skipping one bill does to Safe to spend this month (the confirm says it before anything changes)
+function skipGain(id){ const a = safeToSpend().safe, had = S.billSkip[id]; S.billSkip[id] = billToday().ym; const z = safeToSpend().safe; if(had === undefined) delete S.billSkip[id]; else S.billSkip[id] = had; return z - a; }
 // the payday sheet becomes "Bills first" when the analyst is on and a must-pay bill is still open (an automatic payday rule keeps moving by itself)
 const paydayBills = () => billsFirst().count > 0 && !(S.payday.on && !S.payday.ask);
 // pay one bill from the Bills pocket when it holds enough, else from the Junior account. Returns {amt, fromPocket} or {err}
@@ -2824,7 +2888,7 @@ function pocketBack(){
   S.tx.unshift({...stamp(), d:'Today', n:'BILLS POCKET', s:'Between my accounts', a:x, ic:'wallet', note:'Moved back'}); return x;
 }
 function billsDone(was){ const now = bfNow().on; if(was && !now) S.bfDone = true; else if(now) S.bfDone = false; return was && !now; }
-// a card at the top of Home and the Persely tab. Late bills: Pay now, Already paid elsewhere, Not due this month. Nothing late but a bill due soon the balance cannot cover: an orange heads-up, no "Bills first".
+// a card at the top of Home only (D13). Late bills: two actions, Pay now and All bills; the skips live in the bill sheet under More options. Nothing late but a bill due soon the balance cannot cover: an orange heads-up, no "Bills first".
 const comingUp = bf => bf.soon.map(r => `${esc(r.bill.name)} ${ft(r.s.left)} on the ${ordinal(r.bill.day)}`).join(', ');
 function bfCard(){
   const bf = bfNow(); if(!bf.on && !bf.warn) return '';
@@ -2835,8 +2899,7 @@ function bfCard(){
   const head = many ? `<details class="bfd"><summary><b>${bf.text}</b><span class="chev">${I('chev', 16)}</span></summary><div class="bfd-l">${bf.late.map(x => `<button class="bfd-r" data-paybill="${x.bill.id}"><span class="t"><b>${esc(x.bill.name)}</b><small>Due on the ${ordinal(x.bill.day)}</small></span><b class="num">${ft(x.s.left)}</b></button>`).join('')}</div></details>` : `<div class="u-tip-p"><b>${bf.text}</b></div>`;
   return `<div class="card bfc"><div class="hrow"><span class="pill open">Bills first</span><span class="k">${bf.late.length} late</span></div>
     ${head}${bf.soon.length ? `<div class="k bfu">Coming up: ${comingUp(bf)}</div>` : ''}
-    <div class="hero-btns u-m0"><button class="btn" data-paybill="${b.id}">Pay now</button><button class="btn w" data-go="bills">All bills</button></div>
-    <div class="bfl"><button class="link lnk44" data-billskip="${b.id}:paid">Already paid elsewhere</button><button class="link lnk44" data-billskip="${b.id}:notdue">Not due this month</button></div></div>`;
+    <div class="hero-btns u-m0"><button class="btn" data-paybill="${b.id}">Pay now</button><button class="btn w" data-go="bills">All bills</button></div></div>`;
 }
 // Home, under the balance: one line with what is really free
 // the one line about bills on the Home card: late, coming up, still to pay, or all paid
@@ -2910,8 +2973,8 @@ function myMoneyHTML(){
 // the same screen text for pages that need the analyst
 const needAnalyst = what => `<div class="card" style="padding:16px;margin-top:8px"><b class="u-fs-m">${what} needs the financial analyst</b><div class="fine u-mt4-b12">It is optional and off right now. Turn it on to see your bills and next month.</div><button class="btn" data-sheet="analyst">See what it measures</button></div>`;
 function billRow(r){
-  const b = r.bill, s = r.s, sub = `${ft(b.exp)} · due on the ${ordinal(b.day)}${s.paid && s.st !== 'skipped' ? ` · paid ${ft(s.paid)}` : ''}`;
-  return `<div class="li sw"><button class="li-main" data-billopen="${b.id}"><span class="t"><b>${esc(b.name)}</b><small>${sub}</small><span class="pill ${billPill(s)}" style="display:inline-block;margin-top:5px">${billLabel(s, b.id)}</span></span></button>${swBtn(b.locked, `data-lockbill="${b.id}"`, `Count ${esc(b.name)} as must-pay`)}</div>`;
+  const b = r.bill, s = r.s, sub = `${ft(b.exp)} · due on the ${ordinal(b.day)}${s.paid && s.st !== 'skipped' ? ` · paid ${ft(s.paid)}${s.st === 'paid' && billPaidOn(b.id) ? ' on ' + billPaidOn(b.id).trim().replace(/ \w+$/, ' ' + monthOf(billToday().ym)) : ''}` : ''}${s.st === 'skipped' ? ` · ${billLabel(s, b.id)}` : ''}`;
+  return `<div class="li sw"><button class="li-main" data-billopen="${b.id}"><span class="t"><b>${esc(b.name)}</b><small>${sub}</small><span class="pill ${billPill(s)}" data-chip="${billChip(s)}" style="display:inline-block;margin-top:5px">${billChip(s)}</span></span></button>${swBtn(b.locked, `data-lockbill="${b.id}"`, `Count ${esc(b.name)} as must-pay`)}</div>`;
 }
 function nextMonthHTML(){
   if(!S.analyst.on) return needAnalyst('Next month');
@@ -2932,21 +2995,19 @@ function nextMonthHTML(){
   <div class="fine u-note-b14">A guess from your last ${p.months} months: recent months count more. Income only counts what comes regularly, plus the lowest of the others. These are the same four buckets as My split: Fun is your choice, Saving is your saving rules, Everyday essentials is what is left. Tips only: nothing is blocked and nothing moves by itself.</div>`;
 }
 function billsHTML(){
-  const bf = billsFirst(), rows = bf.rows, sf = safeToSpend(), paid = rows.reduce((a, r) => a + (r.s.st === 'paid' || r.s.st === 'less' ? r.s.paid : 0), 0);
+  const bf = billsFirst(), rows = bf.rows, sf = safeToSpend(), paid = rows.reduce((a, r) => a + (r.s.st === 'paid' || r.s.st === 'less' ? r.s.paid : 0), 0), monthTotal = rows.filter(r => r.s.st !== 'skipped').reduce((a, r) => a + r.bill.exp, 0);   // a skipped bill is not due this month
   const others = (S.bills || []).filter(b => !b.locked && !b.ignored).map(b => ({bill:b, s:billStatus(b)}));
   const offer = pocketOffer(), pk = S.billsPocket;
   return `${S.billsConfirmed ? '' : `<div class="card" style="margin-top:8px;padding:16px"><b class="u-fs-m">We found ${(S.bills || []).filter(b => !b.ignored).length} regular payments</b><div class="fine u-mt4-b12">Lock the ones you must pay. Housing, utilities, the pass and the phone are ticked already. You can change any of them later.</div><button class="btn" data-confirmbills>Confirm my bills</button></div>`}
-  ${bfCard()}
-  <div class="card" style="${bf.on || !S.billsConfirmed ? '' : 'margin-top:8px'}"><div class="k">This month's must-pay bills</div>
-    <div class="hero-v num" style="margin:2px 0 4px">${ft(rows.reduce((a, r) => a + r.bill.exp, 0))}</div>
-    <div class="k">${ft(paid)} paid · ${bf.total ? `${ft(bf.total)} still to pay` : 'nothing left to pay'}</div>
+  <div class="card" style="${S.billsConfirmed ? 'margin-top:8px' : ''}"><div class="k">This month's must-pay bills</div>
+    <div class="u-fs-m num" style="font-weight:700;margin:4px 0 6px" id="billsum">${ft(monthTotal)} this month · ${ft(paid)} paid · ${bf.total ? `${ft(bf.total)} still to pay` : 'nothing left to pay'}</div>
     <button class="link lnk44" data-sheet="safe" style="margin-top:4px">Safe to spend: ${ft(sf.safe)} ${I('chev', 16)}</button></div>
   <div class="sec"><span>Must-pay bills</span></div>
   <div class="card lst">${rows.length ? `<div class="bl-h" aria-hidden="true"><span>Must-pay</span></div>${rows.map(billRow).join('')}` : '<div class="li"><span class="t"><small>No bill is locked yet. Lock a regular payment below.</small></span></div>'}</div>
   ${others.length ? `<div class="sec"><span>Other regular payments</span></div><div class="card lst"><div class="bl-h" aria-hidden="true"><span>Must-pay</span></div>${others.map(billRow).join('')}</div><div class="fine u-note-b12">Subscriptions are not locked: they count as Fun. Still using them?</div>` : ''}
   <div class="sec"><span>Bills pocket</span></div>
   <div class="card"><div class="u-rowc"><span class="gic">${I('wallet', 22)}</span><span class="u-fx1"><b class="u-fs-m">${pk.on && pk.bal > 0 ? ft(pk.bal) : 'Not in use'}</b><div class="k">A pot for bills only. No goal, no interest. Each bill is paid from it while it has money. Safe to spend does not count it.</div></span></div>
-    ${offer > 0 ? `<button class="btn w" data-pocketmove="${offer}" style="margin-top:12px">Move ${ft(offer)} to Bills pocket</button>` : ''}
+    ${offer > 0 ? `<button class="btn w" data-pocketmove="${offer}" style="margin-top:12px">Move ${ft(offer)} (unpaid) to Bills pocket</button>` : ''}
     ${pk.on && pk.bal > 0 ? `<button class="btn ghost" data-pocketback>Move ${ft(pk.bal)} back to Junior account</button>` : ''}</div>
   <div class="fine u-note-b14">Bills first only tells you. No card is declined and no money moves without your tap. Only your own OTP account is seen: other banks and cash show as unknown.</div>`;
 }
@@ -2957,9 +3018,15 @@ const SHEETS_BILLS = {
     <div class="card lst"><div class="li"><span class="t"><b>Usual amount</b></span><b class="num">${ft(b.exp)}</b></div><div class="li"><span class="t"><b>Due</b></span><b class="num">on the ${ordinal(b.day)}</b></div>
       <div class="li"><span class="t"><b>Seen</b></span><b class="num">${b.months} months in a row</b></div>${last ? `<div class="li"><span class="t"><b>Last payment</b></span><b class="num">${ft(-last.a)}</b></div>` : ''}</div>
     <button class="opt slim ${b.locked ? 'on' : ''}" data-lockbill="${b.id}" data-resheet="bill"><span class="t"><b class="u-fs-14">This is a must-pay bill</b><small>Bills first watches it and Safe to spend leaves room for it</small></span><span class="tg ${b.locked ? 'on' : ''}"></span></button>
-    ${act ? `<button class="btn" data-paybill="${b.id}">Pay now</button><button class="btn ghost" data-billskip="${b.id}:paid">Already paid elsewhere</button><button class="btn ghost" data-billskip="${b.id}:notdue">Not due this month</button>` : ''}
+    ${act ? `<button class="btn" data-paybill="${b.id}">Pay now</button>
+    <details class="bfd bfmore"><summary><b>More options</b><span class="chev">${I('chev', 16)}</span></summary><div class="bfd-l"><button class="bfd-r" data-billskipask="${b.id}:paid"><span class="t"><b>Already paid elsewhere</b><small>Leaves this month's list. Nothing is sent</small></span><span class="chev">${I('chev', 16)}</span></button><button class="bfd-r" data-billskipask="${b.id}:notdue"><span class="t"><b>Not due this month</b><small>Leaves this month's list. Nothing is sent</small></span><span class="chev">${I('chev', 16)}</span></button></div></details>` : ''}
     ${s.st === 'skipped' ? `<button class="btn w" data-billunskip="${b.id}">It is due this month</button>` : ''}
     <button class="btn ghost" data-closesheet>Close</button>`; },
+  // skip confirm: says what skipping does to Safe to spend before anything changes; Confirm skips (with the Undo chip), Back returns to the bill
+  billskip:() => { const b = billById(S._bill), why = S._why; if(!b) return ''; const g = skipGain(b.id), mn = monthOf(billToday().ym), q = why === 'paid' ? 'Already paid elsewhere?' : 'Not due this month?';
+    return `<h2>${esc(b.name)}: ${q}</h2><div class="fine u-sheet-sub">${why === 'paid' ? `You paid it outside this account.` : `It does not need paying in ${mn}.`} It leaves your must-pay list for ${mn}. Nothing is sent.</div>
+    <div class="cfm" role="group" aria-label="Review"><p>${g > 0 ? `Safe to spend goes up by ${ft(g)} this month` : 'Safe to spend stays the same this month'}</p></div>
+    <button class="btn" data-billskip="${b.id}:${why}">Confirm</button><button class="btn ghost" data-billopen="${b.id}">Back</button>`; },
   // Pay now: who gets the money (name and account), reference, where it comes from and the amount; nothing is sent until the tap
   paybill:() => { const b = billById(S._bill); if(!b) return ''; const s = billStatus(b), pk = pocketBal() >= s.left, last = S.tx.find(t => t.a < 0 && payeeKey(t) === b.key), ref = last && last.ref ? refBase(last.ref) : b.name;
     return `<h2>Pay ${esc(b.name)}</h2><div class="fine u-sheet-sub">Nothing is sent until you tap Pay</div>
@@ -2974,6 +3041,7 @@ const SHEETS_BILLS = {
       ${s.simple ? '' : `${row('Saving rule to move', '− ' + ft(s.savingRule), S.payday.on ? 'Your payday rule, this month' : 'Payday rule is off')}${row('Groceries kept free', '− ' + ft(s.groceries), 'The lowest of your last 3 months')}`}</div>
     ${s.simple ? `<div class="fine u-note-b12">A simpler estimate: your balance minus the direct debits still to come. Turn the Financial analyst on for a closer figure that also leaves room for your saving rule and groceries.</div><button class="link lnk44" data-anon>Turn on the Financial analyst</button>` : ''}
     ${s.pocket ? `<div class="fine u-note-b12">Bills pocket: ${ft(s.pocket)}. It is held apart for bills, so it is not part of the balance above.</div>` : ''}
+    ${bf.on ? `<div class="fine u-note-b12" id="latewhy">${bf.late.length === 1 ? esc(bf.late[0].bill.name) + ' is late' : bf.late.length + ' bills are late'}, but Safe to spend does not change: late or not, an unpaid bill was already taken off.</div>` : ''}
     <div class="fine u-note-b14">A guide, not a limit. No card is declined and no money is held without your tap.</div>
     <button class="btn" data-go="bills">Must-pay bills</button><button class="btn ghost" data-closesheet>Close</button>`; },
   // one transaction: category, payee, recurring badge, must-pay switch, change category
@@ -2982,7 +3050,7 @@ const SHEETS_BILLS = {
     const li = (l, v) => `<div class="li"><span class="t"><b>${l}</b></span><span style="text-align:right;font-size:var(--fs-s)">${v}</span></div>`;
     return `<h2>Payment</h2><div class="u-sheet-sub"><b style="text-transform:uppercase;font-size:var(--fs-s)">${esc(t.n)}</b> <span class="num k">${sft(t.a)}</span></div>
     ${rec ? `<div class="u-tc" style="margin:-4px 0 10px"><span class="pill ok">Repeats monthly · about ${ft(rec.exp)} on the ${ordinal(rec.day)}</span></div>` : ''}
-    <div class="card lst">${li('Date', `${w.day} ${monthOf(w.ym)}`)}${li('Type', t.s)}${t.ref ? li('Reference', esc(t.ref)) : ''}${t.parts ? li('Split', `Essentials ${ft(t.parts.ess)} · Fun ${ft(t.parts.fun)}`) : li('Category', ty === 'in' ? 'Income' : ty === 'own' ? 'Saving: not spending' : `${CATEGORY[cat][0]} · ${catLabel(cat)}`)}</div>
+    <div class="card lst">${txBill(t) ? li('Your label', esc(txBill(t).name)) + li('Paid to', esc(t.n)) : ''}${li('Date', `${w.day} ${monthOf(w.ym)}`)}${li('Type', t.s)}${t.ref ? li('Reference', esc(t.ref)) : ''}${t.parts ? li('Split', `Essentials ${ft(t.parts.ess)} · Fun ${ft(t.parts.fun)}`) : li('Category', ty === 'in' ? 'Income' : ty === 'own' ? 'Saving: not spending' : `${CATEGORY[cat][0]} · ${catLabel(cat)}`)}</div>
     ${b ? `<button class="opt slim ${b.locked ? 'on' : ''}" data-lockbill="${b.id}" data-resheet="txd"><span class="t"><b class="u-fs-14">This is a must-pay bill</b><small>Bills first watches it</small></span><span class="tg ${b.locked ? 'on' : ''}"></span></button>` : ''}
     ${ty === 'cash' || ty === 'topup' ? `<div class="fine u-note-b12">${ty === 'cash' ? 'Cash is unknown: the app cannot see what you buy with it.' : 'Money moved to another app is unknown, so it is shown apart.'}</div>` : ''}
     ${canCat ? `<button class="btn" data-txcat2>Change category</button>` : ''}<button class="btn ghost" data-closesheet>Close</button>`; }
@@ -4083,6 +4151,7 @@ document.addEventListener('click', e=>{
   /* bills: pay, skip, lock, confirm, Bills pocket, transaction detail */
   if(d.billopen){ S._bill = d.billopen; sheet(SHEETS.bill()); return; }
   if(d.paybill){ S._bill = d.paybill; sheet(SHEETS.paybill()); return; }
+  if(d.billskipask){ const [id, why] = d.billskipask.split(':'); S._bill = id; S._why = why; sheet(SHEETS.billskip()); return; }
   if(d.dopay){ const b0 = billById(d.dopay), left = b0 ? billStatus(b0).left : 0;
     const go = () => { const was = bfNow().on, before = snap(), r = payBill(d.dopay); if(r.err){ toast(r.err); return; }
       const off = billsDone(was); closeSheet(); renderAll(); undoable(before, `${r.name} paid: ${ft(r.amt)}${r.fromPocket ? ' from your Bills pocket' : ''}.${off ? ' Fun is back on.' : ''}`); };
