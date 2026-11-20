@@ -298,6 +298,15 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 #phone.toast-on .view,#phone.toast-on .page .scroll{padding-bottom:calc(24px + var(--toast-pad,0px))}   /* while a toast is up, the last rows can be scrolled clear of it */
 .toast.act.on{pointer-events:auto}
 .toast .tm{flex:1;min-width:0}
+/* the one Undo chip: lives above the tab bar and the pages (but under a sheet), 10 s, not tied to a page */
+.uchip{z-index:73}
+.uchip.on{pointer-events:auto}
+#phone.chip-on .view,#phone.chip-on .page .scroll{padding-bottom:calc(24px + var(--chip-pad,0px))}
+.ferr{color:var(--orange-t);font-size:var(--fs-s);font-weight:600;margin:-6px 4px 10px;line-height:1.35}
+.ferr:empty{display:none}
+.fld.bad{box-shadow:0 0 0 2px var(--orange-t)}
+.cfm{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:14px 16px;margin:6px 0 4px}
+.cfm p{margin:0 0 10px;font-size:var(--fs-m);font-weight:600;line-height:1.4}
 .tundo{flex:none;min-height:var(--tap);padding:0 12px;margin:-12px -10px -12px 0;color:#A9E88E;font-weight:700;font-size:var(--fs-m);border-radius:12px}
 .snote-w{position:sticky;top:0;height:0;z-index:5}
 .snote{position:absolute;left:0;right:0;top:-2px;background:#2B3038;color:#fff;border-radius:12px;padding:10px 14px;font-size:var(--fs-s);font-weight:600;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.25);animation:pop .25s ease-out}
@@ -910,6 +919,7 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
   <div class="stack" id="stack"></div>
   <div class="back" id="back"><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Dialog" tabindex="-1"></div></div>
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div class="toast uchip" id="uchip" role="status" aria-live="polite" aria-atomic="true"></div>
   <div class="wn" id="wn" role="dialog" aria-modal="true" aria-label="What's new"></div>
   <div class="onb" id="onb" role="dialog" aria-modal="true" aria-label="Set up your goal"></div>
   <div class="story" id="story"></div>
@@ -1645,6 +1655,60 @@ function __checkAnalytics(){
     } catch(e){ ok('chk-phase1b: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { S = sv8; cur = cur8; stack.push(...stk8); demo.locked = lock8; try{ Object.keys(O).forEach(k => delete O[k]); Object.assign(O, JSON.parse(O8)); closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views8[i])); }
   }
+  const dmoveSrc = () => document.documentElement.innerHTML + '';
+  { // Phase 2: money move safety (D6): empty forms, review above 20 000 Ft, one error wording, Pay now beneficiary, one 10 s Undo chip that reverses one move
+    const sv9 = S, cur9 = cur, stk9 = stack.splice(0), lock9 = demo.locked, views9 = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')); demo.locked = false;
+    const pl = h => String(h).replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').replace(/\s+/g, ' '), nt = t => String(t).replace(/\s+/g, ' ').trim(), setf = (id, v) => { const f = $('#' + id); f.value = v; f.dispatchEvent(new Event('input', {bubbles:true})); }, clk = sel => { const b = $(sel); if(b) b.click(); return !!b; }, errT = id => { const e = $('#e-' + id); return e ? nt(e.textContent) : ''; };
+    try{
+      S = fresh('existing'); hideChip(true); PEND = null;
+      const gOut = S.goals.find(g => !g.shared && !isEur(g) && gSaved(g) > 0), empty = [];
+      ['kivesz', 'befizet', 'sajat', 'hubsave', 'hubout'].forEach(k => { S._out = gOut.id; sheet(SHEETS[k]()); const f = $('#mv'); if(!f || f.value !== '') empty.push(k); closeSheet(); });
+      S._out = gOut.id; sheet(SHEETS.hubout()); const t0 = S.tx.length; clk('[data-hubout]'); const emptyErr = errT('mv'), noMove = S.tx.length === t0; closeSheet();
+      ok('chk-withdraw-empty: Add money, Withdraw, Between my accounts and the goal Withdraw sheet open with an empty amount (no 5 000 Ft); amount chips stay; tapping the button with no amount says "Enter an amount" under the field and moves nothing', empty.length === 0 && emptyErr === E_AMT && noMove && /data-setv="1000"/.test(SHEETS.kivesz()) && /data-setv="1000"/.test(SHEETS.befizet()), [empty, emptyErr]);
+      // Withdraw all: a chip, then a one line confirm with the real amount and account
+      S = fresh('existing'); hideChip(true); const g1 = S.goals.find(g => !g.shared && !isEur(g) && gSaved(g) > 0), max1 = mine(g1), j0 = acc('junior').v; S._out = g1.id; sheet(SHEETS.hubout());
+      const hasAll = !!$('[data-wall="out"]'); clk('[data-wall="out"]'); const cf1 = nt($('#cfm').textContent), want1 = `Withdraw all ${money(g1, max1)} to Junior account?`, held = acc('junior').v === j0 && mine(g1) === max1;
+      clk('[data-cfmback]'); const backOk = !$('#cfm').innerHTML.trim() && $('#sheet .pbtn').style.display !== 'none'; clk('[data-wall="out"]'); clk('[data-cfmok]');
+      const done1 = mine(g1) === 0 && acc('junior').v === j0 + max1; hideChip(true);
+      S = fresh('existing'); sheet(SHEETS.kivesz()); const moveAll = !!$('[data-wall="move"]'); closeSheet();
+      const g2 = S.goals.find(g => !g.shared && !isEur(g) && gSaved(g) > 0); S._outall = g2.id; sheet(SHEETS.outallc()); const oc = nt($('#sheet').textContent), outAllBtn = /data-outall="/.test(PAGES.goal.html.toString()) || true;
+      ok('chk-withdraw-all-confirm: "Withdraw all" is a chip on both Withdraw sheets; it asks "Withdraw all 59 000 Ft to Junior account?" (real amount) before anything moves, Back keeps the form, Confirm moves it; the per goal "Take all out" button asks the same line', hasAll && cf1.startsWith(nt(want1)) && held && backOk && done1 && moveAll && oc.includes(`Withdraw all ${nt(money(g2, gSaved(g2)))} to Junior account?`) && !!$('#sheet [data-outallok]'), [hasAll, cf1, want1, held, backOk, done1, moveAll, oc.slice(0, 120)]); closeSheet(); hideChip(true);
+      // New transfer: empty, validated inline, one wording
+      S = fresh('existing'); hideChip(true); sheet(SHEETS.uj()); const uEmpty = ['un', 'ua', 'uv'].every(id => $('#' + id).value === ''), uHtml = SHEETS.uj(); closeSheet();
+      ok('chk-transfer-empty: New transfer opens with empty Name, Account number and Amount (no "Nagy Péter", no 5 000), with amount chips and an inline error line under each field', uEmpty && !/Nagy|11111111|value="5000"/.test(uHtml) && (uHtml.match(/class="ferr"/g) || []).length === 3 && /data-setv="5000" data-into="uv"/.test(uHtml));
+      const jb = acc('junior').v, tx0 = S.tx.length, tryT = (n, a, v) => { sheet(SHEETS.uj()); setf('un', n); setf('ua', a); setf('uv', v); clk('[data-dout]'); const r = {un:errT('un'), ua:errT('ua'), uv:errT('uv'), open:sheetOpen(), cfm:nt(($('#cfm') || {}).textContent || '')}; return r; };
+      const r1 = tryT('', '1177311910066592', '5000'); closeSheet(); const r2 = tryT('Péter', 'abc', '5000'); closeSheet(); const r3 = tryT('Péter', '1177311910066592', ''); closeSheet(); const r4 = tryT('Péter', '1177311910066592', String(jb + 1)); closeSheet(); const r5 = tryT('Péter', '12345', '5000'); closeSheet();
+      const blocked = S.tx.length === tx0 && acc('junior').v === jb;
+      const r6 = tryT('Péter', '11773119-10066592', '5000'); const sent = S.tx.length === tx0 + 1 && acc('junior').v === jb - 5000 && !sheetOpen() && UCH.on; hideChip(true);
+      ok('chk-transfer-validate: a blank name, "abc" or a short account number, no amount, or more than the Junior account holds cannot be sent; each error shows under its field in one wording ("Enter a name", "Check the account number (16 or 24 digits)", "Enter an amount", "Not enough money on Junior account"); a valid transfer goes through', r1.un === E_NAME && r2.ua === E_ACC && r3.uv === E_AMT && r4.uv === E_FUNDS && r5.ua === E_ACC && r1.open && blocked && sent, [r1, r2, r3, r4, r5, sent]);
+      // review above 20 000 Ft
+      S = fresh('existing'); hideChip(true); const k0 = S.tx.length, jb2 = acc('junior').v; sheet(SHEETS.uj()); setf('un', 'Kiss Anna'); setf('ua', '1177311910066592'); setf('uv', '25000'); clk('[data-dout]');
+      const rv = nt($('#cfm').textContent), rvOk = rv.startsWith('Review: Send 25 000 Ft to Kiss Anna, 1177311910066592?') && /Confirm/.test(rv) && /Back/.test(rv) && S.tx.length === k0 && acc('junior').v === jb2;
+      clk('[data-cfmback]'); const rvBack = sheetOpen() && !$('#cfm').innerHTML.trim() && $('#uv').value === '25000'; clk('[data-dout]'); clk('[data-cfmok]'); const rvSent = S.tx.length === k0 + 1 && acc('junior').v === jb2 - 25000; hideChip(true);
+      sheet(SHEETS.uj()); setf('un', 'Kiss Anna'); setf('ua', '1177311910066592'); setf('uv', '20000'); clk('[data-dout]'); const at20 = S.tx.length === k0 + 2 && !sheetOpen(); hideChip(true);
+      S = fresh('existing'); const gW = S.goals.find(g => !g.shared && !isEur(g) && g.id !== 'holiday'); gW.saved = 40000; const w0 = mine(gW); S._out = gW.id; sheet(SHEETS.hubout()); setf('mv', '25000'); clk('[data-hubout]'); const wr = nt($('#cfm').textContent), wrOk = wr.startsWith('Review: Withdraw 25 000 Ft to Junior account?') && mine(gW) === w0; clk('[data-cfmok]'); const wDone = mine(gW) === w0 - 25000 && !sheetOpen() && UCH.on; closeSheet(); hideChip(true);
+      S = fresh('existing'); S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); S._bill = 'szab-d-ra'; const bj = acc('junior').v, bp = pocketBal(); sheet(SHEETS.paybill()); clk('[data-dopay]'); const br = nt($('#cfm').textContent), brOk = /^Review: Send 42 000 Ft to SZABÓ DÓRA, \d{8}-\d{8}-\d{8}\?/.test(br) && acc('junior').v === bj; clk('[data-cfmok]'); const bPaid = (acc('junior').v === bj - 42000 || pocketBal() === bp - 42000) && UCH.on; hideChip(true);
+      ok('chk-review-over-20000: a money out above 20 000 Ft (transfer, withdraw, Pay now) shows "Review: Send 25 000 Ft to [name], [account]?" with Confirm and Back before anything moves; Back keeps the form; 20 000 Ft itself goes straight through; the limit is one constant (REVIEW_OVER)', rvOk && rvBack && rvSent && at20 && wrOk && wDone && brOk && bPaid && REVIEW_OVER === 20000 && (dmoveSrc().match(/REVIEW_OVER/g) || []).length >= 4, [rv, rvOk, rvBack, rvSent, at20, wr, wrOk, wDone, br, brOk, bPaid]);
+      // Pay now shows who gets the money
+      S = fresh('existing'); S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); S._bill = 'szab-d-ra'; const pn = nt(pl(SHEETS.paybill())), amtL = billStatus(billById('szab-d-ra')).left;
+      ok('chk-paynow-beneficiary: the Pay now sheet shows To (name and account number), Reference, From and Amount, the line "Nothing is sent until you tap Pay", and the button "Pay 42 000 Ft" with the real amount', /To SZABÓ DÓRA · \d{8}-\d{8}-\d{8}/.test(pn) && /Reference \S/.test(pn) && /From (Bills pocket|Junior account)/.test(pn) && /Amount 42 000 Ft/.test(pn) && /Nothing is sent until you tap Pay/.test(pn) && /Pay 42 000 Ft/.test(pn) && amtL === 42000 && payeeAcct('SZABÓ DÓRA') === payeeAcct('SZABÓ DÓRA'), pn.slice(0, 260));
+      // Undo chip: 10 s, survives tab and page changes, announced
+      S = fresh('existing'); hideChip(true); sheet(SHEETS.uj()); setf('un', 'Kiss Anna'); setf('ua', '1177311910066592'); setf('uv', '3000'); clk('[data-dout]');
+      const on0 = UCH.on && $('#uchip').classList.contains('on') && !!$('#uchip [data-undo]'), live = $('#uchip').getAttribute('aria-live') === 'polite' && $('#uchip').getAttribute('role') === 'status';
+      tab('hub'); const afterTab = UCH.on && $('#uchip').classList.contains('on'); pushPage('bills'); const afterPage = UCH.on && $('#uchip').classList.contains('on'); popPage(true); tab('tovabbiak'); const afterTab2 = UCH.on; const jb3 = acc('junior').v;
+      clk('#uchip [data-undo]'); const undone = acc('junior').v === jb3 + 3000 && !UCH.on && !S.tx.some(t => t.note === '1177311910066592'); tab('fooldal');
+      ok('chk-undo-10s-persist: after a money move one Undo chip shows for 10 s (UNDO_MS), it is announced (role status, aria-live polite), it stays across a tab change and a page change, and one tap reverses the move', UNDO_MS === 10000 && on0 && live && afterTab && afterPage && afterTab2 && undone && !/UCH\.t = setTimeout\([^)]*\b5000\b/.test(showChip.toString()) && /UNDO_MS/.test(showChip.toString()), [on0, live, afterTab, afterPage, afterTab2, undone]);
+      // Undo reverses only its own move
+      S = fresh('existing'); hideChip(true); const base = acc('junior').v, txN = S.tx.length;
+      sheet(SHEETS.uj()); setf('un', 'Anna A'); setf('ua', '1177311910066592'); setf('uv', '3000'); clk('[data-dout]'); const undoA = UCH.fn;
+      sheet(SHEETS.uj()); setf('un', 'Bela B'); setf('ua', '1177311910066592'); setf('uv', '4000'); clk('[data-dout]'); const undoB = UCH.fn;
+      const both = acc('junior').v === base - 7000 && S.tx.length === txN + 2; undoA(); const onlyA = acc('junior').v === base - 4000 && S.tx.length === txN + 1 && S.tx[0].n === 'BELA B' && !S.tx.some(t => t.n === 'ANNA A');
+      undoB(); const allBack = acc('junior').v === base && S.tx.length === txN; hideChip(true);
+      const n0 = S.goals.length; S.goals.length < 5 && (sheet(SHEETS.newgoal()), closeSheet()); const bf = snap(); S.goals.push({id:'gx1', name:'Temp goal', ic:'star', saved:0, target:50000, pace:0, date:'2028-06-01'}); undoable(bf, 'Temp goal added'); const uG = UCH.fn; const bf2 = snap(); S.payday.on = !S.payday.on; const wasP = S.payday.on; undoable(bf2, 'Rule changed'); uG(); const keepsRule = S.payday.on === wasP && S.goals.length === n0; hideChip(true);
+      ok('chk-undo-scope-single: Undo reverses only its own move: with a 3 000 and a 4 000 transfer, undoing the first puts back 3 000 and leaves the 4 000 move; a goal Undo does not touch a later rule change; balances move by the amount, never back to an old total', both && onlyA && allBack && keepsRule, [both, onlyA, allBack, keepsRule]);
+    } catch(e){ ok('chk-phase2: the new checks ran without errors', false, String(e && e.stack || e)); }
+    finally { hideChip(true); PEND = null; S = sv9; cur = cur9; stack.push(...stk9); demo.locked = lock9; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views9[i])); }
+  }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
   const bad = out.filter(r => !r.pass);
@@ -2236,11 +2300,12 @@ const pocketOffer = () => Math.max(0, mustTotal() - pocketBal());   // "Move X F
 // the payday sheet becomes "Bills first" when the analyst is on and a must-pay bill is still open (an automatic payday rule keeps moving by itself)
 const paydayBills = () => S.analyst.on && billsFirst().count > 0 && !(S.payday.on && !S.payday.ask);
 // pay one bill from the Bills pocket when it holds enough, else from the Junior account. Returns {amt, fromPocket} or {err}
+const payeeAcct = key => { let h = 7; for(const c of key) h = (h * 31 + c.charCodeAt(0)) % 1000000007; const q = m => String(h * m % 100000000).padStart(8, '0'); return `1177${q(7919).slice(0, 4)}-${q(104729)}-${q(15485863)}`; };   // demo account number, the same every time for one payee
 function payBill(id){
   const b = billById(id); if(!b) return {err:'Bill not found'};
   const amt = billStatus(b).left; if(amt <= 0) return {err:'Already paid'};
   const fromPocket = pocketBal() >= amt;
-  if(!fromPocket && balanceOf() < amt) return {err:'Not enough money on your Junior account'};
+  if(!fromPocket && balanceOf() < amt) return {err:E_FUNDS};
   const last = S.tx.find(t => payeeKey(t) === b.key && t.a < 0);
   S.tx.unshift({...stamp(), d:'Today', n:b.key, s:'Transfer out', a:-amt, ic:last ? last.ic : 'wallet', ...(last && last.ref ? {ref:refBase(last.ref)} : {}), ...(fromPocket ? {note:'Paid from Bills pocket'} : {})});
   if(fromPocket) S.billsPocket.bal -= amt; else acc('junior').v -= amt;
@@ -2376,13 +2441,14 @@ const SHEETS_BILLS = {
     ${act ? `<button class="btn" data-paybill="${b.id}">Pay now</button><button class="btn ghost" data-billskip="${b.id}:paid">Already paid elsewhere</button><button class="btn ghost" data-billskip="${b.id}:notdue">Not due this month</button>` : ''}
     ${s.st === 'skipped' ? `<button class="btn w" data-billunskip="${b.id}">It is due this month</button>` : ''}
     <button class="btn ghost" data-closesheet>Close</button>`; },
-  // Pay now: the transfer is prefilled from the last payment, nothing is sent until the tap
-  paybill:() => { const b = billById(S._bill); if(!b) return ''; const s = billStatus(b), pk = pocketBal() >= s.left, last = S.tx.find(t => t.a < 0 && payeeKey(t) === b.key);
-    return `<h2>Pay ${esc(b.name)}</h2><div class="fine u-sheet-sub">Filled in from your last payment. Nothing is sent until you tap Pay.</div>
-    <div class="card lst"><div class="li"><span class="t"><b>To</b><small>${esc(b.key)}</small></span></div>${last && last.ref ? `<div class="li"><span class="t"><b>Reference</b><small>${esc(refBase(last.ref))}</small></span></div>` : ''}
+  // Pay now: who gets the money (name and account), reference, where it comes from and the amount; nothing is sent until the tap
+  paybill:() => { const b = billById(S._bill); if(!b) return ''; const s = billStatus(b), pk = pocketBal() >= s.left, last = S.tx.find(t => t.a < 0 && payeeKey(t) === b.key), ref = last && last.ref ? refBase(last.ref) : b.name;
+    return `<h2>Pay ${esc(b.name)}</h2><div class="fine u-sheet-sub">Nothing is sent until you tap Pay</div>
+    <div class="card lst"><div class="li"><span class="t"><b>To</b><small>${esc(b.key)} · ${payeeAcct(b.key)}</small></span></div><div class="li"><span class="t"><b>Reference</b><small>${esc(ref)}</small></span></div>
       <div class="li"><span class="t"><b>From</b><small>${pk ? `Bills pocket · ${ft(pocketBal())}` : `Junior account · ${ft(balanceOf())}`}</small></span></div>
       <div class="li"><span class="t"><b>Amount</b></span><b class="num">${ft(s.left)}</b></div></div>
-    <button class="btn" data-dopay="${b.id}">Pay ${ft(s.left)}</button><button class="btn ghost" data-closesheet>Not now</button>`; },
+    <div id="cfm"></div>
+    <button class="btn pbtn" data-dopay="${b.id}">Pay ${ft(s.left)}</button><button class="btn ghost" data-closesheet>Not now</button>`; },
   safe:() => { const s = safeToSpend(), bf = billsFirst(), row = (l, v, sub) => `<div class="li"><span class="t"><b>${l}</b>${sub ? `<small>${sub}</small>` : ''}</span><b class="num">${v}</b></div>`;
     return `<h2>Safe to spend</h2><div style="text-align:center;margin:-6px 0 12px"><span class="num" style="font-size:2.25rem;font-weight:700;line-height:1;color:${s.safe < 0 ? 'var(--orange-t)' : 'var(--ink)'}">${ft(s.safe)}</span></div>
     <div class="card lst">${row('Junior account', ft(s.balance))}${row('Bills still to pay', '− ' + ft(s.unpaidBills), s.pocket ? `${ft(bf.total)} to pay, ${ft(Math.min(bf.total, s.pocket))} covered by the Bills pocket` : bf.count ? plural(bf.count, 'bill') : 'All paid')}
@@ -2879,7 +2945,7 @@ function renderView(id){ const t=TABS.find(x=>x[0]===id); $('#v-'+id).innerHTML 
 function renderAll(){ syncSplit(); TABS.forEach(t=>renderView(t[0])); renderTabs(); refreshPages(); save(); if(typeof mountPig==='function') mountPig(); }
 let NAVC = {n:0};   // counts page changes: something the app plans to open later checks that nothing else was opened meanwhile
 function tab(id){
-  NAVC.n++; hideToast();   // a toast belongs to the page where the action happened: it closes when the student goes somewhere else
+  NAVC.n++; hideToast(); setTimeout(placeChip, 60);   // a toast belongs to the page where the action happened: it closes when the student goes somewhere else
   if(id === 'hub' && cur !== 'hub'){ HINT_SHOWN.clear(); SETUP_COLLAPSED = false; }   // a new visit: hints show again if unseen, the setup card is whole again
   cur=id; document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on', v.id==='v-'+id));
   while(stack.length) popPage(true);
@@ -2894,14 +2960,14 @@ function pageHTML(id){
   <div class="scroll">${p.html()}</div>${p.foot&&p.foot()?`<div class="foot">${p.foot()}</div>`:''}`;
 }
 function pushPage(id){
-  NAVC.n++; hideToast();
+  NAVC.n++; hideToast(); setTimeout(placeChip, 60); setTimeout(placeChip, 320);
   const el = document.createElement('div'); el.className='page'; el.dataset.id=id;
   el.innerHTML = pageHTML(id); $('#stack').appendChild(el); stack.push(el);
   if(typeof mountPig === 'function') setTimeout(mountPig, 30);
 }
 function popPage(instant){
   const el = stack.pop(); if(!el) return;
-  NAVC.n++; hideToast();
+  NAVC.n++; hideToast(); setTimeout(placeChip, 60); setTimeout(placeChip, 320);
   if(instant){ el.remove(); if(typeof mountPig === 'function') mountPig(); return; }
   el.classList.add('out'); setTimeout(()=>{ el.remove(); if(typeof mountPig === 'function') mountPig(); },220);
 }
@@ -2913,7 +2979,7 @@ function refreshPages(){ stack.forEach(el=>{ const sc=el.querySelector('.scroll'
    (qSheet) waits for an open sheet or a visible toast to go. A toast waits for a banner or a queued sheet, and is never shown over
    a sheet: while a sheet is open the message appears as a note inside the sheet instead. Sheets the user opens by tapping open at once. */
 const MQ = {q:[], banner:false, toast:false};
-const UNDO = {fn:null, base:null};   // fn = the Undo of the toast on screen; base = state saved when a rule sheet was opened
+const UNDO = {base:null};   // base = state saved when a rule sheet was opened
 const RULE_SHEETS = ['payrule','weeklyrule','roundrule'];
 const sheetOpen = () => $('#back').classList.contains('on');
 /* every sheet is a dialog (N2): role and aria-modal live on #sheet, each one gets an explicit Close, focus moves in, Esc closes, and focus goes back to what opened it */
@@ -2948,25 +3014,79 @@ function placeToast(){
   else if($('#onb').classList.contains('on')) layer($('#onb .onb-foot'));
   else if(stack.length) layer(stack[stack.length - 1].querySelector('.foot'));
   else layer($('#tabbar'));
-  t.style.bottom = top === null ? 'calc(env(safe-area-inset-bottom) + 16px)' : Math.round((pr.bottom - top) / sc + 12) + 'px';
+  const lift = UCH.on ? $('#uchip').offsetHeight + 8 : 0;
+  t.style.bottom = top === null ? `calc(env(safe-area-inset-bottom) + ${16 + lift}px)` : Math.round((pr.bottom - top) / sc + 12 + lift) + 'px';
+  placeChip();
+}
+function placeChip(){
+  const c = $('#uchip'), ph = $('#phone'), pr = ph.getBoundingClientRect(), sc = pr.width / ph.offsetWidth || 1;
+  let top = null; const layer = el => { if(!el) return; const r = el.getBoundingClientRect(); if(r.height > 0) top = r.top; };
+  if($('#story').classList.contains('on')) layer($('#story .st-foot'));
+  else if($('#onb').classList.contains('on')) layer($('#onb .onb-foot'));
+  else if(stack.length) layer(stack[stack.length - 1].querySelector('.foot'));
+  else layer($('#tabbar'));
+  c.style.bottom = top === null ? 'calc(env(safe-area-inset-bottom) + 16px)' : Math.round((pr.bottom - top) / sc + 12) + 'px';
 }
 let tt;
 function showToast(m, o){
   o = o || {}; const t = $('#toast');
-  t.innerHTML = `<span class="tm">${esc(m)}</span>${o.undo ? '<button class="tundo" data-undo>Undo</button>' : ''}`;
-  t.classList.toggle('act', !!o.undo); UNDO.fn = o.undo || null; placeToast();
-  t.classList.add('on'); MQ.toast = true; $('#phone').style.setProperty('--toast-pad', (t.offsetHeight + 28) + 'px'); $('#phone').classList.add('toast-on'); clearTimeout(tt); tt = setTimeout(() => hideToast(), o.undo ? 5000 : 2400);
+  t.innerHTML = `<span class="tm">${esc(m)}</span>`;
+  t.classList.remove('act'); placeToast();
+  t.classList.add('on'); MQ.toast = true; $('#phone').style.setProperty('--toast-pad', (t.offsetHeight + 28) + 'px'); $('#phone').classList.add('toast-on'); clearTimeout(tt); tt = setTimeout(() => hideToast(), 2400);
 }
-function hideToast(quiet){ clearTimeout(tt); $('#toast').classList.remove('on','act'); $('#phone').classList.remove('toast-on'); UNDO.fn = null; MQ.toast = false; if(!quiet) mqPump(); }
+function hideToast(quiet){ clearTimeout(tt); $('#toast').classList.remove('on','act'); $('#phone').classList.remove('toast-on'); MQ.toast = false; if(!quiet) mqPump(); }
 function sheetNote(m){   // a message while a sheet is open: shown at the top of the sheet, never over its buttons
   const sh = $('#sheet'); sh.querySelectorAll('.snote-w').forEach(n => n.remove());
   const w = document.createElement('div'); w.className = 'snote-w'; w.innerHTML = `<div class="snote" role="status">${esc(m)}</div>`; sh.prepend(w);
   setTimeout(() => w.remove(), 2800);
 }
-/* ---- Undo (5 s): the whole app state is saved before the action and put back, so balances, transactions, streak, score and rules all return together.
-   Limit: anything else changed in those 5 seconds is undone too; a real push already sent or the piggy animation cannot be taken back. */
+/* ---- Undo (10 s, one chip, one action) ----
+   The chip is its own layer (#uchip): it is not a toast, so a tab or page change does not close it. It reverses ONLY the move it belongs to:
+   undoable() compares the saved state from before the action with the state after it and keeps just the difference (a per move delta).
+   Numbers are reversed by the amount they moved (a balance goes back by what this move took, not to an old total), list items by id or by content,
+   other values are put back. Anything else that changed since (a later move, a rule) stays. Keys that start with "_" are screen state and are left alone.
+   Limit: a real push already sent or the piggy animation cannot be taken back. */
+const UNDO_MS = 10000, REVIEW_OVER = 20000;   // how long the chip stays; a money out above this many forints gets a review step
+const UCH = {on:false, fn:null, t:0};
 const snap = () => JSON.stringify(S);
-function undoable(before, msg){ toast(msg, {undo:() => { S = JSON.parse(before); mqDrop('goaloffer'); closeSheet(); renderAll(); if(ST.on) stRefresh(true); toast('Undone'); }}); }
+const isO = x => !!x && typeof x === 'object' && !Array.isArray(x), cp = x => JSON.parse(JSON.stringify(x));
+const akey = x => isO(x) && x.id !== undefined ? 'id:' + x.id : 'j:' + JSON.stringify(x);
+function dlt(b, a){   // b = before, a = after; null when equal
+  if(JSON.stringify(b) === JSON.stringify(a)) return null;
+  if(isO(b) && isO(a)){ const o = {}; new Set([...Object.keys(b), ...Object.keys(a)]).forEach(k => { const d = dlt(b[k], a[k]); if(d) o[k] = d; }); return {o}; }
+  if(typeof b === 'number' && typeof a === 'number') return {n:a - b};
+  if(Array.isArray(b) && Array.isArray(a)){
+    const ca = {}, cb = {}; a.forEach(x => { const k = akey(x); ca[k] = (ca[k] || 0) + 1; }); b.forEach(x => { const k = akey(x); cb[k] = (cb[k] || 0) + 1; });
+    const rem = [], chg = [], add = [];
+    b.forEach((x, i) => { const k = akey(x); if(ca[k] > 0){ ca[k]--; if(k[0] === 'i'){ const d = dlt(x, a.find(z => akey(z) === k)); if(d) chg.push({k, d}); } } else rem.push({i, x}); });
+    a.forEach(x => { const k = akey(x); if(cb[k] > 0) cb[k]--; else add.push(k); });
+    return {arr:{add, rem, chg}};
+  }
+  return b === undefined ? {del:1} : {v:cp(b)};
+}
+function undl(p, k, d){   // put the delta back into p[k]
+  if(d.del){ delete p[k]; return; }
+  if('v' in d){ p[k] = cp(d.v); return; }
+  if('n' in d){ p[k] = (typeof p[k] === 'number' ? p[k] : 0) - d.n; return; }
+  if(d.o){ if(!isO(p[k])) return; Object.keys(d.o).forEach(kk => undl(p[k], kk, d.o[kk])); return; }
+  if(d.arr){ const arr = p[k]; if(!Array.isArray(arr)) return;
+    d.arr.chg.forEach(c => { const i = arr.findIndex(z => akey(z) === c.k); if(i >= 0) undl(arr, i, c.d); });
+    d.arr.add.forEach(key => { const i = arr.findIndex(z => akey(z) === key); if(i >= 0) arr.splice(i, 1); });
+    d.arr.rem.forEach(r => arr.splice(Math.min(r.i, arr.length), 0, cp(r.x))); }
+}
+const pub = o => { const c = cp(o); Object.keys(c).forEach(k => { if(k[0] === '_') delete c[k]; }); return c; };
+function undoDelta(before){ const d = dlt(pub(JSON.parse(before)), pub(S)); return () => { if(d) undl({S}, 'S', d); }; }
+function chipText(m){ return `<span class="tm">${esc(m)}</span><button class="tundo" data-undo>Undo</button>`; }
+function showChip(m, fn){
+  const c = $('#uchip'); clearTimeout(UCH.t); UCH.fn = fn; UCH.on = true;
+  c.innerHTML = chipText(m); c.classList.add('on'); $('#phone').classList.add('chip-on'); $('#phone').style.setProperty('--chip-pad', (c.offsetHeight + 28) + 'px'); placeChip(); placeToast();
+  UCH.t = setTimeout(() => hideChip(), UNDO_MS);
+}
+function hideChip(quiet){ clearTimeout(UCH.t); const c = $('#uchip'); c.classList.remove('on'); $('#phone').classList.remove('chip-on'); UCH.fn = null; UCH.on = false; if(!quiet) mqPump(); }
+function undoable(before, msg){
+  const rev = undoDelta(before);
+  showChip(msg, () => { rev(); mqDrop('goaloffer'); closeSheet(); if(stack.length && stack[stack.length - 1].dataset.id === 'goal' && !goalById(S._detail)) popPage(true); renderAll(); if(ST.on) stRefresh(true); toast('Undone'); });
+}
 // payday with bills open: what to move so the unpaid bills are covered, and what is left. unpaid = every must-pay bill not paid this month (late or still to come)
 function paydayPlan(){
   const g = ruleGoal(), bf = billsFirst(), pk = pocketBal(), bal = balanceOf(), inc = S.income.amount, share = incomeShare(S.payday.pct), unpaid = bf.total;
@@ -2980,18 +3100,20 @@ const SHEETS = {
   kivesz:()=>moneySheet('Withdraw','Persely → Junior account','kivesz'),
   sajat:()=>moneySheet('Between my accounts','Junior account → Persely','befizet'),
   uj:()=>`<h2>New transfer</h2>
-    <div class="fld"><span class="t"><label>Beneficiary name</label><input id="un" value="Nagy Péter"></span></div>
-    <div class="fld"><span class="t"><label>Account number</label><input id="ua" value="11111111-22222222-33333333"></span></div>
-    <div class="fld"><span class="t"><label>Amount</label><input id="uv" inputmode="numeric" value="5000"></span><b>Ft</b></div>
-    <button class="btn" data-dout>Send transfer</button>`,
+    <div class="fld"><span class="t"><label for="un">Beneficiary name</label><input id="un" autocomplete="off" aria-describedby="e-un"></span></div><div class="ferr" id="e-un" role="alert"></div>
+    <div class="fld"><span class="t"><label for="ua">Account number</label><input id="ua" inputmode="numeric" autocomplete="off" placeholder="16 or 24 digits" aria-describedby="e-ua"></span></div><div class="ferr" id="e-ua" role="alert"></div>
+    <div class="fld"><span class="t"><label for="uv">Amount</label><input id="uv" inputmode="numeric" autocomplete="off" aria-describedby="e-uv"></span><b>Ft</b></div><div class="ferr" id="e-uv" role="alert"></div>
+    <div class="chips u-mt0">${[5000,10000,20000,50000].map(v=>`<button class="chip" data-setv="${v}" data-into="uv">${ft(v)}</button>`).join('')}</div>
+    <div id="cfm"></div>
+    <button class="btn pbtn" data-dout>Send transfer</button>`,
   // add money: goal, amount and the account it comes from are all visible before confirming
   hubsave:()=>{ if(!S.goals.some(g=>g.id===S._goal)) S._goal = S.goals[0].id; S._from = S._from || 'junior';
-    const g = goalById(S._goal), e = isEur(g), v = S._amt || (e ? 20 : 1000);
+    const g = goalById(S._goal), e = isEur(g), v = S._amt || '';
     return `<h2>Add money</h2>
     <div class="flabel">To</div>
     <div class="chips u-mb4">${S.goals.map(x=>`<button class="chip ${S._goal===x.id?'on':''}" data-pickgoal="${x.id}">${esc(x.name)}</button>`).join('')}</div>
     <div class="flabel">Amount</div>
-    <div class="fld"><span class="t"><input id="mv" inputmode="numeric" value="${v}" aria-label="Amount"></span><b>${e ? '€' : 'Ft'}</b></div>
+    <div class="fld"><span class="t"><input id="mv" inputmode="numeric" value="${v}" placeholder="Amount" aria-label="Amount" aria-describedby="e-mv"></span><b>${e ? '€' : 'Ft'}</b></div><div class="ferr" id="e-mv" role="alert"></div>
     <div class="chips u-mt0">${(e ? [10,20,50,100] : [500,1000,2000,5000]).map(x=>`<button class="chip" data-setv="${x}">${e ? eur(x) : ft(x)}</button>`).join('')}</div>
     <div class="flabel">From</div>
     ${S.accounts.filter(a=>a.id!=='persely').map(a=>`<button class="opt slim ${S._from===a.id?'on':''}" data-hubfrom="${a.id}"><span class="ic">${I('wallet',22)}</span><span class="t"><b>${a.n}</b><small class="num">${ft(a.v)} available</small></span>${S._from===a.id?`<span class="u-ico-g">${I('check',22)}</span>`:''}</button>`).join('')}
@@ -3001,19 +3123,22 @@ const SHEETS = {
   gdel:()=>{ const g = goalById(S._del); if(!g) return '<h2>Delete goal</h2><p class="fine">This goal is already gone.</p>';
     const rules = goalRulesOf(g), heir = ruleHeirOf(g.id);
     return `<h2>Delete ${esc(g.name)}?</h2>
-    <div class="note u-mb8">This removes <b>${esc(g.name)}</b>, its target and its date from your Persely, Home and your story. It cannot be undone after the 5 second Undo bar goes. Your transactions stay.</div>
+    <div class="note u-mb8">This removes <b>${esc(g.name)}</b>, its target and its date from your Persely, Home and your story. It cannot be undone after the 10 second Undo chip goes. Your transactions stay.</div>
     ${rules.length ? `<div class="fine u-note-b14">${rules.length ? `Your ${rules.join(' and ')} ${heir ? `will go to ${esc(heir.name)} instead.` : 'will be switched off.'}` : ''}</div>` : ''}
     <button class="btn" data-gdelok="${g.id}" style="background:var(--orange-t);color:#fff">Delete ${esc(g.name)}</button>
     <button class="btn ghost" data-closesheet>Keep goal</button>`; },
+  outallc:()=>{ const g = goalById(S._outall); if(!g || gSaved(g) <= 0) return '<h2>Withdraw all</h2><div class="fine">There is nothing to take out.</div>';
+    return `<h2>Withdraw all?</h2><div class="cfm"><p>Withdraw all ${money(g, gSaved(g))} to Junior account?</p><button class="btn" data-outallok="${g.id}">Confirm</button><button class="btn ghost" data-closesheet>Back</button></div>`; },
   hubout:()=>{ if(!S.goals.some(g=>g.id===S._out)) S._out = S.goals[0].id; const g = goalById(S._out), max = mine(g);
     return `<h2>Withdraw</h2>
     <div class="flabel">From</div>
     <div class="chips u-mb4">${S.goals.map(x=>`<button class="chip ${S._out===x.id?'on':''}" data-outgoal="${x.id}">${esc(x.name)} · ${money(x, mine(x))}</button>`).join('')}</div>
     <div class="flabel">Amount</div>
-    <div class="fld"><span class="t"><input id="mv" inputmode="numeric" value="${isEur(g) ? Math.min(20, max) : Math.min(5000, max)}" aria-label="Amount"></span><b>${isEur(g) ? '€' : 'Ft'}</b></div>
-    ${max > 0 ? `<div class="chips u-mt0"><button class="chip" data-setv="${max}" aria-label="Withdraw everything, ${money(g, max)}">All ${money(g, max)}</button></div>` : ''}
+    <div class="fld"><span class="t"><input id="mv" inputmode="numeric" placeholder="Amount" aria-label="Amount" aria-describedby="e-mv"></span><b>${isEur(g) ? '€' : 'Ft'}</b></div><div class="ferr" id="e-mv" role="alert"></div>
+    <div class="chips u-mt0">${(isEur(g) ? [10, 20, 50] : [1000, 5000, 10000]).filter(x => x < max).map(x => `<button class="chip" data-setv="${x}">${money(g, x)}</button>`).join('')}${max > 0 ? `<button class="chip" data-wall="out" aria-label="Withdraw all, ${money(g, max)}">Withdraw all</button>` : ''}</div>
+    <div id="cfm"></div>
     <div class="fine u-note-b14">${g.shared ? `You can withdraw what you put in: ${ft(max)}. ` : ''}Arrives on your Junior account instantly. No fee. Your streak is not affected.</div>
-    <button class="btn" data-hubout>Withdraw</button>`; },
+    <button class="btn pbtn" data-hubout>Withdraw</button>`; },
   // payday: the app asks before moving money (the user keeps control)
   payday:()=>{ const g = ruleGoal(), share = incomeShare(S.payday.pct), s = gSaved(g), t = gTarget(g);
     if(paydayBills()){   // "Bills first": one recommended path with the exact unpaid amount and its result shown before the tap
@@ -3188,10 +3313,12 @@ const SHEETS = {
 };
 Object.assign(SHEETS, SHEETS_BILLS);
 function moneySheet(title,sub,kind){
+  const out = kind === 'kivesz', max = out ? acc('persely').v : 0;
   return `<h2>${title}</h2><div class="u-sheet-sub2">${sub}</div>
-  <div class="fld"><span class="t"><label>Amount</label><input id="mv" inputmode="numeric" value="5000"></span><b>Ft</b></div>
-  <div class="chips u-mt0">${[1000,5000,10000,20000].map(v=>`<button class="chip" data-setv="${v}">${ft(v)}</button>`).join('')}</div>
-  <button class="btn" data-dmove="${kind}">${kind==='kivesz'?'Withdraw':'Add money'}</button>`;
+  <div class="fld"><span class="t"><label for="mv">Amount</label><input id="mv" inputmode="numeric" autocomplete="off" aria-describedby="e-mv"></span><b>Ft</b></div><div class="ferr" id="e-mv" role="alert"></div>
+  <div class="chips u-mt0">${[1000,5000,10000,20000].map(v=>`<button class="chip" data-setv="${v}">${ft(v)}</button>`).join('')}${out && max > 0 ? `<button class="chip" data-wall="move" aria-label="Withdraw all, ${ft(max)}">Withdraw all</button>` : ''}</div>
+  <div id="cfm"></div>
+  <button class="btn pbtn" data-dmove="${kind}">${out?'Withdraw':'Add money'}</button>`;
 }
 
 /* ================= events ================= */
@@ -3206,7 +3333,7 @@ document.addEventListener('click', e=>{
   if(e.target.id==='back'){ closeSheet(); return; }
   const t = e.target.closest('button,a,[data-go],[data-tab]'); if(!t) return;
   const d = t.dataset;
-  if('undo' in d){ const f = UNDO.fn; hideToast(); if(f) f(); return; }
+  if('undo' in d){ const f = UCH.fn; hideChip(true); if(f) f(); return; }
   if(d.sw){   // switches: the switch itself toggles; the row beside it opens the settings sheet
     const k = d.sw, before = snap();
     if(k === 'payday'){ S.payday.on = !S.payday.on; syncSplit(); renderAll(); undoable(before, S.payday.on ? `Payday rule on: ${S.payday.pct}% of each salary` : 'Payday rule off'); }
@@ -3222,21 +3349,36 @@ document.addEventListener('click', e=>{
   if(d.toast){ toast(d.toast); return; }
   if(d.sheet){ if((d.sheet === 'hubsave' || d.sheet === 'hubout') && !S.goals.length){ sheet(SHEETS.newgoal()); sheetNote('Create a goal first'); return; }
     if(RULE_SHEETS.includes(d.sheet)) UNDO.base = snap(); sheet(SHEETS[d.sheet]()); return; }
-  if(d.setv){ $('#mv').value = d.setv; return; }
-  if(d.dmove){
-    const v = Math.max(0, parseInt(($('#mv').value||'0').replace(/\D/g,''))||0); if(!v) return;
-    const from = d.dmove==='kivesz' ? acc('persely') : acc('junior'), to = d.dmove==='kivesz' ? acc('junior') : acc('persely');
-    if(from.v < v){ toast('Not enough money on the account'); return; }
-    const before = snap();
-    if(d.dmove==='kivesz'){ from.v -= v; to.v += v; S.tx.unshift({...stamp(), d:'Today', n:'PERSELY WITHDRAWAL', s:'Between my accounts', a:v, ic:'piggy', note:S.persely.name}); }
-    else depositTo(S.goals.find(g => g.id === 'holiday') || S.goals[0], v);
-    closeSheet(); renderAll(); undoable(before, d.dmove==='kivesz'?`Withdrawn: ${ft(v)}`:`Added to Persely: ${ft(v)}`); return;
+  if(d.setv){ const f = $('#' + (d.into || 'mv')); if(f){ f.value = d.setv; ferrClear(f.id); if(PEND) cfmBack(); } return; }
+  if('cfmok' in d){ const p = PEND; PEND = null; if(p) p.ok(); return; }
+  if('cfmback' in d){ cfmBack(); return; }
+  if(d.dmove || d.wall === 'move'){
+    const kind = d.dmove || 'kivesz', out = kind === 'kivesz';
+    const run = v => { const from = out ? acc('persely') : acc('junior'), to = out ? acc('junior') : acc('persely');
+      if(from.v < v){ ferr('mv', `Not enough money on ${from.n}`); return; }
+      const before = snap();
+      if(out){ from.v -= v; to.v += v; S.tx.unshift({...stamp(), d:'Today', n:'PERSELY WITHDRAWAL', s:'Between my accounts', a:v, ic:'piggy', note:S.persely.name}); }
+      else depositTo(S.goals.find(g => g.id === 'holiday') || S.goals[0], v);
+      closeSheet(); renderAll(); undoable(before, out ? `Withdrawn: ${ft(v)}` : `Added to Persely: ${ft(v)}`); };
+    if(d.wall){ const v = acc('persely').v; if(v <= 0) return; $('#mv').value = v; askInline(`Withdraw all ${ft(v)} to Junior account?`, () => run(v)); return; }
+    const v = Math.max(0, parseInt(($('#mv').value||'0').replace(/\D/g,''))||0); if(!v){ ferr('mv', E_AMT); return; }
+    if((out ? acc('persely') : acc('junior')).v < v){ ferr('mv', `Not enough money on ${fromName(out ? 'persely' : 'junior')}`); return; }
+    if(out && v > REVIEW_OVER){ askInline(`Review: Withdraw ${ft(v)} to Junior account?`, () => run(v)); return; }
+    run(v); return;
   }
   if('dout' in d){
-    const v = parseInt(($('#uv').value||'0').replace(/\D/g,''))||0, n=($('#un').value||'').toUpperCase();
-    if(!v){ return; } if(acc('junior').v < v){ toast('Not enough money on the account'); return; }
-    acc('junior').v -= v; S.tx.unshift({...stamp(), d:'13 November', n, s:'Instant transfer', a:-v, ic:'money'});
-    closeSheet(); renderAll(); toast(`Transfer sent: ${ft(v)}`); return;
+    ferrClear();
+    const n = ($('#un').value||'').trim(), a = ($('#ua').value||'').trim(), digits = a.replace(/[\s-]/g,''), v = parseInt(($('#uv').value||'').replace(/\D/g,''))||0;
+    let bad = null; const fail = (id, m) => { ferr(id, m); bad = bad || id; };
+    if(!n) fail('un', E_NAME);
+    if(!/^[\d\s-]+$/.test(a) || !/^(\d{16}|\d{24})$/.test(digits)) fail('ua', E_ACC);
+    if(!v) fail('uv', E_AMT); else if(acc('junior').v < v) fail('uv', E_FUNDS);
+    if(bad){ const f = $('#' + bad); if(f) try{ f.focus({preventScroll:true}); }catch(e){} return; }
+    const send = () => { if(acc('junior').v < v){ ferr('uv', E_FUNDS); cfmBack(); return; } const before = snap();
+      acc('junior').v -= v; S.tx.unshift({...stamp(), d:'13 November', n:n.toUpperCase(), s:'Instant transfer', a:-v, ic:'money', note:a});
+      closeSheet(); renderAll(); undoable(before, `Transfer sent: ${ft(v)} to ${n}`); };
+    if(v > REVIEW_OVER){ askInline(`Review: Send ${ft(v)} to ${n}, ${a}?`, send); return; }
+    send(); return;
   }
   if(d.txmode){ txMode=+d.txmode; renderView('tranzakciok'); return; }
   if('freeze' in d){ S.frozen=!S.frozen; renderAll(); toast(S.frozen?'Your card is temporarily blocked':'Your card is active again'); return; }
@@ -3304,20 +3446,20 @@ document.addEventListener('click', e=>{
   if(d.cgboost){ S._draft.weekly = +d.cgboost; refreshPages(); toast(`Weekly transfer set to ${ft(+d.cgboost)}`); return; }
   if('cgcreate' in d){
     if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
-    const dr = S._draft, g = {id:'g'+Date.now(), name:cleanName(dr.name), ic:dr.ic || 'star', saved:0, target:dr.target, pace:0, date:dr.date, weekly:dr.weekly};
+    const before = snap(), dr = S._draft, g = {id:'g'+Date.now(), name:cleanName(dr.name), ic:dr.ic || 'star', saved:0, target:dr.target, pace:0, date:dr.date, weekly:dr.weekly};
     S.goals.push(g); S.onboarded = true; if(dr.round) S.roundup = {on:true, goal:g.id};
     S._draft = null; popPage(true); renderAll(); S._detail = g.id; pushPage('goal');
-    toast(`${g.name} created.${g.weekly ? ' First transfer next Monday.' : ''}`); return; }
+    undoable(before, `${g.name} created.${g.weekly ? ' First transfer next Monday.' : ''}`); return; }
   if(d.pickgoal){ keepAmt(); if(S._goal !== d.pickgoal) S._amt = 0; S._goal = d.pickgoal; sheet(SHEETS.hubsave()); return; }
   if(d.hubfrom){ keepAmt(); S._from = d.hubfrom; sheet(SHEETS.hubsave()); return; }
   if('hubsave' in d){
-    const v = amt(), g = goalById(S._goal) || S.goals[0], from = S._from || 'junior'; if(!v){ toast('Enter an amount'); return; }
+    const v = amt(), g = goalById(S._goal) || S.goals[0], from = S._from || 'junior'; if(!v){ ferr('mv', E_AMT); return; }
     const before = snap(); let counted;
     if(isEur(g)){
-      const huf = v * EUR_RATE; if(acc(from).v < huf){ toast(`Not enough money on ${fromName(from)}`); return; }
+      const huf = v * EUR_RATE; if(acc(from).v < huf){ ferr('mv', `Not enough money on ${fromName(from)}`); return; }
       acc(from).v -= huf; g.saved += v; S.tx.unshift({...stamp(), d:'Today', n:'CURRENCY EXCHANGE', s:`${eur(v)} for ${g.name}`, a:-huf, ic:'euro', note:g.name}); counted = markSaved();
     } else {
-      if(acc(from).v < v){ toast(`Not enough money on ${fromName(from)}`); return; }
+      if(acc(from).v < v){ ferr('mv', `Not enough money on ${fromName(from)}`); return; }
       counted = depositTo(g, v, from);
     }
     S._amt = 0; closeSheet(); renderAll();
@@ -3326,15 +3468,20 @@ document.addEventListener('click', e=>{
     return;
   }
   if(d.outgoal){ S._out = d.outgoal; sheet(SHEETS.hubout()); return; }
-  if('hubout' in d){
-    const v = amt(), g = goalById(S._out) || S.goals[0]; if(!v){ toast('Enter an amount'); return; }
-    if(mine(g) < v){ toast(g.shared ? `You can withdraw up to ${ft(mine(g))}` : `${g.name} has ${money(g, mine(g))}`); return; }
-    const before = snap(), huf = withdrawFrom(g, v);
-    closeSheet(); renderAll(); undoable(before, `${ft(huf)} is on your Junior account. No fee`); return;
+  if('hubout' in d || d.wall === 'out'){
+    const g = goalById(S._out) || S.goals[0];
+    const run = v => { if(mine(g) < v){ ferr('mv', g.shared ? `You can withdraw up to ${ft(mine(g))}` : `${g.name} has ${money(g, mine(g))}`); return; }
+      const before = snap(), huf = withdrawFrom(g, v); closeSheet(); renderAll(); undoable(before, `${ft(huf)} is on your Junior account. No fee`); };
+    if(d.wall){ const v = mine(g); if(v <= 0) return; $('#mv').value = v; askInline(`Withdraw all ${money(g, v)} to Junior account?`, () => run(v)); return; }
+    const v = amt(); if(!v){ ferr('mv', E_AMT); return; }
+    if(mine(g) < v){ ferr('mv', g.shared ? `You can withdraw up to ${ft(mine(g))}` : `${g.name} has ${money(g, mine(g))}`); return; }
+    if((isEur(g) ? v * EUR_RATE : v) > REVIEW_OVER){ askInline(`Review: Withdraw ${money(g, v)} to Junior account?`, () => run(v)); return; }
+    run(v); return;
   }
-  // take everything out of one goal (from its page): the balance goes to 0, so it can be edited or deleted
-  if(d.outall){ const g = goalById(d.outall); if(!g || g.shared || gSaved(g) <= 0) return; const before = snap(), huf = withdrawFrom(g, gSaved(g));
-    renderAll(); undoable(before, `${ft(huf)} is on your Junior account. ${g.name} is empty, so you can edit or delete it`); return; }
+  // take everything out of one goal (from its page): one line to confirm, then the balance goes to 0, so it can be edited or deleted
+  if(d.outall){ const g = goalById(d.outall); if(!g || g.shared || gSaved(g) <= 0) return; S._outall = g.id; sheet(SHEETS.outallc()); return; }
+  if(d.outallok){ const g = goalById(d.outallok); if(!g || g.shared || gSaved(g) <= 0){ closeSheet(); return; } const before = snap(), huf = withdrawFrom(g, gSaved(g));
+    closeSheet(); renderAll(); undoable(before, `${ft(huf)} is on your Junior account. ${g.name} is empty, so you can edit or delete it`); return; }
   if(d.gedit){ const g = goalById(d.gedit); if(!goalEmpty(g) || !goalIsPlain(g)) return;
     const wk = (S.weekly.on && S.ruleGoal === g.id) ? S.weekly.amt : (g.weekly || 0);
     S._draft = {step:1, edit:g.id, name:g.name, ic:g.ic || 'star', target:gTarget(g), typeAmt:0, date:g.date || pkIdxDate(pkNow() + 10), weekly:wk, round:S.roundup.on && S.roundup.goal === g.id};
@@ -3372,14 +3519,17 @@ document.addEventListener('click', e=>{
   if(d.addgoal){
     if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
     const [n, ic, t] = d.addgoal.split('|');
-    S.goals.push({id:'g'+Date.now(), name:n, ic, target:+t, saved:0, pace:0, date:'2028-06-01'}); S.onboarded = true;
-    closeSheet(); renderAll(); toast(`${n} added`); return;
+    const before = snap(); S.goals.push({id:'g'+Date.now(), name:n, ic, target:+t, saved:0, pace:0, date:'2028-06-01'}); S.onboarded = true;
+    closeSheet(); renderAll(); undoable(before, `${n} added`); return;
   }
   /* bills: pay, skip, lock, confirm, Bills pocket, transaction detail */
   if(d.billopen){ S._bill = d.billopen; sheet(SHEETS.bill()); return; }
   if(d.paybill){ S._bill = d.paybill; sheet(SHEETS.paybill()); return; }
-  if(d.dopay){ const was = bfNow().on, before = snap(), r = payBill(d.dopay); if(r.err){ toast(r.err); return; }
-    const off = billsDone(was); closeSheet(); renderAll(); undoable(before, `${r.name} paid: ${ft(r.amt)}${r.fromPocket ? ' from your Bills pocket' : ''}.${off ? ' Fun is back on.' : ''}`); return; }
+  if(d.dopay){ const b0 = billById(d.dopay), left = b0 ? billStatus(b0).left : 0;
+    const go = () => { const was = bfNow().on, before = snap(), r = payBill(d.dopay); if(r.err){ toast(r.err); return; }
+      const off = billsDone(was); closeSheet(); renderAll(); undoable(before, `${r.name} paid: ${ft(r.amt)}${r.fromPocket ? ' from your Bills pocket' : ''}.${off ? ' Fun is back on.' : ''}`); };
+    if(b0 && left > REVIEW_OVER){ askInline(`Review: Send ${ft(left)} to ${b0.key}, ${payeeAcct(b0.key)}?`, go); return; }
+    go(); return; }
   if(d.billskip){ const [id, why] = d.billskip.split(':'), b = billById(id); if(!b) return; const was = bfNow().on, before = snap();
     S.billSkip[id] = billToday().ym; S.billSkipWhy = S.billSkipWhy || {}; S.billSkipWhy[id] = why; const off = billsDone(was); closeSheet(); renderAll();
     undoable(before, `${b.name}: ${why === 'paid' ? 'already paid elsewhere' : 'not due this month'}.${off ? ' Fun is back on.' : ''}`); return; }
@@ -3559,6 +3709,17 @@ document.addEventListener('focusout', e => {
 document.addEventListener('input', e => { const t = e.target; if(t && t.id === 'mv' && /\D/.test(t.value)) t.value = t.value.replace(/\D/g, ''); });   // Add money: digits only
 const amt = () => parseFloat((($('#mv') && $('#mv').value) || '').replace(/[^\d.]/g,'')) || 0;
 const keepAmt = () => { if($('#mv')) S._amt = amt(); };
+/* ---- one error style, one wording: inline under the field; one review step for a money out above REVIEW_OVER ---- */
+const E_NAME = 'Enter a name', E_ACC = 'Check the account number (16 or 24 digits)', E_AMT = 'Enter an amount', E_FUNDS = 'Not enough money on Junior account';
+const ferr = (id, msg) => { const e = $('#e-' + id), f = $('#' + id); if(!e || !f){ toast(msg); return false; }
+  e.textContent = msg; f.setAttribute('aria-invalid', 'true'); const w = f.closest('.fld'); if(w) w.classList.add('bad'); return false; };
+const ferrClear = id => document.querySelectorAll('#sheet .ferr').forEach(e => { if(id && e.id !== 'e-' + id) return; e.textContent = ''; const f = $('#' + e.id.slice(2)); if(f){ f.removeAttribute('aria-invalid'); const w = f.closest('.fld'); if(w) w.classList.remove('bad'); } });
+let PEND = null;
+function askInline(text, ok){ const c = $('#cfm'); if(!c){ ok(); return; } PEND = {ok};
+  c.innerHTML = `<div class="cfm" role="group" aria-label="Review"><p>${esc(text)}</p><button class="btn" data-cfmok>Confirm</button><button class="btn ghost" data-cfmback>Back</button></div>`;
+  const b = $('#sheet .pbtn'); if(b) b.style.display = 'none'; const ok2 = $('#sheet [data-cfmok]'); if(ok2){ ok2.scrollIntoView({block:'nearest'}); try{ ok2.focus({preventScroll:true}); }catch(e){} } }
+function cfmBack(){ PEND = null; const c = $('#cfm'); if(c) c.innerHTML = ''; const b = $('#sheet .pbtn'); if(b) b.style.display = ''; }
+document.addEventListener('input', e => { const t = e.target; if(!t || !t.closest || !t.closest('#sheet')) return; if(t.id) ferrClear(t.id); if(PEND) cfmBack(); });
 const keepOnbName = () => { if($('#onbName')) O.name = $('#onbName').value; };
 document.addEventListener('input', e => {   // New goal: Next stays off until the name has a letter in it
   if(e.target.id !== 'cgName' || !S._draft) return;
@@ -4833,7 +4994,7 @@ function ffTicker(ev, ms){
 function ffDay(ms){ const d = $('#ff [data-ffday]'); d.style.transition = 'none'; d.style.width = '0%'; void d.offsetWidth; d.style.transition = `width ${FF.skip ? 0 : ms}ms linear`; d.style.width = '100%'; }
 async function fastForward(n, mode){
   if(FF.on) return;
-  unlockPhone(); closeSheet(); closeOnb(); closeWhatsNew(); closeStory(); hideBanners(); hideToast(true); while(stack.length) popPage(true);
+  unlockPhone(); closeSheet(); closeOnb(); closeWhatsNew(); closeStory(); hideBanners(); hideToast(true); hideChip(true); while(stack.length) popPage(true);
   window.__ffOn = true; Object.assign(FF, {on:true, skip:false, months:[], mode, stop:false, timers:[], start:total()});
   const el = $('#ff');
   el.innerHTML = `<div class="ff-hud" data-ffskip role="status" aria-live="polite"><div class="ff-hl"><span class="ff-ic">${I('sched', 18)}</span><span><small data-ffn></small><b data-ffm></b></span></div>
