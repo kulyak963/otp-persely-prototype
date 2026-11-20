@@ -907,8 +907,8 @@ button.cat{background:none;border:0;padding:4px 0;font:inherit;border-radius:12p
 .cd-r{margin-left:auto;font-size:var(--fs-xs);color:var(--muted-t)}
 .cd-s .t{flex:1;min-width:0}.cd-sb{display:block;height:6px;border-radius:3px;background:#E3E6EC;margin-top:6px;overflow:hidden}.cd-sb i{display:block;height:100%;background:var(--green);border-radius:3px}
 .cd-plan{padding:14px 16px}
-.homescore{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:12px 14px;text-align:left}.homescore .t{flex:1;min-width:0;display:flex;flex-direction:column}.homescore .t b{font-size:var(--fs-m)}.homescore .t small{font-size:var(--fs-s)}.homescore .chev{display:flex;color:var(--green-i)}
-.hs-ring{flex:none;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:conic-gradient(var(--green) calc(var(--p) * 1%), #E3E6EC 0);position:relative}.hs-ring::before{content:"";position:absolute;inset:5px;border-radius:50%;background:#fff}.hs-ring b{position:relative;font-size:1.0625rem;font-weight:800}
+.homescore{display:flex;align-items:center;gap:10px;width:100%;margin-top:8px;padding:6px 12px;text-align:left}.homescore .t{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px}.homescore .t b{font-size:var(--fs-s)}.homescore .t small{font-size:var(--fs-xs);font-weight:600}.homescore .chev{display:flex;color:var(--green-i)}
+.hs-ring{flex:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:conic-gradient(var(--green) calc(var(--p) * 1%), #E3E6EC 0);position:relative}.hs-ring::before{content:"";position:absolute;inset:3px;border-radius:50%;background:#fff}.hs-ring b{position:relative;font-size:.6875rem;font-weight:800}
 .ltsline{display:flex;align-items:center;gap:8px;width:100%;margin:4px 0 0;padding:12px 16px;border-radius:14px;background:var(--card, #fff);box-shadow:var(--sh);font-size:var(--fs-m);text-align:left;color:var(--ink)}
 .ltsline span:first-child{flex:1;font-weight:600}.ltsline b{font-size:1.0625rem}.ltsline .chev{display:flex;color:var(--muted-t)}
 .gauge[data-go]{cursor:pointer}
@@ -2495,7 +2495,7 @@ const nextMonthName = () => new Date(2026, 10 + S.months, 1).toLocaleDateString(
 function homeScore(){
   if(!S.scoreHist || !S.scoreHist.length) return '';
   const n = scoreNow(), d = n.t - scorePrev().t;
-  return `<button class="card homescore" data-sheet="score"><span class="hs-ring" style="--p:${n.t}"><b class="num">${n.t}</b></span><span class="t"><b>Financial health ${n.t} of 100</b><small style="color:${deltaCol(d)}">${deltaTxt(d)} since last month</small></span><span class="chev">${I('chev', 20)}</span></button>`;
+  return `<button class="card homescore" data-sheet="score"><span class="hs-ring" style="--p:${n.t}"><b class="num">${n.t}</b></span><span class="t"><b>Financial health</b><small style="color:${deltaCol(d)}">${deltaTxt(d)}</small></span><span class="chev">${I('chev', 18)}</span></button>`;
 }
 function scoreRow(){   // the score part of the "Your habits" card (analyst on only)
   if(!S.analyst.on) return '';
