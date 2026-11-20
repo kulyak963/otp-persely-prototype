@@ -1,5 +1,5 @@
 // Keeps the app working offline and shows push notifications.
-const NAME = 'otp-demo-v59';
+const NAME = 'otp-demo-v60';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-512.png', './splash-logo-green.png', './splash-light-1320x2868.png', './three.min.js', './css/app.css', './js/01-tokens-helpers.js', './js/02-analytics.js', './js/03-selfchecks.js', './js/04-state.js', './js/05-home-transactions.js', './js/06-persely-goals.js', './js/07-spending-money.js', './js/08-persely-pages-sheets.js', './js/09-events-device.js', './js/10-piggy.js', './js/11-onboarding-goals.js', './js/12-story.js', './js/13-settings-demo.js', './js/14-fastforward.js', './js/15-boot.js'];
 
 self.addEventListener('install', e => { e.waitUntil(caches.open(NAME).then(c => c.addAll(FILES)).catch(() => {})); self.skipWaiting(); });

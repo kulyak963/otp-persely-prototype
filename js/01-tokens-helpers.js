@@ -14,6 +14,7 @@ const mixHex = (hex, k) => { const n = parseInt(hex.slice(1), 16), t = k > 0 ? 2
   return '#' + [16, 8, 0].map(sh => Math.round(((n >> sh) & 255) * (1 - a) + t * a).toString(16).padStart(2, '0')).join('').toUpperCase(); };
 const hexInt = hex => parseInt(hex.slice(1), 16);   // for three.js materials and lights
 const rgbaHex = (hex, a) => { const n = hexInt(hex); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; };   // a token with alpha, for canvas
+const SIMPLE_PERSELY = new URLSearchParams(location.search).get('simple') !== '0';
 /* ================= icons (simple line icons) ================= */
 const P = {
   home:'<path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h4.5v-5.5h4V20h4.5V9.5"/>',
@@ -79,4 +80,15 @@ const sft = n => (n>0?'+ ':'') + ft(n).replace('-','- ');
 const $ = s => document.querySelector(s);
 // the one switch used everywhere (same look as in onboarding): the switch toggles, the row next to it opens the settings
 const swBtn = (on, attr, label) => `<button class="tg ${on ? 'on' : ''}" role="switch" aria-checked="${on ? 'true' : 'false'}" aria-label="${label}" ${attr}></button>`;
-
+/* Reading grade for English UI copy (Flesch-Kincaid), shared by the self-checks and anyone who wants to measure a string.
+   fkGrade(text) -> {grade, words, sentences, longest}. "longest" = words in the longest sentence (target: 12 or fewer).
+   Rules: "500 000" is one word; a number is one syllable; "·", ".", "!", "?" and ":" end a sentence. Matches the plan's script within 0.5. */
+const fkSyl = w => { w = w.toLowerCase().replace(/[^a-z]/g, ''); if(w.length <= 3) return 1;
+  w = w.replace(/(?:[^laeiouy]es|[^laeiouy]ed|[^laeiouy]e)$/, '').replace(/^y/, ''); const m = w.match(/[aeiouy]{1,2}/g); return Math.max(1, m ? m.length : 1); };
+const fkGrade = text => {
+  const t = String(text).replace(/(\d)[\s  ](?=\d{3}\b)/g, '$1').replace(/\s*[·•|]\s*/g, '. ').trim();
+  const sents = t.split(/(?<=[.!?:])\s+(?=\S)/).map(s => s.trim()).filter(s => /[A-Za-z0-9]/.test(s));
+  const words = sents.map(s => s.match(/[A-Za-z0-9][A-Za-z0-9'’%.,-]*/g) || []);
+  const W = words.reduce((a, w) => a + w.length, 0) || 1, S = sents.length || 1, Y = words.flat().reduce((a, w) => a + (/^\d/.test(w) ? 1 : fkSyl(w)), 0);
+  return {grade: Math.round((0.39 * W / S + 11.8 * Y / W - 15.59) * 10) / 10, words: W, sentences: S, longest: Math.max(0, ...words.map(w => w.length))};
+};

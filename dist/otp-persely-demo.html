@@ -1073,6 +1073,20 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
   .page .foot{padding-bottom:calc(env(safe-area-inset-bottom) + var(--sp-5))}
   .pkgrid button.chip{min-height:44px}
 }
+/* Simple Persely (Phase 3): honesty line, Rate and safety, simple goal page and Add money sheet */
+.rsline{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);width:100%;min-height:var(--tap);background:none;font-size:var(--fs-xs);line-height:1.4;color:var(--muted-t);text-align:center}
+.rsline .rsi{display:flex;color:var(--green-i);flex:none}
+.rsline:focus-visible{outline:2px solid var(--act);outline-offset:2px}
+.gtkc .rsline{justify-content:flex-start;text-align:left}
+.gtk.rs li{font-size:0.875rem}
+.gtk.rs .gtk-l{display:flex;margin-top:var(--sp-1)}
+.gsimple .gdate{margin:var(--sp-2) 0 0;font-size:var(--fs-m);line-height:1.45;color:var(--ink2)}
+.gsimple .gdate.late{color:var(--orange-t)}
+.gsimple > .btn + .btn,.gsimple > .gdate + .btn{margin-top:var(--sp-2)}
+.gsetb .chev svg{transition:transform .2s}.gsetb .chev.up svg{transform:rotate(90deg)}
+.gset[hidden]{display:none}
+.hsfrom{display:flex;align-items:center;gap:var(--sp-2);margin:var(--sp-2) 2px 0;font-size:var(--fs-s);color:var(--ink2)}
+@media (prefers-reduced-motion:reduce){.gsetb .chev svg{transition:none}}
 </style>
 </head>
 <body>
@@ -1151,6 +1165,7 @@ const mixHex = (hex, k) => { const n = parseInt(hex.slice(1), 16), t = k > 0 ? 2
   return '#' + [16, 8, 0].map(sh => Math.round(((n >> sh) & 255) * (1 - a) + t * a).toString(16).padStart(2, '0')).join('').toUpperCase(); };
 const hexInt = hex => parseInt(hex.slice(1), 16);   // for three.js materials and lights
 const rgbaHex = (hex, a) => { const n = hexInt(hex); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; };   // a token with alpha, for canvas
+const SIMPLE_PERSELY = new URLSearchParams(location.search).get('simple') !== '0';
 /* ================= icons (simple line icons) ================= */
 const P = {
   home:'<path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h4.5v-5.5h4V20h4.5V9.5"/>',
@@ -1216,7 +1231,18 @@ const sft = n => (n>0?'+ ':'') + ft(n).replace('-','- ');
 const $ = s => document.querySelector(s);
 // the one switch used everywhere (same look as in onboarding): the switch toggles, the row next to it opens the settings
 const swBtn = (on, attr, label) => `<button class="tg ${on ? 'on' : ''}" role="switch" aria-checked="${on ? 'true' : 'false'}" aria-label="${label}" ${attr}></button>`;
-
+/* Reading grade for English UI copy (Flesch-Kincaid), shared by the self-checks and anyone who wants to measure a string.
+   fkGrade(text) -> {grade, words, sentences, longest}. "longest" = words in the longest sentence (target: 12 or fewer).
+   Rules: "500 000" is one word; a number is one syllable; "·", ".", "!", "?" and ":" end a sentence. Matches the plan's script within 0.5. */
+const fkSyl = w => { w = w.toLowerCase().replace(/[^a-z]/g, ''); if(w.length <= 3) return 1;
+  w = w.replace(/(?:[^laeiouy]es|[^laeiouy]ed|[^laeiouy]e)$/, '').replace(/^y/, ''); const m = w.match(/[aeiouy]{1,2}/g); return Math.max(1, m ? m.length : 1); };
+const fkGrade = text => {
+  const t = String(text).replace(/(\d)[\s  ](?=\d{3}\b)/g, '$1').replace(/\s*[·•|]\s*/g, '. ').trim();
+  const sents = t.split(/(?<=[.!?:])\s+(?=\S)/).map(s => s.trim()).filter(s => /[A-Za-z0-9]/.test(s));
+  const words = sents.map(s => s.match(/[A-Za-z0-9][A-Za-z0-9'’%.,-]*/g) || []);
+  const W = words.reduce((a, w) => a + w.length, 0) || 1, S = sents.length || 1, Y = words.flat().reduce((a, w) => a + (/^\d/.test(w) ? 1 : fkSyl(w)), 0);
+  return {grade: Math.round((0.39 * W / S + 11.8 * Y / W - 15.59) * 10) / 10, words: W, sentences: S, longest: Math.max(0, ...words.map(w => w.length))};
+};
 /* ================= financial analytics: history, categories, bills, projection (plan section 14, steps 1-5) =================
    Pure functions (they take the state as an optional last argument, default S). Screens and alerts are built on these later.
    Month keys are 'YYYY-MM' anchored on November 2026 + S.months (like the story and the goal dates). Every transaction has
@@ -1888,22 +1914,28 @@ function __checkAnalytics(){
       ok('chk-glossary-terms: no "Take out", "Take money out", "Spending tracker", "Create Persely", "New Persely" or "Recurring transfer" in the text or labels of Home, Persely tab, goal page, both wizards, More, Transfer and the sheets; Withdraw, Spending and Weekly transfer are the words used; "Car" is Driving licence', hits.length === 0 && /Withdraw/.test(pl(A.hub + B.hub + B.goal + B['sheet-kivesz'])) && /Spending/.test(pl(B.more)) && /Weekly transfer/.test(pl(B.persely + B.regular)) && /Create goal/.test(pl(B.wizard3)) && /New goal/.test(B.wizard3) && noCar && /Driving licence/.test(pl(A.hub)), [hits, errs]);
       // dates and amounts
       const MON = 'January|February|March|April|May|June|July|August|September|October|November|December', SHORT = /\b\d{1,2} (Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b|\b(Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec) \d{4}\b/, noYear = new RegExp('\\b\\d{1,2} (' + MON + ')\\b(?! \\d{4})'), ago = every(t => SHORT.test(t) || noYear.test(t)).map(([k, t]) => k + ': ' + (t.match(SHORT) || t.match(noYear))[0]);
-      ok('chk-date-format: full dates read "1 June 2029", month dates "June 2029", the Junior end date is one concrete day, and no short or year-less dates on the screens', fDate('2029-06-01') === '1 June 2029' && /^\d{1,2} [A-Z][a-z]+ \d{4}$/.test(juniorEndLabel()) && /^[A-Z][a-z]+ \d{4}$/.test(inMonths(5)) && ago.length === 0 && /Junior package until \d{1,2} [A-Z][a-z]+ \d{4}/.test(pl(A.home)) && /Junior package until \d{1,2} [A-Z][a-z]+ \d{4}/.test(pl(A.hub)) && /Junior package until \d{1,2} [A-Z][a-z]+ \d{4}/.test(pl(B.hub)) && !/\bsoon\b/i.test(pl(A.hub + A.home + B.grad + B.hub)), [ago, inMonths(5), juniorEndLabel()]);
+      const JREND = SIMPLE_PERSELY ? /(Junior package until|Your 3\.0% ends on) \d{1,2} [A-Z][a-z]+ \d{4}/ : /Junior package until \d{1,2} [A-Z][a-z]+ \d{4}/;   // flag on: plan 2f item 6
+      ok('chk-date-format: full dates read "1 June 2029", month dates "June 2029", the Junior end date is one concrete day, and no short or year-less dates on the screens', fDate('2029-06-01') === '1 June 2029' && /^\d{1,2} [A-Z][a-z]+ \d{4}$/.test(juniorEndLabel()) && /^[A-Z][a-z]+ \d{4}$/.test(inMonths(5)) && ago.length === 0 && JREND.test(pl(A.home)) && JREND.test(pl(A.hub)) && JREND.test(pl(B.hub)) && !/\bsoon\b/i.test(pl(A.hub + A.home + B.grad + B.hub)), [ago, inMonths(5), juniorEndLabel()]);
       const bad$ = every(t => /\b\d{1,3} ?k\b(?! ?m)|\b\d+(\.\d+)? ?M Ft|\b\d+ ?M\b(?!\w)|\d{4,} ?Ft|\d{1,3},\d{3} ?Ft/.test(t)).map(([k, t]) => k + ': ' + (t.match(/\b\d{1,3} ?k\b(?! ?m)|\b\d+(\.\d+)? ?M Ft|\b\d+ ?M\b(?!\w)|\d{4,} ?Ft|\d{1,3},\d{3} ?Ft/) || [])[0]);
       const chipsTxt = pl(A.wizard1 + A.onb1 + B.wizard1);
       ok('chk-amount-format: amounts read "87 450 Ft" with a space, chips "50 000 Ft", never "50k", "1 M" or digits stuck together, on every screen', ft(87450).replace(/\s/g, ' ') === '87 450 Ft' && ft(500000).replace(/\s/g, ' ') === '500 000 Ft' && /50 000 Ft/.test(chipsTxt) && bad$.length === 0, [bad$, chipsTxt.slice(0, 200)]);
       // Junior transparency: every 3.0% mention has its cap and a date in the same block, or points to Good to know
-      const rateBad = []; Object.entries(all).forEach(([k, h]) => { if(/titles$/.test(k) || !/3\.0%/.test(pl(h))) return; const box = document.createElement('div'); box.innerHTML = h;
+      const rateBad = []; Object.entries(all).forEach(([k, h]) => { if(/titles$/.test(k) || !/3\.0%/.test(pl(h))) return; if(SIMPLE_PERSELY && /sheet-(goodtoknow|whyp|ratesafe)$/.test(k)) return; const box = document.createElement('div'); box.innerHTML = h;
         const w = document.createTreeWalker(box, NodeFilter.SHOW_TEXT); let n; while((n = w.nextNode())){ if(!/3\.0%/.test(n.nodeValue)) continue;
           const el = (n.parentElement && n.parentElement.closest('.card,.row,.ptot,li,button,.note,.sumcard,.opt,.hint,.setupcard,.lst,.li,.wn-card')) || box, t = el.textContent.replace(/\s+/g, ' ');
-          if(!((/500 000 Ft/.test(t) && /\d{1,2} [A-Z][a-z]+ \d{4}/.test(t)) || /Good to know/.test(t))) rateBad.push(k + ': ' + n.nodeValue.trim().slice(0, 70)); } });
+          const toRs = SIMPLE_PERSELY && el.nodeType === 1 && (el.matches('[data-sheet="ratesafe"]') || !!el.querySelector('[data-sheet="ratesafe"]'));
+          if(!((/500 000 Ft/.test(t) && /\d{1,2} [A-Z][a-z]+ \d{4}/.test(t)) || /Good to know/.test(t) || toRs)) rateBad.push(k + ': ' + n.nodeValue.trim().slice(0, 70)); } });
       const gr = pl(B.grad), headIdx = B.grad.indexOf('</h2>'), afterHead = B.grad.slice(headIdx, headIdx + 140);
       ok('chk-rate-has-cap: every 3.0% mention carries its 500 000 Ft cap and a date (or Good to know); the "Your 3.0% rate" headline is followed by its conditions (marked CONFIRM WITH OTP); Copy account number is on step 1', rateBad.length === 0 && /class="gcond"/.test(afterHead) && /<!-- CONFIRM WITH OTP -->/.test(B.grad.slice(headIdx - 120, headIdx + 140)) && /On the first 500 000 Ft · 28% tax · Without a salary at OTP the rate returns to standard after 30 days' notice/.test(gr) && /data-copyacc/.test(B.grad) && /Copy account number/.test(gr), [rateBad.slice(0, 6), errs]);
       // Good to know and Why Persely?
       S = fresh('existing'); sheet(SHEETS.goodtoknow()); const gk = $('#sheet'), gkli = gk.querySelector('.gtk li'), gkfs = gkli ? parseFloat(getComputedStyle(gkli).fontSize) : 0, gkt = pl(SHEETS.goodtoknow()); closeSheet();
-      ok('chk-good-to-know: rate and cap, 28% tax, withdraw any time, no fees, a Deposit protection link (CONFIRM WITH OTP) and the Junior end date, in 14 px text or more; on wizard step 3 (both wizards), the Persely tab trust line and How Persely works', /3\.0% a year on the first 500 000 Ft/.test(gkt) && /28% tax/.test(gkt) && /Withdraw any time/.test(gkt) && /No fees/.test(gkt) && /Deposit protection/.test(gkt) && /Junior package until \d/.test(gkt) && /<!-- CONFIRM WITH OTP -->/.test(SHEETS.goodtoknow()) && gkfs >= 13.99 && /Good to know/.test(pl(A.wizard3 === undefined ? '' : B.wizard3)) && /Good to know/.test(pl(B.onb3)) && /data-sheet="goodtoknow"/.test(A.hub) && /data-sheet="goodtoknow"/.test(B.hub) && /data-sheet="goodtoknow"/.test(B['sheet-how']), [gkfs]);
+      if(SIMPLE_PERSELY) ok('chk-good-to-know (simple): Good to know is now Rate and safety: rate and cap, 28% tax, withdraw any time, no fees, a Deposit protection link (CONFIRM WITH OTP) and the Junior end date, in 14 px text or more; wizard step 3 (both wizards) and the Persely tab open it, How Persely works links to it',
+        /Rate and safety/.test(gkt) && /3\.0% a year on up to 500 000 Ft/.test(gkt) && /28% tax/.test(gkt) && /Withdraw any time/i.test(gkt) && /No fees/.test(gkt) && /Deposit protection/.test(gkt) && /It ends on \d{1,2} [A-Z][a-z]+ \d{4}/.test(gkt) && /<!-- CONFIRM WITH OTP -->/.test(SHEETS.goodtoknow()) && gkfs >= 13.99 && /data-sheet="ratesafe"/.test(A.wizard3 === undefined ? '' : B.wizard3) && /data-sheet="ratesafe"/.test(B.onb3) && /data-sheet="(goodtoknow|ratesafe)"/.test(A.hub) && /data-sheet="(goodtoknow|ratesafe)"/.test(B.hub) && /data-sheet="ratesafe"/.test(B['sheet-how']), [gkfs]);
+      else ok('chk-good-to-know: rate and cap, 28% tax, withdraw any time, no fees, a Deposit protection link (CONFIRM WITH OTP) and the Junior end date, in 14 px text or more; on wizard step 3 (both wizards), the Persely tab trust line and How Persely works', /3\.0% a year on the first 500 000 Ft/.test(gkt) && /28% tax/.test(gkt) && /Withdraw any time/.test(gkt) && /No fees/.test(gkt) && /Deposit protection/.test(gkt) && /Junior package until \d/.test(gkt) && /<!-- CONFIRM WITH OTP -->/.test(SHEETS.goodtoknow()) && gkfs >= 13.99 && /Good to know/.test(pl(A.wizard3 === undefined ? '' : B.wizard3)) && /Good to know/.test(pl(B.onb3)) && /data-sheet="goodtoknow"/.test(A.hub) && /data-sheet="goodtoknow"/.test(B.hub) && /data-sheet="goodtoknow"/.test(B['sheet-how']), [gkfs]);
       const wy = SHEETS.whyp(), bars = [...wy.matchAll(/class="why-bar"><i style="width:([\d.]+)%/g)].map(m => +m[1]), wyt = pl(wy);
-      ok('chk-why-persely: "Why Persely?" sits on the Savings account card on Home and compares per 100 000 Ft on one bar scale (Persely 3.0%, Savings 3.5%, old 0.01%) with one sentence on rate, tax and access, marked CONFIRM WITH OTP, and never says Persely beats 3.5%', /data-sheet="whyp"[^>]*>Why Persely\?/.test(B.home) && /100 000 Ft/.test(wyt) && bars.length === 3 && Math.abs(bars[0] / bars[1] - 3 / 3.5) < .01 && bars[1] === 100 && bars[2] < bars[0] && /3\.0%/.test(wyt) && /3\.5%/.test(wyt) && /0\.01%/.test(wyt) && /<!-- CONFIRM WITH OTP -->/.test(wy) && /rate|a year/.test(wyt) && /taxed at 28%/.test(wyt) && /withdraw any time/.test(wyt) && !/more than the Savings|beats|better than 3\.5/i.test(wyt), [bars]);
+      if(SIMPLE_PERSELY) ok('chk-why-persely (simple): "Why Persely?" on the Savings account card on Home opens Rate and safety, which compares per 100 000 Ft after tax on one bar scale (Persely 3.0% 2 160 Ft, Savings 3.5% 2 520 Ft, old 0.01% 7 Ft) with the plan sentence, marked CONFIRM WITH OTP, and never says Persely beats 3.5%',
+        /data-sheet="whyp"[^>]*>Why Persely\?/.test(B.home) && SHEETS.whyp === SHEETS.ratesafe && /100 000 Ft/.test(wyt) && bars.length === 3 && Math.abs(bars[0] / bars[1] - 2160 / 2520) < .01 && bars[1] === 100 && bars[2] < bars[0] && /2 160 Ft a year after tax/.test(wyt) && /2 520 Ft a year after tax/.test(wyt) && /\b7 Ft a year after tax/.test(wyt) && /The Savings account pays a bit more: 3\.5%\. Persely pays 3\.0%\. Both are taxed\. Persely keeps each goal apart\. You can withdraw any time, for free\./.test(wyt) && /<!-- CONFIRM WITH OTP -->/.test(wy) && !/more than the Savings|beats|better than 3\.5/i.test(wyt), [bars]);
+      else ok('chk-why-persely: "Why Persely?" sits on the Savings account card on Home and compares per 100 000 Ft on one bar scale (Persely 3.0%, Savings 3.5%, old 0.01%) with one sentence on rate, tax and access, marked CONFIRM WITH OTP, and never says Persely beats 3.5%', /data-sheet="whyp"[^>]*>Why Persely\?/.test(B.home) && /100 000 Ft/.test(wyt) && bars.length === 3 && Math.abs(bars[0] / bars[1] - 3 / 3.5) < .01 && bars[1] === 100 && bars[2] < bars[0] && /3\.0%/.test(wyt) && /3\.5%/.test(wyt) && /0\.01%/.test(wyt) && /<!-- CONFIRM WITH OTP -->/.test(wy) && /rate|a year/.test(wyt) && /taxed at 28%/.test(wyt) && /withdraw any time/.test(wyt) && !/more than the Savings|beats|better than 3\.5/i.test(wyt), [bars]);
       // N5: no hard-coded name
       S = fresh('existing'); S.name = 'Kiss Réka'; S.juniorDays = 0; const nm = pl(PAGES.grad.html()) + pl(shareCard());
       ok('chk-no-hardcoded-name: the Junior page and the share card use the name field (Réka), never "Anna", and no congratulation at 0 days', /Réka/.test(nm) && !/Anna/.test(nm) && !/Congratulations/.test(pl(PAGES.grad.html())), nm.slice(0, 160));
@@ -1942,7 +1974,7 @@ function __checkAnalytics(){
     try{
       S = fresh('existing'); hideChip(true); PEND = null;
       const gOut = S.goals.find(g => !g.shared && !isEur(g) && gSaved(g) > 0), empty = [];
-      ['kivesz', 'befizet', 'sajat', 'hubsave', 'hubout'].forEach(k => { S._out = gOut.id; sheet(SHEETS[k]()); const f = $('#mv'); if(!f || f.value !== '') empty.push(k); closeSheet(); });
+      ['kivesz', 'befizet', 'sajat', 'hubsave', 'hubout'].forEach(k => { S._out = gOut.id; sheet(SHEETS[k]()); const f = $('#mv'); if(!f || f.value !== (SIMPLE_PERSELY && k === 'hubsave' ? '1000' : '')) empty.push(k); closeSheet(); });   // flag on: Add money starts with the last amount, 1 000 Ft the first time (D5)
       S._out = gOut.id; sheet(SHEETS.hubout()); const t0 = S.tx.length; clk('[data-hubout]'); const emptyErr = errT('mv'), noMove = S.tx.length === t0; closeSheet();
       ok('chk-withdraw-empty: Add money, Withdraw, Between my accounts and the goal Withdraw sheet open with an empty amount (no 5 000 Ft); amount chips stay; tapping the button with no amount says "Enter an amount" under the field and moves nothing', empty.length === 0 && emptyErr === E_AMT && noMove && /data-setv="1000"/.test(SHEETS.kivesz()) && /data-setv="1000"/.test(SHEETS.befizet()), [empty, emptyErr]);
       // Withdraw all: a chip, then a one line confirm with the real amount and account
@@ -2009,7 +2041,7 @@ function __checkAnalytics(){
 
       // Create goal moves no money, lands on the new goal's page with the goal highlighted
       reset('existing'); const jb = acc('junior').v, tot0 = total(), tx0 = S.tx.length, n0 = S.goals.length; startOnb('safety'); O.i = 2; renderOnb();
-      const step3 = pl($('#onb').innerHTML), only3 = /Good to know/.test(step3) && /Create goal/.test(step3) && !/First deposit|Weekly reminder/.test(step3) && /moves no money/.test(step3); clk('[data-onbcreate]');
+      const step3 = pl($('#onb').innerHTML), only3 = (SIMPLE_PERSELY ? /data-sheet="ratesafe"/.test($('#onb').innerHTML) : /Good to know/.test(step3)) && /Create goal/.test(step3) && !/First deposit|Weekly reminder/.test(step3) && /moves no money/.test(step3); clk('[data-onbcreate]');
       const ng = S.goals[S.goals.length - 1], pg = stack[stack.length - 1], noMoney = acc('junior').v === jb && total() === tot0 && S.tx.length === tx0 && S.goals.length === n0 + 1 && ng.saved === 0;
       const landed = !!pg && pg.dataset.id === 'goal' && S._detail === ng.id && !!pg.querySelector('.card.hl') && !$('#onb').classList.contains('on');
       ok('chk-create-no-money: "Create goal" (step 3 with Good to know, no first deposit) moves no money (Junior balance, Persely total and transactions unchanged, the goal holds 0 Ft), sets onboarded, and lands on the new goal page with the goal highlighted', only3 && noMoney && landed && S.onboarded, [only3, noMoney, landed, ng && ng.saved]);
@@ -2022,7 +2054,7 @@ function __checkAnalytics(){
       startOnb('travel'); O.i = 2; renderOnb(); clk('[data-onbcreate]'); const g1 = S.goals[0];
       const rulesOk = g1.rules.pay.on && g1.rules.pay.pct === 10 && !g1.rules.wk.on && !g1.rules.rr.on && payPct() === 10 && S.ruleGoal === g1.id && S.onboarded;
       const q = MQ.q.filter(x => x.k === 'sheet').map(x => x.id), beat1 = q.includes('firstadd') && q.includes('nudge'); const fa = MQ.q.find(x => x.id === 'firstadd').fn(), nu = MQ.q.find(x => x.id === 'nudge').fn(); S._fa = false;
-      const beats = /Start your streak\?/.test(fa) && /Add money now/.test(pl(fa)) && /id="mv"[^>]*value=""/.test(fa) && /data-setv="500"/.test(fa) && /Want a Sunday nudge\?/.test(nu) && /Turn on/.test(nu) && /Not now/.test(nu) && asked === 0;
+      const beats = /Start your streak\?/.test(fa) && /Add money now/.test(pl(fa)) && (SIMPLE_PERSELY ? /id="mv"[^>]*value="1000"/ : /id="mv"[^>]*value=""/).test(fa) && /data-setv="500"/.test(fa) && /Want a Sunday nudge\?/.test(nu) && /Turn on/.test(nu) && /Not now/.test(nu) && asked === 0;
       if(rp0) Notification.requestPermission = rp0;
       ok('chk-first-goal-payday-only: the first goal defaults to the Payday rule only at 10% (Weekly transfer and Round-ups off) with the lines "Keeps 20 000 Ft on your account; if money is tight, less or nothing moves" and "A 1 190 Ft coffee moves 20 Ft; we double it"; every preset and Something else opens with a forecast that reaches the amount by its date; after Create goal come "Start your streak?" (empty amount) and "Want a Sunday nudge?", and no system permission is asked before Turn on',
         defaults && lines && presetsOk && rulesOk && beat1 && beats, [defaults, lines, presetsOk, rulesOk, q, beats, asked]);
@@ -2555,6 +2587,88 @@ function __checkAnalytics(){
     } catch(e){ ok('chk-spending-rework: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); txReset(); while(stack.length) popPage(true); S = sv17; cur = cur17; stack.push(...stk17); demo.locked = lock17; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views17[i])); }
   }
+  if(SIMPLE_PERSELY){ // Simple Persely Phase 3 (connections): Rate and safety, simple goal page, simple Add money, reading grade of the rewritten copy (docs/simple-persely-plan.md 2c, 2e, 2f)
+    const svR = S, curR = cur, stkR = stack.splice(0), lockR = demo.locked, viewsR = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')), oR = JSON.stringify(O); demo.locked = false;
+    const pl = h => String(h).replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').replace(/\s+/g, ' '), nt = t => String(t).replace(/\s+/g, ' ').trim(), clk = sel => { const b = $(sel); if(b) b.click(); return !!b; };
+    const setf = (id, v) => { const f = $('#' + id); f.value = v; f.dispatchEvent(new Event('input', {bubbles:true})); };
+    const reset = kind => { hideBanners(); while(stack.length) popPage(true); try{ closeOnb(); }catch(e){} closeSheet(); MQ.q = []; hideChip(true); hideToast(true); S = fresh(kind); SETUP_COLLAPSED = false; renderAll(); };
+    const h2 = () => sheetOpen() ? nt(($('#sheet h2') || {}).textContent || '') : '';
+    const opensRS = sel => { if(sheetOpen()) closeSheet(); const b = $(sel); if(!b) return null; b.click(); const r = h2() === 'Rate and safety'; closeSheet(); return r; };
+    const count = el => { const t = el.innerText.replace(/(\d)[\s  ](?=\d{3}\b)/g, '$1'), tok = t.match(/[A-Za-z0-9€][A-Za-z0-9'’%.,€-]*/g) || []; return {words:tok.length, numbers:tok.filter(x => /\d/.test(x)).length}; };
+    try{
+      // chk-simple-rate-safety-one-sheet
+      reset('existing'); const end = juniorEndLabel(), rs = SHEETS.ratesafe(), rt = pl(rs), bars = [...rs.matchAll(/class="why-bar"><i style="width:([\d.]+)%/g)].map(m => +m[1]);
+      const content = /^\s*Rate and safety/.test(rt) && rt.includes(`You get 3.0% a year on up to ${nt(ft(CAP))}. It ends on ${end}.`) && /All your forint goals count together/.test(rt) && /28% tax/.test(rt) && /about 2\.2%/.test(rt) && /every month/.test(rt)
+        && /Withdraw any time, for free/.test(rt) && /12 more months/.test(rt) && /30 days' notice/.test(rt) && /Others get 0\.01%/.test(rt) && /Deposit protection/.test(rt) && /<!-- CONFIRM WITH OTP: scheme name and coverage limit -->/.test(rs) && /<!-- CONFIRM WITH OTP -->/.test(rs)
+        && /What 100 000 Ft earns in a year, after tax/.test(rt) && bars.length === 3 && bars[1] === 100 && Math.abs(bars[0] / bars[1] - 2160 / 2520) < .01 && bars[2] < 2 && /2 160 Ft a year after tax/.test(rt) && /2 520 Ft a year after tax/.test(rt) && /\b7 Ft a year after tax/.test(rt)
+        && rt.includes('The Savings account pays a bit more: 3.5%. Persely pays 3.0%. Both are taxed. Persely keeps each goal apart. You can withdraw any time, for free.') && !/Persely (pays|earns) more|beats/i.test(rt);
+      const aliases = SHEETS.goodtoknow === SHEETS.ratesafe && SHEETS.whyp === SHEETS.ratesafe && /data-sheet="ratesafe"/.test(gtkCard()) && !/Good to know/.test(pl(gtkCard()));
+      const howT = pl(SHEETS.how()), how = /data-sheet="ratesafe"/.test(SHEETS.how()) && !/for every Junior customer|Junior rate/.test(howT) && /Streak/.test(howT) && howT.includes(`You get 3.0% on up to ${nt(ft(CAP))} until ${end}.`);
+      const legal = /LEGAL CAUTION/.test(String(rsLine) + appSrc().js) && /CONFIRM WITH OTP/.test(rsLine());
+      tab('fooldal'); const eHome = opensRS('#v-fooldal .whyl');
+      tab('hub'); const tabBtns = [...document.querySelectorAll('#v-hub [data-sheet="goodtoknow"], #v-hub [data-sheet="whyp"], #v-hub [data-sheet="ratesafe"]')], tabN = tabBtns.length, eTab = tabBtns.every(b => { b.click(); const r = h2() === 'Rate and safety'; closeSheet(); return r; });
+      const gm = S.goals.find(g => !g.shared && !isEur(g) && gSaved(g) > 0); S._detail = gm.id; pushPage('goal'); const eGoal = opensRS('.page:last-child [data-sheet="ratesafe"]'); while(stack.length) popPage(true);
+      pushPage('grad'); const eJunior = opensRS('.page:last-child [data-sheet="ratesafe"]'); while(stack.length) popPage(true);
+      sheet(SHEETS.how()); const eHow = opensRS('#sheet [data-sheet="ratesafe"]');
+      S._goal = gm.id; sheet(SHEETS.hubsave()); const eAdd = opensRS('#sheet .rsline');
+      let eWiz = true; try{ startOnb('travel'); O.i = STEPS.length - 1; renderOnb(); if($('#onb [data-sheet="ratesafe"], #onb [data-sheet="goodtoknow"]')){ (($('#onb [data-sheet="ratesafe"]') || $('#onb [data-sheet="goodtoknow"]'))).click(); eWiz = h2() === 'Rate and safety'; closeSheet(); } }catch(e){ eWiz = false; } finally { try{ closeOnb(); }catch(e){} }
+      ok('chk-simple-rate-safety-one-sheet: one Rate and safety sheet replaces Good to know, Why Persely? and the rate part of How Persely works; Home Why Persely?, the tab links, the goal page, the Junior page, How Persely works, the Add money footer and the wizard all open it; it holds the rate and end date, the 500 000 Ft cap for all forint goals, 28% tax (about 2.2%), paid monthly, withdraw any time for free, the 12 more months rule with 30 days notice, 0.01% for others, deposit protection (CONFIRM WITH OTP), and the per 100 000 Ft bars after tax with the plan sentence',
+        content && aliases && how && legal && eHome && eTab && eGoal && eJunior && eHow && eAdd && eWiz, {content, aliases, how, legal, eHome, tabN, eTab, eGoal, eJunior, eHow, eAdd, eWiz});
+
+      // chk-simple-goal-page
+      reset('existing'); const gp = S.goals.find(g => !g.shared && !isEur(g) && gSaved(g) > 0); S._detail = gp.id; pushPage('goal'); const pg = () => stack[stack.length - 1], c1 = count(pg().querySelector('.scroll'));
+      const setB = pg().querySelector('[data-gset]'), setBox = pg().querySelector('.gset'), closed0 = !!setB && setB.getAttribute('aria-expanded') === 'false' && !!setBox && setBox.hidden;
+      const inside = !!setBox && ['data-gedit', 'data-gdel'].every(a => !!setBox.querySelector(`[${a}]`)) && ['pay', 'rr', 'wk'].every(k => !!setBox.querySelector(`[data-grtog="${k}:${gp.id}"]`)) && /This goal earns about [\d ]+ Ft a year, after tax\./.test(nt(setBox.textContent));
+      const top0 = nt(pg().querySelector('.gsimple').textContent), topOk = /Add money/.test(top0) && /Withdraw/.test(top0) && / of /.test(top0) && /(At this pace|Reached|Your date|Due)/.test(top0) && !!pg().querySelector('.gsimple .rsline') && !/a year after tax on/.test(top0);
+      clk('.page:last-child [data-gset]'); const opened = !pg().querySelector('.gset').hidden && pg().querySelector('[data-gset]').getAttribute('aria-expanded') === 'true';
+      clk(`.page:last-child [data-grtog="rr:${gp.id}"]`); const ruleUndo = UCH.on && /Round-ups/.test(nt($('#uchip').textContent)); clk('[data-undo]'); hideChip(true); while(stack.length) popPage(true);
+      openGoalRules(gp.id, 'pay'); const rulesOpen = !pg().querySelector('.gset').hidden; while(stack.length) popPage(true);
+      reset('existing'); S.goals.push({id:'tz', name:'New bike', ic:'star', target:80000, saved:0, date:'2027-09-01', rules:{pay:{on:false, pct:10}, wk:{on:false, amt:1000, day:'mon'}, rr:{on:false}}}); S._detail = 'tz'; pushPage('goal');
+      const c2 = count(pg().querySelector('.scroll')), et = pl(PAGES.goal.html()), empty = et.includes('Add money and it starts to earn 3.0%.') && nt(pg().querySelector('.gsimple').textContent).includes('Add money and it starts to earn 3.0%.') && !/About 0 Ft|0 Ft a year/.test(et); while(stack.length) popPage(true);
+      const gl = S.goals.find(g => !g.shared && !isEur(g) && gSaved(g) > 0 && gSaved(g) < gTarget(g)), keepG = JSON.stringify(gl); { const d = demoNow(); d.setMonth(d.getMonth() + 3); gl.date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`; } gl.target = gSaved(gl) + 400000; ownRules(gl).pay.on = true;
+      S._detail = gl.id; const lt = pl(PAGES.goal.html()), lateTxt = (lt.match(/At this pace you get there in [A-Z][a-z]+ \d{4}\. That is after your date\./) || [''])[0], lateOk = isLate(gl) && !!lateTxt; Object.assign(gl, JSON.parse(keepG));
+      ok('chk-simple-goal-page: the goal page shows saved of target, the bar, one date sentence ("At this pace you get there in [month]. That is after your date." when late), Add money and Withdraw and the honesty line; Edit, Delete, the goal\'s own saving rules and the rate line ("This goal earns about … a year, after tax.") sit under "Settings for this goal", closed until one tap; a rule change there keeps its Undo; the Saving rules links open it; an empty goal says "Add money and it starts to earn 3.0%." (no "About 0 Ft"); words and numbers drop (goal with money ≤ 80 words, ≤ 12 numbers, was 161 / 24; new goal ≤ 60 words, ≤ 8 numbers, was 169 / 29)',
+        closed0 && inside && topOk && opened && ruleUndo && rulesOpen && empty && lateOk && c1.words <= 80 && c1.numbers <= 12 && c2.words <= 60 && c2.numbers <= 8, {closed0, inside, topOk, opened, ruleUndo, rulesOpen, empty, lateOk, c1, c2});
+
+      // chk-simple-add-money
+      reset('existing'); const g3 = S.goals.find(g => !g.shared && !isEur(g)); S._goal = g3.id; sheet(SHEETS.hubsave()); const first = $('#mv').value === '1000' && !!$('#sheet .hsamt [data-setv="1000"].on') && /Add 1 000 Ft/.test(nt($('#sheet [data-hubsave]').textContent));
+      const chips3 = S.goals.length >= 2 && document.querySelectorAll('#sheet [data-pickgoal]').length === S.goals.length, from1 = /From Junior account/.test(nt(($('#sheet .hsfrom') || {}).textContent || '')) && !$('#sheet [data-hubfrom]');
+      clk('#sheet [data-hubchange]'); const change = sheetOpen() && document.querySelectorAll('#sheet [data-hubfrom]').length >= 1 && !!$('#sheet [data-pickgoal]');
+      clk('#sheet [data-hubfrom="junior"]'); const foot = /\d{1,2} [A-Z][a-z]+ \d{4} · Withdraw any time · Protected/.test(nt(($('#sheet .rsline') || {}).textContent || '')) && /3\.0% until/.test(nt(($('#sheet .rsline') || {}).textContent || ''));
+      const jb = acc('junior').v; setf('mv', '2000'); hsSync(); const lbl = /Add 2 000 Ft/.test(nt($('#sheet [data-hubsave]').textContent)) && !!$('#sheet .hsamt [data-setv="2000"].on'); clk('#sheet [data-hubsave]');
+      const moved = acc('junior').v === jb - 2000 && S.lastAddAmount === 2000 && UCH.on; hideChip(true);
+      sheet(SHEETS.hubsave()); const again = $('#mv').value === '2000' && !!$('#sheet .hsamt [data-setv="2000"].on'); closeSheet();
+      S.goals = [g3]; renderAll(); S._goal = g3.id; sheet(SHEETS.hubsave()); const one = !$('#sheet [data-pickgoal]') && nt($('#sheet').textContent).includes('To ' + nt(g3.name)); closeSheet();
+      ok('chk-simple-add-money: Add money starts with the last amount (1 000 Ft chip chosen the first time, then the amount last added, kept in S.lastAddAmount) and the button says it ("Add 2 000 Ft"); goal chips only with 2 or more goals (one goal reads "To [goal]"); the account is one line "From Junior account · Change" and Change shows the From chooser; the footer is the honesty line "3.0% until [date] · Withdraw any time · Protected" that opens Rate and safety; the money moves as before with its Undo',
+        first && chips3 && from1 && change && foot && lbl && moved && again && one, {first, chips3, from1, change, foot, lbl, moved, again, one});
+
+      // chk-simple-copy-grade: every string this phase rewrote, read from the app, is FK grade 4 or lower with sentences of 12 words or fewer (fkGrade in 01-tokens-helpers.js)
+      reset('existing'); const sd = S.goals.find(g => !g.shared && !isEur(g) && gSaved(g) > 0); S._detail = sd.id; const gpage = pl(PAGES.goal.html());
+      const COPY = [
+        ['1 Rate and safety comparison', 'The Savings account pays a bit more: 3.5%. Persely pays 3.0%. Both are taxed. Persely keeps each goal apart. You can withdraw any time, for free.', pl(SHEETS.ratesafe())],
+        ['2 rate', `You get 3.0% a year on up to ${ft(CAP)}. It ends on ${juniorEndLabel()}.`, pl(SHEETS.ratesafe())],
+        ['3 health score meaning', SCORE_LINE, pl(SHEETS.score())],
+        ['4 Settings notifications', 'We tell you when you pay and when money comes in. We also tell you how you save.', pl(PAGES.settings.html())],
+        ['6 Junior row', `Your 3.0% ends on ${juniorEndLabel()}`, pl(juniorRow())],
+        ['9 What it reads', 'It uses them to show what you can spend. It also shows which bills are next.', pl(SHEETS.anread())],
+        ['10 health score line', 'You keep saving for a goal', pl(SHEETS.score())],
+        ['11 New goal sheet', `3.0% a year on up to ${ft(CAP)}. Until ${juniorEndLabel()}.`, pl(SHEETS.newgoal())],
+        ['12 goal rate', `This goal earns about ${ft(yearNet(gSaved(sd)))} a year, after tax.`, gpage],
+        ['13 empty goal', 'Add money and it starts to earn 3.0%.', et],
+        ['14 goal date', lateTxt || 'missing', lt],
+        ['15 How Persely works', `You get 3.0% on up to ${ft(CAP)} until ${juniorEndLabel()}.`, pl(SHEETS.how())],
+        ['honesty line', `${rsRate()} · Withdraw any time · Protected`, pl(rsLine())],
+        ['tax', '28% tax comes off the interest. So you keep about 2.2%. We pay it every month.', pl(SHEETS.ratesafe())],
+        ['keep 3.0%', "Your first salary must come to OTP within 6 months. If not, you get the standard rate after 30 days' notice.", pl(SHEETS.ratesafe())],
+        ['protected', 'A state scheme protects your money up to a limit.', pl(SHEETS.ratesafe())]
+      ].map(([k, t, where]) => { const tt = nt(t), g = fkGrade(tt); return {k, grade:g.grade, longest:g.longest, shown:nt(where).includes(tt)}; });
+      const badC = COPY.filter(c => !(c.grade <= 4 && c.longest <= 12 && c.shown)), gradeHelper = typeof fkGrade === 'function' && fkGrade('Your November story is ready.').grade > 7 && fkGrade('You get 3.0% a year on up to 500 000 Ft. It ends on 10 September 2027.').grade < 1.5;
+      const noDeadline = !/deadline|\bnow!/i.test(pl(SHEETS.ratesafe() + PAGES.goal.html() + SHEETS.hubsave() + SHEETS.how()));
+      ok('chk-simple-copy-grade: the strings rewritten in Phase 3 (plan 2f items 1, 2, 3, 4, 6, 9, 10, 11, 12, 13, 14, 15, the honesty line and the new Rate and safety lines) are on screen, FK grade 4 or lower and 12 words or fewer per sentence, measured in the app with the shared fkGrade(); no "deadline" and no "now!"',
+        badC.length === 0 && gradeHelper && noDeadline, {bad:badC, gradeHelper, noDeadline});
+    } catch(e){ ok('chk-simple-phase3: the new checks ran without errors', false, String(e && e.stack || e)); }
+    finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); S = svR; cur = curR; stack.push(...stkR); demo.locked = lockR; try{ Object.keys(O).forEach(k => delete O[k]); Object.assign(O, JSON.parse(oR)); closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', viewsR[i])); }
+  }
   // chk-palette: one colour palette. Scans the stylesheet (outside :root) and the app script for colour literals: only the documented exceptions may stay
   // (Mastercard logo, iPhone frame hardware, pure black), rgb()/rgba() only as black or white with alpha, no 0x colour ints; PALETTE holds a real #RRGGBB
   // for every token, --ink-rgb equals --ink, theme-color equals --bg, and the spending categories stay told apart.
@@ -3057,7 +3171,7 @@ const juniorRow = () => {   // Home, Persely tab (both states): one line, one da
   const d = S.juniorDays || 0, chev = `<span class="chev">${I('chev',20)}</span>`;
   if(keepPending()) return `<button class="row" data-go="grad"><span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span><span class="t"><b class="u-bk-title">Waiting for your first salary at OTP · ${keepLeft()}</b><small>Junior 3.0% on the first ${ft(CAP)} until ${juniorEndLabel()}</small></span>${chev}</button>`;
   if(S.bridge) return `<button class="row" data-go="grad"><span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span><span class="t"><b class="u-bk-title">3.0% until ${juniorEndLabel(12)}</b><small>On the first ${ft(CAP)}, while your salary comes to OTP</small></span>${chev}</button>`;
-  return `<button class="row" data-go="grad">${d > 0 ? `<span class="t24d"><b class="num">${d}</b><small>${d === 1 ? 'day' : 'days'}</small></span>` : `<span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span>`}<span class="t"><b class="u-bk-title">Junior package until ${juniorEndLabel()}</b><small>${d > 0 ? '' : 'Ends today · '}Keep my 3.0% on the first ${ft(CAP)}</small></span>${chev}</button>`;
+  return `<button class="row" data-go="grad">${d > 0 ? `<span class="t24d"><b class="num">${d}</b><small>${d === 1 ? 'day' : 'days'}</small></span>` : `<span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span>`}<span class="t"><b class="u-bk-title">${SIMPLE_PERSELY ? `Your 3.0% ends on ${juniorEndLabel()}` : `Junior package until ${juniorEndLabel()}`}</b><small>${d > 0 ? '' : 'Ends today · '}Keep my 3.0% on the first ${ft(CAP)}</small></span>${chev}</button>`;
 };
 const juniorPill = () => S.bridge ? `Graduate 3.0% until ${juniorEndLabel(12)}` : S.verified ? `Junior package until ${juniorEndLabel()}` : 'Standard rate';
 // Good to know (A5-1): the facts behind the rate in one place. Wizard step 3, the trust line on the Persely tab and How Persely works open it.
@@ -3070,7 +3184,14 @@ const gtkHTML = () => `<!-- CONFIRM WITH OTP -->
     <li><span class="gi">${I('shield',20)}</span><span><b>Safety</b><button class="link lnk44 gtk-l" data-depprot>Deposit protection ${I('chev',16)}</button></span></li>
     <li><span class="gi">${I('sched',20)}</span><span><b>Junior package</b>Junior package until ${juniorEndLabel()}</span></li>
   </ul>`;
-const gtkCard = () => `<div class="card gtkc"><b class="gtk-h">Good to know</b>${gtkHTML()}</div>`;
+const gtkCard = () => SIMPLE_PERSELY ? `<div class="card gtkc">${rsLine()}</div>` : `<div class="card gtkc"><b class="gtk-h">Good to know</b>${gtkHTML()}</div>`;
+/* ---------- Simple Persely: Rate and safety (plan 2e) ----------
+   One honesty line on every money screen ("3.0% until 10 September 2027 · Withdraw any time · Protected ⓘ"); the whole line opens
+   the one Rate and safety sheet (SHEETS.ratesafe), which replaces Good to know, Why Persely? and the rate part of How Persely works.
+   LEGAL CAUTION: the sheet's wording, and showing one line instead of the full conditions, need OTP legal review before real use.
+   The rate, cap, notice period, end rule and the deposit protection scheme and limit are CONFIRM WITH OTP. */
+const rsRate = () => S.bridge ? `3.0% until ${juniorEndLabel(12)}` : S.verified ? `3.0% until ${juniorEndLabel()}` : '0.01% standard rate';
+const rsLine = () => `<!-- CONFIRM WITH OTP --><button class="rsline" data-sheet="ratesafe" aria-label="Rate and safety: ${rsRate()}, withdraw any time, protected"><span>${rsRate()} · Withdraw any time · Protected</span><span class="rsi" aria-hidden="true">${I('info',16)}</span></button>`;
 const seedKind = () => S.seed || (S.goals.length ? 'existing' : 'new');
 // streak flame (lit = orange, unlit = grey)
 const flame = (s=22, lit=true) => `<svg class="flame" width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true" style="flex:none"><path fill="${lit?PALETTE.orange:PALETTE.line2}" d="M12 2c1 4 5.2 5.6 5.2 11.2a5.2 5.2 0 0 1-10.4 0c0-2.1 1-3.6 2-4.6 0 2 1 3 2.1 3 0-3-1-5.2 1.1-9.6z"/><path fill="${lit?PALETTE.cYellow:PALETTE.bg}" d="M12 12.5c.6 1.6 2.4 2.2 2.4 4.3a2.4 2.4 0 0 1-4.8 0c0-1.2.8-2 1.5-2.4 0 .8.4 1.2.9 1.2 0-1.2-.4-2 0-3.1z"/></svg>`;
@@ -3666,12 +3787,12 @@ function recentCards(n = 3){
    Four indicators, 25 points each, over the last 3 finished months (S.scoreHist). Rewards trigger on improvement
    or on staying within the split, never on balance size. Neither the score nor the streak changes the rate. */
 const SCORE_IND = [['earn','Spends less than it earns','Card spending below income','Spending vs income'], ['safe','No overdraft or failed payment','Every payment went through','Safe payments'],
-  ['buf','Keeps about a month of spending','Junior account covers a month of card spending','Buffer'], ['goal','Saves regularly toward a named goal','Money moved to a goal that month','Saving for a goal']];
+  ['buf','Keeps about a month of spending','Junior account covers a month of card spending','Buffer'], ['goal',SIMPLE_PERSELY ? 'You keep saving for a goal' : 'Saves regularly toward a named goal','Money moved to a goal that month','Saving for a goal']];
 function scoreOf(h){ const w = h.slice(-3), p = {}; let t = 0;
   SCORE_IND.forEach(([k]) => { p[k] = w.length ? Math.round(25 * w.filter(m => m[k]).length / w.length) : 0; t += p[k]; }); return {p, t, w}; }
 const scoreNow = () => scoreOf(S.scoreHist), scorePrev = () => scoreOf(S.scoreHist.slice(0, -1));
 const habitsHeld = () => { const n = scoreNow(); return SCORE_IND.filter(([k]) => n.w.filter(m => m[k]).length * 2 > n.w.length).length; };   // a habit "held" = it held in most of the last 3 months
-const SCORE_LINE = 'Spending under income · no overdraft · a buffer · regular saving';
+const SCORE_LINE = SIMPLE_PERSELY ? 'Spend less than you get. Stay above zero. Keep a little extra. Save often.' : 'Spending under income · no overdraft · a buffer · regular saving';   // what the score means (plan 2f item 3)
 const deltaTxt = d => d > 0 ? `▲ +${d}` : d < 0 ? `▼ −${-d}` : 'No change';
 const deltaCol = d => d > 0 ? 'var(--green-t)' : d < 0 ? 'var(--orange-t)' : 'var(--muted-t)';
 const nextMonthName = () => new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'});
@@ -3903,10 +4024,51 @@ function ruleRowsHTML(g){
     <div class="fine grfc" role="status">${rulesEffect(g)}</div>
   </div>`;
 }
+/* ---------- Simple Persely goal page (plan 2c, 2f items 12 to 14) ----------
+   On top: the reached card (as before), saved of target, the bar, one date sentence, Add money / Withdraw and the honesty line.
+   Edit, Delete, the goal's own saving rules and the rate line sit under "Settings for this goal" (one tap opens it; S._gset holds the open goal,
+   screen state only). The rules, Undo, Delete with Move and the late fixes are the same code as before. */
+function goalDateLine(g){
+  const s = gSaved(g), m = gMonths(g), late = isLate(g), fc = forecastText(g);
+  if(isEur(g) || g.shared) return g.date ? `Your date is ${fDate(g.date)}.` : '';
+  if(isTight(g)) return daysTo(g) < 0 ? `Your date has passed. ${ft(toGo(g))} to go. Nothing is lost, pick a new date.` : `${dueTxt(g)}. ${ft(toGo(g))} to go. Moving the date is fine.`;
+  if(m === 0) return g.cont ? 'Reached. Your rules keep adding here.' : 'Reached. Choose what to do above.';
+  if(m < 0) return s > 0 ? 'Add money or turn on a rule. Then you see when you get there.' : (S.verified || S.bridge ? 'Add money and it starts to earn 3.0%.' : 'Add money to start. Then you see when you get there.');
+  const when = fc.far && fc.n <= 1 ? fc.when : 'in ' + inMonths(m);
+  return `At this pace you get there ${when}.${g.date ? late ? ' That is after your date.' : ' That is before your date.' : ''}`;
+}
+function goalRateHTML(g){   // plan 2f items 12 and 13: the after tax figure for this goal, or the empty state (no more "About 0 Ft a year after tax on 0 Ft")
+  const s = gSaved(g), on = S.verified || S.bridge;
+  const head = s <= 0 ? (on ? 'Add money and it starts to earn 3.0%.' : 'Add money and it starts to earn 0.01%.') : `This goal earns about ${ft(yearNet(s))} a year, after tax.`;
+  return `<div class="li"><span class="ic">${I('rate')}</span><span class="t"><b>${head}</b><small>${on ? `3.0% a year on up to ${ft(CAP)}. Until ${S.bridge ? juniorEndLabel(12) : juniorEndLabel()}.` : 'Standard rate 0.01% a year.'}</small></span></div>`;
+}
+function goalPageSimple(g){
+  const s = gSaved(g), t = gTarget(g), pc = pctOf(g), late = isLate(g), fx = lateFix(g), tight = isTight(g), bf = behindFix(g), lump = tight ? lumpOf(g) : 0, rch = goalReached(g), open = S._gset === g.id;
+  let html = `${rch && !g.cont ? `<div class="card u-mt6 reached" role="group" aria-label="Goal reached"><b class="u-fs-m">You did it: ${esc(g.name)} is fully saved</b><div class="k u-mt4-b12">${gSaved(g) > t ? `${money(g, gSaved(g) - t)} more is in it. ` : ''}Your saving rules stay on this goal until you choose.</div>
+      <div class="hero-btns u-m0"><button class="btn w" data-outgoal="${g.id}">Withdraw</button><button class="btn w" data-sheet="newgoal">New goal</button><button class="btn" data-keepsaving="${g.id}">Keep saving</button></div></div>` : ''}<div class="card gsimple ${rch && !g.cont ? '' : 'u-mt6'} ${S._hl === g.id ? 'hl' : ''}">${S._hl === g.id ? '<span class="pill ok">New goal</span>' : ''}${g.shared ? `<span class="pill ok">Shared Persely · ${plural(g.members.length,'member')}</span>` : ''}
+    <div class="hero-v num" style="margin-top:${g.shared || S._hl === g.id ? 8 : 0}px">${money(g, Math.min(s, t))} <small class="k u-fs-14b">of ${money(g,t)}</small></div>
+    <div class="prog" style="margin:var(--sp-2) 0 var(--sp-2);height:10px"><i style="width:${pc.w}%"></i></div>
+    <p class="gdate${late || tight ? ' late' : ''}">${goalDateLine(g)}</p>
+    ${!g.shared && !isEur(g) && late && (fx || bf || lump) ? `${fx ? `<button class="btn" data-latefix="${g.id}">${fixLabel(fx)}</button>` : ''}${!fx && bf ? `<button class="btn" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}${!fx && lump ? `<button class="btn w" data-behindlump="${g.id}">Add ${ft(lump)} from Junior</button>` : ''}${S.analyst.on && S.analyst.accepted ? '' : '<button class="btn ghost" data-sheet="analyst">Or see what the analyst suggests</button>'}` : ''}
+    ${isEur(g) ? `<div class="note" style="margin:var(--sp-3) 0 0">Buy euros bit by bit. Demo rate: 1 € = ${EUR_RATE} Ft. No Junior rate.</div>` : ''}
+    <div class="hero-btns" style="margin:var(--sp-4) 0 var(--sp-2)"><button class="btn" data-pickgoal="${g.id}">Add money</button><button class="btn w" data-outgoal="${g.id}">Withdraw</button></div>
+    ${isEur(g) ? '' : rsLine()}</div>`;
+  if(g.shared) html += `<div class="sec"><span>Who put in what</span></div><div class="card lst">${g.members.map(mb=>`<div class="li">${avatar(mb,32)}<span class="t"><b>${mb.me ? esc(userFirst()) + ' (you)' : esc(mb.n)}</b><div class="prog" style="margin:var(--sp-2) 0 0;height:6px"><i style="width:${Math.round(mb.amt / Math.max(1,s) * 100)}%"></i></div></span><b class="num">${ft(mb.amt)}</b></div>`).join('')}</div>
+      ${g.members.length < 5 ? `<button class="btn w" style="margin:var(--sp-2) 0 var(--sp-1)" data-invite>Invite a friend</button>` : ''}`;
+  html += `<button class="row gsetb u-mt6" data-gset="${g.id}" aria-expanded="${open}" aria-controls="gset-${g.id}"><span class="ic">${I('gear')}</span><span class="t">Settings for this goal<small>${isEur(g) || g.shared ? 'Edit or delete.' : 'Rules and rate. Edit or delete.'}</small></span><span class="chev${open ? ' up' : ''}">${I('chev',20)}</span></button>
+    <div class="gset" id="gset-${g.id}"${open ? '' : ' hidden'}>`;
+  if(!g.shared && !isEur(g)) html += `<div class="card lst">${goalRateHTML(g)}${g.date ? `<div class="li"><span class="ic">${I('cal')}</span><span class="t"><b>Goal date: ${fDate(g.date)}</b>${weeklyShown(g) ? `<small class="wkfig">${money(g, t)} by ${pkMonthShort(g.date)} needs about ${ft(weeklyOf(g))} a week.</small>` : ''}</span></div>` : ''}</div>${ruleRowsHTML(g)}`;
+  if(g.shared) html += `<div class="card u-card-bul"><ul class="bul sm"><li><b>You can always withdraw what you put in.</b></li><li>Paying out the whole pot needs everyone to agree.</li><li>Each share earns 3.0% on the first 500 000 Ft until ${juniorEndLabel()} and counts toward that member's own 500 000 Ft limit.</li></ul></div>`;
+  html += goalManageHTML(g) + '</div>';
+  const acts = S.tx.filter(x => x.note === g.name).slice(0, 5);
+  if(acts.length) html += `<div class="sec"><span>Activity</span></div><div class="card lst">${acts.map(x=>`<div class="li"><span class="t"><b>${esc(x.s)}</b><small>${txDate(x)}</small></span><b class="num ${x.a>0?'':'pos'}">${x.a>0?'−':'+'}${ft(Math.abs(x.a))}</b></div>`).join('')}</div>`;
+  return html;
+}
 const PAGES = {
   // one Persely: balance, forecast against its date, its rate, the rules that feed it, members (shared) and activity
   goal:{title:()=> (goalById(S._detail) || {name:'Persely'}).name, html:()=>{
     const g = goalById(S._detail); if(!g) return '';
+    if(SIMPLE_PERSELY) return goalPageSimple(g);
     const s = gSaved(g), t = gTarget(g), pc = pctOf(g), m = gMonths(g), late = isLate(g), fx = lateFix(g), tight = isTight(g), bf = behindFix(g), lump = tight ? lumpOf(g) : 0, fc = forecastText(g);
     const sw = swBtn;
     const rch = goalReached(g);
@@ -3949,6 +4111,7 @@ const PAGES = {
     <div class="sec"><span>How it works</span></div>
     <div class="card lst">${[['1','Give your employer your OTP account number',`<span class="num">${esc(no)}</span><button class="btn sm w gcopy" data-copyacc>Copy account number</button>`],['2','Your first salary arrives at OTP','Within 6 months of graduating'],['3','Your goals keep 3.0% for 12 months',`On the first ${ft(CAP)}, until ${juniorEndLabel(12)}`]].map(([n,t,x])=>`<div class="li" style="align-items:flex-start"><span class="stepn">${n}</span><span class="t"><b>${t}</b><small>${x}</small></span></div>`).join('')}</div>
     <div class="card u-card-bul"><ul class="bul sm"><li>Your goals, streak and friends stay as they are</li></ul></div>
+    ${SIMPLE_PERSELY ? `<button class="row" data-sheet="ratesafe"><span class="ic">${I('shield')}</span><span class="t">Rate and safety<small>Rate, tax, withdraw and protection</small></span><span class="chev">${I('chev',20)}</span></button>` : ''}
     ${pr.on && pr.pct < 20 ? `<div class="note"><b>Tip:</b> most people earn more after 24. Saving ${pr.pct+5}% instead of ${pr.pct}% is about ${ft(incomeShare(5))} more a month. <a class="link" data-raise>Raise to ${pr.pct+5}%</a></div>` : ''}`; },
     foot:()=> S.bridge ? '' : keepPending() ? `<button class="btn ghost" data-keepcancel>Cancel request</button>` : `<button class="btn" data-keepreq>Request to keep 3.0%</button>`},
   year:{title:'Your year in Persely', html:()=>yearHTML(), foot:()=> yearMonths().length ? `<button class="btn" data-yearstory>See your year story</button>` : ''},
@@ -4009,7 +4172,7 @@ function tab(id){
 const stack = [];
 // a goal's rules on its page (Persely tab overview rows, the Saving rules links): open the goal, scroll to its rules, mark the one rule when named
 function openGoalRules(id, k){
-  const g = goalById(id); if(!g) return; if(sheetOpen()) closeSheet(); S._detail = id; S._cap = null;
+  const g = goalById(id); if(!g) return; if(sheetOpen()) closeSheet(); S._detail = id; S._cap = null; if(SIMPLE_PERSELY) S._gset = id;   // the rules live under Settings for this goal
   const top = stack.length ? stack[stack.length - 1] : null; if(top && top.dataset.id === 'goal') refreshPages(); else pushPage('goal');
   const go = () => { const t = stack.length ? stack[stack.length - 1] : null, el = t && t.querySelector(`[data-rules="${id}"]`); if(!el) return; const sc = t.querySelector('.scroll'); if(sc) sc.scrollTop = Math.max(0, el.offsetTop - 8); if(k){ const b = t.querySelector(`[data-grblock="${k}"]`); if(b) b.classList.add('focus'); } };
   go(); setTimeout(go, 280);
@@ -4054,7 +4217,7 @@ const sheetShell = html => `<div class="sclose-w"><button class="sclose" data-cl
 function sheet(html){ hideToast(true); if(!sheetOpen()) SHEET_OPENER = document.activeElement; const sh = $('#sheet'); sh.innerHTML = sheetShell(html);
   const h = sh.querySelector('h2'); sh.setAttribute('aria-label', h ? h.textContent.trim() : 'Dialog'); $('#back').classList.add('on'); try{ sh.focus({preventScroll:true}); }catch(e){}
   if(typeof mountPig === 'function') mountPig(); }
-function closeSheet(){ const was = sheetOpen(); S._fa = false; S._bw = false; $('#back').classList.remove('on'); if(was && SHEET_OPENER && document.contains(SHEET_OPENER) && SHEET_OPENER.focus){ try{ SHEET_OPENER.focus({preventScroll:true}); }catch(e){} } SHEET_OPENER = null; if(window.__stAway) stReturn(); if(typeof mountPig === 'function') mountPig(); if(was || MQ.q.length) setTimeout(mqPump, 280); }
+function closeSheet(){ const was = sheetOpen(); S._fa = false; S._bw = false; S._hsx = false; $('#back').classList.remove('on'); if(was && SHEET_OPENER && document.contains(SHEET_OPENER) && SHEET_OPENER.focus){ try{ SHEET_OPENER.focus({preventScroll:true}); }catch(e){} } SHEET_OPENER = null; if(window.__stAway) stReturn(); if(typeof mountPig === 'function') mountPig(); if(was || MQ.q.length) setTimeout(mqPump, 280); }
 const HOLD_FOR_PAGE = ['reward', 'goaloffer'];   // reward and goal sheets never open over a page: they wait until the page is closed (N7, C6.5)
 function qSheet(fn, id, late){ if(id) MQ.q = MQ.q.filter(x => x.id !== id); MQ.q.push({k:'sheet', fn, id, late, hold:HOLD_FOR_PAGE.includes(id)}); mqPump(); }   // late: only after the toast
 function mqDrop(id){ MQ.q = MQ.q.filter(x => x.id !== id); }
@@ -4180,6 +4343,7 @@ const SHEETS = {
     <button class="btn pbtn" data-dout>Send transfer</button>`,
   // add money: goal, amount and the account it comes from are all visible before confirming
   hubsave:()=>{ if(S._bw) return betweenSheet(); if(!S.goals.some(g=>g.id===S._goal)) S._goal = S.goals[0].id; S._from = S._from || 'junior';
+    if(SIMPLE_PERSELY) return hubsaveSimple();
     const g = goalById(S._goal), e = isEur(g), v = S._amt || '';
     return `${S._fa ? `<h2>Start your streak?</h2><div class="u-sheet-sub2">Add money now. Any amount counts for this week.</div>` : '<h2>Add money</h2>'}
     <div class="flabel">To</div>
@@ -4270,7 +4434,7 @@ const SHEETS = {
   // what the analyst reads: opened from the first-run notice, the analyst sheet and the Spending footer
   anread:()=>{
     return `<h2>What it reads</h2><div class="fine u-sheet-sub">The Financial analyst is on by default. You can turn it off any time.</div>
-    <div class="card u-card-bul"><ul class="bul sm"><li>Payee names, amounts and dates of your card and bank payments on this OTP account</li><li>It uses them to show Safe to spend, your regular bills, your categories and a plan for next month</li><li>Nothing leaves the bank. Your data is not shared with anyone outside OTP</li></ul></div>
+    <div class="card u-card-bul"><ul class="bul sm"><li>Payee names, amounts and dates of your card and bank payments on this OTP account</li><li>${SIMPLE_PERSELY ? 'It uses them to show what you can spend. It also shows which bills are next.' : 'It uses them to show Safe to spend, your regular bills, your categories and a plan for next month'}</li><li>Nothing leaves the bank. Your data is not shared with anyone outside OTP</li></ul></div>
     <div class="fine u-note-b14">Saving is your payday rule (${savePlan(S, true).rulePct}% of each salary) plus any weekly transfer and round-ups. Bills only tell you: nothing is blocked and nothing moves unless you agree. Turn it off and Safe to spend becomes a simpler estimate, bills stay on.</div>
     <!-- CONFIRM WITH OTP / LEGAL: lawful basis and wording -->
     <button class="btn" data-closesheet>Close</button>${S.analyst.on ? '<button class="btn ghost" data-anask>Turn off</button>' : '<button class="btn ghost" data-anon>Turn on</button>'}`; },
@@ -4382,7 +4546,7 @@ const SHEETS = {
   newgoal:()=>{ const hasShared = S.goals.some(g=>g.shared), hasEur = S.goals.some(isEur);
     return `<h2>What are you saving for?</h2><div class="u-sheet-sub2">Up to 5 Perselys.</div>
     <!-- CONFIRM WITH OTP -->
-    <div class="fine u-sheet-sub">3.0% a year on up to ${ft(CAP)} with your Junior account until ${juniorEndLabel()}</div>
+    <div class="fine u-sheet-sub">${SIMPLE_PERSELY ? `3.0% a year on up to ${ft(CAP)}. Until ${juniorEndLabel()}.` : `3.0% a year on up to ${ft(CAP)} with your Junior account until ${juniorEndLabel()}`}</div>
     ${S.draft ? `<button class="row" data-onbresume><span class="ic">${I('star')}</span><span class="t">Continue your draft<small>${esc(S.draft.name || 'Your goal')}, ${ft(S.draft.target)}</small></span><span class="chev">${I('chev',20)}</span></button>` : ''}
     <div class="wn-grid three tiles-s">${Object.entries(GOAL_PRESETS).map(([k,g]) => `<button data-tilepick="${k}">${I(g.ic,24)}${g.label}</button>`).join('')}<button data-tilepick="custom">${I('plus',24)}Something else</button></div>
     ${hasShared ? '' : `<button class="row" data-sheet="newshared"><span class="ic">${I('user')}</span><span class="t">Shared Persely<small>Save together with friends or flatmates</small></span><span class="chev">${I('chev',20)}</span></button>`}
@@ -4418,7 +4582,35 @@ const SHEETS = {
     <p class="why-c">The Savings account pays more a year (3.5% against 3.0%) and both are taxed at 28%, while Persely adds goals and lets you withdraw any time with no fees, so check how you reach your money in the Savings account.</p>
     <p class="fine">Persely pays 3.0% on the first ${ft(CAP)} until ${juniorEndLabel()}.</p>
     <button class="row" data-sheet="goodtoknow"><span class="t">Good to know</span><span class="chev">${I('chev',20)}</span></button>`; },
-  how:()=>`<h2>How Persely works</h2>
+  // Simple Persely: Rate and safety, the one sheet behind every honesty line and every old Good to know / Why Persely? entry (plan 2e).
+  // LEGAL CAUTION: this wording, and one line in place of the full conditions on the money screens, need OTP legal review before real use.
+  // CONFIRM WITH OTP: the rate, the 500 000 Ft cap across all forint goals, monthly payment, the 12 month extension rule and 30 days' notice,
+  // the 0.01% standard rate, the deposit protection scheme name and coverage limit, and the Savings account rate (3.5%) and its access terms.
+  ratesafe:()=>{
+    const rows = [['Persely', RATE, 'var(--green)'], ['Savings account', 3.5, 'var(--blue-i)'], ['Old account', LOW_RATE, 'var(--muted)']], net = r => Math.round(100000 * r / 100 * (1 - TAX)), mx = Math.max(...rows.map(r => net(r[1])));
+    const on = S.verified || S.bridge, end = S.bridge ? juniorEndLabel(12) : juniorEndLabel();
+    return `<h2>Rate and safety</h2>
+    <!-- CONFIRM WITH OTP -->
+    <ul class="gtk rs">
+      <li><span class="gi">${I('rate',20)}</span><span><b>Your rate</b>${on ? `You get 3.0% a year on up to ${ft(CAP)}. It ends on ${end}. All your forint goals count together.` : `You get 0.01% a year now. Junior customers get 3.0% on up to ${ft(CAP)}.`}</span></li>
+      <li><span class="gi">${I('info',20)}</span><span><b>Tax</b>28% tax comes off the interest. So you keep about 2.2%. We pay it every month.</span></li>
+      <li><span class="gi">${I('check',20)}</span><span><b>Your money</b>Withdraw any time, for free. No fees.</span></li>
+      ${S.bridge ? '' : `<li><span class="gi">${I('sched',20)}</span><span><b>Keep 3.0% for 12 more months</b>Your first salary must come to OTP within 6 months. If not, you get the standard rate after 30 days' notice.<button class="link lnk44 gtk-l" data-go="grad">Keep my 3.0% ${I('chev',16)}</button></span></li>`}
+      <li><span class="gi">${I('piggy',20)}</span><span><b>Standard rate</b>Others get 0.01% a year.</span></li>
+      <li><span class="gi">${I('shield',20)}</span><span><b>Protected</b>A state scheme protects your money up to a limit.<!-- CONFIRM WITH OTP: scheme name and coverage limit --><button class="link lnk44 gtk-l" data-depprot>Deposit protection ${I('chev',16)}</button></span></li>
+    </ul>
+    <div class="flabel">What ${ft(100000)} earns in a year, after tax</div>
+    <!-- CONFIRM WITH OTP -->
+    <div class="card whyc">${rows.map(([n, r, c]) => `<div class="why-r"><div class="why-t"><b>${n}</b><span class="num">${r.toFixed(r < 1 ? 2 : 1)}%</span></div><div class="why-bar"><i style="width:${Math.max(1.5, net(r) / mx * 100)}%;background:${c}"></i></div><div class="why-s num">${ft(net(r))} a year after tax</div></div>`).join('')}</div>
+    <p class="why-c">The Savings account pays a bit more: 3.5%. Persely pays 3.0%. Both are taxed. Persely keeps each goal apart. You can withdraw any time, for free.</p>
+    <button class="row" data-sheet="how"><span class="ic">${I('info')}</span><span class="t">How Persely works<small>Streak and saving rules</small></span><span class="chev">${I('chev',20)}</span></button>`; },
+  how:()=> SIMPLE_PERSELY ? `<h2>How Persely works</h2>
+    <button class="row" data-sheet="ratesafe"><span class="ic">${I('shield')}</span><span class="t">Rate and safety<small>You get 3.0% on up to ${ft(CAP)} until ${juniorEndLabel()}.</small></span><span class="chev">${I('chev',20)}</span></button>
+    <div class="flabel">Money in</div>
+    <div class="card u-card-bul"><ul class="bul sm"><li>Payday rule: a share of each salary. We ask first.</li><li>Weekly transfer, round-ups, or add money yourself.</li><li>Withdraw any time, for free.</li></ul></div>
+    <div class="flabel">Streak</div>
+    <div class="card u-card-bul"><ul class="bul sm"><li>Save any amount once a week. Your streak grows.</li><li>You get 1 skip week for every 4 weeks.</li><li>The streak never changes your rate.</li></ul></div>
+    <button class="btn" data-tourstart>Show me Persi's hints again</button>` : `<h2>How Persely works</h2>
     <button class="row" data-sheet="goodtoknow"><span class="ic">${I('shield')}</span><span class="t">Good to know<small>Rate, cap, tax, fees and deposit protection</small></span><span class="chev">${I('chev',20)}</span></button>
     <div class="flabel">Junior rate</div>
     <div class="card u-card-bul"><ul class="bul sm"><li>3.0% a year for every Junior customer, automatically, on the first 500 000 Ft, until ${juniorEndLabel()}</li><li>Interest is paid monthly, 28% tax deducted: about 2.2% net</li><li>When Junior ends: 12 more months at 3.0% on the first 500 000 Ft, until ${juniorEndLabel(12)}, if your salary comes to OTP</li></ul></div>
@@ -4429,6 +4621,37 @@ const SHEETS = {
     <button class="btn" data-tourstart>Show me Persi's hints again</button>`
 };
 Object.assign(SHEETS, SHEETS_BILLS);
+if(SIMPLE_PERSELY){ SHEETS.goodtoknow = SHEETS.ratesafe; SHEETS.whyp = SHEETS.ratesafe; }   // every old Good to know and Why Persely? entry opens Rate and safety
+/* ---- Simple Persely Add money (plan 2c, D5) ----
+   Goal chips only with 2 or more goals; the account is one line, "From Junior account · Change" (Change shows the From chooser and the goal chips);
+   the last amount used is already chosen (S.lastAddAmount; the first time 1 000 Ft); the button says the amount; the honesty line sits at the foot.
+   The move itself is the unchanged data-hubsave code in 09-events-device.js (same checks, same Undo). */
+const ADD_CHIPS = [500, 1000, 2000, 5000];
+function hubsaveSimple(){
+  const g = goalById(S._goal), e = isEur(g), many = S.goals.length > 1, open = !!S._hsx, pre = e ? 0 : (S.lastAddAmount || 1000), v = S._amt || pre || '';
+  const chips = e ? [10, 20, 50, 100] : [...new Set([...ADD_CHIPS, pre])].sort((a, b) => a - b);
+  return `${S._fa ? `<h2>Start your streak?</h2><div class="u-sheet-sub2">Add money now. Any amount counts for this week.</div>` : '<h2>Add money</h2>'}
+    ${many || open ? `<div class="flabel">To</div><div class="chips u-mb4" role="group" aria-label="To">${S.goals.map(x=>`<button class="chip ${S._goal===x.id?'on':''}" data-pickgoal="${x.id}" aria-pressed="${S._goal===x.id}">${esc(x.name)}</button>`).join('')}</div>` : `<div class="u-sheet-sub2 hsto">To ${esc(g.name)}</div>`}
+    <div class="flabel">Amount</div>
+    <div class="fld"><span class="t"><input id="mv" inputmode="numeric" value="${v}" placeholder="Amount" aria-label="Amount" aria-describedby="e-mv"></span><b>${e ? '€' : 'Ft'}</b></div><div class="ferr" id="e-mv" role="alert"></div>
+    <div class="chips u-mt0 hsamt" role="group" aria-label="Amount">${chips.map(x=>`<button class="chip ${+v === x ? 'on' : ''}" data-setv="${x}" aria-pressed="${+v === x}">${e ? eur(x) : ft(x)}</button>`).join('')}</div>
+    ${open ? `<div class="flabel">From</div>${S.accounts.filter(a=>a.id!=='persely').map(a=>`<button class="opt slim ${S._from===a.id?'on':''}" data-hubfrom="${a.id}"><span class="ic">${I('wallet',22)}</span><span class="t"><b>${a.n}</b><small class="num">${ft(a.v)} available</small></span>${S._from===a.id?`<span class="u-ico-g">${I('check',22)}</span>`:''}</button>`).join('')}`
+      : `<div class="hsfrom"><span>From ${esc(fromName(S._from))}</span><span aria-hidden="true">·</span><button class="link lnk44" data-hubchange aria-label="Change the account or the goal">Change</button></div>`}
+    <div class="fine u-note-t6">${e ? `Demo rate 1 € = ${EUR_RATE} Ft. Euro goals don't get the Junior rate.` : S.savedWeek ? 'This week already counts for your streak.' : `Counts for this week: your streak goes to ${S.streak+1}.`}</div>
+    <button class="btn" data-hubsave>${v ? `Add ${money(g, +v)}` : 'Add money'}</button>
+    ${e ? '' : rsLine()}`;
+}
+// the chosen chip and the button label follow the amount field; Change and Settings for this goal open in place
+function hsSync(){ const f = $('#sheet #mv'), b = $('#sheet [data-hubsave]'); if(!f || !b || !$('#sheet .hsamt')) return; const v = +f.value || 0, g = goalById(S._goal);
+  document.querySelectorAll('#sheet .hsamt [data-setv]').forEach(c => { const on = +c.dataset.setv === v; c.classList.toggle('on', on); c.setAttribute('aria-pressed', String(on)); });
+  b.textContent = v && g ? `Add ${money(g, v)}` : 'Add money'; }
+if(SIMPLE_PERSELY){
+  document.addEventListener('input', e => { if(e.target && e.target.id === 'mv') setTimeout(hsSync, 0); });
+  document.addEventListener('click', e => { const t = e.target.closest && e.target.closest('[data-setv],[data-gset],[data-hubchange]'); if(!t) return;
+    if('setv' in t.dataset){ setTimeout(hsSync, 0); return; }
+    if('hubchange' in t.dataset){ if($('#mv')) S._amt = parseFloat($('#mv').value) || 0; S._hsx = true; sheet(SHEETS.hubsave()); return; }
+    const id = t.dataset.gset; S._gset = S._gset === id ? null : id; refreshPages(); });
+}
 /* ---- Between my accounts: one list of places, accounts and plain forint goals; any place to any other ---- */
 const lastGoal = () => { const ok = x => x && x.id && goalIsPlain(x) && !!goalById(x.id); return [goalById(S._goal), ruleGoal(), ...S.goals].find(ok) || null; };
 const placeKey = (k) => k.startsWith('a:') ? acc(k.slice(2)) : goalById(k.slice(2));
@@ -4619,6 +4842,7 @@ document.addEventListener('click', e=>{
     S._amt = 0; closeSheet(); renderAll();
     if(pig3d && cur === 'hub') setTimeout(() => pig3d.celebrate(), 250);   // a coin drops into Persi
     undoable(before, counted ? `🔥 ${S.streak}-week streak${S.streak % 4 === 0 ? ' · +1 skip week' : ''}. ${money(g, v)} added to ${g.name}` : `${money(g, v)} added to ${g.name}`);
+    if(!isEur(g)){ S.lastAddAmount = v; save(); }   // D5: the next Add money starts with this amount (after the Undo snapshot, so Undo leaves it)
     return;
   }
   if(d.outgoal){ S._out = d.outgoal; sheet(SHEETS.hubout()); return; }
@@ -5861,7 +6085,7 @@ function pushStatusBlock(){
   } else { status = '<span class="badge" style="background:var(--fill);color:var(--muted-t)">Off</span>';
     action = `<button class="btn" data-pushon>Turn on notifications</button>`; }
   return `<div class="card u-p18"><div style="display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)"><b class="u-fs-m">Push notifications</b>${status}</div>
-    <p style="margin:var(--sp-3) 0 0;font-size:var(--fs-s);color:var(--muted-t);line-height:1.5">We let you know right away about card payments, incoming transfers and how your Persely is doing.</p></div>${action}`;
+    <p style="margin:var(--sp-3) 0 0;font-size:var(--fs-s);color:var(--muted-t);line-height:1.5">${SIMPLE_PERSELY ? 'We tell you when you pay and when money comes in. We also tell you how you save.' : 'We let you know right away about card payments, incoming transfers and how your Persely is doing.'}</p></div>${action}`;
 }
 // Settings > Persely > Default saving rules for new goals: what the wizard's step 2 starts with. Existing goals keep their own rules
 function ruleDefaultsHTML(srow){
