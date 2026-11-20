@@ -2257,13 +2257,8 @@ function catDetailHTML(c){
     <div class="cd-status ${over ? 'over' : near ? 'near' : ''}">${status}</div>
   </div>
   <div class="fine cd-inc">Your income this month: <b>${ft(inc)}</b> (salary ${ft(salary)}${rest ? ` + other transfers ${ft(rest)}` : ''}). ${lim ? `The limit is your plan: ${bucket === 'fun' ? 'fun gets' : 'everyday essentials get'} ${bucketPct}% of your income, shared out the way you usually spend.` : ''}</div>
-  <div class="sec"><span>Shops in ${mo.name}</span></div>
-  ${now.length ? `<div class="card lst">${now.map(x => `<div class="li cd-s"><span class="t"><b>${esc(x.n)}</b><small>${plural(x.count, 'payment')} · ${v ? Math.round(x.sum / v * 100) : 0}% of ${catTitle(c).toLowerCase()}</small><span class="cd-sb"><i style="width:${v ? Math.round(x.sum / v * 100) : 0}%"></i></span></span><b class="num">${ft(x.sum)}</b></div>`).join('')}</div>`
-    : '<div class="card fine" style="padding:14px 16px">No card payments in this category yet this month.</div>'}
-  ${usual.length ? `<div class="sec"><span>Where you usually shop</span><small class="cd-r">a month, last 3 months</small></div>
-  <div class="card lst">${usual.map(x => `<div class="li cd-s"><span class="t"><b>${esc(x.n)}</b><small>about ${plural(Math.max(1, Math.round(x.count / Math.max(1, hist.length))), 'payment')} a month</small></span><b class="num">${ft(Math.round(x.sum / Math.max(1, hist.length) / 10) * 10)}</b></div>`).join('')}</div>` : ''}
   ${tip ? `<div class="card insight"><div class="hrow"><span class="pill ok">Persi's tip</span></div><div class="u-tip-p">Move 10% of ${tip.label} (${ft(tip.ten)}) to ${esc(tip.g.name)} each month${tip.wk >= 1 ? ` and get there <b>${plural(tip.wk, 'week')} sooner</b>` : ''}.</div><div class="hero-btns u-m0"><button class="btn" data-insyes="${tip.ten}">Move 10% a month</button></div></div>` : ''}
-  <div class="fine" style="text-align:center;margin:12px 8px 20px">A plan, not a limit you can hit: nothing is blocked. Only your OTP card payments are counted.</div>`;
+  <div class="fine" style="text-align:center;margin:12px 8px 20px">A plan, not a hard limit.</div>`;
 }
 // Monthly spending page: every category in a list, as in the original app
 function catList(sp){
@@ -4878,7 +4873,7 @@ const beTxt = h => String(h).replace(/<[^>]+>/g, '');
       beStep('bank', `On her Junior account: ${ft(x.balance)}`, 'Core banking · balance');
       beStep('an', `Minus what is still coming this month: bills ${ft(x.unpaidBills)}, saving ${ft(x.savingRule)}, groceries ${ft(x.groceries)}`, 'Budget service');
       beStep('an', `= ${ft(x.safe)} left to spend`, 'Budget service'); }
-    else if(id === 'catd'){ const c = S._cat; beEp(`Anna opens ${catTitle(c)}`); const L = catLimit(c), sp = catSpend(shownMonth().ym)[c] || 0; beStep('an', `Her income this month: ${ft(L.B)}. Her plan gives ${catTitle(c).toLowerCase()} ${ft(L.lim)}`, 'Budget service · split'); beStep('an', `Spent so far ${ft(sp)}: ${L.lim - sp >= 0 ? ft(L.lim - sp) + ' left' : 'over by ' + ft(sp - L.lim)}`, 'Budget service'); beStep('an', 'Her card payments grouped by shop', 'Analytics · categories'); }
+    else if(id === 'catd'){ const c = S._cat; beEp(`Anna opens ${catTitle(c)}`); const L = catLimit(c), sp = catSpend(shownMonth().ym)[c] || 0; beStep('an', `Her income this month: ${ft(L.B)}. Her plan gives ${catTitle(c).toLowerCase()} ${ft(L.lim)}`, 'Budget service · split'); beStep('an', `Spent so far ${ft(sp)}: ${L.lim - sp >= 0 ? ft(L.lim - sp) + ' left' : 'over by ' + ft(sp - L.lim)}`, 'Budget service');  }
     else if(id === 'advanced'){ beEp('Anna opens the full analysis'); beStep('an', 'Health score from her last 3 months: spending under income, no overdraft, a buffer, regular saving', 'Analytics'); }
     else if(id === 'grad'){ beEp('Her Junior package ends'); beStep('rate', 'The bank checks: can she keep 3.0%?', 'Eligibility'); beStep('rate', 'Yes, for 12 more months, if her salary comes to her OTP account', 'Eligibility'); }
     return r; }; }
