@@ -413,12 +413,12 @@ function recentCards(n = 3){
    Four indicators, 25 points each, over the last 3 finished months (S.scoreHist). Rewards trigger on improvement
    or on staying within the split, never on balance size. Neither the score nor the streak changes the rate. */
 const SCORE_IND = [['earn','Spends less than it earns','Card spending below income','Spending vs income'], ['safe','No overdraft or failed payment','Every payment went through','Safe payments'],
-  ['buf','Keeps about a month of spending','Junior account covers a month of card spending','Buffer'], ['goal','Saves regularly toward a named goal','Money moved to a goal that month','Saving for a goal']];
+  ['buf','Keeps about a month of spending','Junior account covers a month of card spending','Buffer'], ['goal',SIMPLE_PERSELY ? 'You keep saving for a goal' : 'Saves regularly toward a named goal','Money moved to a goal that month','Saving for a goal']];
 function scoreOf(h){ const w = h.slice(-3), p = {}; let t = 0;
   SCORE_IND.forEach(([k]) => { p[k] = w.length ? Math.round(25 * w.filter(m => m[k]).length / w.length) : 0; t += p[k]; }); return {p, t, w}; }
 const scoreNow = () => scoreOf(S.scoreHist), scorePrev = () => scoreOf(S.scoreHist.slice(0, -1));
 const habitsHeld = () => { const n = scoreNow(); return SCORE_IND.filter(([k]) => n.w.filter(m => m[k]).length * 2 > n.w.length).length; };   // a habit "held" = it held in most of the last 3 months
-const SCORE_LINE = 'Spending under income · no overdraft · a buffer · regular saving';
+const SCORE_LINE = SIMPLE_PERSELY ? 'Spend less than you get. Stay above zero. Keep a little extra. Save often.' : 'Spending under income · no overdraft · a buffer · regular saving';   // what the score means (plan 2f item 3)
 const deltaTxt = d => d > 0 ? `▲ +${d}` : d < 0 ? `▼ −${-d}` : 'No change';
 const deltaCol = d => d > 0 ? 'var(--green-t)' : d < 0 ? 'var(--orange-t)' : 'var(--muted-t)';
 const nextMonthName = () => new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'});

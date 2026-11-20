@@ -1098,3 +1098,17 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
 @keyframes sprwflame{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:none}}
 @keyframes sprwfade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.sprw.pop .sprw-card,.sprw.pop .sprw-fl .flame{animation:sprwfade .25s ease both}}
+/* Simple Persely (Phase 3): honesty line, Rate and safety, simple goal page and Add money sheet */
+.rsline{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);width:100%;min-height:var(--tap);background:none;font-size:var(--fs-xs);line-height:1.4;color:var(--muted-t);text-align:center}
+.rsline .rsi{display:flex;color:var(--green-i);flex:none}
+.rsline:focus-visible{outline:2px solid var(--act);outline-offset:2px}
+.gtkc .rsline{justify-content:flex-start;text-align:left}
+.gtk.rs li{font-size:0.875rem}
+.gtk.rs .gtk-l{display:flex;margin-top:var(--sp-1)}
+.gsimple .gdate{margin:var(--sp-2) 0 0;font-size:var(--fs-m);line-height:1.45;color:var(--ink2)}
+.gsimple .gdate.late{color:var(--orange-t)}
+.gsimple > .btn + .btn,.gsimple > .gdate + .btn{margin-top:var(--sp-2)}
+.gsetb .chev svg{transition:transform .2s}.gsetb .chev.up svg{transform:rotate(90deg)}
+.gset[hidden]{display:none}
+.hsfrom{display:flex;align-items:center;gap:var(--sp-2);margin:var(--sp-2) 2px 0;font-size:var(--fs-s);color:var(--ink2)}
+@media (prefers-reduced-motion:reduce){.gsetb .chev svg{transition:none}}

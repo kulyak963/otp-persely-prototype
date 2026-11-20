@@ -134,7 +134,7 @@ const juniorRow = () => {   // Home, Persely tab (both states): one line, one da
   const d = S.juniorDays || 0, chev = `<span class="chev">${I('chev',20)}</span>`;
   if(keepPending()) return `<button class="row" data-go="grad"><span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span><span class="t"><b class="u-bk-title">Waiting for your first salary at OTP · ${keepLeft()}</b><small>Junior 3.0% on the first ${ft(CAP)} until ${juniorEndLabel()}</small></span>${chev}</button>`;
   if(S.bridge) return `<button class="row" data-go="grad"><span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span><span class="t"><b class="u-bk-title">3.0% until ${juniorEndLabel(12)}</b><small>On the first ${ft(CAP)}, while your salary comes to OTP</small></span>${chev}</button>`;
-  return `<button class="row" data-go="grad">${d > 0 ? `<span class="t24d"><b class="num">${d}</b><small>${d === 1 ? 'day' : 'days'}</small></span>` : `<span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span>`}<span class="t"><b class="u-bk-title">Junior package until ${juniorEndLabel()}</b><small>${d > 0 ? '' : 'Ends today · '}Keep my 3.0% on the first ${ft(CAP)}</small></span>${chev}</button>`;
+  return `<button class="row" data-go="grad">${d > 0 ? `<span class="t24d"><b class="num">${d}</b><small>${d === 1 ? 'day' : 'days'}</small></span>` : `<span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span>`}<span class="t"><b class="u-bk-title">${SIMPLE_PERSELY ? `Your 3.0% ends on ${juniorEndLabel()}` : `Junior package until ${juniorEndLabel()}`}</b><small>${d > 0 ? '' : 'Ends today · '}Keep my 3.0% on the first ${ft(CAP)}</small></span>${chev}</button>`;
 };
 const juniorPill = () => S.bridge ? `Graduate 3.0% until ${juniorEndLabel(12)}` : S.verified ? `Junior package until ${juniorEndLabel()}` : 'Standard rate';
 // Good to know (A5-1): the facts behind the rate in one place. Wizard step 3, the trust line on the Persely tab and How Persely works open it.
@@ -147,7 +147,14 @@ const gtkHTML = () => `<!-- CONFIRM WITH OTP -->
     <li><span class="gi">${I('shield',20)}</span><span><b>Safety</b><button class="link lnk44 gtk-l" data-depprot>Deposit protection ${I('chev',16)}</button></span></li>
     <li><span class="gi">${I('sched',20)}</span><span><b>Junior package</b>Junior package until ${juniorEndLabel()}</span></li>
   </ul>`;
-const gtkCard = () => `<div class="card gtkc"><b class="gtk-h">Good to know</b>${gtkHTML()}</div>`;
+const gtkCard = () => SIMPLE_PERSELY ? `<div class="card gtkc">${rsLine()}</div>` : `<div class="card gtkc"><b class="gtk-h">Good to know</b>${gtkHTML()}</div>`;
+/* ---------- Simple Persely: Rate and safety (plan 2e) ----------
+   One honesty line on every money screen ("3.0% until 10 September 2027 · Withdraw any time · Protected ⓘ"); the whole line opens
+   the one Rate and safety sheet (SHEETS.ratesafe), which replaces Good to know, Why Persely? and the rate part of How Persely works.
+   LEGAL CAUTION: the sheet's wording, and showing one line instead of the full conditions, need OTP legal review before real use.
+   The rate, cap, notice period, end rule and the deposit protection scheme and limit are CONFIRM WITH OTP. */
+const rsRate = () => S.bridge ? `3.0% until ${juniorEndLabel(12)}` : S.verified ? `3.0% until ${juniorEndLabel()}` : '0.01% standard rate';
+const rsLine = () => `<!-- CONFIRM WITH OTP --><button class="rsline" data-sheet="ratesafe" aria-label="Rate and safety: ${rsRate()}, withdraw any time, protected"><span>${rsRate()} · Withdraw any time · Protected</span><span class="rsi" aria-hidden="true">${I('info',16)}</span></button>`;
 const seedKind = () => S.seed || (S.goals.length ? 'existing' : 'new');
 // streak flame (lit = orange, unlit = grey)
 const flame = (s=22, lit=true) => `<svg class="flame" width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true" style="flex:none"><path fill="${lit?PALETTE.orange:PALETTE.line2}" d="M12 2c1 4 5.2 5.6 5.2 11.2a5.2 5.2 0 0 1-10.4 0c0-2.1 1-3.6 2-4.6 0 2 1 3 2.1 3 0-3-1-5.2 1.1-9.6z"/><path fill="${lit?PALETTE.cYellow:PALETTE.bg}" d="M12 12.5c.6 1.6 2.4 2.2 2.4 4.3a2.4 2.4 0 0 1-4.8 0c0-1.2.8-2 1.5-2.4 0 .8.4 1.2.9 1.2 0-1.2-.4-2 0-3.1z"/></svg>`;

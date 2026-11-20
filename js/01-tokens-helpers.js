@@ -81,4 +81,15 @@ const $ = s => document.querySelector(s);
 const SIMPLE_PERSELY = new URLSearchParams(location.search).get('simple') !== '0';
 // the one switch used everywhere (same look as in onboarding): the switch toggles, the row next to it opens the settings
 const swBtn = (on, attr, label) => `<button class="tg ${on ? 'on' : ''}" role="switch" aria-checked="${on ? 'true' : 'false'}" aria-label="${label}" ${attr}></button>`;
-
+/* Reading grade for English UI copy (Flesch-Kincaid), shared by the self-checks and anyone who wants to measure a string.
+   fkGrade(text) -> {grade, words, sentences, longest}. "longest" = words in the longest sentence (target: 12 or fewer).
+   Rules: "500 000" is one word; a number is one syllable; "·", ".", "!", "?" and ":" end a sentence. Matches the plan's script within 0.5. */
+const fkSyl = w => { w = w.toLowerCase().replace(/[^a-z]/g, ''); if(w.length <= 3) return 1;
+  w = w.replace(/(?:[^laeiouy]es|[^laeiouy]ed|[^laeiouy]e)$/, '').replace(/^y/, ''); const m = w.match(/[aeiouy]{1,2}/g); return Math.max(1, m ? m.length : 1); };
+const fkGrade = text => {
+  const t = String(text).replace(/(\d)[\s  ](?=\d{3}\b)/g, '$1').replace(/\s*[·•|]\s*/g, '. ').trim();
+  const sents = t.split(/(?<=[.!?:])\s+(?=\S)/).map(s => s.trim()).filter(s => /[A-Za-z0-9]/.test(s));
+  const words = sents.map(s => s.match(/[A-Za-z0-9][A-Za-z0-9'’%.,-]*/g) || []);
+  const W = words.reduce((a, w) => a + w.length, 0) || 1, S = sents.length || 1, Y = words.flat().reduce((a, w) => a + (/^\d/.test(w) ? 1 : fkSyl(w)), 0);
+  return {grade: Math.round((0.39 * W / S + 11.8 * Y / W - 15.59) * 10) / 10, words: W, sentences: S, longest: Math.max(0, ...words.map(w => w.length))};
+};

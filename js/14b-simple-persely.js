@@ -157,9 +157,9 @@ if(S.nudgeAsk === 'wait') S.nudgeAsk = 'ask';   // a new app open is a new visit
 
 /* ---------- honesty footer on the Add money sheet and the goal page ---------- */
 const spHubsave = SHEETS.hubsave;
-SHEETS.hubsave = () => { const h = spHubsave(); return spOn() && !S._bw ? h + spHonesty('spfoot') : h; };
+SHEETS.hubsave = () => { const h = spHubsave(); return spOn() && !S._bw && !/class="rsline"/.test(h) ? h + spHonesty('spfoot') : h; };   // Phase 3b's Rate and safety line, when there, is the one honesty line
 const spGoalHtml = PAGES.goal.html;
-PAGES.goal.html = () => { const h = spGoalHtml(); if(!spOn() || !h) return h;
+PAGES.goal.html = () => { const h = spGoalHtml(); if(!spOn() || !h || /class="rsline"/.test(h)) return h;
   const old = /<p class="fine" style="text-align:center;margin:var\(--sp-4\) 0 var\(--sp-1\)">Withdraw any time, free of charge\.<\/p>\s*$/;
   return old.test(h) ? h.replace(old, spHonesty('spgoalf')) : /class="fine sphon/.test(h) ? h : h + spHonesty('spgoalf'); };
 

@@ -46,7 +46,7 @@ function pushStatusBlock(){
   } else { status = '<span class="badge" style="background:var(--fill);color:var(--muted-t)">Off</span>';
     action = `<button class="btn" data-pushon>Turn on notifications</button>`; }
   return `<div class="card u-p18"><div style="display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)"><b class="u-fs-m">Push notifications</b>${status}</div>
-    <p style="margin:var(--sp-3) 0 0;font-size:var(--fs-s);color:var(--muted-t);line-height:1.5">We let you know right away about card payments, incoming transfers and how your Persely is doing.</p></div>${action}`;
+    <p style="margin:var(--sp-3) 0 0;font-size:var(--fs-s);color:var(--muted-t);line-height:1.5">${SIMPLE_PERSELY ? 'We tell you when you pay and when money comes in. We also tell you how you save.' : 'We let you know right away about card payments, incoming transfers and how your Persely is doing.'}</p></div>${action}`;
 }
 // Settings > Persely > Default saving rules for new goals: what the wizard's step 2 starts with. Existing goals keep their own rules
 function ruleDefaultsHTML(srow){

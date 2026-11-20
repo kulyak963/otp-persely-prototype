@@ -153,6 +153,7 @@ document.addEventListener('click', e=>{
     S._amt = 0; closeSheet(); renderAll();
     if(pig3d && cur === 'hub') setTimeout(() => pig3d.celebrate(), 250);   // a coin drops into Persi
     undoable(before, counted ? `🔥 ${S.streak}-week streak${S.streak % 4 === 0 ? ' · +1 skip week' : ''}. ${money(g, v)} added to ${g.name}` : `${money(g, v)} added to ${g.name}`);
+    if(!isEur(g)){ S.lastAddAmount = v; save(); }   // D5: the next Add money starts with this amount (after the Undo snapshot, so Undo leaves it)
     return;
   }
   if(d.outgoal){ S._out = d.outgoal; sheet(SHEETS.hubout()); return; }

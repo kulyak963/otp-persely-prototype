@@ -221,10 +221,51 @@ function ruleRowsHTML(g){
     <div class="fine grfc" role="status">${rulesEffect(g)}</div>
   </div>`;
 }
+/* ---------- Simple Persely goal page (plan 2c, 2f items 12 to 14) ----------
+   On top: the reached card (as before), saved of target, the bar, one date sentence, Add money / Withdraw and the honesty line.
+   Edit, Delete, the goal's own saving rules and the rate line sit under "Settings for this goal" (one tap opens it; S._gset holds the open goal,
+   screen state only). The rules, Undo, Delete with Move and the late fixes are the same code as before. */
+function goalDateLine(g){
+  const s = gSaved(g), m = gMonths(g), late = isLate(g), fc = forecastText(g);
+  if(isEur(g) || g.shared) return g.date ? `Your date is ${fDate(g.date)}.` : '';
+  if(isTight(g)) return daysTo(g) < 0 ? `Your date has passed. ${ft(toGo(g))} to go. Nothing is lost, pick a new date.` : `${dueTxt(g)}. ${ft(toGo(g))} to go. Moving the date is fine.`;
+  if(m === 0) return g.cont ? 'Reached. Your rules keep adding here.' : 'Reached. Choose what to do above.';
+  if(m < 0) return s > 0 ? 'Add money or turn on a rule. Then you see when you get there.' : (S.verified || S.bridge ? 'Add money and it starts to earn 3.0%.' : 'Add money to start. Then you see when you get there.');
+  const when = fc.far && fc.n <= 1 ? fc.when : 'in ' + inMonths(m);
+  return `At this pace you get there ${when}.${g.date ? late ? ' That is after your date.' : ' That is before your date.' : ''}`;
+}
+function goalRateHTML(g){   // plan 2f items 12 and 13: the after tax figure for this goal, or the empty state (no more "About 0 Ft a year after tax on 0 Ft")
+  const s = gSaved(g), on = S.verified || S.bridge;
+  const head = s <= 0 ? (on ? 'Add money and it starts to earn 3.0%.' : 'Add money and it starts to earn 0.01%.') : `This goal earns about ${ft(yearNet(s))} a year, after tax.`;
+  return `<div class="li"><span class="ic">${I('rate')}</span><span class="t"><b>${head}</b><small>${on ? `3.0% a year on up to ${ft(CAP)}. Until ${S.bridge ? juniorEndLabel(12) : juniorEndLabel()}.` : 'Standard rate 0.01% a year.'}</small></span></div>`;
+}
+function goalPageSimple(g){
+  const s = gSaved(g), t = gTarget(g), pc = pctOf(g), late = isLate(g), fx = lateFix(g), tight = isTight(g), bf = behindFix(g), lump = tight ? lumpOf(g) : 0, rch = goalReached(g), open = S._gset === g.id;
+  let html = `${rch && !g.cont ? `<div class="card u-mt6 reached" role="group" aria-label="Goal reached"><b class="u-fs-m">You did it: ${esc(g.name)} is fully saved</b><div class="k u-mt4-b12">${gSaved(g) > t ? `${money(g, gSaved(g) - t)} more is in it. ` : ''}Your saving rules stay on this goal until you choose.</div>
+      <div class="hero-btns u-m0"><button class="btn w" data-outgoal="${g.id}">Withdraw</button><button class="btn w" data-sheet="newgoal">New goal</button><button class="btn" data-keepsaving="${g.id}">Keep saving</button></div></div>` : ''}<div class="card gsimple ${rch && !g.cont ? '' : 'u-mt6'} ${S._hl === g.id ? 'hl' : ''}">${S._hl === g.id ? '<span class="pill ok">New goal</span>' : ''}${g.shared ? `<span class="pill ok">Shared Persely · ${plural(g.members.length,'member')}</span>` : ''}
+    <div class="hero-v num" style="margin-top:${g.shared || S._hl === g.id ? 8 : 0}px">${money(g, Math.min(s, t))} <small class="k u-fs-14b">of ${money(g,t)}</small></div>
+    <div class="prog" style="margin:var(--sp-2) 0 var(--sp-2);height:10px"><i style="width:${pc.w}%"></i></div>
+    <p class="gdate${late || tight ? ' late' : ''}">${goalDateLine(g)}</p>
+    ${!g.shared && !isEur(g) && late && (fx || bf || lump) ? `${fx ? `<button class="btn" data-latefix="${g.id}">${fixLabel(fx)}</button>` : ''}${!fx && bf ? `<button class="btn" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}${!fx && lump ? `<button class="btn w" data-behindlump="${g.id}">Add ${ft(lump)} from Junior</button>` : ''}${S.analyst.on && S.analyst.accepted ? '' : '<button class="btn ghost" data-sheet="analyst">Or see what the analyst suggests</button>'}` : ''}
+    ${isEur(g) ? `<div class="note" style="margin:var(--sp-3) 0 0">Buy euros bit by bit. Demo rate: 1 € = ${EUR_RATE} Ft. No Junior rate.</div>` : ''}
+    <div class="hero-btns" style="margin:var(--sp-4) 0 var(--sp-2)"><button class="btn" data-pickgoal="${g.id}">Add money</button><button class="btn w" data-outgoal="${g.id}">Withdraw</button></div>
+    ${isEur(g) ? '' : rsLine()}</div>`;
+  if(g.shared) html += `<div class="sec"><span>Who put in what</span></div><div class="card lst">${g.members.map(mb=>`<div class="li">${avatar(mb,32)}<span class="t"><b>${mb.me ? esc(userFirst()) + ' (you)' : esc(mb.n)}</b><div class="prog" style="margin:var(--sp-2) 0 0;height:6px"><i style="width:${Math.round(mb.amt / Math.max(1,s) * 100)}%"></i></div></span><b class="num">${ft(mb.amt)}</b></div>`).join('')}</div>
+      ${g.members.length < 5 ? `<button class="btn w" style="margin:var(--sp-2) 0 var(--sp-1)" data-invite>Invite a friend</button>` : ''}`;
+  html += `<button class="row gsetb u-mt6" data-gset="${g.id}" aria-expanded="${open}" aria-controls="gset-${g.id}"><span class="ic">${I('gear')}</span><span class="t">Settings for this goal<small>${isEur(g) || g.shared ? 'Edit or delete.' : 'Rules and rate. Edit or delete.'}</small></span><span class="chev${open ? ' up' : ''}">${I('chev',20)}</span></button>
+    <div class="gset" id="gset-${g.id}"${open ? '' : ' hidden'}>`;
+  if(!g.shared && !isEur(g)) html += `<div class="card lst">${goalRateHTML(g)}${g.date ? `<div class="li"><span class="ic">${I('cal')}</span><span class="t"><b>Goal date: ${fDate(g.date)}</b>${weeklyShown(g) ? `<small class="wkfig">${money(g, t)} by ${pkMonthShort(g.date)} needs about ${ft(weeklyOf(g))} a week.</small>` : ''}</span></div>` : ''}</div>${ruleRowsHTML(g)}`;
+  if(g.shared) html += `<div class="card u-card-bul"><ul class="bul sm"><li><b>You can always withdraw what you put in.</b></li><li>Paying out the whole pot needs everyone to agree.</li><li>Each share earns 3.0% on the first 500 000 Ft until ${juniorEndLabel()} and counts toward that member's own 500 000 Ft limit.</li></ul></div>`;
+  html += goalManageHTML(g) + '</div>';
+  const acts = S.tx.filter(x => x.note === g.name).slice(0, 5);
+  if(acts.length) html += `<div class="sec"><span>Activity</span></div><div class="card lst">${acts.map(x=>`<div class="li"><span class="t"><b>${esc(x.s)}</b><small>${txDate(x)}</small></span><b class="num ${x.a>0?'':'pos'}">${x.a>0?'−':'+'}${ft(Math.abs(x.a))}</b></div>`).join('')}</div>`;
+  return html;
+}
 const PAGES = {
   // one Persely: balance, forecast against its date, its rate, the rules that feed it, members (shared) and activity
   goal:{title:()=> (goalById(S._detail) || {name:'Persely'}).name, html:()=>{
     const g = goalById(S._detail); if(!g) return '';
+    if(SIMPLE_PERSELY) return goalPageSimple(g);
     const s = gSaved(g), t = gTarget(g), pc = pctOf(g), m = gMonths(g), late = isLate(g), fx = lateFix(g), tight = isTight(g), bf = behindFix(g), lump = tight ? lumpOf(g) : 0, fc = forecastText(g);
     const sw = swBtn;
     const rch = goalReached(g);
@@ -267,6 +308,7 @@ const PAGES = {
     <div class="sec"><span>How it works</span></div>
     <div class="card lst">${[['1','Give your employer your OTP account number',`<span class="num">${esc(no)}</span><button class="btn sm w gcopy" data-copyacc>Copy account number</button>`],['2','Your first salary arrives at OTP','Within 6 months of graduating'],['3','Your goals keep 3.0% for 12 months',`On the first ${ft(CAP)}, until ${juniorEndLabel(12)}`]].map(([n,t,x])=>`<div class="li" style="align-items:flex-start"><span class="stepn">${n}</span><span class="t"><b>${t}</b><small>${x}</small></span></div>`).join('')}</div>
     <div class="card u-card-bul"><ul class="bul sm"><li>Your goals, streak and friends stay as they are</li></ul></div>
+    ${SIMPLE_PERSELY ? `<button class="row" data-sheet="ratesafe"><span class="ic">${I('shield')}</span><span class="t">Rate and safety<small>Rate, tax, withdraw and protection</small></span><span class="chev">${I('chev',20)}</span></button>` : ''}
     ${pr.on && pr.pct < 20 ? `<div class="note"><b>Tip:</b> most people earn more after 24. Saving ${pr.pct+5}% instead of ${pr.pct}% is about ${ft(incomeShare(5))} more a month. <a class="link" data-raise>Raise to ${pr.pct+5}%</a></div>` : ''}`; },
     foot:()=> S.bridge ? '' : keepPending() ? `<button class="btn ghost" data-keepcancel>Cancel request</button>` : `<button class="btn" data-keepreq>Request to keep 3.0%</button>`},
   year:{title:'Your year in Persely', html:()=>yearHTML(), foot:()=> yearMonths().length ? `<button class="btn" data-yearstory>See your year story</button>` : ''},
@@ -328,7 +370,7 @@ function tab(id){
 const stack = [];
 // a goal's rules on its page (Persely tab overview rows, the Saving rules links): open the goal, scroll to its rules, mark the one rule when named
 function openGoalRules(id, k){
-  const g = goalById(id); if(!g) return; if(sheetOpen()) closeSheet(); S._detail = id; S._cap = null;
+  const g = goalById(id); if(!g) return; if(sheetOpen()) closeSheet(); S._detail = id; S._cap = null; if(SIMPLE_PERSELY) S._gset = id;   // the rules live under Settings for this goal
   const top = stack.length ? stack[stack.length - 1] : null; if(top && top.dataset.id === 'goal') refreshPages(); else pushPage('goal');
   const go = () => { const t = stack.length ? stack[stack.length - 1] : null, el = t && t.querySelector(`[data-rules="${id}"]`); if(!el) return; const sc = t.querySelector('.scroll'); if(sc) sc.scrollTop = Math.max(0, el.offsetTop - 8); if(k){ const b = t.querySelector(`[data-grblock="${k}"]`); if(b) b.classList.add('focus'); } };
   go(); setTimeout(go, 280);
@@ -373,7 +415,7 @@ const sheetShell = html => `<div class="sclose-w"><button class="sclose" data-cl
 function sheet(html){ hideToast(true); if(!sheetOpen()) SHEET_OPENER = document.activeElement; const sh = $('#sheet'); sh.innerHTML = sheetShell(html);
   const h = sh.querySelector('h2'); sh.setAttribute('aria-label', h ? h.textContent.trim() : 'Dialog'); $('#back').classList.add('on'); try{ sh.focus({preventScroll:true}); }catch(e){}
   if(typeof mountPig === 'function') mountPig(); }
-function closeSheet(){ const was = sheetOpen(); S._fa = false; S._bw = false; $('#back').classList.remove('on'); if(was && SHEET_OPENER && document.contains(SHEET_OPENER) && SHEET_OPENER.focus){ try{ SHEET_OPENER.focus({preventScroll:true}); }catch(e){} } SHEET_OPENER = null; if(window.__stAway) stReturn(); if(typeof mountPig === 'function') mountPig(); if(was || MQ.q.length) setTimeout(mqPump, 280); }
+function closeSheet(){ const was = sheetOpen(); S._fa = false; S._bw = false; S._hsx = false; $('#back').classList.remove('on'); if(was && SHEET_OPENER && document.contains(SHEET_OPENER) && SHEET_OPENER.focus){ try{ SHEET_OPENER.focus({preventScroll:true}); }catch(e){} } SHEET_OPENER = null; if(window.__stAway) stReturn(); if(typeof mountPig === 'function') mountPig(); if(was || MQ.q.length) setTimeout(mqPump, 280); }
 const HOLD_FOR_PAGE = ['reward', 'goaloffer'];   // reward and goal sheets never open over a page: they wait until the page is closed (N7, C6.5)
 function qSheet(fn, id, late){ if(id) MQ.q = MQ.q.filter(x => x.id !== id); MQ.q.push({k:'sheet', fn, id, late, hold:HOLD_FOR_PAGE.includes(id)}); mqPump(); }   // late: only after the toast
 function mqDrop(id){ MQ.q = MQ.q.filter(x => x.id !== id); }
@@ -499,6 +541,7 @@ const SHEETS = {
     <button class="btn pbtn" data-dout>Send transfer</button>`,
   // add money: goal, amount and the account it comes from are all visible before confirming
   hubsave:()=>{ if(S._bw) return betweenSheet(); if(!S.goals.some(g=>g.id===S._goal)) S._goal = S.goals[0].id; S._from = S._from || 'junior';
+    if(SIMPLE_PERSELY) return hubsaveSimple();
     const g = goalById(S._goal), e = isEur(g), v = S._amt || '';
     return `${S._fa ? `<h2>Start your streak?</h2><div class="u-sheet-sub2">Add money now. Any amount counts for this week.</div>` : '<h2>Add money</h2>'}
     <div class="flabel">To</div>
@@ -589,7 +632,7 @@ const SHEETS = {
   // what the analyst reads: opened from the first-run notice, the analyst sheet and the Spending footer
   anread:()=>{
     return `<h2>What it reads</h2><div class="fine u-sheet-sub">The Financial analyst is on by default. You can turn it off any time.</div>
-    <div class="card u-card-bul"><ul class="bul sm"><li>Payee names, amounts and dates of your card and bank payments on this OTP account</li><li>It uses them to show Safe to spend, your regular bills, your categories and a plan for next month</li><li>Nothing leaves the bank. Your data is not shared with anyone outside OTP</li></ul></div>
+    <div class="card u-card-bul"><ul class="bul sm"><li>Payee names, amounts and dates of your card and bank payments on this OTP account</li><li>${SIMPLE_PERSELY ? 'It uses them to show what you can spend. It also shows which bills are next.' : 'It uses them to show Safe to spend, your regular bills, your categories and a plan for next month'}</li><li>Nothing leaves the bank. Your data is not shared with anyone outside OTP</li></ul></div>
     <div class="fine u-note-b14">Saving is your payday rule (${savePlan(S, true).rulePct}% of each salary) plus any weekly transfer and round-ups. Bills only tell you: nothing is blocked and nothing moves unless you agree. Turn it off and Safe to spend becomes a simpler estimate, bills stay on.</div>
     <!-- CONFIRM WITH OTP / LEGAL: lawful basis and wording -->
     <button class="btn" data-closesheet>Close</button>${S.analyst.on ? '<button class="btn ghost" data-anask>Turn off</button>' : '<button class="btn ghost" data-anon>Turn on</button>'}`; },
@@ -701,7 +744,7 @@ const SHEETS = {
   newgoal:()=>{ const hasShared = S.goals.some(g=>g.shared), hasEur = S.goals.some(isEur);
     return `<h2>What are you saving for?</h2><div class="u-sheet-sub2">Up to 5 Perselys.</div>
     <!-- CONFIRM WITH OTP -->
-    <div class="fine u-sheet-sub">3.0% a year on up to ${ft(CAP)} with your Junior account until ${juniorEndLabel()}</div>
+    <div class="fine u-sheet-sub">${SIMPLE_PERSELY ? `3.0% a year on up to ${ft(CAP)}. Until ${juniorEndLabel()}.` : `3.0% a year on up to ${ft(CAP)} with your Junior account until ${juniorEndLabel()}`}</div>
     ${S.draft ? `<button class="row" data-onbresume><span class="ic">${I('star')}</span><span class="t">Continue your draft<small>${esc(S.draft.name || 'Your goal')}, ${ft(S.draft.target)}</small></span><span class="chev">${I('chev',20)}</span></button>` : ''}
     <div class="wn-grid three tiles-s">${Object.entries(GOAL_PRESETS).map(([k,g]) => `<button data-tilepick="${k}">${I(g.ic,24)}${g.label}</button>`).join('')}<button data-tilepick="custom">${I('plus',24)}Something else</button></div>
     ${hasShared ? '' : `<button class="row" data-sheet="newshared"><span class="ic">${I('user')}</span><span class="t">Shared Persely<small>Save together with friends or flatmates</small></span><span class="chev">${I('chev',20)}</span></button>`}
@@ -737,7 +780,35 @@ const SHEETS = {
     <p class="why-c">The Savings account pays more a year (3.5% against 3.0%) and both are taxed at 28%, while Persely adds goals and lets you withdraw any time with no fees, so check how you reach your money in the Savings account.</p>
     <p class="fine">Persely pays 3.0% on the first ${ft(CAP)} until ${juniorEndLabel()}.</p>
     <button class="row" data-sheet="goodtoknow"><span class="t">Good to know</span><span class="chev">${I('chev',20)}</span></button>`; },
-  how:()=>`<h2>How Persely works</h2>
+  // Simple Persely: Rate and safety, the one sheet behind every honesty line and every old Good to know / Why Persely? entry (plan 2e).
+  // LEGAL CAUTION: this wording, and one line in place of the full conditions on the money screens, need OTP legal review before real use.
+  // CONFIRM WITH OTP: the rate, the 500 000 Ft cap across all forint goals, monthly payment, the 12 month extension rule and 30 days' notice,
+  // the 0.01% standard rate, the deposit protection scheme name and coverage limit, and the Savings account rate (3.5%) and its access terms.
+  ratesafe:()=>{
+    const rows = [['Persely', RATE, 'var(--green)'], ['Savings account', 3.5, 'var(--blue-i)'], ['Old account', LOW_RATE, 'var(--muted)']], net = r => Math.round(100000 * r / 100 * (1 - TAX)), mx = Math.max(...rows.map(r => net(r[1])));
+    const on = S.verified || S.bridge, end = S.bridge ? juniorEndLabel(12) : juniorEndLabel();
+    return `<h2>Rate and safety</h2>
+    <!-- CONFIRM WITH OTP -->
+    <ul class="gtk rs">
+      <li><span class="gi">${I('rate',20)}</span><span><b>Your rate</b>${on ? `You get 3.0% a year on up to ${ft(CAP)}. It ends on ${end}. All your forint goals count together.` : `You get 0.01% a year now. Junior customers get 3.0% on up to ${ft(CAP)}.`}</span></li>
+      <li><span class="gi">${I('info',20)}</span><span><b>Tax</b>28% tax comes off the interest. So you keep about 2.2%. We pay it every month.</span></li>
+      <li><span class="gi">${I('check',20)}</span><span><b>Your money</b>Withdraw any time, for free. No fees.</span></li>
+      ${S.bridge ? '' : `<li><span class="gi">${I('sched',20)}</span><span><b>Keep 3.0% for 12 more months</b>Your first salary must come to OTP within 6 months. If not, you get the standard rate after 30 days' notice.<button class="link lnk44 gtk-l" data-go="grad">Keep my 3.0% ${I('chev',16)}</button></span></li>`}
+      <li><span class="gi">${I('piggy',20)}</span><span><b>Standard rate</b>Others get 0.01% a year.</span></li>
+      <li><span class="gi">${I('shield',20)}</span><span><b>Protected</b>A state scheme protects your money up to a limit.<!-- CONFIRM WITH OTP: scheme name and coverage limit --><button class="link lnk44 gtk-l" data-depprot>Deposit protection ${I('chev',16)}</button></span></li>
+    </ul>
+    <div class="flabel">What ${ft(100000)} earns in a year, after tax</div>
+    <!-- CONFIRM WITH OTP -->
+    <div class="card whyc">${rows.map(([n, r, c]) => `<div class="why-r"><div class="why-t"><b>${n}</b><span class="num">${r.toFixed(r < 1 ? 2 : 1)}%</span></div><div class="why-bar"><i style="width:${Math.max(1.5, net(r) / mx * 100)}%;background:${c}"></i></div><div class="why-s num">${ft(net(r))} a year after tax</div></div>`).join('')}</div>
+    <p class="why-c">The Savings account pays a bit more: 3.5%. Persely pays 3.0%. Both are taxed. Persely keeps each goal apart. You can withdraw any time, for free.</p>
+    <button class="row" data-sheet="how"><span class="ic">${I('info')}</span><span class="t">How Persely works<small>Streak and saving rules</small></span><span class="chev">${I('chev',20)}</span></button>`; },
+  how:()=> SIMPLE_PERSELY ? `<h2>How Persely works</h2>
+    <button class="row" data-sheet="ratesafe"><span class="ic">${I('shield')}</span><span class="t">Rate and safety<small>You get 3.0% on up to ${ft(CAP)} until ${juniorEndLabel()}.</small></span><span class="chev">${I('chev',20)}</span></button>
+    <div class="flabel">Money in</div>
+    <div class="card u-card-bul"><ul class="bul sm"><li>Payday rule: a share of each salary. We ask first.</li><li>Weekly transfer, round-ups, or add money yourself.</li><li>Withdraw any time, for free.</li></ul></div>
+    <div class="flabel">Streak</div>
+    <div class="card u-card-bul"><ul class="bul sm"><li>Save any amount once a week. Your streak grows.</li><li>You get 1 skip week for every 4 weeks.</li><li>The streak never changes your rate.</li></ul></div>
+    <button class="btn" data-tourstart>Show me Persi's hints again</button>` : `<h2>How Persely works</h2>
     <button class="row" data-sheet="goodtoknow"><span class="ic">${I('shield')}</span><span class="t">Good to know<small>Rate, cap, tax, fees and deposit protection</small></span><span class="chev">${I('chev',20)}</span></button>
     <div class="flabel">Junior rate</div>
     <div class="card u-card-bul"><ul class="bul sm"><li>3.0% a year for every Junior customer, automatically, on the first 500 000 Ft, until ${juniorEndLabel()}</li><li>Interest is paid monthly, 28% tax deducted: about 2.2% net</li><li>When Junior ends: 12 more months at 3.0% on the first 500 000 Ft, until ${juniorEndLabel(12)}, if your salary comes to OTP</li></ul></div>
@@ -748,6 +819,37 @@ const SHEETS = {
     <button class="btn" data-tourstart>Show me Persi's hints again</button>`
 };
 Object.assign(SHEETS, SHEETS_BILLS);
+if(SIMPLE_PERSELY){ SHEETS.goodtoknow = SHEETS.ratesafe; SHEETS.whyp = SHEETS.ratesafe; }   // every old Good to know and Why Persely? entry opens Rate and safety
+/* ---- Simple Persely Add money (plan 2c, D5) ----
+   Goal chips only with 2 or more goals; the account is one line, "From Junior account · Change" (Change shows the From chooser and the goal chips);
+   the last amount used is already chosen (S.lastAddAmount; the first time 1 000 Ft); the button says the amount; the honesty line sits at the foot.
+   The move itself is the unchanged data-hubsave code in 09-events-device.js (same checks, same Undo). */
+const ADD_CHIPS = [500, 1000, 2000, 5000];
+function hubsaveSimple(){
+  const g = goalById(S._goal), e = isEur(g), many = S.goals.length > 1, open = !!S._hsx, pre = e ? 0 : (S.lastAddAmount || 1000), v = S._amt || pre || '';
+  const chips = e ? [10, 20, 50, 100] : [...new Set([...ADD_CHIPS, pre])].sort((a, b) => a - b);
+  return `${S._fa ? `<h2>Start your streak?</h2><div class="u-sheet-sub2">Add money now. Any amount counts for this week.</div>` : '<h2>Add money</h2>'}
+    ${many || open ? `<div class="flabel">To</div><div class="chips u-mb4" role="group" aria-label="To">${S.goals.map(x=>`<button class="chip ${S._goal===x.id?'on':''}" data-pickgoal="${x.id}" aria-pressed="${S._goal===x.id}">${esc(x.name)}</button>`).join('')}</div>` : `<div class="u-sheet-sub2 hsto">To ${esc(g.name)}</div>`}
+    <div class="flabel">Amount</div>
+    <div class="fld"><span class="t"><input id="mv" inputmode="numeric" value="${v}" placeholder="Amount" aria-label="Amount" aria-describedby="e-mv"></span><b>${e ? '€' : 'Ft'}</b></div><div class="ferr" id="e-mv" role="alert"></div>
+    <div class="chips u-mt0 hsamt" role="group" aria-label="Amount">${chips.map(x=>`<button class="chip ${+v === x ? 'on' : ''}" data-setv="${x}" aria-pressed="${+v === x}">${e ? eur(x) : ft(x)}</button>`).join('')}</div>
+    ${open ? `<div class="flabel">From</div>${S.accounts.filter(a=>a.id!=='persely').map(a=>`<button class="opt slim ${S._from===a.id?'on':''}" data-hubfrom="${a.id}"><span class="ic">${I('wallet',22)}</span><span class="t"><b>${a.n}</b><small class="num">${ft(a.v)} available</small></span>${S._from===a.id?`<span class="u-ico-g">${I('check',22)}</span>`:''}</button>`).join('')}`
+      : `<div class="hsfrom"><span>From ${esc(fromName(S._from))}</span><span aria-hidden="true">·</span><button class="link lnk44" data-hubchange aria-label="Change the account or the goal">Change</button></div>`}
+    <div class="fine u-note-t6">${e ? `Demo rate 1 € = ${EUR_RATE} Ft. Euro goals don't get the Junior rate.` : S.savedWeek ? 'This week already counts for your streak.' : `Counts for this week: your streak goes to ${S.streak+1}.`}</div>
+    <button class="btn" data-hubsave>${v ? `Add ${money(g, +v)}` : 'Add money'}</button>
+    ${e ? '' : rsLine()}`;
+}
+// the chosen chip and the button label follow the amount field; Change and Settings for this goal open in place
+function hsSync(){ const f = $('#sheet #mv'), b = $('#sheet [data-hubsave]'); if(!f || !b || !$('#sheet .hsamt')) return; const v = +f.value || 0, g = goalById(S._goal);
+  document.querySelectorAll('#sheet .hsamt [data-setv]').forEach(c => { const on = +c.dataset.setv === v; c.classList.toggle('on', on); c.setAttribute('aria-pressed', String(on)); });
+  b.textContent = v && g ? `Add ${money(g, v)}` : 'Add money'; }
+if(SIMPLE_PERSELY){
+  document.addEventListener('input', e => { if(e.target && e.target.id === 'mv') setTimeout(hsSync, 0); });
+  document.addEventListener('click', e => { const t = e.target.closest && e.target.closest('[data-setv],[data-gset],[data-hubchange]'); if(!t) return;
+    if('setv' in t.dataset){ setTimeout(hsSync, 0); return; }
+    if('hubchange' in t.dataset){ if($('#mv')) S._amt = parseFloat($('#mv').value) || 0; S._hsx = true; sheet(SHEETS.hubsave()); return; }
+    const id = t.dataset.gset; S._gset = S._gset === id ? null : id; refreshPages(); });
+}
 /* ---- Between my accounts: one list of places, accounts and plain forint goals; any place to any other ---- */
 const lastGoal = () => { const ok = x => x && x.id && goalIsPlain(x) && !!goalById(x.id); return [goalById(S._goal), ruleGoal(), ...S.goals].find(ok) || null; };
 const placeKey = (k) => k.startsWith('a:') ? acc(k.slice(2)) : goalById(k.slice(2));
