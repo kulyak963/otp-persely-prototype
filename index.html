@@ -3555,7 +3555,9 @@ document.addEventListener('click', e=>{
   if(d.onbwkstep){ O.weekly = Math.max(500, Math.min(50000, O.weekly + (+d.onbwkstep))); O.wkCust = true; renderOnb(); return; }
   if(d.onbweekly){ O.weekly = +d.onbweekly; O.weeklyOn = true; O.wkCust = false; renderOnb(); return; }
   if(d.onbboost){ O.weeklyOn = true; O.weekly = +d.onbboost; renderOnb(); toast(`Weekly transfer set to ${ft(O.weekly)}`); return; }
-  if(d.onbfirst !== undefined){ O.first = +d.onbfirst; renderOnb(); return; }
+  if(d.onbfirst !== undefined){ O.first = +d.onbfirst; O.firstCust = false; renderOnb(); return; }
+  if('onbfirstcust' in d){ O.firstCust = true; if(!O.first) O.first = 1500; renderOnb(); return; }
+  if(d.onbfirststep){ O.first = Math.max(500, Math.min(acc(O.from).v, O.first + (+d.onbfirststep))); O.firstCust = true; renderOnb(); return; }
   if('onbchange' in d){ const ids = S.accounts.filter(x => x.id !== 'persely').map(x => x.id); O.from = ids[(ids.indexOf(O.from) + 1) % ids.length]; renderOnb(); return; }
   if('onbremind' in d){ O.remind = !O.remind; renderOnb(); return; }
   if('onbcreate' in d){
@@ -4152,7 +4154,7 @@ function startOnb(key){
   const custom = key === 'custom', g = custom ? customGoal() : (GOAL_PRESETS[key] || GOAL_PRESETS.travel);
   Object.assign(O, {i: 0, key, ic:g.ic, name:g.name, target:g.target, typeAmt:custom ? 0 : g.target, date:g.date, focusName:custom,
     payOn:true, pct:10, weeklyOn:false, weekly:2000, roundOn:true, first:1000, from:'junior', deposited:0, remind:true, coinShown:false,
-    extra:JSON.parse(JSON.stringify(paydayExtras())), cust:{}, wkCust:false, addSrc:null});
+    extra:JSON.parse(JSON.stringify(paydayExtras())), cust:{}, wkCust:false, addSrc:null, firstCust:false});
   tab('hub'); $('#onb').classList.add('on'); renderOnb();
 }
 function closeOnb(){ const o = $('#onb'); o.classList.remove('on'); o.innerHTML = ''; mountPig(); }
@@ -4193,7 +4195,7 @@ function renderOnb(){
     body = `<div class="onb-step">Step 3 of ${n}</div><h2>Check and create</h2>
       <div class="card sumcard">${rows.map(([k,v])=>`<div class="sr"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
       <div class="flabel">First deposit <span class="k">(optional)</span></div>
-      <div class="chips u-m0">${[0,500,1000,2000,5000].map(v=>`<button class="chip ${O.first===v?'on':''}" data-onbfirst="${v}">${v ? ft(v) : 'None'}</button>`).join('')}</div>
+      ${(() => { const preset = [0,500,1000,2000,5000], cust = O.firstCust || !preset.includes(O.first); return `<div class="chips u-m0">${preset.map(v=>`<button class="chip ${!cust && O.first===v?'on':''}" data-onbfirst="${v}">${v ? ft(v) : 'None'}</button>`).join('')}<button class="chip ${cust ? 'on' : ''}" data-onbfirstcust>Custom</button></div>${cust ? `<div class="stp"><button data-onbfirststep="-500" aria-label="500 Ft less">−</button><b class="num">${ft(O.first)}</b><button data-onbfirststep="500" aria-label="500 Ft more">+</button></div>` : ''}`; })()}
       <div class="fine u-mt4-b12">${O.first ? `From ${a.n} · <span class="num">${ft(a.v)}</span> available · <button class="link lnk44" data-onbchange>change</button><br>Free, and you can withdraw it any time. It starts your streak this week.` : 'You can add money any time. A first deposit starts your streak this week.'}</div>
       ${short ? '<div class="warn">Not enough money on this account. Choose a smaller amount or change the account.</div>' : ''}
       <button class="opt slim ${O.remind?'on':''}" data-onbremind><span class="ic">${I('bell',22)}</span><span class="t"><b>Weekly reminder</b><small>Sunday 18:00, only if the week is still open</small></span><span class="tg ${O.remind?'on':''}"></span></button>${O.remind ? remindRow().replace('class="rem"', 'class="rem rem-o"') : ''}`;
