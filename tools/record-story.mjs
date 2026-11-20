@@ -6,6 +6,8 @@
 // Env: APP_URL, PW_DIR (folder that contains node_modules/playwright), CHROME (browser executable), FRAMES (temp dir), DPR (default 3 = 1170x2532).
 // State recorded: Reset (8 weeks later) -> analyst on with the split accepted (consent flow: Turn on, then Use this split) -> +1 month (key O, same as the demo) -> story from slide 1, relabelled November (display only, see below).
 // The story's clock is stepped by 1/30 s per screenshot (manual mode); only the 3D Persi on slide 1 runs on real time.
+// The story is Denis's Wrapped story from main (11 screens, about 41 s for the month after +1 month); the tool only uses window.__story (open, step, info), not slide ids.
+// media/story-november.mp4 still holds the older analytics story until this tool is re-run.
 import { createRequire } from 'module';
 import { execFileSync } from 'child_process';
 import { readdirSync, mkdirSync, rmSync, existsSync } from 'fs';
