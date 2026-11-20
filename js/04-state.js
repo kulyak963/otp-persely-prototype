@@ -36,7 +36,7 @@ function migrateRules(st){
 /* Two seeds (decision D1). fresh() = the brand-new user, the pitch default: 0 Ft on Persely, no goals, no streak, not onboarded.
    fresh('existing') = the existing user (Summer holiday, PS5, Festival, an 8-week streak). The demo panel switches between them (key X). */
 // moved here from js/13-settings-demo.js: used by the code below, and separate script files do not hoist function declarations across files
-function notifDefault(){ return {bills:true, payday:true, story:true, card:true, incoming:true, quiet:false, qfrom:'22:00', qto:'07:00'}; }   // money events and late bills on; the weekly reminder is S.remind and is an opt-in (B7)
+function notifDefault(){ return SIMPLE_PERSELY ? {bills:true, payday:true, story:true, card:true, incoming:true, junior:true, goal:true, mkt:false, quiet:false, qfrom:'22:00', qto:'07:00'} : {bills:true, payday:true, story:true, card:true, incoming:true, quiet:false, qfrom:'22:00', qto:'07:00'}; }   // money events and late bills on; the weekly reminder is S.remind and is an opt-in (B7)
 const seedExisting = () => { const H = demoHistory(); const o = ({
   name:'Kiss Anna', ini:'KA',
   updateSeen:true, onboarded:true,     // existing user (the new-user seed turns onboarding off)
@@ -88,6 +88,7 @@ if(S.txMark === undefined) S.txMark = 0;
 if(!S.scoreHist) S.scoreHist = fresh().scoreHist;   // state saved before the health score existed
 if(!S.rewards) S.rewards = [];
 if(!S.notif) S.notif = notifDefault();   // state saved before Settings > Notifications existed
+if(SIMPLE_PERSELY) S.notif = {...notifDefault(), ...S.notif};   // new switches (Junior ends, goal milestones, offers) for older saved state
 if(!S.inbox) S.inbox = [];
 if(!S.hints) S.hints = {};   // Persi's one-time hints already shown
 if(!S.goalRewarded) S.goalRewarded = [];

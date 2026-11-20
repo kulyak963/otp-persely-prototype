@@ -183,7 +183,7 @@ function renderDemoPanel(){
     <button data-dseed>👤 Seed: ${seedKind() === 'new' ? 'new user (switch to existing)' : 'existing user (switch to new)'}<kbd>X</kbd></button>
     <button data-ddelay>⏱ Delay: ${demo.delay ? demo.delay+' s' : 'none'}</button>
     <button data-dphone class="${demo.phone?'on':''}">📱 Also send to iPhone: ${demo.phone?'on':'off'}</button>
-    <button data-dsound>${demo.sound?'🔔 Sound: on':'🔕 Sound: off'}</button>
+    <button data-dsound>${demo.sound?'🔔 Sound: on':'🔕 Sound: off'}</button>${SIMPLE_PERSELY ? `\n    <button data-dday>🌅 Reset day<kbd>Z</kbd></button>` : ''}
     <button data-dreset>↺ Reset app</button>
     <button data-dhide>Hide panel<kbd>H</kbd></button>`;
 }
@@ -209,6 +209,7 @@ $('#demoPanel').addEventListener('click', e=>{
   else if('dseed' in d) toggleSeed();
   else if('ddelay' in d){ demo.delay = {0:3, 3:10, 10:0}[demo.delay]; renderDemoPanel(); }
   else if('dphone' in d){ demo.phone = !demo.phone; renderDemoPanel(); }
+  else if('dday' in d){ resetPushDay(); toast('New day: one push can land again'); }
   else if('dsound' in d){ demo.sound = !demo.sound; renderDemoPanel(); }
   else if('dreset' in d) demoStart();   // back to the start of act 1 (logged out, update not seen)
   else if('dhide' in d){ demo.hidden = true; renderDemoPanel(); }
@@ -243,6 +244,7 @@ addEventListener('keydown', e=>{
   else if(k === 'u') demoUpdateDay();
   else if(k === 'j') week8State();
   else if(k === 'x') toggleSeed();
+  else if(k === 'z' && SIMPLE_PERSELY){ resetPushDay(); toast('New day: one push can land again'); }
   else if(k === 'h'){ demo.hidden = !demo.hidden; renderDemoPanel(); }
 });
 renderDemoPanel();
