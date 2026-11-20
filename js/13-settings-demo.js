@@ -2,7 +2,8 @@
 const NOTIF_TOGGLES = [   // [key, title, subtitle]; "streak" is the weekly reminder (S.remind)
   ['bills', 'Bills due', 'Late bills and bills coming up'], ['streak', 'Sunday streak reminder', 'Sunday 18:00, only if the week is still open'], ['payday', 'Payday', 'When your salary arrives'],
   ['story', 'Monthly story', 'When your month story is ready'], ['card', 'Card payments', 'Each card payment and your balance'], ['incoming', 'Incoming transfers', 'Money that arrives on your account']];
-const notifOn = kind => !kind ? true : kind === 'streak' ? !!S.remind : S.notif[kind] !== false;
+if(SIMPLE_PERSELY) NOTIF_TOGGLES.push(['junior', 'Junior ends', 'At 90, 30 and 7 days before'], ['goal', 'Goal milestones', 'At 25, 50, 75 and 100%'], ['mkt', 'Offers and perks', 'Only with your OK. Off until you turn it on']);
+const notifOn = kind => !kind ? true : kind === 'streak' ? !!S.remind : kind === 'mkt' ? S.notif.mkt === true : S.notif[kind] !== false;
 const hhmm = (d = new Date()) => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 // quiet hours: from/to as HH:MM; the window may cross midnight
 const quietAt = (t, from, to) => from === to ? false : from < to ? (t >= from && t < to) : (t >= from || t < to);
@@ -15,7 +16,7 @@ function addInbox(n){   // every push and banner is kept: last 20, newest first
   try{ renderView('fooldal'); refreshPages(); }catch(e){}
   return it;
 }
-const NOTE_KIND_OFF = {card:'Card payments', incoming:'Incoming transfers', bills:'Bills due', payday:'Payday', story:'Monthly story', streak:'Sunday streak reminder'};
+const NOTE_KIND_OFF = {card:'Card payments', incoming:'Incoming transfers', bills:'Bills due', payday:'Payday', story:'Monthly story', streak:'Sunday streak reminder', junior:'Junior ends', goal:'Goal milestones', mkt:'Offers and perks'};
 function inboxHTML(){
   const L = S.inbox || [];
   if(!L.length) return `<div class="card" style="text-align:center;color:var(--muted-t);padding:var(--sp-6)">Nothing yet. Money events and bill reminders will show here.</div>`;
@@ -78,7 +79,7 @@ function settingsHTML(){
   ${ruleDefaultsHTML(srow)}</div>
   <div class="set-sec" data-sec="notif"><div class="sec"><span>Notifications</span></div>
     ${pushStatusBlock()}
-    <div class="card set-card" style="margin-top:var(--sp-3)">${NOTIF_TOGGLES.map(([k, t, sub]) => srow(k === 'streak' ? 'piggy' : k === 'card' ? 'cards' : k === 'incoming' ? 'money' : k === 'payday' ? 'wallet' : k === 'story' ? 'star' : 'list', t, sub, notifOn(k), k === 'streak' ? 'data-sw="remind"' : `data-sw="n:${k}"`)).join('')}
+    <div class="card set-card" style="margin-top:var(--sp-3)">${NOTIF_TOGGLES.map(([k, t, sub]) => srow(k === 'streak' ? 'piggy' : k === 'card' ? 'cards' : k === 'incoming' ? 'money' : k === 'payday' ? 'wallet' : k === 'story' || k === 'goal' ? 'star' : 'list', t, sub, notifOn(k), k === 'streak' ? 'data-sw="remind"' : `data-sw="n:${k}"`)).join('')}
       ${srow('bell', 'Quiet hours', n.quiet ? `Silent from ${n.qfrom} to ${n.qto}` : 'Off', !!n.quiet, 'data-sw="n:quiet"')}${quiet}</div></div>
   <div class="set-sec" data-sec="privacy"><div class="sec"><span>Privacy</span></div>
     <div class="card set-card">${row('lock', 'What the analyst reads', 'Payments, transfers and income on this OTP account', 'data-sheet="anread"')}</div></div>
@@ -108,18 +109,34 @@ const DEMO = [
   {e:'💸', label:'Money received',    title:'Money received', kind:'incoming', url:'tranzakciok',
     fx:() => { acc('junior').v += 20000; S.tx.unshift({...stamp(), d:'Today', n:'NAGY PÉTER', s:'Instant transfer', a:20000, ic:'money'}); renderAll(); },
     body:() => `+20 000 Ft from NAGY PÉTER, instant transfer. Balance: ${ft(acc('junior').v)}`},
-  {e:'🐷', label:'Week still open',   title:'Persi · Persely', persi:true, kind:'streak', body:()=>S.streak >= 1 ? `🔥 Your ${S.streak}-week streak ends Sunday. Drop in any amount and it keeps going.` : 'A new week is open. Drop in any amount and your streak starts.', url:'hub'},
-  {e:'💚', label:'Interest paid',     title:'Persi · Persely', persi:true, body:()=>`Your Junior rate (3.0% on the first 500 000 Ft) paid ${ft(Math.max(130, Math.round(Math.min(total(),CAP)*RATE/100/12*(1-TAX))))} this month, after tax.`, url:'hub'},
-  {e:'👯', label:'Friend saved too',  title:'Persi · Persely', persi:true, body:()=>{ const f = realFriends()[0]; return f ? `${f} saved 5 000 Ft this week. Your turn?` : null; }, none:'You have no friends in Persely yet. Add one first.', url:'hub'},   // real friends only
-  {e:'🎓', label:'Junior ends',       title:'Persi · Persely', persi:true, body:()=>`Your Junior package ends on ${juniorEndLabel()}. Get your salary paid to OTP and keep my 3.0% on the first 500 000 Ft for 12 more months.`, url:'grad'},
-  {e:'📊', label:'Monthly story',     title:'Persi · Persely', persi:true, kind:'story', body:()=>`Your ${S.period} story is ready. Take a look.`, url:'story'},
-  {e:'🏷️', label:'New discount',      title:'New discount',            body:'15% instant discount at Pizzeria Roma. Activate it now!', url:'perks'},
+  {e:'🐷', label:'Week still open',   title:'Persi · Persely', persi:true, kind:'streak', body:()=>S.streak >= 1 ? `🔥 Your ${S.streak}-week streak ends Sunday. Drop in any amount and it keeps going.` : 'A new week is open. Drop in any amount and your streak starts.', url:'hub', pri:4},
+  {e:'💚', label:'Interest paid',     title:'Persi · Persely', persi:true, pri:6, body:()=>`Your Junior rate (3.0% on the first 500 000 Ft) paid ${ft(Math.max(130, Math.round(Math.min(total(),CAP)*RATE/100/12*(1-TAX))))} this month, after tax.`, url:'hub'},
+  SIMPLE_PERSELY   // the friend push is gone (it stays in the opt-in friends area): slot 5 is the goal milestone push
+    ? {e:'🎯', label:'Goal milestone',    title:'Persi · Persely', persi:true, kind:'goal', pri:3, body:() => { const m = milestoneNow(); return m ? `${m.g.name} is ${m.pct}% saved: ${ft(m.saved)} of ${ft(m.target)}.` : null; }, none:'You have no goals in Persely yet. Add one first.', url:'hub'}
+    : {e:'👯', label:'Friend saved too',  title:'Persi · Persely', persi:true, body:()=>{ const f = realFriends()[0]; return f ? `${f} saved 5 000 Ft this week. Your turn?` : null; }, none:'You have no friends in Persely yet. Add one first.', url:'hub'},   // real friends only
+  {e:'🎓', label:'Junior ends',       title:'Persi · Persely', persi:true, kind:SIMPLE_PERSELY ? 'junior' : undefined, pri:2, body:()=> SIMPLE_PERSELY ? `Your Junior package ends on ${juniorEndLabel()}. Get your salary paid to OTP to keep your 3.0% on the first 500 000 Ft for 12 more months.` : `Your Junior package ends on ${juniorEndLabel()}. Get your salary paid to OTP and keep my 3.0% on the first 500 000 Ft for 12 more months.`, url:'grad'},
+  {e:'📊', label:'Monthly story',     title:'Persi · Persely', persi:true, kind:'story', pri:5, body:()=>`Your ${S.period} story is ready. Take a look.`, url:'story'},
+  SIMPLE_PERSELY   // marketing: not the Persi channel, its own switch (off by default), no urgency
+    ? {e:'🏷️', label:'New discount',      title:'Perks', kind:'mkt', pri:7, body:'Pizzeria Roma: 15% off. You can turn it on in Perks.', url:'perks'}
+    : {e:'🏷️', label:'New discount',      title:'New discount',            body:'15% instant discount at Pizzeria Roma. Activate it now!', url:'perks'},
   {e:'🧾', label:'Bills first',       title:'Persi · Persely', persi:true, kind:'bills', body:()=>{ const bf = billsFirst(); return bf.on ? `${bf.text}.${stsNow()}` : bf.total ? `Nothing is late.${stsNow() || ' Your bills are on track.'}` : 'All your must-pay bills are paid. Fun is back on.'; }, url:'hub'}
 ];
 // Safe to spend wording only with the analyst on
 const stsNow = () => S.analyst.on ? ` Safe to spend is now ${ft(safeToSpend().safe)}.` : '';
 // friends that really exist: the Friends list once it is on, and members of a shared Persely
 const realFriends = () => (S.friendsOptIn ? (S.friends || []).map(f => f.n) : []).concat((S.goals || []).filter(g => g.shared).flatMap(g => (g.members || []).filter(m => !m.me).map(m => m.n))).filter(Boolean);
+// the goal furthest along, and the milestone (25, 50, 75, 100%) it has reached; a goal under 25% reads as the next one so the demo has something to say
+const milestoneNow = () => { const L = (S.goals || []).filter(g => !isEur(g) && gTarget(g) > 0).map(g => ({g, saved:gSaved(g), target:gTarget(g)})).sort((a, b) => b.saved / b.target - a.saved / a.target)[0];
+  if(!L) return null; const p = Math.min(100, L.saved / L.target * 100); return {...L, pct:[100, 75, 50, 25].find(m => p >= m) || 25}; };
+// Simple Persely: one Persely push a day, all types together, counted per day of the app's own date (billToday + week). Priority when two are due.
+const PUSH_FREE = ['bills', 'card', 'incoming'];   // late bills keep their own cap; card and incoming are the bank's own pushes, not Persely pushes
+const PUSH_PRI = {payday:1, junior:2, goal:3, streak:4, story:5, mkt:7};   // 1 = first; anything else 6
+const pushPri = n => n.pri || PUSH_PRI[n.kind] || 6;
+const pushDayKey = () => { const t = billToday(); return t.ym + '-' + t.day + '-w' + (S.week || 0); };
+const pushCounts = n => SIMPLE_PERSELY && PUSH_FREE.indexOf(n.kind) < 0;
+const pushUsed = () => !!S.pushDay && S.pushDay.k === pushDayKey();
+const choosePush = list => list.filter(Boolean).slice().sort((a, b) => pushPri(a) - pushPri(b))[0] || null;   // of the pushes due at the same moment, the one that is sent
+function resetPushDay(){ S.pushDay = null; save(); }
 const demo = { delay:0, sound:true, phone:false, locked:false, hidden:false };
 let audioCtx;
 function chime(){
@@ -204,7 +221,11 @@ function realPush(n){
 function notify(n){
   if(!notifOn(n.kind)) return false;   // switched off in Settings > Notifications: nothing is sent and nothing is listed
   n.id = addInbox(n).id;               // every push is kept in the inbox
-  if(inQuiet()) return true;           // quiet hours: it arrives silently
+  if(inQuiet()) return true;           // quiet hours: it arrives silently (and does not use up the day)
+  if(pushCounts(n)){                   // one Persely push a day: the next ones stay in the inbox only
+    if(pushUsed()){ if(DEMO_ON) toast('Held by the 1 a day limit'); return true; }
+    S.pushDay = {k:pushDayKey(), kind:n.kind || 'persi'}; save();
+  }
   if(demo.locked) addLockCard(n); else showBanner(n);
   chime();
   if(demo.phone) realPush(n);
@@ -219,7 +240,7 @@ function salaryArrives(){
   if((payOn() && S.payday.ask) || paydayBills()){   // with bills open the sheet is "Bills first": salary, bills, saving rule, left for Fun
     renderAll();
     const bfv = paydayBills(), ps = payOn() && S.payday.ask;
-    notify({title:'Persi · Persely', persi:true, body: bfv ? `Salary's in: +${ft(inc)}. ${ft(billsFirst().total)} of bills still to pay.${ps ? ' Then Persely.' : ''}` : `Salary's in: +${ft(inc)}. Move ${ft(share)} to ${many ? 'your goals' : g.name}?`, url:'payday', kind:'payday'});
+    notify({title:'Persi · Persely', persi:true, body: bfv ? (SIMPLE_PERSELY ? `Salary's in. ${ft(billsFirst().total)} of bills to pay first.` : `Salary's in: +${ft(inc)}. ${ft(billsFirst().total)} of bills still to pay.${ps ? ' Then Persely.' : ''}`) : (SIMPLE_PERSELY ? `Salary's in. Save ${ft(share)}?` : `Salary's in: +${ft(inc)}. Move ${ft(share)} to ${many ? 'your goals' : g.name}?`), url:'payday', kind:'payday'});
     if(!demo.locked){ tab('hub'); qSheet(() => SHEETS.payday(), 'payday'); }   // after the banner
     return;
   }
