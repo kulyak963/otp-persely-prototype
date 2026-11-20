@@ -907,7 +907,13 @@ button.cat{background:none;border:0;padding:4px 0;font:inherit;border-radius:12p
 .cl-list .cl-r{padding:10px 12px}.cl-r.cur{background:var(--green-l)}.cl-r .t{flex:1;min-width:0}
 .cl-st{display:flex;align-items:center;gap:6px;flex:none}.cl-st b{min-width:46px;text-align:center;font-size:var(--fs-m)}
 .cl-st button{width:34px;height:34px;border-radius:50%;background:var(--bg);font-size:1.25rem;font-weight:700;color:var(--green-t);display:flex;align-items:center;justify-content:center}
-.sp-btn{margin-top:14px}
+.sp-btn{margin-top:14px}.sp-own{margin-top:4px}
+.spd{position:relative;display:flex;height:38px;border-radius:12px;overflow:visible;margin:6px 4px 14px;touch-action:none}
+.spd-s{display:block;height:100%}.spd-s:first-child{border-radius:12px 0 0 12px}.spd-s:nth-child(3){border-radius:0 12px 12px 0}
+.spd-h{position:absolute;top:-6px;bottom:-6px;width:22px;margin-left:-11px;border-radius:11px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.28),inset 0 0 0 2px #CFD5DD;cursor:ew-resize;touch-action:none}
+.spd-h::after{content:"";position:absolute;left:50%;top:30%;bottom:30%;width:2px;margin-left:-1px;background:#AEB6C1;border-radius:1px}
+.spd-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}.spd-r{display:flex;align-items:center;gap:10px;font-size:var(--fs-m)}.spd-r i{width:12px;height:12px;border-radius:4px}.spd-r b{flex:1}
+.spd-imp{font-size:var(--fs-s);font-weight:700;margin-bottom:14px}.spd-imp.up{color:var(--green-t)}.spd-imp.dn{color:var(--orange-t)}
 .sp-o{display:flex;flex-direction:column;gap:4px;width:100%;text-align:left;padding:12px 14px;margin-bottom:8px;border:1.5px solid transparent}.sp-o.on{border-color:var(--green)}
 .sp-h{display:flex;align-items:center;justify-content:space-between}.sp-h b{font-size:var(--fs-m)}.sp-o small{color:var(--muted-t);font-size:var(--fs-s)}
 .sp-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;margin-top:6px;gap:2px}.sp-bar i{display:block;height:100%}
@@ -2267,7 +2273,9 @@ const SPLIT_PRESETS = [
   ['fun', 'More fun', 'More for going out, less saving', 0, 5]
 ];
 function presetSplit(key){
-  const sv = splitView(), base = {must:sv.by.must.pct, ess:sv.by.ess.pct, fun:sv.by.fun.pct, save:sv.by.save.pct}, p = SPLIT_PRESETS.find(x => x[0] === key) || SPLIT_PRESETS[0];
+  const sv = splitView(), base = {must:sv.by.must.pct, ess:sv.by.ess.pct, fun:sv.by.fun.pct, save:sv.by.save.pct};
+  if(key === 'custom' && S.splitCustom){ const c = S.splitCustom, F = 100 - base.must, ess = Math.max(5, Math.min(F - 3, c.ess)), fun = Math.max(3, Math.min(F - ess, c.fun)); return {must:base.must, ess, fun, save:F - ess - fun, B:sv.B || 0}; }
+  const p = SPLIT_PRESETS.find(x => x[0] === key) || SPLIT_PRESETS[0];
   let ess = Math.max(5, base.ess + p[3]), fun = Math.max(3, base.fun + p[4]), save = 100 - base.must - ess - fun;
   if(save < 0){ ess += save; save = 0; }   // "more fun" takes from saving first, then from everyday
   return {must:base.must, ess, fun, save, B:sv.B || 0};
@@ -2277,17 +2285,58 @@ function catLimit(c){
   const lim = b && sp[b] != null ? (spreadCats(Math.round(B * sp[b] / 100 / 10) * 10, b)[c] || 0) : 0;
   return {lim, B, bucket:b, bucketPct:b ? sp[b] : 0, preset:key};
 }
-const presetName = k => (SPLIT_PRESETS.find(x => x[0] === k) || SPLIT_PRESETS[0])[1];
+const presetName = k => k === 'custom' ? 'Your own' : (SPLIT_PRESETS.find(x => x[0] === k) || SPLIT_PRESETS[0])[1];
+const SP_COL = {must:'#2467A0', ess:'#4D9BD6', fun:'#F07D19', save:'#52AE30'}, SP_NAME = {must:'Bills', ess:'Everyday', fun:'Fun', save:'Saving'};
 function splitPresetsSheet(){
-  const cur = S.splitPreset || 'suggested', base = presetSplit('suggested'), B = base.B || 1, cols = {must:'#2467A0', ess:'#4D9BD6', fun:'#F07D19', save:'#52AE30'};
-  return `<h2>Change your split</h2><p class="fine" style="margin:-4px 0 12px">How your income of ${ft(B)} a month is shared. Pick one, every category limit follows.</p>
-    ${SPLIT_PRESETS.map(([k, n, d]) => { const p = presetSplit(k), dSave = Math.round(B * (p.save - base.save) / 100 / 10) * 10;
-      return `<button class="card sp-o ${k === cur ? 'on' : ''}" data-splitset="${k}"><span class="sp-h"><b>${n}</b>${k === cur ? '<span class="pill ok">Now</span>' : ''}</span><small>${d}</small>
-        <span class="sp-bar">${['must', 'ess', 'fun', 'save'].map(x => `<i style="width:${p[x]}%;background:${cols[x]}"></i>`).join('')}</span>
-        <span class="sp-l"><span>Bills ${p.must}%</span><span>Everyday ${p.ess}%</span><span>Fun ${p.fun}%</span><span>Saving ${p.save}%</span></span>
-        ${dSave ? `<span class="sp-d ${dSave > 0 ? 'up' : 'dn'}">${dSave > 0 ? '+' + ft(dSave) + ' a month to Persely' : ft(-dSave) + ' a month less to Persely'}</span>` : ''}</button>`; }).join('')}
+  const cur = S.splitPreset || 'suggested', base = presetSplit('suggested'), B = base.B || 1;
+  const card = (k, n, d, tag) => { const p = presetSplit(k), dSave = Math.round(B * (p.save - base.save) / 100 / 10) * 10;
+    return `<button class="card sp-o ${k === cur ? 'on' : ''}" data-splitset="${k}"><span class="sp-h"><b>${n}</b>${k === cur ? '<span class="pill ok">Now</span>' : tag ? `<span class="pill">${tag}</span>` : ''}</span><small>${d}</small>
+      <span class="sp-bar">${['must', 'ess', 'fun', 'save'].map(x => `<i style="width:${p[x]}%;background:${SP_COL[x]}"></i>`).join('')}</span>
+      <span class="sp-l">${['must', 'ess', 'fun', 'save'].map(x => `<span>${SP_NAME[x]} ${p[x]}%</span>`).join('')}</span>
+      ${dSave ? `<span class="sp-d ${dSave > 0 ? 'up' : 'dn'}">${dSave > 0 ? '+' + ft(dSave) + ' a month to Persely' : ft(-dSave) + ' a month less to Persely'}</span>` : ''}</button>`; };
+  return `<h2>Your split</h2><p class="fine" style="margin:-4px 0 12px">How your income of ${ft(B)} a month is shared. Every category limit follows it.</p>
+    <div class="sec" style="margin-top:0"><span>Suggested for you</span></div>
+    ${card('suggested', 'Balanced', 'What you spend now, with your saving rules')}
+    ${card('save', 'Save more', 'A little less fun: your goals arrive sooner', 'Suggested')}
+    ${cur === 'custom' ? card('custom', 'Your own', 'The split you set yourself') : ''}
+    <button class="row sp-own" data-splitcustom><span class="ic">${I('limit')}</span><span class="t"><b>Set it yourself</b><small>Drag to share your income between everyday, fun and saving</small></span><span class="chev">${I('chev', 20)}</span></button>
     <div class="fine" style="margin:6px 2px 0">Bills stay as they are: they are what you must pay.</div>`;
 }
+// Set it yourself: bills fixed, the rest of the income on one bar with two dividers
+function splitEditSheet(){
+  const d = S._spDraft, base = presetSplit('suggested'), B = base.B || 1, F = 100 - d.must;
+  const amt = x => ft(Math.round(B * d[x] / 100 / 10) * 10), dSave = Math.round(B * (d.save - base.save) / 100 / 10) * 10;
+  return `<h2>Set your split</h2><p class="fine" style="margin:-4px 0 14px">Bills stay at ${d.must}% (${ft(splitView().by.must.amt)}). Drag the two white handles to share the rest.</p>
+    <div class="spd" id="spd" data-f="${F}">
+      <i class="spd-s" data-s="ess" style="width:${d.ess / F * 100}%;background:${SP_COL.ess}"></i><i class="spd-s" data-s="fun" style="width:${d.fun / F * 100}%;background:${SP_COL.fun}"></i><i class="spd-s" data-s="save" style="width:${d.save / F * 100}%;background:${SP_COL.save}"></i>
+      <b class="spd-h" data-sph="1" style="left:${d.ess / F * 100}%" role="slider" aria-label="Everyday and fun" tabindex="0"></b><b class="spd-h" data-sph="2" style="left:${(d.ess + d.fun) / F * 100}%" role="slider" aria-label="Fun and saving" tabindex="0"></b>
+    </div>
+    <div class="spd-rows">${['ess', 'fun', 'save'].map(x => `<div class="spd-r"><i style="background:${SP_COL[x]}"></i><b>${SP_NAME[x]}</b><span class="num" data-v="${x}">${d[x]}% · ${amt(x)}</span></div>`).join('')}</div>
+    <div class="spd-imp ${dSave >= 0 ? 'up' : 'dn'}" id="spdImp">${dSave > 0 ? `+${ft(dSave)} a month to Persely compared with your plan` : dSave < 0 ? `${ft(-dSave)} a month less to Persely than your plan` : 'The same saving as your plan'}</div>
+    <div class="hero-btns u-m0"><button class="btn w" data-splitback>Back</button><button class="btn" data-splitsave>Save my split</button></div>`;
+}
+function spdUpdate(){
+  const d = S._spDraft, base = presetSplit('suggested'), B = base.B || 1, F = 100 - d.must, el = $('#spd'); if(!el) return;
+  ['ess', 'fun', 'save'].forEach(x => { el.querySelector(`[data-s="${x}"]`).style.width = d[x] / F * 100 + '%'; const v = $('#sheet [data-v="' + x + '"]'); if(v) v.textContent = `${d[x]}% · ${ft(Math.round(B * d[x] / 100 / 10) * 10)}`; });
+  el.querySelector('[data-sph="1"]').style.left = d.ess / F * 100 + '%'; el.querySelector('[data-sph="2"]').style.left = (d.ess + d.fun) / F * 100 + '%';
+  const dSave = Math.round(B * (d.save - base.save) / 100 / 10) * 10, imp = $('#spdImp');
+  if(imp){ imp.className = 'spd-imp ' + (dSave >= 0 ? 'up' : 'dn'); imp.textContent = dSave > 0 ? `+${ft(dSave)} a month to Persely compared with your plan` : dSave < 0 ? `${ft(-dSave)} a month less to Persely than your plan` : 'The same saving as your plan'; }
+}
+// dragging the dividers (mouse and touch)
+(function(){
+  let drag = 0;
+  const setFrom = x => { const el = $('#spd'); if(!el || !drag) return; const r = el.getBoundingClientRect(), d = S._spDraft, F = 100 - d.must, v = Math.round(Math.max(0, Math.min(1, (x - r.left) / r.width)) * F);
+    if(drag === 1){ const ess = Math.max(5, Math.min(F - d.save - 3, v)); d.fun = F - d.save - ess; d.ess = ess; }
+    else { const end = Math.max(d.ess + 3, Math.min(F, v)); d.fun = end - d.ess; d.save = F - end; }
+    spdUpdate(); };
+  document.addEventListener('pointerdown', e => { const h = e.target.closest && e.target.closest('[data-sph]'); if(!h) return; drag = +h.dataset.sph; e.preventDefault(); try{ h.setPointerCapture(e.pointerId); }catch(_){} });
+  document.addEventListener('pointermove', e => { if(drag) setFrom(e.clientX); });
+  document.addEventListener('pointerup', () => { drag = 0; }); document.addEventListener('pointercancel', () => { drag = 0; });
+  document.addEventListener('keydown', e => { const h = e.target.closest && e.target.closest('[data-sph]'); if(!h || !S._spDraft || !/Arrow(Left|Right)/.test(e.key)) return; e.preventDefault(); e.stopPropagation();
+    const d = S._spDraft, F = 100 - d.must, st = e.key === 'ArrowRight' ? 1 : -1;
+    if(h.dataset.sph === '1'){ const ess = Math.max(5, Math.min(F - d.save - 3, d.ess + st)); d.fun = F - d.save - ess; d.ess = ess; } else { const end = Math.max(d.ess + 3, Math.min(F, d.ess + d.fun + st)); d.fun = end - d.ess; d.save = F - end; }
+    spdUpdate(); }, true);
+})();
 function catDetailHTML(c){
   const mo = shownMonth(), v = catSpend(mo.ym)[c] || 0, {lim, B, bucket, bucketPct, preset} = catLimit(c), inc = B || S.income.amount || 1;
   const pc = x => (Math.round(x / inc * 1000) / 10).toFixed(1).replace(/\.0$/, '') + '%';
@@ -3350,6 +3399,11 @@ document.addEventListener('click', e=>{
       S.rewards.unshift({id:'o' + g.id, title: travel ? 'Travel partner offer' : '5% cashback at a partner', note: travel ? '8% back on one booking. Up to 10 000 Ft.' : 'Up to 2 000 Ft back.', why:`Reached ${g.name}`}); }
     S._offer = null; closeSheet(); renderAll(); toast('Offer added to your rewards'); return; }
   if('splitopen2' in d){ sheet(splitPresetsSheet()); return; }
+  if('splitcustom' in d){ const p = presetSplit(S.splitPreset || 'suggested'); S._spDraft = {must:p.must, ess:p.ess, fun:p.fun, save:p.save}; sheet(splitEditSheet()); return; }
+  if('splitback' in d){ sheet(splitPresetsSheet()); return; }
+  if('splitsave' in d){ const dr = S._spDraft; S.splitCustom = {ess:dr.ess, fun:dr.fun, save:dr.save}; S.splitPreset = 'custom'; save(); closeSheet(); refreshPages(); renderView('fooldal'); toast(`Your split: everyday ${dr.ess}%, fun ${dr.fun}%, saving ${dr.save}%`);
+    if(typeof beStep === 'function' && !beQuiet()){ beEp('Anna sets her own split'); beStep('an', `Her income is shared: bills ${dr.must}%, everyday ${dr.ess}%, fun ${dr.fun}%, saving ${dr.save}%`); beStep('an', 'Every category limit is recalculated from it'); }
+    return; }
   if(d.splitset){ S.splitPreset = d.splitset; save(); closeSheet(); refreshPages(); renderView('fooldal'); toast(`Split: ${presetName(d.splitset)}. Your limits follow it`);
     if(typeof beStep === 'function' && !beQuiet()){ const p = presetSplit(d.splitset); beEp(`Anna picks the ${presetName(d.splitset)} split`); beStep('an', `Her income is shared: bills ${p.must}%, everyday ${p.ess}%, fun ${p.fun}%, saving ${p.save}%`); beStep('an', 'Every category limit is recalculated from it'); }
     return; }
