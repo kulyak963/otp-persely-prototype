@@ -6,6 +6,9 @@ function __checkAnalytics(){
   // Simple Persely (js/14b): with the flag on, a check that tests the pre-Simple first run runs its old assertion on the legacy first run (SP_LEGACY, the same
   // screens as ?simple=0) AND an equivalent new-world assertion; with ?simple=0 only the old assertion runs, unchanged.
   const SPF = typeof spOn === 'function' && spOn();
+  // Phase 7 (js/14c-simple-optin.js): the existing seed starts in the Classic view for a real student. Every check below that reads the new tab for that seed
+  // runs under an explicit simple view (SP_CHECK_VIEW, the whole run); spOptinChecks clears it and sets S.persely.view itself. Restored at the end.
+  const SPV0 = typeof SP_CHECK_VIEW !== 'undefined' ? SP_CHECK_VIEW : null; if(typeof SP_CHECK_VIEW !== 'undefined') SP_CHECK_VIEW = 'simple';
   const legacyR = fn => { if(typeof SP_LEGACY === 'undefined') return fn(); const k = SP_LEGACY; SP_LEGACY = true; try{ return fn(); } finally { SP_LEGACY = k; } };
   const SPL0 = typeof SP_LEGACY !== 'undefined' ? SP_LEGACY : false, SP0 = typeof SP !== 'undefined' ? {...SP} : null; if(SP0) SP.dry = true;   // no real sound or vibration while checking
   const spLeg = on => { if(typeof SP_LEGACY !== 'undefined') SP_LEGACY = on ? true : SPL0; };
@@ -1417,8 +1420,10 @@ function __checkAnalytics(){
     } catch(e){ ok('chk-phase6-otp-home: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); txReset(); try{ closeStory(); }catch(e){} while(stack.length) popPage(true); setDemoMode(dm20); S = sv20; cur = cur20; stack.push(...stk20); demo.locked = lock20; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views20[i])); }
   }
+  if(SIMPLE_PERSELY && typeof spOptinChecks === 'function') spOptinChecks(ok);   // Phase 7 opt in and Classic view (js/14c-simple-optin.js); off with ?simple=0
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
+  if(typeof SP_CHECK_VIEW !== 'undefined') SP_CHECK_VIEW = SPV0;
   if(OHF){ ohLeg(false); try{ renderAll(); }catch(e){} }   // back to the OTP Home
   spLeg(false); if(SP0){ try{ spHideReward(true); }catch(e){} Object.assign(SP, SP0, {rewardOn:false}); }
   const bad = out.filter(r => !r.pass);
