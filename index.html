@@ -581,6 +581,12 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .late{color:var(--orange-t);font-weight:600}
 .gwrap.fx .card.goal{margin-bottom:0;border-bottom-left-radius:0;border-bottom-right-radius:0}
 .gfix{display:block;width:100%;min-height:var(--tap);margin:0 0 12px;padding:10px 16px;text-align:left;background:var(--orange-l);color:var(--orange-t);font-weight:700;font-size:var(--fs-s);border-radius:0 0 16px 16px;box-shadow:var(--sh)}
+.setupcard{padding:16px 14px 6px}.setupcard h2{margin:0 0 4px;font-size:1.25rem;line-height:1.25}.setupcard .k{margin:0 0 12px;font-size:var(--fs-s);color:var(--ink2);line-height:1.4}
+.setupcard .later{display:block;width:100%;min-height:var(--tap);margin-top:4px;font-weight:700;color:var(--green-t);font-size:var(--fs-m)}
+.setupcard .wn-grid.three button{min-height:76px}
+button.trust{width:100%;background:none}
+.sring.off .sring-in{background:#C9CED6;box-shadow:0 0 0 2.5px var(--bg),0 0 0 4px #E3E6EC;color:#fff}.ptot .sring.off .sring-in{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #E3E6EC}
+.sring.off small{color:var(--muted-t);font-weight:500}
 .hint{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:6px 6px 6px 12px;margin:0 0 10px;box-shadow:var(--sh);border-left:4px solid var(--green);font-size:var(--fs-s);line-height:1.4;color:var(--ink2)}
 .hint-p{flex:none;font-weight:800;color:var(--green-t);font-size:var(--fs-xs)}
 .hint-t{flex:1;min-width:0}
@@ -1269,7 +1275,7 @@ function safeToSpend(st = S){
 /* ---------- console self-checks: window.__checkAnalytics() ---------- */
 function __checkAnalytics(){
   const out = [], ok = (name, cond, info) => { out.push({name, pass:!!cond, info}); };
-  const F = fresh(), clone = () => JSON.parse(JSON.stringify(F));
+  const F = fresh('existing'), clone = () => JSON.parse(JSON.stringify(F));   // the old default seed: the existing user
   const det = detectRecurring(F), keys = det.bills.map(b => b.key), want = {'SZABÓ DÓRA':42000, 'MVM NEXT ENERGIAKERESKEDŐ':3600, 'FŐGÁZ ZRT.':2400, 'DIGI KFT.':4000, 'BKK ZRT. DIÁKBÉRLET':3450, 'YETTEL MAGYARORSZÁG':5550, 'NETFLIX':3490, 'SPOTIFY':1790};
   Object.entries(want).forEach(([k, v]) => { const b = det.bills.find(x => x.key === k); ok('bill found: ' + k, b && b.exp === v, b && b.exp); });
   ok('no other recurring payments (groceries, food, transport are not bills)', keys.length === Object.keys(want).length, keys);
@@ -1519,6 +1525,36 @@ function __checkAnalytics(){
     try{ S = JSON.parse(JSON.stringify(F)); S.goals = []; S.onboarded = false; S._draft = {name:'Check goal', ic:'star', target:100000, date:'2028-06-01', weekly:0, round:false}; svt.dataset.cgcreate = ''; document.body.appendChild(svt); svt.click(); onb0 = S.onboarded; }
     catch(e){ onb0 = String(e); } finally { svt.remove(); S = sv6; try{ renderAll(); }catch(e){} }
     ok('chk-onboarded-any-path: the New + create page marks the user onboarded', onb0 === true, onb0); }
+  { // Phase 1a: two seeds, no auto pop-up, setup card above the fold, hints counted on screen
+    const sv7 = S, cur7 = cur, txt7 = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    try{
+      const nw = fresh(), ex = fresh('existing');
+      S = nw; const hubN = txt7(vHub()), homeN = txt7(vFooldal());
+      ok('chk-seed-new-default: fresh() is the brand-new user (0 Ft on Persely, no goals, not onboarded, no streak), and no screen contradicts it', nw.seed === 'new' && nw.goals.length === 0 && acc('persely').v === 0 && total() === 0 && !nw.onboarded && nw.streak === 0 && nw.history.length === 0 && nw.friends.length === 0
+        && /What are you saving for\?/.test(hubN) && /Your streak starts with the first deposit/.test(hubN) && /Start your first goal/.test(homeN) && !/[1-9]\d*(\s\d{3})* goals?\b/.test(hubN + homeN.replace(/Persely/g, '')) && !/\d+-week streak/.test(hubN + homeN) && !/110 000/.test(hubN + homeN),
+        [nw.seed, nw.goals.length, nw.onboarded, hubN.slice(0, 160)]);
+      S = ex; const hubE = txt7(vHub()), homeE = txt7(vFooldal());
+      ok('chk-seed-existing: fresh(\'existing\') is the current seed (3 goals, Summer holiday 64 000 Ft, 8-week streak, onboarded) and keeps the old tab and Home', ex.seed === 'existing' && ex.goals.length === 3 && ex.onboarded && ex.streak === 8 && acc('persely').v === 64000 && /Summer holiday/.test(hubE) && /8-week streak/.test(hubE + homeE) && !/What are you saving for\?/.test(hubE) && !/Start your first goal/.test(homeE)
+        && typeof loadSeed === 'function' && /data-dseed/.test($('#demoPanel').innerHTML), [ex.seed, ex.goals.length, ex.streak]);
+      S = nw; cur = 'hub'; renderView('hub'); let tiles = [], fold = null;
+      const v = $('#v-hub'), first = v.children[1], hubH = v.innerHTML; tiles = [...v.querySelectorAll('#setupcard [data-tilepick]')].map(b => b.textContent.trim());
+      const prevOn = v.classList.contains('on'); v.classList.add('on'); document.querySelectorAll('.view').forEach(x => { if(x !== v) x.dataset.chk7 = x.classList.contains('on') ? '1' : ''; x.classList.remove('on'); });
+      const last = v.querySelector('#setupcard [data-tilepick="custom"]'), tb = $('#tabbar'), nl = v.querySelector('#setupcard .later');
+      if(last && tb && nl){ const r = nl.getBoundingClientRect(), t = tb.getBoundingClientRect(); fold = {bottom:Math.round(r.bottom), tabbarTop:Math.round(t.top), vh:innerHeight}; }
+      document.querySelectorAll('.view').forEach(x => { if(x !== v && x.dataset.chk7 === '1') x.classList.add('on'); delete x.dataset.chk7; }); if(!prevOn) v.classList.remove('on');
+      ok('chk-setup-above-fold: the setup card is the first block, with the 6 tiles (Own home, Travel, Driving licence, Safety net, Studies, Something else), no "Trending", Not now, the Junior line and the OTP marker, all above the tab bar', first && first.id === 'setupcard' && tiles.join('|') === 'Own home|Travel|Driving licence|Safety net|Studies|Something else' && !/Trending/.test(hubH) && /<!-- CONFIRM WITH OTP -->/.test(hubH) && /3\.0% a year on up to 500 000 Ft with your Junior account until \d/.test(txt7(hubH)) && /Not now/.test(txt7(hubH)) && (!fold || fold.bottom <= fold.tabbarTop), [tiles, fold]);
+      const lf = launchFlow.toString(), svU = S.updateSeen; S.updateSeen = false; launchFlow(0); const popOn = $('#wn').classList.contains('on') || !!$('#wn').innerHTML.trim(); S.updateSeen = svU;
+      ok('chk-no-autopopup: nothing opens at launch (no what\'s-new modal), both seeds start with the pop-up already seen, and Home is where the app starts', !popOn && !/showWhatsNew/.test(lf) && nw.updateSeen === true && ex.updateSeen === true && TABS[0][0] === 'fooldal', [popOn, nw.updateSeen]);
+      // hints: a hint is not seen when it is only rendered, nor when the tab is left, nor when it is off screen; it is seen after it stood on screen for 1 s
+      S = JSON.parse(JSON.stringify(F)); S.hints = {}; S.onboarded = true; HINT_SHOWN.clear(); cur = 'hub'; renderView('hub');
+      const drawn = [...document.querySelectorAll('#v-hub .hint[data-hk]')].map(e => e.dataset.hk), seenAtRender = Object.keys(S.hints).length, watching = !!HINT_OBS;
+      const stk7 = stack.splice(0), dh7 = demo.locked; demo.locked = false;   // no page and no lock screen over the tab for this check
+      cur = 'fooldal'; const offTab = hintSeenAfter1s('total'), afterOff = !!S.hints.total; cur = 'hub';
+      const onTab = hintSeenAfter1s('total'), afterOn = !!S.hints.total; stack.push(...stk7); demo.locked = dh7; const tabSrc = tab.toString() + pushPage.toString();
+      ok('chk-hint-seen-on-screen: a hint counts as seen only after 1 s on screen (observer on every hint; not at render, not when the tab is left or a page opens)', drawn.includes('total') && seenAtRender === 0 && watching && offTab === false && afterOff === false && onTab === true && afterOn && !/S\.hints\[/.test(tabSrc) && /IntersectionObserver/.test(watchHints.toString()) && /1000/.test(watchHints.toString()), [drawn, seenAtRender, watching, offTab, onTab]);
+    } catch(e){ ok('chk-phase1a: the new checks ran without errors', false, String(e && e.stack || e)); }
+    finally { S = sv7; cur = cur7; HINT_SHOWN.clear(); try{ renderAll(); }catch(e){} }
+  }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   const bad = out.filter(r => !r.pass);
   console.log(`__checkAnalytics: ${out.length - bad.length}/${out.length} passed`); bad.forEach(r => console.log('FAIL', r.name, r.info));
@@ -1528,9 +1564,11 @@ window.__checkAnalytics = __checkAnalytics;
 
 /* ================= demo data ================= */
 const KEY='otp-clone-en-v5';
-const fresh = () => { const H = demoHistory(); const o = ({
+/* Two seeds (decision D1). fresh() = the brand-new user, the pitch default: 0 Ft on Persely, no goals, no streak, not onboarded.
+   fresh('existing') = the existing user (Summer holiday, PS5, Festival, an 8-week streak). The demo panel switches between them (key X). */
+const seedExisting = () => { const H = demoHistory(); const o = ({
   name:'Kiss Anna', ini:'KA',
-  updateSeen:false, onboarded:false,   // pop-up after the update, then onboarding
+  updateSeen:true, onboarded:true,     // existing user (the new-user seed turns onboarding off)
   verified:true, bridge:false,         // Junior customers get 3.0% automatically; bridge = 3.0% for 12 more months after Junior ends
   income:{amount:75000, day:5},        // money the bank sees coming in around the 5th (salary, scholarship, family)
   // money in: payday rule (share of each payment of 10 000 Ft or more, asks first), weekly transfer, round-ups
@@ -1561,7 +1599,15 @@ const fresh = () => { const H = demoHistory(); const o = ({
   disc:{activated:[]},
   tx:H.tx
 });
-  o.bills = mergeBills([], detectRecurring(o).bills); return o; };
+  o.bills = mergeBills([], detectRecurring(o).bills); o.seed = 'existing'; return o; };
+// brand-new user: same bank history (money in, card payments, bills) but nothing in Persely yet. Nothing in the data contradicts "Pick a goal"
+const seedNew = () => { const o = seedExisting();
+  Object.assign(o, {seed:'new', updateSeen:true, onboarded:false, streak:0, best:0, skips:0, history:[], skipped:[], savedWeek:false, challenges:{}, friends:[], friendsOpen:false, friendsOptIn:false,
+    toured:false, hints:{}, monthSaved:0, juniorDays:300, goals:[], rewards:[], goalRewarded:[],
+    payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday', insight:false, insightUsed:false});
+  o.accounts = o.accounts.map(a => a.id === 'persely' ? {...a, n:'Persely', v:0, h:'No goals yet'} : a);
+  return o; };
+const fresh = (kind = 'new') => kind === 'existing' ? seedExisting() : seedNew();
 let S; try{ S = JSON.parse(localStorage.getItem(KEY)) || fresh(); }catch(e){ S = fresh(); }
 try{ (S.goals || []).forEach(g => { if(g.id === 'ps5' && g.name === 'PS5 + GTA 6'){ g.name = 'PS5 + GTA VI'; g.date = '2026-11-19'; } }); }catch(e){}   // older saved demo state
 if(!S.analyst) S.analyst = fresh().analyst;   // state saved before the analyst existed
@@ -1612,12 +1658,12 @@ function vFooldal(){
   ${bfCard()}
   <div class="sec"><span>Balance</span><a data-go="szamlaim">All accounts ${I('chev',16)}</a></div>
   <div class="accs" id="accs">${S.accounts.map(a => a.id === 'persely'
-    ? `<button class="acc" data-tab="hub"><div class="n">Persely · total</div><div class="v num">${ft(total())}</div><div class="h">${plural(S.goals.filter(g => !isEur(g)).length,'goal')}${eurTotal() ? ` + ${eur(eurTotal())}` : ''}</div></button>`
+    ? `<button class="acc" data-tab="hub"><div class="n">Persely · total</div><div class="v num">${ft(total())}</div><div class="h">${S.goals.length ? plural(S.goals.filter(g => !isEur(g)).length,'goal') : 'No goals yet'}${eurTotal() ? ` + ${eur(eurTotal())}` : ''}</div></button>`
     : `<button class="acc" data-go="szamlaim"><div class="n">${a.n}</div><div class="v num">${ft(a.v)}</div><div class="h">${a.h}</div></button>`).join('')}</div>
   <div class="dots">${S.accounts.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>
   ${safeRow()}
-  <button class="card hubteaser" data-tab="hub">${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.onboarded && S.streak === 0
-    ? `<b>New in Persely: goals with bonus interest</b><small>Set up in 1 minute</small>`
+  <button class="card hubteaser" data-tab="hub">${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.goals.length
+    ? `<b>Start your first goal</b><small>Pick what you are saving for</small>`
     : `<b style="display:flex;align-items:center;gap:4px">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Safe this week' : 'Ends Sunday. Any amount keeps it going'}</small>`}</span>${I('chev',20)}</button>
   ${insightCard()}
   <div class="sec"><span>My monthly spending</span><a data-go="kiadas">Details ${I('chev',16)}</a></div>
@@ -1811,6 +1857,9 @@ const eurTotal = () => S.goals.filter(isEur).reduce((a,g) => a + g.saved, 0);
 const r10 = v => v < 100 ? Math.round(v) : Math.round(v / 10) * 10;
 const yearNet = (base = total()) => r10(Math.min(base, CAP) * rate() / 100 * (1 - TAX));
 const plural = (n, w) => `${n} ${w}${n===1?'':'s'}`;
+// the day the Junior package ends, on the demo clock (placeholder until OTP confirms the end rule)
+const juniorEndLabel = () => { const d = new Date(2026, 10 + (S.months || 0), S.demoDay || 14); d.setDate(d.getDate() + (S.juniorDays || 0)); return d.toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'}); };
+const seedKind = () => S.seed || (S.goals.length ? 'existing' : 'new');
 // streak flame (lit = orange, unlit = grey)
 const flame = (s=22, lit=true) => `<svg class="flame" width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true" style="flex:none"><path fill="${lit?'#FF7A1A':'#D5D9DF'}" d="M12 2c1 4 5.2 5.6 5.2 11.2a5.2 5.2 0 0 1-10.4 0c0-2.1 1-3.6 2-4.6 0 2 1 3 2.1 3 0-3-1-5.2 1.1-9.6z"/><path fill="${lit?'#FFC23A':'#EEF0F3'}" d="M12 12.5c.6 1.6 2.4 2.2 2.4 4.3a2.4 2.4 0 0 1-4.8 0c0-1.2.8-2 1.5-2.4 0 .8.4 1.2.9 1.2 0-1.2-.4-2 0-3.1z"/></svg>`;
 const fromName = id => acc(id).n;
@@ -1934,19 +1983,35 @@ function removeGoal(id){
   return {name:g.name, moved, heir:heir ? heir.name : ''};
 }
 // the Persely account of the holiday goal comes back when the demo brings that goal back
-function healGoalAccounts(){ if(S.goals.some(g => g.id === 'holiday') && !acc('persely')){ const a = fresh().accounts.find(x => x.id === 'persely'); if(a){ a.v = 0; S.accounts.splice(Math.min(1, S.accounts.length), 0, a); } } }
+function healGoalAccounts(){ if(S.goals.some(g => g.id === 'holiday') && !acc('persely')){ const a = fresh('existing').accounts.find(x => x.id === 'persely'); if(a){ a.v = 0; S.accounts.splice(Math.min(1, S.accounts.length), 0, a); } } }
 /* ---------- Persi's hints (replace the tour) ----------
-   One hint at a time, shown above its block on a visit to the Persely tab. It counts as shown when the user taps Got it or leaves the tab.
-   S.hints remembers which were shown (reset in fresh()). Nothing shows before onboarding is done. */
+   One hint per block, shown on the block's first appearance. A hint counts as seen only after it has been inside the visible area for 1 second
+   (IntersectionObserver in watchHints), never because the user left the tab or opened a page. Got it also counts. S.hints remembers the seen ones.
+   HINT_SHOWN holds the hints drawn on this visit, so a hint that has just counted stays until the next visit. Nothing shows before onboarding is done (the demo key T forces them). */
 const HINTS = [['total','Your savings','3.0% a year with your Junior account. Add or withdraw any time, no fees.'],
   ['goals','Your goals','Each goal shows the month you get there.'],
   ['auto','Money in each month','What moves in by itself. Change it on each goal.'],
   ['week','Your habits','Save any amount once a week to keep your streak going. Automatic savings count too.']];
-let HINT_NOW = null;
-function pickHint(force){ if(HINT_NOW && !S.hints[HINT_NOW]) return; const h = (S.onboarded || force) ? HINTS.find(x => !S.hints[x[0]]) : null; HINT_NOW = h ? h[0] : null; }
-function endHint(){ if(!HINT_NOW) return; S.hints[HINT_NOW] = 1; HINT_NOW = null; save(); renderView('hub'); }
-function showHints(){ S.hints = {}; HINT_NOW = null; save(); closeSheet(); tab('hub'); pickHint(true); renderView('hub'); }   // demo: show them again
-const hintHTML = key => { const h = HINT_NOW === key && HINTS.find(x => x[0] === key); return h ? `<div class="hint"><span class="hint-p">Persi</span><span class="hint-t"><b>${h[1]}.</b> ${h[2]}</span><button class="hint-x" data-hintok="1">Got it</button></div>` : ''; };
+let SETUP_COLLAPSED = false;   // "Not now" on the setup card: one row until the next visit to the Persely tab
+const HINT_SHOWN = new Set(); let HINT_FORCE = false, HINT_OBS = null; const HINT_TIMERS = {};
+const hintOn = key => (S.onboarded || HINT_FORCE) && (!S.hints[key] || HINT_SHOWN.has(key));
+function pickHint(force){ if(force) HINT_FORCE = true; }
+function markHintSeen(key){ if(S.hints[key]) return; S.hints[key] = 1; save(); }   // the one place a hint becomes "seen"
+function endHint(key){ if(!key) return; markHintSeen(key); HINT_SHOWN.delete(key); renderView('hub'); }   // Got it
+function showHints(){ S.hints = {}; HINT_SHOWN.clear(); HINT_FORCE = true; save(); closeSheet(); tab('hub'); }   // demo: show them again
+function hintSeenAfter1s(key){   // called when a hint has stayed on screen for 1 s
+  if(cur !== 'hub' || stack.length || document.hidden || (typeof demo !== 'undefined' && demo.locked)) return false;
+  markHintSeen(key); return true; }
+function watchHints(){   // after every render of the Persely tab: start the 1 s clock for each hint that is at least 60% inside the visible area
+  if(HINT_OBS){ HINT_OBS.disconnect(); HINT_OBS = null; }
+  Object.keys(HINT_TIMERS).forEach(k => { clearTimeout(HINT_TIMERS[k]); delete HINT_TIMERS[k]; });
+  const els = document.querySelectorAll('#v-hub .hint[data-hk]'); if(!els.length || typeof IntersectionObserver === 'undefined') return;
+  HINT_OBS = new IntersectionObserver(es => es.forEach(en => { const k = en.target.dataset.hk;
+    if(en.isIntersecting && en.intersectionRatio >= .6){ if(!HINT_TIMERS[k] && !S.hints[k]) HINT_TIMERS[k] = setTimeout(() => { delete HINT_TIMERS[k]; hintSeenAfter1s(k); }, 1000); }
+    else if(HINT_TIMERS[k]){ clearTimeout(HINT_TIMERS[k]); delete HINT_TIMERS[k]; } }), {threshold:[0, .6, 1]});
+  els.forEach(e => HINT_OBS.observe(e));
+}
+const hintHTML = key => { const h = hintOn(key) && HINTS.find(x => x[0] === key); if(h) HINT_SHOWN.add(key); return h ? `<div class="hint" data-hk="${key}"><span class="hint-p">Persi</span><span class="hint-t"><b>${h[1]}.</b> ${h[2]}</span><button class="hint-x" data-hintok="${key}">Got it</button></div>` : ''; };
 // Persi: one short line
 function persiSays(){
   const g = ruleGoal(), pct = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100));
@@ -2346,7 +2411,39 @@ function scoreRow(){   // the score part of the "Your habits" card (analyst on o
   const n = scoreNow(), d = n.t - scorePrev().t;
   return `<button class="hab-score" data-sheet="score" data-tour="score"><span class="t24d"><b class="num">${n.t}</b><small>of 100</small></span><span class="t"><b class="u-bk-title">Financial health score</b><small style="color:${deltaCol(d)}">${deltaTxt(d)} since last month</small><small class="hs-l">${SCORE_LINE}</small></span><span class="chev">${I('chev',20)}</span></button>`;
 }
+/* the tile chooser: the single entry to goal setup (flow A2). First block of the Persely tab for a user with no goal. */
+function setupCard(){   // the 500 000 Ft cap and the end date in the line below are placeholders until OTP confirms the end rule
+  if(SETUP_COLLAPSED) return `<button class="setup" data-setupopen><span class="u-ico-g">${I('star',24)}</span><span class="u-fx1"><b>Pick a goal when you're ready</b></span><span class="u-ico-g">${I('chev',20)}</span></button>`;
+  return `<div class="card setupcard" id="setupcard"><h2>What are you saving for?</h2>
+    <!-- CONFIRM WITH OTP -->
+    <div class="k">3.0% a year on up to 500 000 Ft with your Junior account until ${juniorEndLabel()}</div>
+    <div class="wn-grid three">${Object.entries(GOAL_PRESETS).map(([k,g]) => `<button data-tilepick="${k}">${I(g.ic,24)}${g.label}</button>`).join('')}<button data-tilepick="custom">${I('plus',24)}Something else</button></div>
+    <button class="later" data-setuplater>Not now</button></div>`;
+}
+// the Persely tab before the first goal (flow 3.3, left column)
+function vHubNew(){
+  const chev = `<span class="chev">${I('chev',20)}</span>`, R = 104, C = 2 * Math.PI * R, arc = C * .75;
+  const junior = `<button class="row" data-go="grad"><span class="t24d"><b class="num">${S.juniorDays}</b><small>${S.juniorDays === 1 ? 'day' : 'days'}</small></span><span class="t"><b class="u-bk-title">Junior package until ${juniorEndLabel()}</b><small>Keep my 3.0% ›</small></span>${chev}</button>`;
+  return `<div class="tabtitle">Persely</div>
+  ${bfCard()}
+  ${setupCard()}
+  ${hintHTML('total')}<div class="ptot" data-tour="total">
+    <div class="persi" data-tour="persi">${pig('happy', 48)}${hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>Hi, I'm Persi. Let's pick a goal.</span></div>`}
+      <span class="sring off" data-tour="story" role="img" aria-label="Your story starts at the end of the month"><span class="sring-in">${S.period.slice(0,3).toUpperCase()}</span><small>At month end</small></span></div>
+    <div class="sec"><span>Total in Persely</span><span class="pill ok">Junior 3.0%</span></div>
+    <div class="gauge">
+      <svg viewBox="0 0 250 250" style="transform:rotate(135deg)" aria-hidden="true"><circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/></svg>
+      <div class="core"><small>Saved so far</small><b class="num">${ft(0)}</b></div>
+    </div>
+    <button class="trust" data-sheet="how" aria-label="Good to know: withdraw any time, no fees, insured"><span>${I('check',15)} Withdraw any time</span><span>${I('check',15)} No fees</span><span>${I('shield',15)} Insured ›</span></button>
+  </div>
+  ${junior}
+  ${hintHTML('week')}<div class="sec"><span>Your habits</span></div>
+  <div class="card hab" data-tour="week"><div class="u-rowc">${flame(36, false)}<div class="u-fx1"><div style="font-size:1.0625rem;font-weight:700">Your streak starts with the first deposit</div><div class="u-k-sm">Any amount once a week keeps it going</div></div></div></div>
+  <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:0 18px;margin:8px 0 6px"><a class="link lnk44" style="display:inline-flex;align-items:center" data-sheet="how">How Persely works ${I('chev',16)}</a></div>`;
+}
 function vHub(){
+  if(!S.goals.length) return vHubNew();
   const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
   const weeks = Array.from({length:8}, (_,i) => S.week - 7 + i);
   const gl = S.goals.filter(g => !isEur(g)), gT = gl.reduce((x, g) => x + gTarget(g), 0), gp = gT > 0 ? Math.min(1, gl.reduce((x, g) => x + gSaved(g), 0) / gT) : 0, R = 104, C = 2 * Math.PI * R, arc = C * .75;   // the ring: saved across goals against all targets, as Home shows spent against plan
@@ -2357,7 +2454,7 @@ function vHub(){
   ${bfCard()}
   ${juniorTop ? junior : ''}
   ${hintHTML('total')}<div class="ptot" data-tour="total">
-    <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${HINT_NOW ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
+    <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
       <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
     <div class="sec"><span>Total in Persely</span><span class="pill ${st?'ok':''}">${S.bridge ? 'Graduate 3.0%' : S.verified ? 'Junior 3.0%' : 'Standard rate'}</span></div>
     <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${gl.length ? `${Math.round(gp * 100)}% of what your goals need` : 'Set a goal to fill the ring'}${et ? ` · + ${eur(et)} in euro goals` : ''}</div>
@@ -2660,13 +2757,12 @@ const TABS = [['fooldal','home','Home',vFooldal],['utalas','money','Transfer',vU
 let cur = 'fooldal';
 // orange dot on the Persely tab while today's saving is still open
 function renderTabs(){ $('#tabbar').innerHTML = TABS.map(([id,ic,l])=>`<button class="tb ${id===cur?'on':''}" data-tab="${id}">${I(ic)}${id==='hub' && !S.savedWeek && S.streak>0 ? '<i class="nd"></i>' : ''}${l}</button>`).join(''); }
-function renderView(id){ const t=TABS.find(x=>x[0]===id); $('#v-'+id).innerHTML = t[3](); }
+function renderView(id){ const t=TABS.find(x=>x[0]===id); $('#v-'+id).innerHTML = t[3](); if(id === 'hub') watchHints(); }
 function renderAll(){ syncSplit(); TABS.forEach(t=>renderView(t[0])); renderTabs(); refreshPages(); save(); if(typeof mountPig==='function') mountPig(); }
 let NAVC = {n:0};   // counts page changes: something the app plans to open later checks that nothing else was opened meanwhile
 function tab(id){
   NAVC.n++; hideToast();   // a toast belongs to the page where the action happened: it closes when the student goes somewhere else
-  if(cur === 'hub' && id !== 'hub' && HINT_NOW){ S.hints[HINT_NOW] = 1; HINT_NOW = null; save(); }   // leaving the tab counts the hint as shown
-  if(id === 'hub') pickHint();
+  if(id === 'hub' && cur !== 'hub'){ HINT_SHOWN.clear(); SETUP_COLLAPSED = false; }   // a new visit: hints show again if unseen, the setup card is whole again
   cur=id; document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on', v.id==='v-'+id));
   while(stack.length) popPage(true);
   renderView(id); renderTabs(); $('#v-'+id).scrollTop=0;
@@ -2681,7 +2777,6 @@ function pageHTML(id){
 }
 function pushPage(id){
   NAVC.n++; hideToast();
-  if(cur === 'hub') endHint();   // opening a page counts the hint as shown
   const el = document.createElement('div'); el.className='page'; el.dataset.id=id;
   el.innerHTML = pageHTML(id); $('#stack').appendChild(el); stack.push(el);
   if(typeof mountPig === 'function') setTimeout(mountPig, 30);
@@ -3018,7 +3113,7 @@ document.addEventListener('click', e=>{
     else { S.persely.auto=true; renderAll(); }
     return;
   }
-  if('reset' in d){ closeOnb(); closeWhatsNew(); S=fresh(); renderAll(); tab('fooldal'); showSplash(1100); launchFlow(1300); return; }
+  if('reset' in d){ closeOnb(); closeWhatsNew(); S=fresh(); renderAll(); tab('fooldal'); showSplash(1100); return; }
   if('pushon' in d){ enablePush(); return; }
   if('pushtest' in d){ testPush(); return; }
   /* Persely tab */
@@ -3029,9 +3124,9 @@ document.addEventListener('click', e=>{
     g.date = f.date; if(f.x) bumpWeekly(g, f.x); renderAll(); undoable(before, `${g.name}: new date ${pkMonthName(f.date)}${f.x ? `, +${ft(f.x)} a week` : ''}`); return; }
   if(d.behindlump){ const g = goalById(d.behindlump), v = g ? lumpOf(g) : 0; if(!v) return; const before = snap();
     depositTo(g, v); renderAll(); undoable(before, `${ft(v)} moved to ${g.name}`); return; }
-  if(d.hintok){ endHint(); return; }
+  if(d.hintok){ endHint(d.hintok); return; }
   if(d.goal){ S._detail = d.goal; closeSheet(); pushPage('goal'); return; }
-  if(d.dm){ closeSheet(); ({payday:salaryArrives, coffee, dori:doriJoins, week:nextWeek, month:()=>fastForward(1, 'month'), month2:()=>fastForward(2, 'month'), year:()=>fastForward(S.months < 12 ? 12 - S.months : 12, 'year'), sem:endSemester, grad:graduation, update:demoUpdateDay,
+  if(d.dm){ closeSheet(); ({payday:salaryArrives, coffee, dori:doriJoins, week:nextWeek, month:()=>fastForward(1, 'month'), month2:()=>fastForward(2, 'month'), year:()=>fastForward(S.months < 12 ? 12 - S.months : 12, 'year'), sem:endSemester, grad:graduation, update:demoUpdateDay, seed:toggleSeed,
     bills:billMissed, reset:demoStart})[d.dm](); return; }
   // rules from inside one Persely
   if(d.gpay){ const before = snap(); if(S.payday.on && S.ruleGoal === d.gpay) S.payday.on = false; else { S.payday.on = true; S.ruleGoal = d.gpay; } syncSplit(); renderAll(); undoable(before, S.payday.on ? `Payday rule → ${goalById(d.gpay).name}` : 'Payday rule off'); return; }
@@ -3243,6 +3338,9 @@ document.addEventListener('click', e=>{
   if(d.wnpick){ S.updateSeen = true; save(); closeWhatsNew(); startOnb(d.wnpick); return; }
   if('wnlater' in d){ S.updateSeen = true; save(); closeWhatsNew(); toast('You can set it up any time in the Persely tab'); return; }
   if('onbstart' in d){ startOnb('travel'); return; }
+  if(d.tilepick){ startOnb(d.tilepick); return; }
+  if('setuplater' in d){ SETUP_COLLAPSED = true; renderView('hub'); return; }
+  if('setupopen' in d){ SETUP_COLLAPSED = false; renderView('hub'); return; }
   if('onbnext' in d){
     if(STEPS[O.i] === 'goal'){ keepOnbName(); if(!cleanName(O.name)){ toast('Give your goal a name'); return; } if(O.target < PK_MIN) pkSet('onb', PK_MIN); }
     O.i = Math.min(STEPS.length - 1, O.i + 1); renderOnb(); return;
@@ -3263,7 +3361,7 @@ document.addEventListener('click', e=>{
     applyOnb(); const g = goalById('onb'); if(O.first) depositTo(g, O.first, O.from);
     S.remind = O.remind;
     if(O.remind && PUSH.supported && (PUSH.standalone || !PUSH.ios) && PUSH.perm === 'default') enablePush();
-    closeOnb(); pickHint(); renderAll();
+    closeOnb(); renderAll();
     toast(`${g.name} created${O.first ? `. ${ft(O.first)} is in` : ''}`);
     if(O.first && pig3d) setTimeout(() => pig3d.celebrate(), 400);   // the first coin drops in
     return;
@@ -3671,9 +3769,9 @@ function mountPig(){ if(pig3d) pig3d.mount(); }
 const cleanName = s => String(s || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 30);   // custom names are typed by the user: no markup, one line, 30 characters
 const customGoal = () => ({ic:'star', name:'', target:100000, date:pkIdxDate(pkNow() + 12)});   // "Something else": own name, 100 000 Ft, 12 months ahead
 const GOAL_PRESETS = {
-  home:{label:'Own home', ic:'home', name:'First home fund', target:500000, date:'2029-06-01', hot:true},
+  home:{label:'Own home', ic:'home', name:'First home fund', target:500000, date:'2029-06-01'},
   travel:{label:'Travel', ic:'plane', name:'Erasmus in Lisbon', target:150000, date:'2027-09-01'},
-  car:{label:'Car', ic:'car', name:'Driving licence', target:350000, date:'2028-06-01'},
+  car:{label:'Driving licence', ic:'car', name:'Driving licence', target:350000, date:'2028-06-01'},
   safety:{label:'Safety net', ic:'lock', name:'Safety net', target:200000, date:'2027-12-01'},
   study:{label:'Studies', ic:'edu', name:'Study fund', target:120000, date:'2027-09-01'}
 };
@@ -3797,23 +3895,17 @@ function coinSound(){   // a short coin clink, once, when the slider is let go
 const O = { i:0 };
 const STEPS = ['goal','how','sum'];   // 3 screens: goal, money in, summary with the optional first deposit
 const onbMonthly = () => (O.payOn ? incomeShare(O.pct) : 0) + (O.weeklyOn ? Math.round(O.weekly * 52 / 12) : 0) + (O.roundOn ? ROUND_EST : 0);
-// the day the update arrives: nothing set up yet
-function updateDayState(){
-  Object.assign(S, {streak:0, best:0, history:[], skipped:[], savedWeek:false, skips:0, challenges:{}, friends:[], friendsOptIn:false, friendsOpen:false, toured:false, hints:{}, monthSaved:4000,
-    verified:true, bridge:false, payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday',
-    insight:false, insightUsed:false});
-  S.goals = S.goals.filter(g => g.id === 'holiday' || g.id === 'ps5');
-}
 // 8 weeks later: Junior customer, payday rule on, habit formed (the state used for the main demo)
 function week8State(){
-  const f = fresh();
-  Object.assign(S, {streak:8, best:8, savedWeek:false, skips:1, updateSeen:true, onboarded:true, verified:true,
+  const f = fresh('existing'), hadHoliday = S.goals.some(g => g.id === 'holiday');
+  Object.assign(S, {seed:'existing', streak:8, best:8, savedWeek:false, skips:1, updateSeen:true, onboarded:true, verified:true,
     history: Array.from({length:8}, (_,i) => S.week - 8 + i), skipped:[], friends:f.friends, friendsOptIn:false, friendsOpen:false, toured:true, hints:Object.fromEntries(HINTS.map(h => [h[0], 1])), monthSaved:23500,
     payday:{on:true, pct:10, ask:true, floor:true}, insight:true, insightUsed:false});
   if(!goalById(S.ruleGoal)) S.ruleGoal = 'holiday';
   S.roundup = {on:true, goal:S.ruleGoal};
   f.goals.forEach(g => { if(!S.goals.some(x => x.id === g.id || x.name === g.name) && S.goals.length < 5) S.goals.push(g); });
   healGoalAccounts();
+  if(!hadHoliday && S.goals.some(g => g.id === 'holiday')){ const pa = f.accounts.find(x => x.id === 'persely'), cu = acc('persely'); if(pa && cu) Object.assign(cu, pa); }   // coming from the new-user seed: Summer holiday brings its Persely balance
   closeWhatsNew(); closeOnb(); renderAll(); toast('Demo: 8 weeks later');
 }
 function showWhatsNew(){
@@ -3827,10 +3919,9 @@ function showWhatsNew(){
   w.classList.add('on'); mountPig();
 }
 function closeWhatsNew(){ const w = $('#wn'); w.classList.remove('on'); w.innerHTML = ''; mountPig(); }
-function launchFlow(delay=1500){
-  if(S.updateSeen) return;
-  setTimeout(()=>{ if(S.updateSeen) return; updateDayState(); renderAll(); tab('fooldal'); showWhatsNew(); }, delay);
-}
+// The automatic what's-new pop-up is retired (flow A2): nothing opens at launch, Home shows after the splash. The tile chooser is the setup card on the Persely tab.
+// showWhatsNew() / closeWhatsNew() stay in the file but nothing calls showWhatsNew any more.
+function launchFlow(){ /* no pop-up */ }
 function startOnb(key){
   const custom = key === 'custom', g = custom ? customGoal() : (GOAL_PRESETS[key] || GOAL_PRESETS.travel);
   Object.assign(O, {i: 0, key, ic:g.ic, name:g.name, target:g.target, typeAmt:custom ? 0 : g.target, date:g.date, focusName:custom,
@@ -4501,10 +4592,10 @@ function endSemester(){
 }
 // graduation / the Junior package ends: the bridge offer
 function graduation(){ unlockPhone(); closeSheet(); S.juniorDays = 0; renderAll(); tab('hub'); pushPage('grad'); }
-// replay the launch right after the update: splash, then the pop-up
-function demoUpdateDay(){ demoStart(); }   // U: the presentation start (Face ID, splash, Persi's pop-up)
+// replay the launch: Face ID, splash, then Home (no pop-up)
+function demoUpdateDay(){ demoStart(); }   // U: the presentation start (Face ID, splash, Home), from the new-user seed
 /* ================= demo presentation (plan section 16): Face ID start, fast-forward cash-flow river, the year =================
-   U / Reset = demoStart(): fresh data, the lock screen with a Face ID unlock, the splash, then Persi's pop-up. Junior ends in 300 days (month 10 of the year).
+   U / Reset = demoStart(): fresh data, the lock screen with a Face ID unlock, the splash, then Home (the new-user seed, no pop-up). Junior ends in 300 days (month 10 of the year).
    O = +1 month, Q = +2 months, Y = to month 12: fastForward(n, mode) runs one month at a time on the app's own screens (Home, then the Persely tab):
    numbers roll to their new values and bars grow while a small bar above the tab bar shows the month and what happens. Y stops once when the
    Junior package ends: the summary sheet opens the graduation screen and "Keep my 3.0%" carries on with the rest of the year (S._ffRest).
@@ -4522,10 +4613,17 @@ function faceIdUnlock(done){
   fidTimers.push(setTimeout(() => { f.classList.remove('fid-scan'); f.classList.add('fid-done'); }, 1000));
   fidTimers.push(setTimeout(() => { unlockPhone(); setTimeout(() => l.classList.remove('fidon'), 360); if(done) done(); }, 1600));
 }
-function demoStart(){
+// load a seed: 'new' (brand-new user, the pitch default) or 'existing' (goals, 8-week streak). Same clean start as the reset, without Face ID. Demo key X.
+function loadSeed(kind){
   closeOnb(); closeWhatsNew(); closeStory(); ffClose(); closeSheet(); while(stack.length) popPage(true);
-  S = fresh(); S.juniorDays = 300; S.flowLog = []; S.savInt = 0; S._ffRest = 0; S.jrShown = false; renderAll(); tab('fooldal');
-  faceIdUnlock(() => { showSplash(900); launchFlow(1100); });
+  S = fresh(kind); S.juniorDays = 300; S.flowLog = []; S.savInt = 0; S._ffRest = 0; S.jrShown = false; HINT_SHOWN.clear(); HINT_FORCE = false; SETUP_COLLAPSED = false;
+  unlockPhone(); renderAll(); tab('fooldal'); renderDemoPanel(); toast(kind === 'existing' ? 'Demo: existing user' : 'Demo: new user');
+}
+const toggleSeed = () => loadSeed(seedKind() === 'new' ? 'existing' : 'new');
+function demoStart(kind){
+  closeOnb(); closeWhatsNew(); closeStory(); ffClose(); closeSheet(); while(stack.length) popPage(true);
+  S = fresh(kind === 'existing' ? 'existing' : 'new'); S.juniorDays = 300; HINT_SHOWN.clear(); HINT_FORCE = false; SETUP_COLLAPSED = false; S.flowLog = []; S.savInt = 0; S._ffRest = 0; S.jrShown = false; renderAll(); tab('fooldal');
+  faceIdUnlock(() => { showSplash(900); });
 }
 // ---------- fast forward, live on the app's own screens ----------
 // Each simulated month: snapshot the numbers and bars on the screen, run monthStep(), then the real screen re-renders and every number
@@ -4673,6 +4771,7 @@ function renderDemoPanel(){
     <button data-dtour>💡 Persi hints again<kbd>T</kbd></button>
     <button data-dupdate>▶ Demo start: Face ID<kbd>U</kbd></button>
     <button data-djump>📅 8 weeks later<kbd>J</kbd></button>
+    <button data-dseed>👤 Seed: ${seedKind() === 'new' ? 'new user (switch to existing)' : 'existing user (switch to new)'}<kbd>X</kbd></button>
     <button data-ddelay>⏱ Delay: ${demo.delay ? demo.delay+' s' : 'none'}</button>
     <button data-dphone class="${demo.phone?'on':''}">📱 Also send to iPhone: ${demo.phone?'on':'off'}</button>
     <button data-dsound>${demo.sound?'🔔 Sound: on':'🔕 Sound: off'}</button>
@@ -4698,6 +4797,7 @@ $('#demoPanel').addEventListener('click', e=>{
   else if('dtour' in d){ unlockPhone(); showHints(); }
   else if('dupdate' in d) demoUpdateDay();
   else if('djump' in d) week8State();
+  else if('dseed' in d) toggleSeed();
   else if('ddelay' in d){ demo.delay = {0:3, 3:10, 10:0}[demo.delay]; renderDemoPanel(); }
   else if('dphone' in d){ demo.phone = !demo.phone; renderDemoPanel(); }
   else if('dsound' in d){ demo.sound = !demo.sound; renderDemoPanel(); }
@@ -4708,7 +4808,7 @@ $('#demoShow').addEventListener('click', ()=>{ demo.hidden = false; renderDemoPa
 // on the phone itself: long-press Anna's avatar on Home opens the demo controls (idea from the team handoff)
 function demoSheet(){
   const b = (a, e, t, s) => `<button data-dm="${a}">${e} ${t}<small>${s}</small></button>`;
-  return `<h2>Demo controls</h2><div class="dsheet">${b('payday','💰','Payday','Salary, asks 10%')}${b('coffee','☕','Card purchase','Coffee, round-up')}${b('dori','👯','Dóri joins','Shared Persely')}${b('week','⏭','Next week','')}${b('bills','🧾','Bill missed','Rent unpaid, Bills first')}${b('month','⏩','+1 month','Cash flow, rules, interest')}${b('month2','⏩','+2 months','Cash flow')}${b('year','⏩','To month 12','Stops at Junior ends')}${b('sem','🎓','End of semester','Semester story')}${b('grad','🎉','Junior ends','Keep my 3.0%')}${b('update','▶','Demo start','Face ID, pop-up')}${b('reset','↺','Reset','Back to the start')}</div>`;
+  return `<h2>Demo controls</h2><div class="dsheet">${b('payday','💰','Payday','Salary, asks 10%')}${b('coffee','☕','Card purchase','Coffee, round-up')}${b('dori','👯','Dóri joins','Shared Persely')}${b('week','⏭','Next week','')}${b('bills','🧾','Bill missed','Rent unpaid, Bills first')}${b('month','⏩','+1 month','Cash flow, rules, interest')}${b('month2','⏩','+2 months','Cash flow')}${b('year','⏩','To month 12','Stops at Junior ends')}${b('sem','🎓','End of semester','Semester story')}${b('grad','🎉','Junior ends','Keep my 3.0%')}${b('seed','👤','Seed','New or existing user')}${b('update','▶','Demo start','Face ID, new user')}${b('reset','↺','Reset','Back to the start')}</div>`;
 }
 let lpTimer = null;
 document.addEventListener('pointerdown', e => { if(!(e.target.closest && e.target.closest('.hhead .avatar'))) return; clearTimeout(lpTimer); lpTimer = setTimeout(() => { lpTimer = null; sheet(demoSheet()); }, 650); });
@@ -4732,6 +4832,7 @@ addEventListener('keydown', e=>{
   else if(k === 't'){ unlockPhone(); showHints(); }
   else if(k === 'u') demoUpdateDay();
   else if(k === 'j') week8State();
+  else if(k === 'x') toggleSeed();
   else if(k === 'h'){ demo.hidden = !demo.hidden; renderDemoPanel(); }
 });
 renderDemoPanel();
@@ -4752,10 +4853,10 @@ function showSplash(ms=1300){
   }, ms);
 }
 showSplash();
+$('#splash').addEventListener('click', () => { clearTimeout(splashTimer); const sp = $('#splash'); sp.classList.add('hide'); $('#phone').classList.remove('splashing'); splashTimer = setTimeout(() => { sp.style.visibility = 'hidden'; }, 400); });   // a tap skips the splash
 
 renderAll();
 routeHash();
-launchFlow(1500);   // first launch after the update: show the pop-up
 if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost')) navigator.serviceWorker.register('sw.js').then(pushRefresh).catch(()=>{});
 else pushInfo();
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) pushRefresh(); });
