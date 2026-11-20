@@ -1112,3 +1112,44 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
 .gset[hidden]{display:none}
 .hsfrom{display:flex;align-items:center;gap:var(--sp-2);margin:var(--sp-2) 2px 0;font-size:var(--fs-s);color:var(--ink2)}
 @media (prefers-reduced-motion:reduce){.gsetb .chev svg{transition:none}}
+
+/* ---------- Simple Persely, Phase 2: the Persely tab with a goal (js/14b-simple-tab.js, flag SIMPLE_PERSELY) ---------- */
+.sp-blk{margin:0 0 var(--sp-3)}
+.sp-persi{display:flex;align-items:center;gap:var(--sp-3);min-height:72px}
+.sp-pig,.sp-ring{flex:none;display:flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:50%}
+.sp-ring{box-shadow:inset 0 0 0 3px var(--orange);background:var(--card)}   /* month end only: the ring around Persi opens the story */
+.sp-ring.seen{box-shadow:inset 0 0 0 2px var(--line-2)}
+.sp-say{flex:1;min-width:0;display:flex;align-items:center;gap:var(--sp-1);min-height:var(--tap);padding:var(--sp-2) var(--sp-3);background:var(--card);border-radius:16px 16px 16px 4px;box-shadow:var(--sh);font-size:var(--fs-m);line-height:1.35;color:var(--ink);text-align:left}
+.sp-say span{flex:1;min-width:0}
+.sp-say svg.i{color:var(--green-i)}
+.sp-persi .spnudge{flex:1;min-width:0;padding:var(--sp-2) var(--sp-3);background:var(--card);border-radius:16px 16px 16px 4px;box-shadow:var(--sh)}   /* Phase 1's Sunday nudge in Persi's place */
+.sp-persi .spnudge > span:not(.spyn){display:block;font-size:var(--fs-m);line-height:1.35;color:var(--ink)}
+.sp-pic{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:var(--sp-3) var(--sp-4) var(--sp-1)}
+.sp-big{text-align:center}
+.sp-big b{display:block;font-size:2.25rem;line-height:1.15;font-weight:700;color:var(--ink);letter-spacing:-.5px}
+.sp-big small{display:block;font-size:var(--fs-s);color:var(--muted-t);font-weight:600}
+.sp-jars{display:flex;justify-content:center;align-items:flex-end;gap:var(--sp-4);margin-top:var(--sp-2)}
+.sp-jar{display:flex;flex-direction:column;align-items:center;min-width:var(--tap);min-height:var(--tap);padding:0;border-radius:12px}
+.sp-jt{min-height:18px;font-size:var(--fs-xs);color:var(--ink2);font-weight:600;white-space:nowrap}
+.jar{width:56px;height:70px;display:block}
+.jar-lid{fill:var(--line-2)}
+.jar-glass{fill:var(--fill);stroke:var(--line-2);stroke-width:1.5}
+.jar-fill{fill:var(--green-lt)}
+.jar.on .jar-glass{stroke:var(--green)}
+.jar-i{color:var(--green-dk);stroke-width:1.8}
+.sp-plus{align-self:center;min-width:var(--tap);min-height:var(--tap);display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--fill);color:var(--ink2);font-weight:700;font-size:var(--fs-s);margin-bottom:var(--sp-4)}
+.sp-act{display:flex;flex-direction:column;align-items:center}
+.btn.sp-add{height:56px;border-radius:28px;font-size:var(--fs-l)}
+.sp-out{min-height:var(--tap);justify-content:center;padding:0 var(--sp-4);font-size:var(--fs-m)}
+.sp-streak{display:flex;align-items:center;gap:var(--sp-3);background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:var(--sp-3) var(--sp-4)}
+.sp-wk{flex:1;min-width:0}
+.sp-wk b{display:block;font-size:var(--fs-l)}
+.sp-wk small{display:block;font-size:var(--fs-s);color:var(--muted-t)}
+.sp-dots{display:flex;gap:var(--sp-2)}
+.sp-dots i{width:18px;height:18px;border-radius:50%;background:var(--fill)}
+.sp-dots i.on{background:var(--orange)}
+.sp-dots i.now{box-shadow:0 0 0 2px var(--white),0 0 0 4px var(--orange)}
+.sp-honest{display:block;width:100%;min-height:var(--tap);padding:var(--sp-1) var(--sp-2);margin:0 0 var(--sp-2);text-align:center;font-size:var(--fs-xs);line-height:1.5;color:var(--muted-t)}
+.sp-learn{color:var(--green-t);font-weight:700;white-space:nowrap}
+.row.sp-more{margin-bottom:0}
+.sp-msub{margin:calc(-1 * var(--sp-1)) 0 var(--sp-3) var(--sp-1)}
