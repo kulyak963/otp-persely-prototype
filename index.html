@@ -818,6 +818,59 @@ button.mp-r{width:100%;min-height:var(--tap);align-items:center;margin-top:0;tex
 .mp-r .chev{display:inline-flex;vertical-align:middle;color:var(--muted-t)}.mp-r small{color:var(--muted-t);font-size:0.78125rem}
 .mp-bar{height:6px;border-radius:3px;background:#E3E6EC;margin-top:4px;overflow:hidden}.mp-bar i{display:block;height:100%;border-radius:3px}
 .mp-card>.mp-g:first-child{margin-top:0;padding-top:0;border-top:0}
+/* the category circle (Home and Spending; the Persely tab total keeps the plain .gauge) */
+.gauge[data-cring] .seg[data-fcat]{cursor:pointer}
+.gauge[data-cring="big"]{width:clamp(230px,74vw,290px);margin-top:2px}
+.gauge[data-cring="big"] .core b{font-size:1.75rem}
+.mlab{margin:-6px 0 0 6px;font-size:0.8125rem;color:var(--muted-t)}
+.clg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0 12px}
+.clg-i{display:flex;align-items:center;gap:10px;min-width:0;min-height:var(--tap);padding:9px 12px;background:var(--card);border-radius:14px;box-shadow:var(--sh);text-align:left}
+.clg-i .dotc{border-radius:50%}
+.clg-i .t{display:flex;flex-direction:column;min-width:0;line-height:1.3}
+.clg-i b{font-size:0.875rem;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clg-i .num{font-size:0.875rem;color:var(--ink2);white-space:nowrap}
+@media (max-width:359px){.clg{gap:6px}.clg-i{padding:8px 9px;gap:7px}.clg-i b{font-size:0.8125rem;letter-spacing:-.01em}}
+.btn.dbtn{display:flex;align-items:center;justify-content:center;gap:2px;margin:0 0 4px}
+/* Spending: Safe to spend hero, month end card, where it went, plan stack, tips */
+.safebig{padding:16px 18px;margin:8px 0 10px}.safebig .t b{font-size:2.25rem}.safebig .t small{font-size:0.875rem}.safebig .t small:first-child{font-size:0.875rem;font-weight:600}
+.mend{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;margin:14px 0 0}
+.mend .ic{display:flex;color:var(--green-i);margin-top:1px}
+.mend .t{flex:1;min-width:0}
+.mend b{display:block;font-size:0.875rem;font-weight:600;color:var(--ink2)}
+.mend .p{display:block;font-size:var(--fs-l);font-weight:700;color:var(--ink);line-height:1.35;margin:2px 0 6px}
+.mend small{display:block;font-size:0.875rem;color:var(--ink2);line-height:1.4}
+.mend small.ov{color:var(--orange-t);font-weight:600}
+.cshare{padding:4px 16px}
+.cs-r{display:block;width:100%;min-height:var(--tap);padding:11px 0 12px;text-align:left}
+.cs-r+.cs-r{border-top:1px solid var(--line)}
+.cs-h{display:flex;align-items:center;gap:8px;font-size:0.9375rem}
+.cs-h .dotc{border-radius:50%}
+.cs-h b{flex:1;min-width:0;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-h .num{white-space:nowrap}
+.cs-h .pc{min-width:38px;text-align:right;font-size:0.875rem;color:var(--muted-t)}
+.cs-h .chev{display:flex;color:var(--muted-t);margin-right:-4px}
+.cs-r .mp-bar{margin-top:8px}
+.mp-card{padding:16px}
+.mp-card .mp-g{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;row-gap:2px;align-items:center}
+.mp-card .mp-g>b{grid-column:1}
+.mp-card .mp-g>span.num{grid-column:1;font-size:0.875rem;color:var(--ink2);white-space:normal}
+.mp-card .mp-g>.chev{grid-column:2;grid-row:1/3}
+.mp-r .dotc{border-radius:50%}
+.cs-r .mp-bar{display:block}
+.mp-card .mp-r small{font-size:0.8125rem}
+.mp-fine{margin:14px 0 0;font-size:0.875rem}
+.pstack{display:flex;gap:2px;height:14px;border-radius:7px;overflow:hidden;background:#E3E6EC}
+.pstack i{display:block;height:100%;min-width:3px}
+.pstack-k{margin:6px 0 2px;font-size:0.875rem;color:var(--ink2)}
+.pstack-k+.mp-g{margin-top:12px}
+.ptips{display:flex;gap:12px;align-items:flex-start;padding:14px 16px}
+.ptips-p{flex:none;display:flex}
+.ptips ul{flex:1;min-width:0;margin:0;padding:0 0 0 18px}
+.ptips li,.ptips p{font-size:0.875rem;line-height:1.45;margin:0 0 8px}
+.ptips li:last-child,.ptips p{margin-bottom:0}
+.ptips p{flex:1;min-width:0;margin-top:0}
+.rcards{padding:2px 16px}.rcards .tx{background:none;box-shadow:none;border-radius:0;margin:0;padding:12px 0}.rcards .tx+.tx{border-top:1px solid var(--line)}
+@media (max-width:359px){.anfoot span[aria-hidden="true"]:nth-of-type(3){display:none}}
 /* Money in each month: the small panel under the Persely balance (the Home gauge, scaled down) */
 .mgauge{display:flex;align-items:center;gap:14px;width:100%;min-height:76px;padding:12px 16px;text-align:left;margin:0 0 12px}
 .mg-ring{position:relative;flex:none;width:56px;height:56px}
@@ -1330,6 +1383,40 @@ function catBars(sp){
   const rows = Object.entries(sp).sort((a, b) => b[1] - a[1]).slice(0, 5), max = Math.max(1, ...rows.map(r => r[1]));
   if(!rows.length) return `<div class="card fine" style="padding:14px 16px">No card payments yet this month.</div>`;
   return `<div class="cats" style="--n:${rows.length}">${rows.map(([c, v], i) => `<button class="cat ${i === 0 ? 'on' : ''}" ${CATEGORY[c] && SPEND_CATS.includes(c) ? `data-fcat="${c}" aria-label="${CATEGORY[c][0]} ${ft(v)}. See these payments"` : ''}><span class="ic">${I(SPEND_IC[c] || 'tag', 26)}</span><span class="cl">${SPEND_SHORT[c] || CATEGORY[c][0]}</span><span class="col"><i style="height:${v / max * 100}%"></i></span><span class="num">${ft(v)}</span></button>`).join('')}</div>`;
+}
+/* ---------- the category circle (Home and Spending) ----------
+   One arc per spending category (catSpend), each sized by its share of this month's Card spending, so the arcs add up to Card spending
+   and fill the 270 degree ring. One colour per category on every screen: blues for Everyday essentials, warm colours for Fun.
+   The legend under it (dot, name, amount) carries the same information as text, and each row opens Transactions with that category. */
+const CAT_COL = {groceries:'#4D9BD6', transport:'#2467A0', health:'#2BA3A3', edu:'#6A63D0', mix_ess:'#4D9BD6', food:'#F07D19', shopping:'#E06C75', fun:'#C9971B', travel:'#8E5A2B', subs:'#B05CC0', mix_fun:'#F07D19'};
+const catCol = c => CAT_COL[c] || '#8C919B';
+const catName = c => SPEND_SHORT[c] || (CATEGORY[c] ? CATEGORY[c][0] : c);
+const catRows = sp => Object.entries(sp).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+function catRing(sp, mo, big){
+  const rows = catRows(sp), tot = rows.reduce((a, r) => a + r[1], 0), R = 104, C = 2 * Math.PI * R, arc = C * .75, gap = rows.length > 1 ? 3 : 0;
+  let at = 0;
+  const segs = rows.map(([c, v]) => { const len = arc * v / tot, go = SPEND_CATS.includes(c);
+    const s = `<circle class="seg" data-cat="${c}" data-v="${v}"${go ? ` data-fcat="${c}"` : ''} cx="125" cy="125" r="${R}" fill="none" stroke="${catCol(c)}" stroke-width="16" stroke-dasharray="${Math.max(.6, len - gap).toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${(-at).toFixed(2)}"/>`; at += len; return s; }).join('');
+  const lab = tot ? `Card spending in ${mo.label}: ${ft(tot)}. ` + rows.map(([c, v]) => `${catName(c)} ${ft(v)}`).join(', ') : `Card spending in ${mo.label}: no card payments yet`;
+  return `<div class="gauge" data-cring="${big ? 'big' : 'home'}" role="img" aria-label="${esc(lab)}">
+    <svg viewBox="0 0 250 250" style="transform:rotate(135deg)" aria-hidden="true"><circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="${tot ? 'butt' : 'round'}" stroke-dasharray="${arc} ${C}"/>${segs}</svg>
+    <div class="core" aria-hidden="true"><small>Card spending</small><b class="num">${ft(tot)}</b></div>
+  </div>`;
+}
+// Home: the legend under the circle, two columns, each one opens Transactions with that category
+function catLegend(sp){
+  const rows = catRows(sp);
+  if(!rows.length) return `<div class="card fine" style="padding:14px 16px;margin-top:12px">No card payments yet this month.</div>`;
+  return `<div class="clg">${rows.map(([c, v]) => { const go = SPEND_CATS.includes(c), tg = go ? 'button' : 'div';
+    return `<${tg} class="clg-i" ${go ? `data-fcat="${c}" aria-label="${esc(catName(c))} ${ft(v)}. See these payments"` : ''}><span class="dotc" style="background:${catCol(c)}"></span><span class="t"><b>${catName(c)}</b><span class="num">${ft(v)}</span></span></${tg}>`; }).join('')}</div>`;
+}
+// Spending: the same legend as rows with a share bar, biggest first
+function catShareRows(sp){
+  const rows = catRows(sp), tot = rows.reduce((a, r) => a + r[1], 0);
+  if(!rows.length) return `<div class="card fine" style="padding:14px 16px">No card payments yet this month.</div>`;
+  const pc = lrPct(rows.map(r => r[1]), tot);
+  return `<div class="card cshare">${rows.map(([c, v], i) => { const go = SPEND_CATS.includes(c), tg = go ? 'button' : 'div';
+    return `<${tg} class="cs-r" ${go ? `data-fcat="${c}" aria-label="${esc(catName(c))} ${ft(v)}, ${pc[i]}% of card spending. See these payments"` : ''}><span class="cs-h"><span class="dotc" style="background:${catCol(c)}"></span><b>${catName(c)}</b><span class="num">${ft(v)}</span><span class="pc num">${pc[i]}%</span>${go ? `<span class="chev" aria-hidden="true">${I('chev', 16)}</span>` : ''}</span><span class="mp-bar" aria-hidden="true"><i style="width:${v / tot * 100}%;background:${catCol(c)}"></i></span></${tg}>`; }).join('')}</div>`;
 }
 /* ---------- next-month projection ---------- */
 const lrPct = (vals, total) => { const raw = vals.map(v => v / total * 100), fl = raw.map(Math.floor); let rest = 100 - fl.reduce((a, b) => a + b, 0);
@@ -2254,8 +2341,8 @@ function __checkAnalytics(){
       const si = S.tx.findIndex(t => t.n === 'SZABÓ DÓRA'); S._txi = si; const rd = nt(pl(SHEETS.txd())); const billOk = /Your label Rent share/.test(rd) && /Paid to SZABÓ DÓRA/.test(rd);
       ok('chk-tx-rows-tappable: every Transactions row is a button that opens its detail (full date, type, amount, category), with the analyst on or off, own-account rows too; a Persely row says "Added to [goal]", links to the goal page and explains the sign in one line; a bill row shows Your label and Paid to', onT.n > 150 && onT.shown === TX_STEP && onT.bad.length === 0 && onT.btns && offT.n === onT.n && offT.bad.length === 0 && offT.btns && opens && persOk && goalPage && billOk, [onT.n, onT.bad.slice(0, 3), offT.bad.slice(0, 3), opens, persOk, goalPage, billOk]);
 
-      // chk-tx-category-passin: a category bar on Spending and on Home opens Transactions with that category chip on; it clears with the chip, and on leaving the tab
-      reset('existing'); tab('fooldal'); const hb = $('#v-fooldal .cat[data-fcat]'), hc = hb && hb.dataset.fcat; hb && hb.click(); const fromHome = cur === 'tranzakciok' && txF.cat === hc && rowsOn().length > 0 && rowsOn().length < S.tx.length && $('#txchips [data-txrm="cat"]').textContent.includes(CATEGORY[hc][0]);
+      // chk-tx-category-passin: a category legend row on Home (it replaced the bars) and a category row on Spending opens Transactions with that category chip on; it clears with the chip, and on leaving the tab
+      reset('existing'); tab('fooldal'); const hb = $('#v-fooldal .clg-i[data-fcat]'), hc = hb && hb.dataset.fcat; hb && hb.click(); const fromHome = cur === 'tranzakciok' && txF.cat === hc && rowsOn().length > 0 && rowsOn().length < S.tx.length && $('#txchips [data-txrm="cat"]').textContent.includes(CATEGORY[hc][0]);
       tab('fooldal'); const leftClears = !txF.cat && !txQ; pushPage('mymoney'); const sb = $('.page .mp-r[data-fcat]:not([data-fcat="persely"])'), sc = sb && sb.dataset.fcat; sb && sb.click(); const fromSpend = cur === 'tranzakciok' && txF.cat === sc && !stack.length && rowsOn().length > 0 && rowsOn().every(r => r.dataset.txd !== undefined);
       clk('#txchips [data-txrm="cat"]'); const chipClears = !txF.cat && txRows().length === S.tx.length && /Category/.test($('#txchips').textContent); tab('fooldal');
       ok('chk-tx-category-passin: tapping a category bar on Home or a category row on Spending opens Transactions with that category chip on and a shorter list; removing the chip or leaving the tab clears it', !!hb && !!sb && fromHome && leftClears && fromSpend && chipClears, [hc, sc, fromHome, leftClears, fromSpend, chipClears]);
@@ -2270,6 +2357,42 @@ function __checkAnalytics(){
       ok('chk-recat-undo: Change category then a category shows "Moved to Everyday essentials · N% used" (N is the real share of the Everyday essentials budget) with a 10 s Undo chip; Undo puts back only that payment\'s category and its payee rule, and a later change stays', picker && moved && undone && UNDO_MS === 10000, [picker, moved, undone, chip, want]);
     } catch(e){ ok('chk-phase8: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); txReset(); while(stack.length) popPage(true); S = sv16; cur = cur16; stack.push(...stk16); demo.locked = lock16; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views16[i])); }
+  }
+  { // The monthly spending circle by category (Home and Spending) and the Spending page UI rework (docs/spending-ui-rework.md)
+    const sv17 = S, cur17 = cur, stk17 = stack.splice(0), lock17 = demo.locked, views17 = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')); demo.locked = false;
+    const nt = t => String(t).replace(/[\s\u00a0\u202f]+/g, ''), clk = sel => { const b = $(sel); if(b) b.click(); return !!b; };
+    const reset = kind => { hideBanners(); while(stack.length) popPage(true); try{ closeOnb(); }catch(e){} try{ closeStory(); }catch(e){} closeSheet(); MQ.q = []; hideChip(true); hideToast(true); txReset(); txMode = 0; S = fresh(kind); SETUP_COLLAPSED = false; renderAll(); };
+    const top = () => stack.length ? stack[stack.length - 1].dataset.id : '';
+    const ringOf = g => { const segs = g ? [...g.querySelectorAll('circle.seg')] : []; return {segs, sum:segs.reduce((a, c) => a + +c.dataset.v, 0), cats:segs.map(c => c.dataset.cat)}; };
+    try{
+      // chk-home-circle-categories: one arc per category with card spending, the arcs add up to Card spending, a legend with the same categories, colours and amounts
+      const homeRes = ['existing', 'new'].map(kind => { reset(kind); tab('fooldal');
+        const g = $('#v-fooldal .gauge[data-cring]'), r = ringOf(g), want = catRows(catSpend(shownMonth().ym)), lg = [...document.querySelectorAll('#v-fooldal .clg-i')];
+        const legendOk = lg.length === want.length && want.every(([c, v], i) => nt(lg[i].textContent).includes(nt(catName(c) + ' ' + ft(v))) && lg[i].querySelector('.dotc').style.background && r.segs[i].getAttribute('stroke') === catCol(c));
+        const core = g && nt(g.querySelector('.core').textContent) === nt('Card spending ' + ft(cardSpending()));
+        return {ok:!!g && r.segs.length > 1 && r.sum === cardSpending() && r.cats.join() === want.map(x => x[0]).join() && new Set(r.cats).size === r.cats.length && legendOk && core && /^Card spending in /.test(g.getAttribute('aria-label') || '') && g.getAttribute('role') === 'img', n:r.segs.length, sum:r.sum, cs:cardSpending(), legendOk, core}; });
+      reset('existing'); tab('fooldal'); const sg = $('#v-fooldal circle.seg[data-fcat]'), sgc = sg && sg.dataset.fcat; sg && sg.dispatchEvent(new MouseEvent('click', {bubbles:true})); const segTap = cur === 'tranzakciok' && txF.cat === sgc; txReset(); tab('fooldal');
+      reset('existing'); tab('hub'); const pt = $('#v-hub .ptot .gauge'), ptOk = !!pt && !pt.hasAttribute('data-cring') && pt.querySelectorAll('circle').length >= 1 && !pt.querySelector('circle.seg');
+      ok('chk-home-circle-categories: the Home circle has one arc per category with card spending (both seeds), the arcs add up to Card spending, each has its own colour, the legend lists the same categories with colour dot, name and amount, the core shows Card spending, the circle reads the split aloud; tapping an arc opens Transactions with that category; the Persely tab total keeps its plain ring', homeRes.every(x => x.ok) && segTap && ptOk, {homeRes, segTap, ptOk});
+
+      // chk-home-details-button: a full width Details button (44 px or more) under the legend opens the Spending page
+      reset('existing'); tab('fooldal'); const db = $('#v-fooldal .dbtn'), dr = db ? db.getBoundingClientRect() : null, dAfter = db && $('#v-fooldal .clg') && ($('#v-fooldal .clg').compareDocumentPosition(db) & Node.DOCUMENT_POSITION_FOLLOWING);
+      db && db.click(); const dOpen = top() === 'mymoney'; while(stack.length) popPage(true);
+      ok('chk-home-details-button: Home shows a visible Details button under the circle legend, at least 44 px high and wide, that opens the Spending page', !!db && /^Details/.test(nt(db.textContent)) && dr.height >= 44 && dr.width >= 44 && !!dAfter && db.dataset.go === 'mymoney' && dOpen, [dr && dr.height, dr && dr.width, !!dAfter, dOpen]);
+
+      // chk-spending-ui: Safe to spend hero first and above the fold, the same category ring (larger) with the legend as rows, rows open Transactions with the chip, plan stack, one tips card, 14 px text for conditions
+      reset('existing'); tab('fooldal'); pushPage('mymoney'); const pg = stack[stack.length - 1], sc = pg.querySelector('.scroll'), first = [...sc.children].find(e => e.offsetHeight > 0 && !e.classList.contains('hint'));
+      const hr = first ? first.getBoundingClientRect() : null, sr = sc.getBoundingClientRect(), fold = Math.min(844, innerHeight), heroOk = !!first && first.classList.contains('safebig') && hr.bottom <= sr.bottom && hr.bottom <= fold;
+      const bg = pg.querySelector('.gauge[data-cring="big"]'), br = ringOf(bg), hg = $('#v-fooldal .gauge[data-cring]'), bigger = bg && hg && bg.getBoundingClientRect().width >= hg.getBoundingClientRect().width;
+      const rows = [...pg.querySelectorAll('.cs-r')], rowsOk = rows.length === br.segs.length && rows.every((r, i) => r.dataset.cat === undefined && nt(r.textContent).includes(catName(br.cats[i])) && r.querySelector('.mp-bar i'));
+      const blocks = ['.safebig', '.gauge[data-cring]', '.mend', '.cshare', '[data-go="bills"]', '.pstack', '.ptips', '[data-go="nextmonth"]', '.anfoot'].map(s => pg.querySelector(s)), inOrd = blocks.every((b, i) => b && (i === 0 || (blocks[i - 1].compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING)));
+      const px = s => { const e = pg.querySelector(s); return e ? parseFloat(getComputedStyle(e).fontSize) : 0; }, sizes = ['.safebig .t small', '.mend small', '.mp-fine', '.ptips li, .ptips p', '.cs-h b'].map(px), small = sizes.every(x => x >= 14);
+      const tall = [...pg.querySelectorAll('.cs-r, .safebig, .mp-d>summary, .row')].every(e => e.getBoundingClientRect().height >= 44);
+      const cr = pg.querySelector('.cs-r[data-fcat]'), crc = cr && cr.dataset.fcat; cr && cr.click(); const chip = cur === 'tranzakciok' && txF.cat === crc && !stack.length && $('#txchips [data-txrm="cat"]') && $('#txchips [data-txrm="cat"]').textContent.includes(CATEGORY[crc][0]) && $('#txchips [data-txrm="cat"]').classList.contains('on');
+      txReset(); tab('fooldal');
+      ok('chk-spending-ui: the Spending page opens with the Safe to spend hero above the fold (390x844), then the same category ring as Home (larger, arcs add up to Card spending), Month end, Where it went (one row per arc, with a bar), Bills, My plan with a stacked bar, one Persi tips card, Next month, footer; text for conditions is 14 px or more, targets 44 px; a category row opens Transactions with that category chip on', heroOk && !!bg && br.sum === cardSpending() && bigger && rowsOk && inOrd && small && tall && chip, {heroOk, hb:hr && hr.bottom, sum:br.sum, bigger, rowsOk, inOrd, sizes, tall, chip});
+    } catch(e){ ok('chk-spending-rework: the new checks ran without errors', false, String(e && e.stack || e)); }
+    finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); txReset(); while(stack.length) popPage(true); S = sv17; cur = cur17; stack.push(...stk17); demo.locked = lock17; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views17[i])); }
   }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
@@ -2400,8 +2523,7 @@ function storyRing(){
 }
 function vFooldal(){
   const mo = shownMonth(), sp = catSpend(mo.ym), spent = sumVals(sp), avg = avgSpend() || spent;
-  // gauge: 270° arc, gap at the bottom
-  const R=104, C=2*Math.PI*R, arc=C*.75, p=Math.min(1,spent/ (avg*1.15));
+  // the month circle: 270 degree ring, gap at the bottom, one arc per category (catRing)
   return `
   <div class="hhead"><button class="avatar" data-settings="" aria-label="Profile and Settings">${S.ini}</button><b>${S.name}</b><button class="bell" data-go="inbox" aria-label="Notifications${inboxUnread() ? ', ' + inboxUnread() + ' unread' : ''}">${I('bell',26)}${inboxUnread() ? '<i class="bdot" aria-hidden="true"></i>' : ''}</button><button class="mail" data-go="neked" aria-label="For you">${I('mail',26)}</button></div>
   ${bfCard()}
@@ -2420,21 +2542,15 @@ function vFooldal(){
     : `<b style="display:flex;align-items:center;gap:4px">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Safe this week' : 'Ends Sunday. Any amount keeps it going'}</small>`}</span>${I('chev',20)}</button>
   ${storyCard()}
   ${insightCard()}
-  <div class="sec"><span>My monthly spending</span><a data-go="mymoney">Details ${I('chev',16)}</a></div>
-  <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${mo.label}</div>
-  <div class="gauge">
-    <svg viewBox="0 0 250 250" style="transform:rotate(135deg)">
-      <circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>
-      <circle cx="125" cy="125" r="${R}" fill="none" stroke="#52AE30" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc*p} ${C}"/>
-    </svg>
-    <div class="core"><small>Card spending</small><b class="num">${ft(spent)}</b></div>
-  </div>
+  <div class="sec"><span>My monthly spending</span></div>
+  <div class="mlab">${mo.label}</div>
+  ${catRing(sp, mo)}
   ${outLine()}
   <div class="avg">Average card spending a month: <span class="num">${ft(avg)}</span></div>
+  ${catLegend(sp)}
+  <button class="btn w dbtn" data-go="mymoney" aria-label="Details. Opens Spending">Details ${I('chev',18)}</button>
   ${S.analyst.on && !NEW_PERSELY_IA ? `<div class="lrow"><button class="link lnk44" data-go="nextmonth">Next month ${I('chev',16)}</button><button class="link lnk44" data-go="bills">Must-pay bills ${I('chev',16)}</button></div>` : ''}
   ${S.analyst.on && S.analyst.accepted ? '' : `<button class="link lnk44" data-sheet="analyst" style="margin:0 0 0 10px">See how it fits your income ${I('chev',16)}</button>`}
-  <div class="sec"><span>What did I spend on this month?</span></div>
-  ${catBars(sp)}
   <div class="sec"><span>For you</span><a data-go="neked">All ${I('chev',16)}</a></div>
   ${nekedCards(true)}`;
 }
@@ -3178,7 +3294,7 @@ function planModel(){
   syncSplit();
   const v = splitView(), mo = shownMonth(), sp = catSpend(mo.ym), use = splitUse(), inv = Math.min(S.analyst.invest || 0, v.by.save.amt);
   const cats = b => { const pl = spreadCats(v.by[b].amt, b), keys = [...new Set([...Object.keys(pl), ...Object.keys(sp).filter(c => (CATEGORY[c] && CATEGORY[c][1] === b) || c === 'mix_' + b)])];
-    return keys.map((c, i) => ({c, name:SPEND_SHORT[c] || CATEGORY[c][0], plan:pl[c] || 0, spent:sp[c] || 0, col:tint(BKT_COL[b], Math.min(.6, i * .14))})).sort((x, y) => y.plan - x.plan); };
+    return keys.map(c => ({c, name:SPEND_SHORT[c] || CATEGORY[c][0], plan:pl[c] || 0, spent:sp[c] || 0, col:catCol(c)})).sort((x, y) => y.plan - x.plan); };   // the same colour per category as the circle
   const groups = [
     {k:'must', name:'Must-pay bills', plan:v.by.must.amt, spent:mustPaid(), rows:[], note:'paid'},
     {k:'ess', name:'Everyday essentials', plan:v.by.ess.amt, spent:0, rows:cats('ess'), note:'used'},
@@ -3211,12 +3327,15 @@ function planHTML(m){
   const grp = g => g.rows.length
     ? `<details class="mp-d"><summary class="mp-g">${head(g)}<span class="chev" aria-hidden="true">${I('chev', 16)}</span></summary>${g.k === 'save' ? `<div class="fine mp-n">${ft(g.spent)} moved to Persely so far this month</div>` : ''}${g.rows.map(r => rowOf(r, g)).join('')}</details>${g.k === 'save' ? '' : bar(g.spent, g.plan, BKT_COL[g.k], g.k)}`
     : `<div class="mp-g">${head(g)}</div>${bar(g.spent, g.plan, BKT_COL[g.k], g.k)}`;
-  const v = curView(), few = v.rough || v.n < 3;
+  const v = curView(), few = v.rough || v.n < 3, all = m.groups.reduce((a, g) => a + g.plan, 0);
+  // the stacked bar: how the month is split between the four groups, by planned amount
+  const stack = all ? `<div class="pstack" role="img" aria-label="${esc('My plan: ' + m.groups.map(g => `${g.name} ${ft(g.plan)}`).join(', '))}">${m.groups.filter(g => g.plan > 0).map(g => `<i style="width:${g.plan / all * 100}%;background:${BKT_COL[g.k]}"></i>`).join('')}</div><div class="pstack-k num">${ft(all)} planned for ${mo.name}</div>` : '';
   return `<div class="sec" data-tour="plan"><span>My plan for ${mo.name}</span><a class="lnk44" data-plangear>Edit ${I('chev',16)}</a></div>
-  <div class="card mp-card" style="padding:16px">
+  <div class="card mp-card">
+    ${stack}
     ${m.groups.map(grp).join('')}
-    ${few ? `<div class="fine" style="margin:12px 0 0">${v.label}</div>` : ''}
-    <div class="fine" style="margin:14px 0 0"><b>A plan, not a limit.</b> Nothing is blocked and no money moves between categories. It is a reminder to help you manage your month.</div>
+    ${few ? `<div class="fine mp-fine">${v.label}</div>` : ''}
+    <div class="fine mp-fine"><b>A plan, not a limit.</b> Nothing is blocked and no money moves by itself.</div>
   </div>`;
 }
 // Persi's tips for the month (only when there is something to say)
@@ -3224,35 +3343,29 @@ function planTipsHTML(m){
   const tips = planTips(m);
   if(tips.length === 1 && /^Everything is within/.test(tips[0]) && !sumVals(catSpend(m.mo.ym))) return '';
   return `<div class="sec"><span>Persi's tips for ${m.mo.name}</span></div>
-  <div class="card lst">${tips.map(t => `<div class="li"><span class="t" style="line-height:1.45;font-size:0.875rem">${t}</span></div>`).join('')}</div>`;
+  <div class="card ptips"><span class="ptips-p" aria-hidden="true">${pigSvg('happy', 40)}</span>${tips.length > 1 ? `<ul>${tips.map(t => `<li>${t}</li>`).join('')}</ul>` : `<p>${tips[0]}</p>`}</div>`;
 }
 // the Spending circle, drawn like the Home gauge (270 degrees, round caps, grey track, soft core). The core is Card spending; Total out and the days left are under it, then the month end projection.
 // With a plan: Everyday essentials spent, then Fun spent, over what the plan has for both. Without one: card spending against the usual month, as Home.
+// Spending: the same category circle as Home, larger (catRing), then the month end card and "Where it went" (the legend as rows with share bars).
+// The plan line: with a plan, Everyday essentials and Fun spent against what the plan has for both. Without one: the usual month, as Home.
 function analysisGauge(m){
-  const mo = shownMonth(), spent = cardSpending(mo.ym), R = 104, C = 2 * Math.PI * R, arc = C * .75;
-  const ring = (len, col) => len > 0 ? `<circle cx="125" cy="125" r="${R}" fill="none" stroke="${col}" stroke-width="16" stroke-linecap="round" stroke-dasharray="${len} ${C}"/>` : '';
-  let fill, line = '', over = false;
+  const mo = shownMonth(), sp = catSpend(mo.ym), spent = sumVals(sp);
+  let line = '', over = false;
   if(m){
-    const P = m.groups[1].plan + m.groups[2].plan, e = m.groups[1].spent, f = m.groups[2].spent, pe = P ? Math.min(1, e / P) : 0, pf = P ? Math.min(1 - pe, f / P) : 0;
-    fill = ring(arc * (pe + pf), BKT_COL.fun) + ring(arc * pe, BKT_COL.ess);
+    const P = m.groups[1].plan + m.groups[2].plan, e = m.groups[1].spent, f = m.groups[2].spent;
     over = e + f > P;
     line = over ? `<span class="num">${ft(e + f - P)}</span> over the plan for everyday and fun` : `Planned for everyday and fun: <span class="num">${ft(P)}</span>`;
   } else {
     const avg = avgSpend() || spent;
-    fill = ring(arc * Math.min(1, spent / (avg * 1.15)), '#52AE30');
     line = `Average card spending a month: <span class="num">${ft(avg)}</span>`;
   }
   return `<div class="sec"><span>${mo.label}</span></div>
-  <div class="gauge">
-    <svg viewBox="0 0 250 250" style="transform:rotate(135deg)" aria-hidden="true">
-      <circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>${fill}
-    </svg>
-    <div class="core"><small>Card spending</small><b class="num">${ft(spent)}</b></div>
-  </div>
+  ${catRing(sp, mo, true)}
   ${outLine()}
-  <div class="avg"${over ? ' style="color:var(--orange-t)"' : ''}><span style="text-align:center">${line}</span></div>
-  <div class="avg proj" data-tour="proj"><span style="text-align:center">${projLine()}</span></div>
-  ${m ? `<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:4px 14px;margin:0 0 4px;font-size:0.78125rem;color:var(--ink2)"><span class="u-rowc" style="gap:6px"><span class="dotc" style="background:${BKT_COL.ess}"></span>Everyday essentials</span><span class="u-rowc" style="gap:6px"><span class="dotc" style="background:${BKT_COL.fun}"></span>Fun</span></div>` : ''}`;
+  <div class="card mend" data-tour="proj"><span class="ic" aria-hidden="true">${I('chart', 22)}</span><span class="t"><b>Month end</b><span class="p">${projLine()}</span><small${over ? ' class="ov"' : ''}>${line}</small></span></div>
+  <div class="sec"><span>Where it went</span></div>
+  ${catShareRows(sp)}`;
 }
 /* ---------- Money in each month: the one summary of what your rules move into Persely, under the balance ----------
    Read only. Every switch lives on its goal's page. Shared and euro goals have no rules. Same numbers as paceOf() without the planned extra deposits (g.pace). */
@@ -3287,7 +3400,7 @@ function moneyInPanel(){
 function recentCards(n = 3){
   const ym = shownMonth().ym, rows = S.tx.filter(t => txWhen(t).ym === ym && (t.parts || txType(t) === 'card' || txType(t) === 'refund')).slice(0, n);
   if(!rows.length) return '';
-  return `<div class="sec"><span>Latest card payments</span><a data-tab="tranzakciok">All ${I('chev',16)}</a></div><div class="card lst">${rows.map(t => { const c = t.parts ? null : classify(t);
+  return `<div class="sec"><span>Latest card payments</span><a data-tab="tranzakciok">All ${I('chev',16)}</a></div><div class="card lst rcards">${rows.map(t => { const c = t.parts ? null : classify(t);
     return `<div class="tx"><span class="ic">${I(t.ic)}</span><span class="t"><b>${esc(t.n)}</b><span>${t.d === 'Today' ? 'Today' : esc(t.d || '')}</span>${c ? `<em>${I(SPEND_IC[c] || 'tag',15)} ${SPEND_SHORT[c] || CATEGORY[c][0]}</em>` : ''}</span><span class="a num">${sft(t.a)}</span></div>`; }).join('')}</div>`;
 }
 /* ---------- financial health score (0-100), shown only when the analyst is on ----------
@@ -4092,7 +4205,7 @@ document.addEventListener('keydown', e => {   // Esc closes the top layer: sheet
 });
 document.addEventListener('click', e=>{
   if(e.target.id==='back'){ closeSheet(); return; }
-  const t = e.target.closest('button,a,[data-go],[data-tab]'); if(!t) return;
+  const t = e.target.closest('button,a,[data-go],[data-tab],circle[data-fcat]'); if(!t) return;
   const d = t.dataset;
   if('undo' in d){ const f = UCH.fn; hideChip(true); if(f) f(); return; }
   if(d.sw){   // switches: the switch itself toggles; the row beside it opens the settings sheet
