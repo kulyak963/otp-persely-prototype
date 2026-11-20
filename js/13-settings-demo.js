@@ -68,7 +68,9 @@ function settingsHTML(){
   const junior = S.bridge ? `Keeping 3.0% until ${juniorEndLabel(12)}` : `Junior package until ${juniorEndLabel()}`;
   const quiet = n.quiet ? `<div class="qh"><label>From<input type="time" value="${n.qfrom}" data-qh="qfrom" aria-label="Quiet hours from"></label><label>To<input type="time" value="${n.qto}" data-qh="qto" aria-label="Quiet hours to"></label></div>
     <div class="fine" style="padding:0 var(--sp-4) var(--sp-3)">Between ${n.qfrom} and ${n.qto} notifications arrive silently. You can still read them in the inbox.</div>` : '';
-  return `<div class="set-sec" data-sec="profile"><div class="sec"><span>Profile</span></div>
+  // Phase 6 (plan 2h): the bell left the Home header, so the inbox opens from here (the More page gets its own row later)
+  const inb = ohOn() ? `<div class="set-sec" data-sec="inbox"><div class="card set-card">${row('bell', 'Notifications', inboxUnread() ? `Your messages · ${inboxUnread()} unread` : 'Your messages', 'data-go="inbox"')}</div></div>` : '';
+  return `${inb}<div class="set-sec" data-sec="profile"><div class="sec"><span>Profile</span></div>
     <div class="card set-prof"><span class="avatar" aria-hidden="true">${esc(S.ini)}</span><span class="t"><b class="u-fs-m">${esc(S.name)}</b><div class="k">Junior account · ${esc((S.accounts.find(a => a.id === 'junior') || {}).no || '')}</div></span></div></div>
   <div class="set-sec" data-sec="persely"><div class="sec"><span>Persely</span></div>
     <div class="card set-card">${row('piggy', 'Saving rules', 'Each goal has its own. See them all', 'data-saverules=""')}
@@ -119,7 +121,7 @@ const DEMO = [
   SIMPLE_PERSELY   // marketing: not the Persi channel, its own switch (off by default), no urgency
     ? {e:'🏷️', label:'New discount',      title:'Perks', kind:'mkt', pri:7, body:'Pizzeria Roma: 15% off. You can turn it on in Perks.', url:'perks'}
     : {e:'🏷️', label:'New discount',      title:'New discount',            body:'15% instant discount at Pizzeria Roma. Activate it now!', url:'perks'},
-  {e:'🧾', label:'Bills first',       title:'Persi · Persely', persi:true, kind:'bills', body:()=>{ const bf = billsFirst(); return bf.on ? `${bf.text}.${stsNow()}` : bf.total ? `Nothing is late.${stsNow() || ' Your bills are on track.'}` : 'All your must-pay bills are paid. Fun is back on.'; }, url:'hub'}
+  {e:'🧾', label:'Bills first',       title:'Persi · Persely', persi:true, kind:'bills', body:()=>{ const bf = billsFirst(); return bf.on ? `${bf.text}.${stsNow()}` : bf.total ? `Nothing is late.${stsNow() || ' Your bills are on track.'}` : 'All your must-pay bills are paid. Fun is back on.'; }, url:ohOn() ? 'mymoney' : 'hub'}
 ];
 // Safe to spend wording only with the analyst on
 const stsNow = () => S.analyst.on ? ` Safe to spend is now ${ft(safeToSpend().safe)}.` : '';
@@ -238,6 +240,7 @@ function salaryArrives(){
   if(keepSalary()) setTimeout(() => notify({title:'Persely', persi:true, body:`Your first salary is at OTP. You are now Graduate 3.0% on the first ${ft(CAP)} until ${juniorEndLabel(12)}.`, url:'grad'}), 4500);
   const g = ruleGoal(), share = paydayAlloc().total, many = payGoals().length > 1;
   if((payOn() && S.payday.ask) || paydayBills()){   // with bills open the sheet is "Bills first": salary, bills, saving rule, left for Fun
+    S.pdAsk = payOn() && S.payday.ask;   // Phase 6: the Home teaser reads "Payday · Save … ?" until it is answered (or the week ends)
     renderAll();
     const bfv = paydayBills(), ps = payOn() && S.payday.ask;
     notify({title:'Persi · Persely', persi:true, body: bfv ? (SIMPLE_PERSELY ? `Salary's in. ${ft(billsFirst().total)} of bills to pay first.` : `Salary's in: +${ft(inc)}. ${ft(billsFirst().total)} of bills still to pay.${ps ? ' Then Persely.' : ''}`) : (SIMPLE_PERSELY ? `Salary's in. Save ${ft(share)}?` : `Salary's in: +${ft(inc)}. Move ${ft(share)} to ${many ? 'your goals' : g.name}?`), url:'payday', kind:'payday'});
@@ -265,7 +268,7 @@ function coffee(){
 // one push a day at most (never at night) after a Fun card payment while a bill is open: "Bills first: X Ft still to pay. Safe to spend is now Y Ft."
 function billsPush(delay){
   const bf = bfNow(), day = billToday().ym + '-' + billToday().day; if(!bf.on || S.bfPush === day) return; S.bfPush = day; save();
-  setTimeout(() => notify({title:'Persi · Persely', persi:true, body:`${bf.text}.${stsNow()}`, url:'hub', kind:'bills'}), delay || 0);
+  setTimeout(() => notify({title:'Persi · Persely', persi:true, body:`${bf.text}.${stsNow()}`, url:ohOn() ? 'mymoney' : 'hub', kind:'bills'}), delay || 0);
 }
 // demo key B: this month's rent is not paid. The analyst goes on if it was off; the bills-first card, the Fun hold-off, Persi and a push appear. Pay now clears it.
 function billMissed(){
@@ -275,7 +278,7 @@ function billMissed(){
   const i = S.tx.findIndex(t => t.a < 0 && payeeKey(t) === b.key && txWhen(t).ym === now.ym);
   if(i >= 0){ const t = S.tx.splice(i, 1)[0]; if(t.note === 'Paid from Bills pocket') S.billsPocket.bal += -t.a; else acc('junior').v += -t.a; }   // the rent was not sent: the money is still here
   delete S.billSkip[b.id]; S.bfDone = false; S.bfPush = now.ym + '-' + now.day; renderAll(); tab('fooldal');
-  notify({title:'Persi · Persely', persi:true, body:`${billsFirst().text}.${stsNow()}`, url:'hub', kind:'bills'});
+  notify({title:'Persi · Persely', persi:true, body:`${billsFirst().text}.${stsNow()}`, url:ohOn() ? 'mymoney' : 'hub', kind:'bills'});
 }
 // a friend joins the shared Persely
 function doriJoins(){

@@ -28,7 +28,52 @@ function storyRing(){
   if(storyReady()) return `<button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${lab}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button>`;
   return `<button class="sring off" data-storywait data-tour="story" aria-label="Your story arrives on ${storyDateTxt()}" title="Your story arrives on ${storyDateTxt()}"><span class="sring-in">${lab}</span><small>At month end</small></button>`;
 }
-function vFooldal(){
+/* ---------- Phase 6 (plan 2h): Home back to the OTP skeleton (eb807a7 order) ----------
+   header (avatar, name, mail) · Balance + All accounts · account carousel · ONE Persely teaser · My monthly spending gauge + Details · category bars · For you + All.
+   Everything that left Home has a new place (plan 2h table): late-bill card and the analyst notice on top of Spending, Safe to spend is the Spending hero (Details),
+   Bills from the Spending Bills row, the Notifications inbox from Settings (avatar) > Notifications, Persi's tips on Spending, the story ring on the Persely tab.
+   OH_LEGACY: self-checks only, renders the Home from before Phase 6 in the same page (OTP_HOME is read once from the address). */
+let OH_LEGACY = false;
+const ohOn = () => OTP_HOME && !OH_LEGACY;
+function vFooldal(){ return ohOn() ? vHomeOtp() : vHomeOld(); }
+// the one Persely card on Home (plan 2c rule): Persi + one line + chevron, one action. State in Persi's order: no goal, payday, week open (or done); Junior ending in the last 30 days is the subline
+const ohJuniorSoon = () => !S.bridge && (S.juniorDays || 0) > 0 && S.juniorDays <= 30;
+const ohPayday = () => !!S.pdAsk && payOn() && S.payday.ask && !paydayBills() && paydayAlloc().total > 0;
+function ohTeaser(){
+  if(!S.goals.length) return spOn() ? spHomeCard() : `<button class="card hubteaser" data-sheet="newgoal">${pig('happy', 52)}<span><b>Start your first goal</b><small>Pick what you are saving for</small></span>${I('chev',20)}</button>`;
+  const sub = ohJuniorSoon() ? `<small>Your 3.0% ends on ${juniorEndLabel()}</small>` : '';
+  if(ohPayday()) return `<button class="card hubteaser ohteaser" data-sheet="payday">${pig('happy', 52)}<span><b>Payday · Save ${ft(paydayAlloc().total)}?</b>${sub}</span>${I('chev',20)}</button>`;
+  const wk = S.savedWeek ? `Week ${S.streak} done · ${ft(total())} saved` : `Week ${S.streak + 1} · Save by Sunday`;
+  return `<button class="card hubteaser ohteaser" data-tab="hub">${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span><b class="ohwk">${flame(17, S.streak > 0)} ${wk}</b>${sub}</span>${I('chev',20)}</button>`;
+}
+// the original 270 degree gauge, fed by the real card spending of the month (the same catSpend total as the Spending page, D15 label)
+function ohGauge(spent, avg){
+  const R = 104, C = 2 * Math.PI * R, arc = C * .75, p = Math.min(1, spent / Math.max(1, avg * 1.15));
+  return `<div class="gauge ohgauge" role="img" aria-label="Card spending so far ${ft(spent)}. Average a month ${ft(avg)}">
+    <svg viewBox="0 0 250 250" style="transform:rotate(135deg)" aria-hidden="true"><circle cx="125" cy="125" r="${R}" fill="none" stroke="${PALETTE.line}" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>${spent ? `<circle cx="125" cy="125" r="${R}" fill="none" stroke="${PALETTE.green}" stroke-width="16" stroke-linecap="round" stroke-dasharray="${arc * p} ${C}"/>` : ''}</svg>
+    <div class="core" aria-hidden="true"><small>Card spending so far</small><b class="num">${ft(spent)}</b></div>
+  </div>`;
+}
+function vHomeOtp(){
+  const mo = shownMonth(), sp = catSpend(mo.ym), spent = sumVals(sp), avg = avgSpend() || spent;
+  return `
+  <div class="hhead ohhead"><button class="hprof" data-settings="" aria-label="Profile and settings"><span class="avatar" aria-hidden="true">${S.ini}</span><span class="hn"><b>${S.name}</b></span></button><button class="mail hic" data-go="neked" aria-label="Messages and offers"><span class="hi">${I('mail',26)}</span></button></div>
+  <div class="sec"><span>Balance</span><a data-go="szamlaim">All accounts ${I('chev',16)}</a></div>
+  <div class="accs" id="accs">${S.accounts.map(a => a.id === 'persely'
+    ? `<button class="acc" data-tab="hub"><div class="n">Persely · total</div><div class="v num">${ft(total())}</div><div class="h">${S.goals.length ? plural(S.goals.filter(g => !isEur(g)).length,'goal') : 'No goals yet'}${eurTotal() ? ` + ${eur(eurTotal())}` : ''}</div></button>`
+    : `<button class="acc" data-go="szamlaim"><div class="n">${a.n}</div><div class="v num">${ft(a.v)}</div><div class="h">${a.h}</div></button>`).join('')}</div>
+  <div class="dots">${S.accounts.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>
+  ${ohTeaser()}
+  <div class="sec"><span>My monthly spending</span><a data-go="mymoney" aria-label="Details: Spending">Details ${I('chev',16)}</a></div>
+  <div class="mlab">1 ${mo.name} ${mo.year} – ${mo.last} ${mo.name} ${mo.year}</div>
+  ${ohGauge(spent, avg)}
+  <div class="avg"><span>You usually spend <span class="num">${ft(avg)}</span> a month by card</span></div>
+  <div class="sec"><span>What did I spend on this month?</span></div>
+  ${catBars(sp)}
+  <div class="sec"><span>For you</span><a data-go="neked">All ${I('chev',16)}</a></div>
+  ${nekedCards(true)}`;
+}
+function vHomeOld(){
   const mo = shownMonth(), sp = catSpend(mo.ym), spent = sumVals(sp), avg = avgSpend() || spent;
   // the month circle: 270 degree ring, gap at the bottom, one arc per category (catRing)
   return `

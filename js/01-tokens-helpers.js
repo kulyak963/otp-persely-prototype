@@ -79,6 +79,8 @@ const sft = n => (n>0?'+ ':'') + ft(n).replace('-','- ');
 const $ = s => document.querySelector(s);
 /* Simple Persely (docs/simple-persely-plan.md): on by default, ?simple=0 falls back to the pre-Simple behaviour (wizard, setup card, Sunday nudge sheet). */
 const SIMPLE_PERSELY = new URLSearchParams(location.search).get('simple') !== '0';
+/* Simple Persely Phase 6 (plan 2h): Home back to the OTP skeleton. On with Simple Persely; ?otphome=0 keeps the Home from before Phase 6, ?simple=0 turns everything old. */
+const OTP_HOME = SIMPLE_PERSELY && new URLSearchParams(location.search).get('otphome') !== '0';
 // the one switch used everywhere (same look as in onboarding): the switch toggles, the row next to it opens the settings
 const swBtn = (on, attr, label) => `<button class="tg ${on ? 'on' : ''}" role="switch" aria-checked="${on ? 'true' : 'false'}" aria-label="${label}" ${attr}></button>`;
 /* Reading grade for English UI copy (Flesch-Kincaid), shared by the self-checks and anyone who wants to measure a string.

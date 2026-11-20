@@ -193,7 +193,8 @@ function analystFoot(){
 }
 function myMoneyHTML(){
   const an = S.analyst.on, mo = shownMonth(), enough = project().months >= 1, m = an && enough ? planModel() : null;
-  return `${safeCard()}
+  // Phase 6 (plan 2h): the late-bill card (Pay now / All bills) and the analyst's one-line first-run notice left Home for the top of this page
+  return `${ohOn() ? bfCard() + spAnLine() : ''}${safeCard()}
   ${analysisGauge(m)}
   ${billsRow()}
   ${!an ? `<div class="sec"><span>My plan</span></div><div class="card" style="padding:var(--sp-4)" data-tour="plan"><b class="u-fs-m">Turn on to see your plan</b><div class="fine u-mt4-b12">Categories and your monthly plan need the Financial analyst. Safe to spend and bills stay on.</div><button class="btn" data-anon>Turn on</button></div>`
