@@ -166,7 +166,13 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .hhead{display:flex;align-items:center;gap:12px;padding:14px 0 4px}
 .avatar{width:44px;height:44px;border-radius:50%;background:var(--orange-t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:var(--fs-m)}
 .hhead b{flex:1;font-size:var(--fs-m)}
-.hhead .mail{color:var(--green-i);position:relative}
+.hhead .mail,.hhead .bell{color:var(--green-i);position:relative}
+.hhead .bell{width:var(--tap);height:var(--tap);display:flex;align-items:center;justify-content:center;margin:-8px 0}
+button.avatar{border:0;cursor:pointer}
+.short{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 0}
+.short button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:var(--tap);padding:10px 4px;background:var(--card);box-shadow:var(--sh);border-radius:14px;font-size:var(--fs-s);font-weight:600;color:var(--ink2);text-align:center}
+.short .c{width:36px;height:36px;border-radius:50%;background:var(--green-l,#E6F4DD);color:var(--green-i);display:flex;align-items:center;justify-content:center}
+.prow{margin-top:6px}
 .hhead .mail::before{content:"";position:absolute;inset:-9px}
 .accs{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:4px 16px 14px;scrollbar-width:none;overscroll-behavior:contain}
 .accs::-webkit-scrollbar{display:none}
@@ -233,6 +239,9 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .mi{display:flex;align-items:center;gap:16px;width:100%;padding:13px 0;font-size:var(--fs-m);color:var(--ink2)}
 .mi svg{color:var(--ink2)}
 .mdiv{height:1px;background:var(--line);margin:10px 0}
+.mtop{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 4px}
+.mtop button{display:flex;align-items:center;gap:10px;min-height:var(--tap);padding:10px 14px;background:var(--card);box-shadow:var(--sh);border-radius:14px;font-size:var(--fs-m);font-weight:600;color:var(--ink2)}
+.u-edit{display:flex;align-items:center;font-weight:700;color:var(--green-t);min-height:var(--tap)}
 
 /* for you */
 .hcar{display:flex;gap:12px;overflow-x:auto;margin:0 -16px;padding:4px 16px 12px;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior:contain}
@@ -291,6 +300,8 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* toast: placed by JS just above the lowest control of the screen on top (tab bar, page button, onboarding button), never over a button; inside a sheet the message is shown as a note in the sheet instead */
 .toast{position:absolute;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 104px);z-index:80;background:#2B3038;color:#fff;border-radius:14px;padding:12px 16px;font-size:0.875rem;font-weight:600;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;display:flex;align-items:center;gap:12px}
 .toast.on{opacity:1;transform:none}
+.toast .dtag{flex:none;background:#fff;color:#2B3038;border-radius:6px;padding:2px 7px;font-size:0.6875rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.toast.demo .tm b{font-weight:700}
 #phone.toast-on .view,#phone.toast-on .page .scroll{padding-bottom:calc(24px + var(--toast-pad,0px))}   /* while a toast is up, the last rows can be scrolled clear of it */
 .toast.act.on{pointer-events:auto}
 .toast .tm{flex:1;min-width:0}
@@ -1010,6 +1021,9 @@ const P = {
   bell:'<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/>',
   game:'<path d="M7.5 8.5h9a4.5 4.5 0 0 1 4.4 5.5l-.6 2.6a2.1 2.1 0 0 1-3.7.9l-1.9-2.5H9.3l-1.9 2.5a2.1 2.1 0 0 1-3.7-.9L3.1 14a4.5 4.5 0 0 1 4.4-5.5z"/><path d="M8 11v3M6.5 12.5h3M15.5 11.6h.01M17.5 13.4h.01"/>',
   car:'<path d="M4 16.5V12l2.2-5h11.6l2.2 5v4.5z"/><path d="M4 12h16"/><circle cx="7.8" cy="16.5" r="1.8"/><circle cx="16.2" cy="16.5" r="1.8"/>',
+  gift:'<rect x="3.5" y="9" width="17" height="11" rx="1.5"/><path d="M3.5 12.5h17M12 9v11M12 9C10.5 5 7 5 7 7.5 7 9 10 9 12 9zM12 9c1.5-4 5-4 5-1.5 0 1.5-3 1.5-5 1.5z"/>',
+  analyst:'<path d="M5 20v-7M12 20V5M19 20v-10M3 20.5h18"/>',
+  coins:'<ellipse cx="12" cy="6.5" rx="7" ry="3"/><path d="M5 6.5v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5M5 11.5v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/>',
   shield:'<path d="M12 3.5 19 6v5.5c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6z"/><path d="m9 12 2.2 2.2L15.5 10"/>'
 };
 const I = (n,s) => `<svg class="i" viewBox="0 0 24 24"${s?` style="width:${s}px;height:${s}px"`:''}>${P[n]}</svg>`;
@@ -1018,7 +1032,6 @@ const sft = n => (n>0?'+ ':'') + ft(n).replace('-','- ');
 const $ = s => document.querySelector(s);
 // the one switch used everywhere (same look as in onboarding): the switch toggles, the row next to it opens the settings
 const swBtn = (on, attr, label) => `<button class="tg ${on ? 'on' : ''}" role="switch" aria-checked="${on ? 'true' : 'false'}" aria-label="${label}" ${attr}></button>`;
-const NA = 'not available in the demo';
 
 /* ================= financial analytics: history, categories, bills, projection (plan section 14, steps 1-5) =================
    Pure functions (they take the state as an optional last argument, default S). Screens and alerts are built on these later.
@@ -1428,15 +1441,15 @@ function __checkAnalytics(){
       S = clone(); S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.onboarded = true; S.billsConfirmed = true; syncSplit();
       const H = vFooldal(), P = vHub(), mm = myMoneyHTML(), an = SHEETS.analyst();
       if(keepF){
-        ok('one entry path: Home has one Spending card and no direct link to Next month, Must-pay bills or Safe to spend', cnt(H, 'mymoney') === 1 && cnt(H, 'nextmonth') === 0 && cnt(H, 'bills') === 0 && sheets(H, 'safe') === 0, [cnt(H, 'mymoney'), cnt(H, 'nextmonth'), cnt(H, 'bills'), sheets(H, 'safe')]);
+        ok('one entry path: Home reaches Spending from Safe to spend and Details only (the one page), has no direct link to Next month or Must-pay bills (the Pay a bill shortcut is the one way to the bills list) and no Safe to spend sheet', cnt(H, 'mymoney') === 2 && cnt(H, 'nextmonth') === 0 && cnt(H, 'bills') === 1 && sheets(H, 'safe') === 0, [cnt(H, 'mymoney'), cnt(H, 'nextmonth'), cnt(H, 'bills'), sheets(H, 'safe')]);
         ok('one entry path: the Persely tab has one Spending row and no split, bills or Next month block', cnt(P, 'mymoney') === 1 && cnt(P, 'kiadas') === 0 && cnt(P, 'nextmonth') === 0 && cnt(P, 'bills') === 0 && sheets(P, 'safe') === 0 && !/data-splitopen/.test(P) && !/Bills and next month/.test(P), [cnt(P, 'mymoney'), cnt(P, 'nextmonth'), cnt(P, 'bills')]);
         ok('Spending page holds Safe to spend, My split, Next month, Must-pay bills and Bills pocket, each once', sheets(mm, 'safe') === 1 && /My split/.test(mm) && cnt(mm, 'nextmonth') === 1 && /Must-pay bills/.test(mm) && /Bills pocket/.test(mm) && cnt(mm, 'bills') === 2, [cnt(mm, 'nextmonth'), cnt(mm, 'bills')]);
         ok('analyst sheet (on): one button to Spending, none to Next month or Must-pay bills', cnt(an, 'mymoney') === 1 && cnt(an, 'nextmonth') === 0 && cnt(an, 'bills') === 0);
         ok('Persely tab row shows what is spent of what is planned, from the data', (() => { const v = splitView(), t = analysisRow().replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '); return t.includes('Spending') && t.includes(`${ft(sumVals(catSpend(shownMonth().ym)))} spent of ${ft(v.by.ess.amt + v.by.fun.amt)} planned`.replace(/\s+/g, ' ')) && !/My money/.test(P + mm + an); })(), analysisRow());
         S.analyst.on = false; const Poff = vHub();
-        ok('analyst off: the Persely tab row (Spending) offers the analyst sheet; Home has no analytics card', sheets(Poff, 'analyst') >= 1 && cnt(Poff, 'mymoney') === 0 && cnt(vFooldal(), 'mymoney') === 0); S.analyst.on = true;
+        ok('analyst off: the Persely tab row (Spending) opens the one Spending page, which offers the analyst sheet; Home has no analytics card', cnt(Poff, 'mymoney') === 1 && sheets(myMoneyHTML(), 'analyst') >= 1 && !/safebtn/.test(vFooldal())); S.analyst.on = true;
         const late = clone(); late.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; late.onboarded = true; late.tx = late.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); S = late;
-        ok('late bill: the Bills first card stays on top of Home and the Persely tab', vFooldal().indexOf('Bills first') > -1 && vFooldal().indexOf('Bills first') < vFooldal().indexOf('Balance') && vHub().indexOf('Bills first') > -1 && vHub().indexOf('Bills first') < vHub().indexOf('Total in Persely'));
+        ok('late bill: the Bills first card stays on top of Home and is gone from the Persely tab (D13)', vFooldal().indexOf('Bills first') > -1 && vFooldal().indexOf('Bills first') < vFooldal().indexOf('Balance') && vHub().indexOf('Bills first') === -1);
       }
       // Money in panel, Spending, investing (UI plan: persely-home-ui-plan.md)
       { const keepS = S, plain = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '), forint = g => !g.shared && !isEur(g);
@@ -1608,7 +1621,7 @@ function __checkAnalytics(){
     const errs = [], surfaces = kind => {   // the rendered HTML of Home, Persely tab, goal page, both wizards, More, Transfer, the Junior page and the sheets
       const m = {}; S = fresh(kind); if(S.goals[0]) S._detail = S.goals[0].id;
       const add = (k, f) => { try{ m[k] = f(); }catch(e){ errs.push(kind + '/' + k + ': ' + e); m[k] = ''; } };
-      add('home', vFooldal); add('hub', vHub); add('more', vTovabbiak); add('transfer', vUtalas); add('grad', () => PAGES.grad.html()); add('persely', () => PAGES.persely.html()); add('regular', () => SHEETS.saverules());
+      add('home', vFooldal); add('hub', vHub); add('more', vTovabbiak); add('transfer', vUtalas); add('grad', () => PAGES.grad.html()); add('regular', () => SHEETS.saverules());
       if(S.goals[0]) add('goal', () => PAGES.goal.html());
       ['goodtoknow', 'whyp', 'how', 'befizet', 'kivesz', 'newgoal'].concat(S.goals.length ? ['hubsave', 'hubout'] : []).forEach(k => add('sheet-' + k, () => SHEETS[k]()));
       add('titles', () => Object.keys(PAGES).map(k => typeof PAGES[k].title === 'function' ? PAGES[k].title() : PAGES[k].title).join(' | '));
@@ -1619,8 +1632,8 @@ function __checkAnalytics(){
       const A = surfaces('new'), B = surfaces('existing'), all = {...Object.fromEntries(Object.entries(A).map(([k, v]) => ['n-' + k, v])), ...Object.fromEntries(Object.entries(B).map(([k, v]) => ['e-' + k, v]))};
       const txts = Object.entries(all).map(([k, h]) => [k, pl(h) + ' ' + lab(h)]), every = f => txts.filter(([k, t]) => f(t));
       // glossary: the listed synonyms never appear; the glossary words do
-      const BANNED = /take out|taken out|take money out|spending tracker|create persely|new persely|recurring transfer/i, hits = every(t => BANNED.test(t)).map(([k, t]) => k + ': ' + (t.match(BANNED) || [])[0]);
-      const gl = pl(vTovabbiak() + vFooldal() + vHub() + PAGES.persely.html()), noCar = !/\bCar\b/.test(Object.values(GOAL_PRESETS).map(g => g.label + ' ' + g.name).join(' ') + pl(SHEETS.newgoal()));
+      const BANNED = /take out|taken out|take money out|spending tracker|create persely|new persely|(?<!scheduled and )recurring transfer/i, hits = every(t => BANNED.test(t)).map(([k, t]) => k + ': ' + (t.match(BANNED) || [])[0]);
+      const gl = pl(vTovabbiak() + vFooldal() + vHub()), noCar = !/\bCar\b/.test(Object.values(GOAL_PRESETS).map(g => g.label + ' ' + g.name).join(' ') + pl(SHEETS.newgoal()));
       ok('chk-glossary-terms: no "Take out", "Take money out", "Spending tracker", "Create Persely", "New Persely" or "Recurring transfer" in the text or labels of Home, Persely tab, goal page, both wizards, More, Transfer and the sheets; Withdraw, Spending and Weekly transfer are the words used; "Car" is Driving licence', hits.length === 0 && /Withdraw/.test(pl(A.hub + B.hub + B.goal + B['sheet-kivesz'])) && /Spending/.test(pl(B.more)) && /Weekly transfer/.test(pl(B.persely + B.regular)) && /Create goal/.test(pl(B.wizard3)) && /New goal/.test(B.wizard3) && noCar && /Driving licence/.test(pl(A.hub)), [hits, errs]);
       // dates and amounts
       const MON = 'January|February|March|April|May|June|July|August|September|October|November|December', SHORT = /\b\d{1,2} (Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b|\b(Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec) \d{4}\b/, noYear = new RegExp('\\b\\d{1,2} (' + MON + ')\\b(?! \\d{4})'), ago = every(t => SHORT.test(t) || noYear.test(t)).map(([k, t]) => k + ': ' + (t.match(SHORT) || t.match(noYear))[0]);
@@ -1782,11 +1795,11 @@ function __checkAnalytics(){
       ok('chk-goal-reached-card: a reached goal shows "You did it: [goal] is fully saved" with Withdraw, New goal and Keep saving; progress reads "Reached" with the amount capped (no "192 881 Ft of 134 000 Ft"); the rules stay on the goal and Persi says it until the user chooses; Keep saving hides the card and keeps the rules', card && capped && stay && kept, [card, capped, stay, kept]);
 
       // Recurring transfer merged into Weekly transfer
-      reset('existing'); const tr = vUtalas(), rs = SHEETS.saverules(), pd = PAGES.persely.html();
+      reset('existing'); const tr = vUtalas(), rs = SHEETS.saverules(); pushPage('persely'); const pd = cur === 'hub' && !stack.length ? 'redirect' : '';
       sheet(SHEETS.saverules()); const wkRow = !!$('#sheet [data-srblock="wk"]') && !!$('#sheet [data-srblock="pay"]') && !!$('#sheet [data-srblock="rr"]'); closeSheet();
       clk('#v-utalas [data-saverules="wk"]'); const opens = sheetOpen() && /Saving rules/.test($('#sheet').textContent) && !!$('#sheet [data-srblock="wk"].focus'); closeSheet();
       const old = JSON.parse(JSON.stringify(fresh('existing'))); old.persely.auto = true; old.persely.amt = 4000; const sv11 = S; S = old; try{ if(S.persely && S.persely.auto){ S.weekly = {on:true, amt:S.persely.amt || S.weekly.amt || 2000}; S.persely.auto = false; } } finally { /* the load-time migration, same lines as above */ } const mig = S.weekly.on && S.weekly.amt === 4000 && !S.persely.auto; S = sv11;
-      ok('chk-recurring-merged: Transfer > Scheduled and weekly transfers and Persely details open Saving rules > Weekly transfer; there is no separate Recurring transfer page, no Monthly frequency or Frequency picker; Saving rules lists all 3 rules; an old saved recurring transfer becomes the Weekly transfer', /data-saverules="wk"/.test(tr) && !/data-go="rendszeres"/.test(tr) && /data-saverules="wk"/.test(pd) && PAGES.rendszeres === undefined && !/Monthly|Frequency/.test(pl(rs)) && wkRow && opens && mig, [wkRow, opens, mig, PAGES.rendszeres === undefined]);
+      ok('chk-recurring-merged: Transfer > Scheduled and recurring transfers opens Saving rules > Weekly transfer; there is no separate Recurring transfer page, no Monthly frequency or Frequency picker; Saving rules lists all 3 rules; an old saved recurring transfer becomes the Weekly transfer', /data-saverules="wk"/.test(tr) && !/data-go="rendszeres"/.test(tr) && pd === 'redirect' && PAGES.persely === undefined && PAGES.rendszeres === undefined && !/Monthly|Frequency/.test(pl(rs)) && wkRow && opens && mig, [wkRow, opens, mig, PAGES.rendszeres === undefined]);
 
       // Keep my 3.0%: request, confirm, pending, salary, Graduate; expired
       reset('existing'); S.juniorDays = 20; renderAll(); const gh = PAGES.grad.foot(), reqBtn = /data-keepreq/.test(gh) && /Request to keep 3\.0%/.test(gh) && !/data-keeprate/.test(gh);
@@ -1802,6 +1815,98 @@ function __checkAnalytics(){
       ok('chk-forecast-one-figure: the same goal shows ONE weekly amount on the wizard (steps 1 and 2), the goal card and the goal page: weeklyNeed(amount, saved, date) in 100 Ft steps', wiz > 0 && wiz === weeklyNeed(tgt, 0, dt1) && wiz === weeklyOf(ng2) && w1 && w2 && cardT.includes(`about ${fig} a week`) && pageT.includes(`${fig} a week`) && ng2.date === dt1 && ng2.target === tgt, [wiz, fig, w1, w2, cardT.includes(`about ${fig} a week`), pageT.includes(`${fig} a week`)]);
     } catch(e){ ok('chk-phase3: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); S = sv10; cur = cur10; stack.push(...stk10); demo.locked = lock10; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views10[i])); }
+  }
+  { // Phase 4: placement (flow plan 3.2 to 3.7, B5, C1; decisions D4, D7, D13)
+    const sv12 = S, cur12 = cur, stk12 = stack.splice(0), lock12 = demo.locked, views12 = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')); demo.locked = false;
+    const pl = h => String(h).replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').replace(/\s+/g, ' '), nt = t => String(t).replace(/\s+/g, ' ').trim(), clk = sel => { const b = $(sel); if(b) b.click(); return !!b; };
+    const reset = kind => { while(stack.length) popPage(true); try{ closeOnb(); }catch(e){} closeSheet(); MQ.q = []; hideChip(true); hideToast(true); S = fresh(kind); SETUP_COLLAPSED = false; renderAll(); };
+    const top = () => stack.length ? stack[stack.length - 1].dataset.id : '', pos = (h, k) => h.indexOf(k), inOrder = (h, ks) => ks.every((k, i) => pos(h, k) > -1 && (i === 0 || pos(h, k) > pos(h, ks[i - 1])));
+    const toastNow = () => { const t = $('#toast'); return {on:t.classList.contains('on'), text:nt(t.textContent), tag:nt((t.querySelector('.dtag') || {}).textContent || ''), role:t.getAttribute('role')}; };
+    const area = (h, sel) => { const d = document.createElement('div'); d.innerHTML = h; return [...d.querySelectorAll(sel)]; };
+    try{
+      // More: Profile and Settings on top, then Money, Persely, Help; all 24 old rows kept; own icons
+      reset('existing'); tab('tovabbiak');
+      const mh = vTovabbiak(), secs = area(mh, '.sec span').map(x => nt(x.textContent)), labels = area(mh, '.mi span, .mtop span').map(x => nt(x.textContent));
+      const OLD = ['My cards', 'Notifications', 'Financial analyst', 'My accounts', 'Persely', 'Savings options', 'Spending', 'Discounts', 'For you', 'Settings', 'My partners', 'Mobile top-up', 'Click to Pay', 'Motorway vignette', 'Documents', 'Invite a friend!', 'OTP branches and ATMs in Hungary', 'ATMs abroad', 'Exchange rates', 'QR reader', 'Book a branch appointment', 'Can we help?', 'Block internet and mobile bank access', 'Log out'];
+      const missing = OLD.filter(r => !labels.includes(r)), grp = name => { const i = mh.indexOf('<span>' + name + '</span></div>'), j = [mh.indexOf('<span>Money</span></div>'), mh.indexOf('<span>Persely</span></div>'), mh.indexOf('<span>Help</span></div>'), mh.length].filter(x => x > i).sort((a, b) => a - b)[0]; return area(mh.slice(i, j), '.mi span').map(x => nt(x.textContent)); };
+      const gMoney = grp('Money'), gPer = grp('Persely'), gHelp = grp('Help'), icons = area(mh, '.mi > svg, .mi-main > svg, .mtop svg').map(x => x.innerHTML), uniqueIcons = new Set(icons).size === icons.length;
+      const topRow = area(mh, '.mtop button').map(x => nt(x.textContent)), sw = area(mh, '.mi.sw [role="switch"]').length === 1, tap = [...document.querySelectorAll('#v-tovabbiak .mtop button, #v-tovabbiak .mi')].every(b => b.offsetHeight >= 44);
+      const rowGo = (name, attr) => area(mh, '.mi').some(b => nt(b.textContent) === name && b.matches(attr));
+      ok('chk-more-groups: More has Profile and Settings on top, then Money, Persely and Help; every one of the 24 old rows is kept (Spending replaces Spending tracker); Persely and Savings options open the Persely tab; Financial analyst is a switch row; every row has its own icon (Financial analyst and Savings options differ); rows are 44 px', topRow.join() === 'Profile,Settings' && secs.join() === 'Money,Persely,Help' && missing.length === 0 && !/Spending tracker/.test(pl(mh)) && gMoney.join() === 'My accounts,My cards,Spending,Mobile top-up,Click to Pay,Motorway vignette,Exchange rates,QR reader,Documents' && gPer.join() === 'Persely,Savings options,Discounts,My partners,Financial analyst,For you' && /Financial analyst/.test(pl(mh)) && gHelp.join() === 'Notifications,How Persely works,Can we help?,Invite a friend!,OTP branches and ATMs in Hungary,ATMs abroad,Book a branch appointment,Block internet and mobile bank access,Log out' && rowGo('Persely', '[data-tab="hub"]') && rowGo('Savings options', '[data-tab="hub"]') && rowGo('Spending', '[data-go="mymoney"]') && sw && uniqueIcons && tap, [topRow, secs, missing, gMoney, gPer, gHelp, uniqueIcons, tap]);
+
+      // one demo toast: every shell row says the same thing the same way
+      const rowsM = [...document.querySelectorAll('#v-tovabbiak [data-demo]')], names = [];
+      let uniform = rowsM.length > 0; rowsM.forEach(b => { hideToast(true); b.click(); const t = toastNow(), nm = b.dataset.demo; names.push(nm); if(!(t.on && t.text === 'Demo ' + nm + ' is not part of this demo. It works as in the OTP app.' && t.tag === 'Demo' && t.role === 'status')) uniform = false; });
+      tab('utalas'); const rowsT = [...document.querySelectorAll('#v-utalas [data-demo]')]; let uniT = rowsT.length === 4; rowsT.forEach(b => { hideToast(true); b.click(); const t = toastNow(); if(!(t.on && t.text === 'Demo ' + b.dataset.demo + ' is not part of this demo. It works as in the OTP app.')) uniT = false; });
+      pushPage('kartyaim'); const rowsC = [...document.querySelectorAll('.page [data-demo]')]; let uniC = rowsC.map(b => b.dataset.demo).join() === 'Change daily limit,View card details,Click to Pay'; rowsC.forEach(b => { hideToast(true); b.click(); const t = toastNow(); if(!(t.on && t.text === 'Demo ' + b.dataset.demo + ' is not part of this demo. It works as in the OTP app.')) uniC = false; }); popPage(true);
+      pushPage('neked'); const nk = [...document.querySelectorAll('.page [data-demo]')]; let uniN = nk.length === 2; nk.forEach(b => { hideToast(true); b.click(); if(!/is not part of this demo/.test(toastNow().text)) uniN = false; }); popPage(true);
+      hideToast(true); demoToast('Share'); const shareT = toastNow(); hideToast(true);
+      const allHtml = [vFooldal(), vHub(), vTovabbiak(), vUtalas(), vTranz(), vKartyaim(), PAGES.neked.html(), ...Object.values(SHEETS).filter(f => f.length === 0).map(f => { try{ return f(); }catch(e){ return ''; } })].join(' ');
+      ok('chk-demo-toast-uniform: the 15 More shell rows (14 old + Profile), 4 Transfer rows, 3 card rows, 2 For you cards and Share show one toast: "[Row name] is not part of this demo. It works as in the OTP app.", a Demo tag, role="status", 3 s; no old variant is left in the markup', rowsM.length === 15 && uniform && uniT && uniC && uniN && shareT.on && shareT.text === 'Demo Share is not part of this demo. It works as in the OTP app.' && DEMO_TOAST_MS === 3000 && /DEMO_TOAST_MS/.test(showToast.toString()) && !/data-toast=/.test(allHtml) && !/not available in the demo|hidden in the demo|Daily limit: 300|New features –|No active qvik/.test(pl(allHtml)) && typeof NA === 'undefined', [rowsM.length, uniform, uniT, uniC, uniN, shareT]);
+
+      // no route opens the legacy Persely details
+      reset('existing'); pushPage('persely'); const r1 = cur === 'hub' && !stack.length; pushPage('megtakaritas'); const r2 = cur === 'hub' && !stack.length;
+      tab('tovabbiak'); clk('#v-tovabbiak [data-tab="hub"]'); const r3 = cur === 'hub'; tab('tovabbiak'); const sv = [...document.querySelectorAll('#v-tovabbiak .mi')].find(b => /Savings options/.test(b.textContent)); sv.click(); const r4 = cur === 'hub' && !stack.length;
+      tab('tovabbiak'); const sp = [...document.querySelectorAll('#v-tovabbiak .mi')].find(b => /^\s*Spending\s*$/.test(b.textContent)); sp.click(); const r5 = top() === 'mymoney'; pushPage('kiadas'); const r6 = top() === 'mymoney'; while(stack.length) popPage(true);
+      const homeAll = [vFooldal(), vHub(), vTovabbiak(), vUtalas(), vKartyaim(), PAGES.neked.html(), PAGES.goal.html()].join(' '); reset('new'); const newAll = [vFooldal(), vHub(), PAGES.neked.html()].join(' ');
+      ok('chk-no-legacy-persely: the Persely details page and the Savings options page are gone; More > Persely, Savings options and any link to them open the Persely tab; the old Monthly spending page route opens the one Spending page; nothing links to them', PAGES.persely === undefined && PAGES.megtakaritas === undefined && !/Persely details/.test(Object.values(PAGES).map(p => typeof p.title === 'function' ? p.title() : p.title).join('|')) && r1 && r2 && r3 && r4 && r5 && r6 && !/data-go="(persely|megtakaritas|kiadas)"/.test(homeAll + newAll), [r1, r2, r3, r4, r5, r6]);
+
+      // Home blocks in order
+      reset('existing'); S.analyst.on = true; S.analyst.accepted = true; S.verified = true; renderAll(); const H = vFooldal(), hp = pl(H);
+      const order = inOrder(H, ['class="hhead"', 'id="accs"', 'data-go="grad"', 'class="safebtn"', 'class="short"', 'class="card hubteaser"', 'My monthly spending', 'class="sec"><span>For you']), hdr = area(H, '.hhead button').map(b => b.getAttribute('aria-label')).join();
+      tab('fooldal'); const sc = [...document.querySelectorAll('#v-fooldal .short button')], scT = sc.map(b => nt(b.textContent)).join(), scTap = sc.length === 3 && sc.every(b => b.offsetHeight >= 44 && b.offsetWidth >= 44);
+      const goSc = []; sc.forEach(b => { b.click(); goSc.push(sheetOpen() ? 'sheet:' + nt($('#sheet h2').textContent) : top()); closeSheet(); while(stack.length) popPage(true); });
+      const streakCard = /\d+-week streak/.test(pl(area(H, '.hubteaser')[0].innerHTML)) && area(H, '.hubteaser')[0].dataset.tab === 'hub';
+      reset('new'); const HN = vFooldal(), tn = area(HN, '.hubteaser')[0], newCard = /Start your first goal/.test(tn.textContent) && tn.dataset.sheet === 'newgoal'; tab('fooldal'); clk('#v-fooldal .hubteaser'); const tiles = sheetOpen() && document.querySelectorAll('#sheet [data-tilepick]').length >= 6; closeSheet();
+      ok('chk-home-order: Home runs header (avatar, bell, mail named For you), balance carousel, Junior line, Safe to spend, shortcuts (Add money, Pay a bill, Card at 44 px), Persely card, My monthly spending, For you; Add money opens the shared sheet, Pay a bill the bills list, Card the card page; a new user\'s Persely card is "Start your first goal" and opens the tile chooser', order && /Profile and Settings,Notifications,For you/.test(hdr) && scT === 'Add money,Pay a bill,Card' && scTap && goSc.join() === 'sheet:Add money,bills,kartyaim' && streakCard && newCard && tiles, [order, hdr, scT, scTap, goSc, streakCard, newCard, tiles]);
+
+      // Persely tab blocks in order, existing and new user
+      reset('existing'); S.analyst.on = true; S.analyst.accepted = true; S.juniorDays = 300; renderAll(); const T1 = vHub();
+      const base = ['Total in Persely', 'data-sheet="hubsave"', 'class="trust"', 'data-tour="goals"', 'Saving rules', 'data-go="grad"', 'Your habits', 'data-go="mymoney"', 'data-go="kedvezmenyek"'];
+      const o1 = inOrder(T1, base), friendsLast = pos(T1, 'data-sheet="how"') > pos(T1, 'data-go="kedvezmenyek"');
+      S.juniorDays = 60; renderAll(); const T2 = vHub(), o2 = inOrder(T2, ['Total in Persely', 'class="trust"', 'data-go="grad"', 'data-tour="goals"', 'Saving rules', 'Your habits']);
+      S.months = 0; const noYear = !/data-go="year"/.test(T1); S.months = 12; const yr = vHub(), yearAfter = inOrder(yr, ['data-go="mymoney"', 'data-go="kedvezmenyek"', 'data-go="year"', 'data-sheet="how"']); S.months = 0;
+      const noLate = !/class="card bfc"|Bills first/.test(T1 + T2);
+      const goals44 = (() => { tab('hub'); const nb = $('#v-hub [data-sheet="newgoal"]'); return !!nb && nb.offsetHeight >= 44; })();
+      reset('new'); const T3 = vHub(), o3 = inOrder(T3, ['id="setupcard"', 'Total in Persely', 'class="trust"', 'data-go="grad"', 'Your habits', 'data-sheet="how"']) && /Your streak starts with the first deposit/.test(pl(T3)), jrAbove = pos(T3, 'data-go="grad"') > pos(T3, 'id="setupcard"');
+      ok('chk-tab-order: existing user: Total card, Add money and Withdraw with the trust line, Goals (New + at 44 px), Saving rules, Junior card, Your habits, Spending, Discounts, Your year (only from month 12), How Persely works; the Junior card moves under the Total card with 90 days left; no late-bill card; new user: setup card first, Junior card never above it', o1 && friendsLast && o2 && noYear && yearAfter && noLate && goals44 && o3 && jrAbove, [o1, friendsLast, o2, noYear, yearAfter, noLate, goals44, o3, jrAbove]);
+
+      // table 3.6: one primary entry per feature that exists, and the allowed links
+      reset('existing'); S.analyst.on = true; S.analyst.accepted = true; renderAll(); const E = {};
+      // Spending: four doors, one page
+      const doors = []; [['#v-fooldal .safebtn', 'fooldal'], ['#v-fooldal [data-go="mymoney"]:not(.safebtn)', 'fooldal'], ['#v-hub .prow [data-go="mymoney"]', 'hub'], ['#v-tovabbiak [data-go="mymoney"]', 'tovabbiak']].forEach(([sel, t]) => { tab(t); const b = $(sel); if(b){ b.click(); doors.push(top()); } else doors.push('missing:' + sel); while(stack.length) popPage(true); });
+      E.spending = doors.every(x => x === 'mymoney');
+      // Add money: tab, Home shortcut, goal page, Transfer > Between my accounts: all the same sheet and one From and To
+      tab('hub'); clk('#v-hub .hero-btns [data-sheet="hubsave"]'); const a1 = sheetOpen() && nt($('#sheet h2').textContent) === 'Add money'; closeSheet();
+      tab('fooldal'); clk('#v-fooldal .short [data-sheet="hubsave"]'); const a2 = sheetOpen() && nt($('#sheet h2').textContent) === 'Add money'; closeSheet();
+      S._detail = S.goals[0].id; pushPage('goal'); clk('.page [data-pickgoal]'); const a3 = sheetOpen() && nt($('#sheet h2').textContent) === 'Add money'; closeSheet(); while(stack.length) popPage(true);
+      S._goal = 'ps5'; tab('utalas'); clk('#v-utalas [data-sheet="sajat"]'); const sj = $('#sheet'), a4 = sheetOpen() && /Between my accounts/.test(sj.textContent) && !!sj.querySelector('[data-mvfrom]') && !!sj.querySelector('[data-mvto]') && !!sj.querySelector('[data-mvfrom="g:holiday"]') && !!sj.querySelector('[data-mvto="a:megt"]') && sj.querySelector('[data-mvto].on').dataset.mvto === 'g:ps5' && sj.querySelector('[data-mvfrom].on').dataset.mvfrom === 'a:junior';
+      clk('#sheet [data-mvto="g:fest"]'); const changed = $('#sheet [data-mvto].on').dataset.mvto === 'g:fest'; const j0 = acc('junior').v, f0 = goalById('fest').saved; $('#mv').value = '3000'; clk('#sheet [data-mvgo]'); const moved = acc('junior').v === j0 - 3000 && goalById('fest').saved === f0 + 3000 && !sheetOpen() && UCH.on; hideChip(true);
+      E.addmoney = a1 && a2 && a3 && a4 && changed && moved;
+      // Between my accounts: account to account and goal to account, same-place error
+      tab('utalas'); clk('#v-utalas [data-sheet="sajat"]'); clk('#sheet [data-mvto="a:megt"]'); const s0 = acc('megt').v, j1 = acc('junior').v; $('#mv').value = '2000'; clk('#sheet [data-mvgo]'); const accMove = acc('megt').v === s0 + 2000 && acc('junior').v === j1 - 2000; hideChip(true);
+      clk('#v-utalas [data-sheet="sajat"]'); clk('#sheet [data-mvto="a:junior"]'); $('#mv').value = '1000'; clk('#sheet [data-mvgo]'); const sameErr = sheetOpen() && /Choose two different places/.test($('#e-mv').textContent); closeSheet();
+      E.between = accMove && sameErr;
+      // Saving rules and the other Transfer rows
+      tab('utalas'); clk('#v-utalas [data-saverules="wk"]'); const r1b = sheetOpen() && /Saving rules/.test($('#sheet').textContent) && !!$('#sheet [data-srblock="wk"].focus'); closeSheet();
+      clk('#v-utalas [data-tab="tranzakciok"]'); const r2b = cur === 'tranzakciok'; tab('hub'); clk('#v-hub .srlist [data-saverules="pay"]'); const r3b = sheetOpen() && /Saving rules/.test($('#sheet').textContent); closeSheet(); S._detail = S.goals[0].id; pushPage('goal'); const r4b = /data-saverules/.test($('.page').innerHTML); while(stack.length) popPage(true);
+      E.rules = r1b && r2b && r3b && r4b;
+      // Card: Home shortcut and More > My cards open the one card page; block switch, round-ups, discounts
+      tab('fooldal'); clk('#v-fooldal .short [data-go="kartyaim"]'); const c1 = top() === 'kartyaim'; const swb = $('.page .row .tg[data-freeze]'), blk = !!swb && swb.offsetHeight >= 44 && swb.getAttribute('role') === 'switch'; const f0b = S.frozen; if(swb) swb.click(); const blocked = S.frozen === !f0b; if(S.frozen !== f0b){ const s2 = $('.page .tg[data-freeze]'); if(s2) s2.click(); }
+      S.roundup = {on:true, goal:'holiday'}; renderAll(); const rl = $('.page [data-saverules="rr"]'), ru = /Round-ups: on → Summer holiday/.test(nt($('.page').textContent)) && /Edit/.test(rl.textContent); rl.click(); const ruOpen = sheetOpen() && /Saving rules/.test($('#sheet').textContent); closeSheet(); clk('.page [data-go="kedvezmenyek"]'); const disc = top() === 'kedvezmenyek'; while(stack.length) popPage(true);
+      tab('tovabbiak'); clk('#v-tovabbiak [data-go="kartyaim"]'); const c2 = top() === 'kartyaim'; while(stack.length) popPage(true);
+      E.card = c1 && c2 && blk && blocked && ru && ruOpen && disc;
+      // Bills: the Pay a bill shortcut; More > Notifications; Financial analyst switch; Your year; create goal
+      tab('fooldal'); clk('#v-fooldal .short [data-go="bills"]'); E.bills = top() === 'bills'; while(stack.length) popPage(true);
+      tab('tovabbiak'); clk('#v-tovabbiak [data-go="ertesitesek"]'); E.notif = top() === 'ertesitesek'; while(stack.length) popPage(true);
+      tab('tovabbiak'); const an0 = S.analyst.on; clk('#v-tovabbiak .mi.sw [data-sw="analyst"]'); E.analyst = an0 && S.analyst.on === false; hideChip(true); S.analyst.on = true; renderAll();
+      tab('hub'); clk('#v-hub .sec [data-sheet="newgoal"]'); E.create = sheetOpen() && document.querySelectorAll('#sheet [data-tilepick]').length >= 6; closeSheet();
+      S.months = 12; renderAll(); tab('hub'); clk('#v-hub [data-go="year"]'); E.year = top() === 'year'; S.months = 0; while(stack.length) popPage(true);
+      tab('hub'); E.homeToTab = (() => { tab('fooldal'); clk('#v-fooldal .hubteaser'); return cur === 'hub'; })();
+      const bad = Object.keys(E).filter(k => !E[k]);
+      ok('chk-entry-map: every feature of table 3.6 that exists now has its one primary entry and only the allowed links: Spending (Home Safe to spend, Home Details, Persely tab row, More), Add money (tab, Home shortcut, goal page, Transfer > Between my accounts with From and To choosers), Saving rules (tab, goal page, Transfer > Scheduled and recurring), Previous transfers, Card (Home, More: block switch at 44 px, Round-ups, Discounts), Pay a bill, Notifications, Financial analyst switch, Create goal, Your year, Home > Persely tab', bad.length === 0, [bad, E]);
+    } catch(e){ ok('chk-phase4: the new checks ran without errors', false, String(e && e.stack || e)); }
+    finally { hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); S = sv12; cur = cur12; stack.push(...stk12); demo.locked = lock12; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views12[i])); }
   }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
@@ -1906,7 +2011,7 @@ function vFooldal(){
   // gauge: 270° arc, gap at the bottom
   const R=104, C=2*Math.PI*R, arc=C*.75, p=Math.min(1,spent/ (avg*1.15));
   return `
-  <div class="hhead"><div class="avatar">${S.ini}</div><b>${S.name}</b><button class="mail" data-go="neked" aria-label="Messages">${I('mail',26)}</button></div>
+  <div class="hhead"><button class="avatar" data-demo="Profile" aria-label="Profile and Settings">${S.ini}</button><b>${S.name}</b><button class="bell" data-go="ertesitesek" aria-label="Notifications">${I('bell',26)}</button><button class="mail" data-go="neked" aria-label="For you">${I('mail',26)}</button></div>
   ${bfCard()}
   <div class="sec"><span>Balance</span><a data-go="szamlaim">All accounts ${I('chev',16)}</a></div>
   <div class="accs" id="accs">${S.accounts.map(a => a.id === 'persely'
@@ -1914,13 +2019,14 @@ function vFooldal(){
     : a.id === 'megt' ? `<div class="acc"><button class="accin" data-go="szamlaim"><div class="n">${a.n}</div><div class="v num">${ft(a.v)}</div><div class="h">${a.h}</div></button><button class="link lnk44 whyl" data-sheet="whyp">Why Persely?</button></div>`
     : `<button class="acc" data-go="szamlaim"><div class="n">${a.n}</div><div class="v num">${ft(a.v)}</div><div class="h">${a.h}</div></button>`).join('')}</div>
   <div class="dots">${S.accounts.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>
-  ${safeRow()}
   ${S.verified || S.bridge ? juniorRow() : ''}
-  <button class="card hubteaser" data-tab="hub">${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.goals.length
+  ${safeRow()}
+  <div class="short" role="group" aria-label="Shortcuts"><button data-sheet="hubsave"><span class="c">${I('plus')}</span>Add money</button><button data-go="bills"><span class="c">${I('doc')}</span>Pay a bill</button><button data-go="kartyaim"><span class="c">${I('cards')}</span>Card</button></div>
+  <button class="card hubteaser" ${S.goals.length ? 'data-tab="hub"' : 'data-sheet="newgoal"'}>${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.goals.length
     ? `<b>Start your first goal</b><small>Pick what you are saving for</small>`
     : `<b style="display:flex;align-items:center;gap:4px">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Safe this week' : 'Ends Sunday. Any amount keeps it going'}</small>`}</span>${I('chev',20)}</button>
   ${insightCard()}
-  <div class="sec"><span>My monthly spending</span><a data-go="kiadas">Details ${I('chev',16)}</a></div>
+  <div class="sec"><span>My monthly spending</span><a data-go="mymoney">Details ${I('chev',16)}</a></div>
   <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${mo.label}</div>
   <div class="gauge">
     <svg viewBox="0 0 250 250" style="transform:rotate(135deg)">
@@ -1975,17 +2081,18 @@ function insightCard(){
 }
 
 function vUtalas(){
+  const chev = `<span class="chev">${I('chev',20)}</span>`;
   return `<div class="tabtitle">Transfer</div>
   <div class="qa">
     <button data-sheet="uj"><span class="c">${I('plus')}</span>New transfer</button>
     <button data-sheet="sajat"><span class="c">${I('swap')}</span>Between my accounts</button>
-    <button data-toast="Foreign currency transfer – ${NA}"><span class="c">${I('euro')}</span>Currency transfer</button>
-    <button data-toast="qvik request – ${NA}"><span class="c">${I('plane')}</span>New qvik request</button>
+    <button data-demo="Currency transfer"><span class="c">${I('euro')}</span>Currency transfer</button>
+    <button data-demo="New qvik request"><span class="c">${I('plane')}</span>New qvik request</button>
   </div>
-  <button class="row" data-toast="Request money – ${NA}"><span class="ic">${I('req')}</span><span class="t">Request money easily<small>free | NFC | QR code</small></span><span class="badge">New</span><span class="chev">${I('chev',20)}</span></button>
-  <button class="row" data-saverules="wk"><span class="ic">${I('sched')}</span><span class="t">Scheduled and weekly transfers</span><span class="chev">${I('chev',20)}</span></button>
-  <button class="row" data-tab="tranzakciok"><span class="ic">${I('hist')}</span><span class="t">Previous transfers</span><span class="chev">${I('chev',20)}</span></button>
-  <button class="row" data-toast="No active qvik requests"><span class="ic">${I('plane')}</span><span class="t">qvik requests</span><span class="chev">${I('chev',20)}</span></button>`;
+  <button class="row" data-demo="Request money easily"><span class="ic">${I('req')}</span><span class="t">Request money easily<small>free | NFC | QR code</small></span><span class="badge">New</span>${chev}</button>
+  <button class="row" data-saverules="wk"><span class="ic">${I('sched')}</span><span class="t">Scheduled and recurring transfers</span>${chev}</button>
+  <button class="row" data-tab="tranzakciok"><span class="ic">${I('hist')}</span><span class="t">Previous transfers</span>${chev}</button>
+  <button class="row" data-demo="qvik requests"><span class="ic">${I('plane')}</span><span class="t">qvik requests</span>${chev}</button>`;
 }
 
 let txMode = 0;
@@ -2000,43 +2107,48 @@ function vTranz(){
   } else html = `<div class="card" style="text-align:center;color:var(--muted-t);padding:28px 16px">No pending transactions.</div>`;
   return `<div class="tabtitle">Transactions</div>
   <div class="seg"><button class="${txMode===0?'on':''}" data-txmode="0">Completed</button><button class="${txMode===1?'on':''}" data-txmode="1">Pending</button></div>
-  <button class="filter" data-toast="Filter – ${NA}">${I('filter')} Filter</button>
+  <button class="filter" data-demo="Filter">${I('filter')} Filter</button>
   ${html}`;
 }
 
 function vKartyaim(){
-  const frozen = S.frozen;
+  const frozen = S.frozen, chev = `<span class="chev">${I('chev',20)}</span>`, rg = S.roundup.on ? goalById(S.roundup.goal) : null;
   return `<div class="tabtitle">My cards</div>
   <div class="card bigcard">
     <div class="u-fw6">Main card</div>
     <div class="ccard" style="${frozen?'filter:grayscale(.85)':''}"><div class="bn">otpbank</div><div class="chip2"></div><div class="no">•••• •••• •••• 4821</div><div class="nm">KISS ANNA · JUNIOR</div><div class="mc"><i></i><i></i></div></div>
     ${frozen?'<span class="ok" style="background:#FDEDE0;color:var(--orange-t)">Temporarily blocked</span>':`<span class="ok">${I('check',18)} Your card is active</span>`}
   </div>
-  <button class="row" data-freeze><span class="ic">${I('snow')}</span><span class="t">Temporary block<small>You can turn it back on anytime</small></span><span class="tg ${frozen?'on':''}"></span></button>
-  <button class="row" data-toast="Daily limit: 300 000 Ft"><span class="ic">${I('limit')}</span><span class="t">Change daily limit</span><span class="chev">${I('chev',20)}</span></button>
-  <button class="row" data-toast="Card details are hidden in the demo"><span class="ic">${I('eye')}</span><span class="t">View card details</span><span class="chev">${I('chev',20)}</span></button>
-  <button class="row" data-go="kedvezmenyek"><span class="ic">${I('tag')}</span><span class="t">Discounts<small class="g">${5-S.disc.activated.length} offers waiting for activation</small></span><span class="chev">${I('chev',20)}</span></button>
-  <button class="row" data-toast="Click to Pay – ${NA}"><span class="ic">${I('ctp')}</span><span class="t">Click to Pay</span><span class="chev">${I('chev',20)}</span></button>`;
+  <div class="row"><span class="ic">${I('snow')}</span><span class="t">Temporary block<small>You can turn it back on anytime</small></span>${swBtn(frozen, 'data-freeze', 'Temporary block')}</div>
+  <button class="row" data-saverules="rr"><span class="ic">${I('piggy')}</span><span class="t">Round-ups: ${rg ? `on → ${esc(rg.name)}` : 'off'}<small class="g">Edit in Saving rules</small></span><span class="lnk44 u-edit">Edit</span></button>
+  <button class="row" data-demo="Change daily limit"><span class="ic">${I('limit')}</span><span class="t">Change daily limit</span>${chev}</button>
+  <button class="row" data-demo="View card details"><span class="ic">${I('eye')}</span><span class="t">View card details</span>${chev}</button>
+  <button class="row" data-go="kedvezmenyek"><span class="ic">${I('tag')}</span><span class="t">Discounts<small class="g">${5-S.disc.activated.length} offers waiting for activation</small></span>${chev}</button>
+  <button class="row" data-demo="Click to Pay"><span class="ic">${I('ctp')}</span><span class="t">Click to Pay</span>${chev}</button>`;
 }
 
+/* More: Profile and Settings on top, then Money, Persely and Help (flow plan 3.4). Every row of the old list is kept; a row with data-demo is a shell row and shows the one demo toast (D7).
+   Settings and Profile are shell rows until Phase 6; the Discounts row becomes Perks with the Perks page (Phase 6). */
 function vTovabbiak(){
-  const it = (ic,t,attr='') => `<button class="mi" ${attr||`data-toast="${t} – ${NA}"`}>${I(ic)}<span>${t}</span></button>`;
+  const it = (ic, t, attr) => `<button class="mi" ${attr || `data-demo="${t}"`}>${I(ic)}<span>${t}</span></button>`;
   return `<div class="menu">
-  <div class="sec"><span>My finances</span></div>
-  ${it('cards','My cards','data-go="kartyaim"')}
-  ${it('bell','Notifications','data-go="ertesitesek"')}
-  <div class="mi sw"><button class="mi-main" data-sheet="analyst">${I('chart')}<span>Financial analyst</span></button>${swBtn(S.analyst.on, 'data-sw="analyst"', 'Financial analyst')}</div>
+  <div class="mtop"><button data-demo="Profile">${I('user')}<span>Profile</span></button><button data-demo="Settings">${I('gear')}<span>Settings</span></button></div>
+  <div class="sec"><span>Money</span></div>
   ${it('wallet','My accounts','data-go="szamlaim"')}
-  ${it('piggy','Persely','data-go="persely"')}
-  ${it('chart','Savings options','data-go="megtakaritas"')}
-  ${it('limit','Spending','data-go="kiadas"')}
-  ${it('tag','Discounts','data-go="kedvezmenyek"')}
-  ${it('star','For you','data-go="neked"')}
-  <div class="sec"><span>Other</span></div>
-  ${it('gear','Settings')}${it('user','My partners')}${it('phone','Mobile top-up')}${it('ctp','Click to Pay')}
-  ${it('road','Motorway vignette')}${it('doc','Documents')}${it('invite','Invite a friend!')}
-  ${it('mapq','OTP branches and ATMs in Hungary')}${it('mapp','ATMs abroad')}${it('rate','Exchange rates')}
-  ${it('qr','QR reader')}${it('cal','Book a branch appointment')}${it('help','Can we help?')}${it('lock','Block internet and mobile bank access')}
+  ${it('cards','My cards','data-go="kartyaim"')}
+  ${it('limit','Spending','data-go="mymoney"')}
+  ${it('phone','Mobile top-up')}${it('ctp','Click to Pay')}${it('road','Motorway vignette')}${it('rate','Exchange rates')}${it('qr','QR reader')}${it('doc','Documents')}
+  <div class="sec"><span>Persely</span></div>
+  ${it('piggy','Persely','data-tab="hub"')}
+  ${it('coins','Savings options','data-tab="hub"')}
+  ${it('tag','Discounts','data-go="kedvezmenyek"')}${it('gift','My partners')}
+  <div class="mi sw"><button class="mi-main" data-sheet="analyst">${I('analyst')}<span>Financial analyst</span></button>${swBtn(S.analyst.on, 'data-sw="analyst"', 'Financial analyst')}</div>
+  ${it('mail','For you','data-go="neked"')}
+  <div class="sec"><span>Help</span></div>
+  ${it('bell','Notifications','data-go="ertesitesek"')}
+  ${it('info','How Persely works','data-sheet="how"')}
+  ${it('help','Can we help?')}${it('invite','Invite a friend!')}
+  ${it('mapq','OTP branches and ATMs in Hungary')}${it('mapp','ATMs abroad')}${it('cal','Book a branch appointment')}${it('lock','Block internet and mobile bank access')}
   <div class="mdiv"></div>
   ${it('logout','Log out','data-reset')}
   </div>`;
@@ -2492,16 +2604,19 @@ function billsBlock(){
 function analysisRow(){
   if(!NEW_PERSELY_IA) return '';
   const chev = `<span class="chev">${I('chev', 20)}</span>`, row = (go, sub) => `<button class="row" ${go}><span class="ic">${I('chart')}</span><span class="t"><b>Spending</b><small>${sub}</small></span>${chev}</button>`;
-  if(!S.analyst.on) return row('data-sheet="analyst"', 'Optional: see where your money goes');
+  if(!S.analyst.on) return row('data-go="mymoney"', 'See where your money goes this month');
   const sf = safeToSpend(), bf = bfNow();
   if(!S.analyst.accepted) return row('data-go="mymoney"', `Split suggested · Safe to spend ${ft(sf.safe)}`);
   if(bf.on) return row('data-go="mymoney"', `Fun on hold · Safe to spend ${ft(sf.safe)}`);
   const v = splitView(), spent = sumVals(catSpend(shownMonth().ym)), plan = v.by.ess.amt + v.by.fun.amt;
   return row('data-go="mymoney"', `${ft(spent)} spent of ${ft(plan)} planned`);
 }
+// Persely tab rows after the habits: Perks (the Discounts page until the Perks page exists) and Your year (only after 12 months, C4.1)
+const perksRow = () => `<button class="row" data-go="kedvezmenyek"><span class="ic">${I('gift')}</span><span class="t"><b>Discounts</b><small>${DISC.length - S.disc.activated.length} offers waiting for activation</small></span><span class="chev">${I('chev', 20)}</span></button>`;
+const yearRow = () => (S.months || 0) >= 12 ? `<button class="row" data-go="year"><span class="ic">${I('star')}</span><span class="t"><b>Your year</b><small>12 months in Persely</small></span><span class="chev">${I('chev', 20)}</span></button>` : '';
 // the Spending analysis page: the circle and categories for the month, the plan and tips, then Safe to spend, My split, Next month, Must-pay bills and Bills pocket
 function myMoneyHTML(){
-  if(!S.analyst.on) return needAnalyst('Spending');
+  if(!S.analyst.on) return PAGES.kiadas.html();   // analyst off: the same page shows the month's categories and the offer to turn the analyst on
   const s = safeToSpend(), mo = shownMonth(), sp = catSpend(mo.ym), m = S.analyst.accepted ? planModel() : null;
   return `<div class="sec"><span>Spent in ${mo.name}</span></div>
   <div style="margin:-6px 0 0 6px;font-size:0.78125rem;color:var(--muted-t)">${mo.label}</div>
@@ -2740,7 +2855,6 @@ function vHubNew(){
   const chev = `<span class="chev">${I('chev',20)}</span>`, R = 104, C = 2 * Math.PI * R, arc = C * .75;
   const junior = juniorRow();
   return `<div class="tabtitle">Persely</div>
-  ${bfCard()}
   ${setupCard()}
   ${hintHTML('total')}<div class="ptot" data-tour="total">
     <div class="persi" data-tour="persi">${pig('happy', 48)}${hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>Hi, I'm Persi. Let's pick a goal.</span></div>`}
@@ -2766,8 +2880,6 @@ function vHub(){
   const junior = juniorRow();
   const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
   return `<div class="tabtitle">Persely</div>
-  ${bfCard()}
-  ${juniorTop ? junior : ''}
   ${hintHTML('total')}<div class="ptot" data-tour="total">
     <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
       <button class="sring ${S.storySeen ? 'seen' : ''}" data-story data-tour="story" aria-label="Your ${S.period} story"><span class="sring-in">${S.period === 'Autumn semester' ? 'SEM' : S.period.slice(0,3).toUpperCase()}</span><small>${S.storySeen ? 'Watched' : 'New story'}</small></button></div>
@@ -2786,9 +2898,9 @@ function vHub(){
     ${st ? `<div class="fine" style="margin-top:8px">${S.bridge ? `Graduate: 3.0% on the first ${ft(CAP)} until ${juniorEndLabel(12)}, while your salary comes to OTP` : `3.0% on the first ${ft(CAP)} is included in your Junior package until ${juniorEndLabel()}. Nothing to sign up for`}</div>` : ''}
   </div>
 
-  ${moneyInPanel()}
-
   ${S.onboarded ? '' : `<button class="setup" data-onbstart><span class="u-ico-g">${I('star',24)}</span><span class="u-fx1"><b>Set a goal and a saving rule</b><small>Takes 1 minute</small></span><span class="u-ico-g">${I('chev',20)}</span></button>`}
+
+  ${juniorTop ? junior : ''}
 
   ${hintHTML('goals')}<div class="sec" data-tour="goals"><span>Goals</span><a data-sheet="newgoal">New ${I('plus',16)}</a></div>
   ${S.goals.map(g=>{ const s=gSaved(g), t=gTarget(g), pc=pctOf(g), fx=lateFix(g), bf=behindFix(g);
@@ -2801,7 +2913,9 @@ function vHub(){
 
   ${S.goals.length ? savingRulesBlock() : ''}
 
-  ${NEW_PERSELY_IA ? analysisRow() : splitCard() + billsBlock()}
+  ${moneyInPanel()}
+
+  ${juniorTop ? '' : junior}
 
   ${hintHTML('week')}<div class="sec"><span>Your habits</span></div>
   <div class="card hab" data-tour="week" style="${!S.savedWeek && S.streak ? 'box-shadow:inset 0 0 0 1.5px #FFB27A,var(--sh)' : ''}">
@@ -2811,7 +2925,8 @@ function vHub(){
     ${remindRow()}${scoreRow()}
   </div>
 
-  ${juniorTop ? '' : junior}
+  ${NEW_PERSELY_IA ? '' : splitCard() + billsBlock()}
+  <div class="prow">${NEW_PERSELY_IA ? analysisRow() : ''}${perksRow()}${yearRow()}</div>
 
   ${!NEW_PERSELY_IA || S.friendsOptIn ? friendsCard() : ''}
   <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:0 18px;margin:8px 0 6px"><a class="link lnk44" style="display:inline-flex;align-items:center" data-sheet="how">How Persely works ${I('chev',16)}</a>${NEW_PERSELY_IA && !S.friendsOptIn ? addFriendsLink() : ''}</div>`;
@@ -2909,11 +3024,11 @@ function flowOf(rows, net){
 function nekedCards(compact){
   const art = (bg,icon,col='#fff') => `<div class="im" style="background:${bg};color:${col}">${I(icon,54)}</div>`;
   return `<div class="hcar">
-    <button class="nk" data-toast="New features – details">${art('linear-gradient(135deg,#2F7D69,#4B9A84)','cards')}<div class="tx2"><b>New features in MobilBank</b><p>Check out our latest features!</p><span class="tag new"><span>New</span></span></div></button>
-    <button class="nk" data-toast="Fraud quiz – details">${art('linear-gradient(135deg,#2E6FA6,#3F8AC2)','lock')}<div class="tx2"><b>How well prepared are you against fraud?</b><p>Test your knowledge!</p><span class="tag tip"><span>Tip</span></span></div></button>
+    <button class="nk" data-demo="New features in MobilBank">${art('linear-gradient(135deg,#2F7D69,#4B9A84)','cards')}<div class="tx2"><b>New features in MobilBank</b><p>Check out our latest features!</p><span class="tag new"><span>New</span></span></div></button>
+    <button class="nk" data-demo="Fraud quiz">${art('linear-gradient(135deg,#2E6FA6,#3F8AC2)','lock')}<div class="tx2"><b>How well prepared are you against fraud?</b><p>Test your knowledge!</p><span class="tag tip"><span>Tip</span></span></div></button>
   </div>
   ${compact?'':'<div class="dots" style="margin-bottom:14px"><i class="on"></i><i></i><i></i></div>'}
-  ${S.goals.length ? '' : `<button class="card offer" data-go="persely" style="width:100%;text-align:left"><div class="tx2"><b class="u-fs-m">Start saving efficiently!</b><p style="margin:6px 0 10px;font-size:var(--fs-s);color:var(--muted-t)">Create your Persely and save for your goals free of charge.</p><span class="tag off"><span>Offer</span></span></div><div class="im" style="background:linear-gradient(135deg,#6C79D8,#9AA6EE);color:#BFF0A8">${I('piggy',56)}</div></button>`}`;
+  ${S.goals.length ? '' : `<button class="card offer" data-tab="hub" style="width:100%;text-align:left"><div class="tx2"><b class="u-fs-m">Start saving efficiently!</b><p style="margin:6px 0 10px;font-size:var(--fs-s);color:var(--muted-t)">Create your Persely and save for your goals free of charge.</p><span class="tag off"><span>Offer</span></span></div><div class="im" style="background:linear-gradient(135deg,#6C79D8,#9AA6EE);color:#BFF0A8">${I('piggy',56)}</div></button>`}`;
 }
 
 let nekTab = 0;
@@ -2986,28 +3101,6 @@ const PAGES = {
   szamlaim:{title:'My accounts', html:()=>S.accounts.map(a=>`<div class="card"><b class="u-fs-m">${a.n}</b><div class="u-k-xs">${a.no}</div>
     <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:0.84375rem"><span>${a.id==='persely'?'Balance':'Available balance'}</span><b class="num u-fs-16">${ft(a.v)}</b></div>
     <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:0.78125rem;color:var(--muted-t)"><span>${a.h.split(':')[0]}</span><span class="num">${a.h.split(':')[1]||''}</span></div></div>`).join('')},
-  persely:{title:'Persely details', right:`<span class="round">${I('gear',20)}</span>`, html:()=>{
-    const p=S.persely, v=acc('persely').v, pc=Math.min(100,Math.round(v/p.target*100));
-    return `<div style="padding-top:20px"><div class="pico">${I('piggy',32)}</div>
-    <div class="card" style="padding-top:40px;border-radius:24px"><div style="text-align:center;font-weight:700;font-size:var(--fs-m)">${p.name}</div>
-      <div style="display:flex;justify-content:space-between;margin-top:18px;font-size:0.84375rem"><span><b class="num">${ft(v)}</b> <span class="u-c-muted">/ ${ft(p.target)}</span></span><span class="u-c-muted">${pc}%</span></div>
-      <div class="prog"><i style="width:${pc}%"></i></div>
-      <button class="btn" data-sheet="befizet">Add money</button>
-      <button class="btn w u-mt12" data-sheet="kivesz">Withdraw</button></div>
-    <div class="sec"><span>Automatic transfer</span></div>
-    <button class="row" data-saverules="wk"><span class="t">Weekly transfer<small class="g">${S.weekly.on ? `Every Monday, ${ft(S.weekly.amt)}` : 'Off'}</small></span><span style="color:var(--blue-i);display:flex">${I('info',20)}</span><span class="chev">${I('chev',20)}</span></button>
-    <div class="sec"><span>Other actions</span></div>
-    <button class="row" data-tab="tranzakciok"><span class="ic">${I('list')}</span><span class="t">Related transactions</span><span class="chev">${I('chev',20)}</span></button></div>`;}},
-  megtakaritas:{title:'Savings options', html:()=>`
-    <h3 style="margin:10px 0 6px;font-size:1rem">Start saving!</h3><div style="font-size:0.875rem;color:var(--ink2)">Save online, even for several goals at once!</div>
-    <div class="chips"><span class="chip">Persely</span><span class="chip">Car prize deposit</span><span class="chip">Fixed deposit</span></div>
-    <button class="btn sm" data-go="persely">Persely and recurring savings</button>
-    <h3 class="u-h3s">Securities</h3><div class="u-p-14">From low-risk products to higher-risk products with higher returns.</div>
-    <div class="chips"><span class="chip">Government bonds</span><span class="chip">Bonds</span><span class="chip">Investment funds</span><span class="chip">Open a securities account</span></div>
-    <button class="btn sm" data-toast="Securities – ${NA}">Go to securities</button>
-    <h3 class="u-h3s">Funds</h3><div class="u-p-14">Look after your financial security with regular payments!</div>
-    <div class="chips"><span class="chip">Home savings fund</span><span class="chip">Health fund</span><span class="chip">Pension fund</span></div>
-    <button class="btn sm" data-toast="Funds – ${NA}">Go to funds</button>`},
   kedvezmenyek:{title:'Discounts', right:`<span class="u-df">${I('filter',22)}</span>`, foot:()=>discTab===0&&S.disc.activated.length<DISC.length?`<button class="btn" data-actall>Activate all</button>`:'', html:()=>{
     const list = DISC.filter(d=> discTab===0 ? !S.disc.activated.includes(d.id) : S.disc.activated.includes(d.id));
     return `<div class="seg"><button class="${discTab===0?'on':''}" data-disctab="0">Waiting for activation</button><button class="${discTab===1?'on':''}" data-disctab="1">Activated</button></div>
@@ -3076,10 +3169,14 @@ function tab(id){
 const stack = [];
 function pageHTML(id){
   const p = PAGES[id];
-  return `<div class="ph"><button class="l" data-pop aria-label="Back">${id==='persely'?`<span class="round">${I('backc',20)}</span>`:I('back',24)}</button><h1>${esc(typeof p.title === 'function' ? p.title() : p.title)}</h1>${p.right?`<span class="r">${p.right}</span>`:''}</div>
+  return `<div class="ph"><button class="l" data-pop aria-label="Back">${I('back',24)}</button><h1>${esc(typeof p.title === 'function' ? p.title() : p.title)}</h1>${p.right?`<span class="r">${p.right}</span>`:''}</div>
   <div class="scroll">${p.html()}</div>${p.foot&&p.foot()?`<div class="foot">${p.foot()}</div>`:''}`;
 }
+/* routes that no longer have a page (D4): the old Persely details and Savings options go to the Persely tab, the old Monthly spending page to the one Spending page */
+const ROUTE_TAB = {persely:'hub', megtakaritas:'hub'}, ROUTE_PAGE = {kiadas:'mymoney'};
 function pushPage(id){
+  if(ROUTE_TAB[id]){ closeSheet(); tab(ROUTE_TAB[id]); return; }
+  if(ROUTE_PAGE[id]) id = ROUTE_PAGE[id];
   NAVC.n++; hideToast(); setTimeout(placeChip, 60); setTimeout(placeChip, 320);
   const el = document.createElement('div'); el.className='page'; el.dataset.id=id;
   el.innerHTML = pageHTML(id); $('#stack').appendChild(el); stack.push(el);
@@ -3108,9 +3205,13 @@ const sheetShell = html => `<div class="sclose-w"><button class="sclose" data-cl
 function sheet(html){ hideToast(true); if(!sheetOpen()) SHEET_OPENER = document.activeElement; const sh = $('#sheet'); sh.innerHTML = sheetShell(html);
   const h = sh.querySelector('h2'); sh.setAttribute('aria-label', h ? h.textContent.trim() : 'Dialog'); $('#back').classList.add('on'); try{ sh.focus({preventScroll:true}); }catch(e){}
   if(typeof mountPig === 'function') mountPig(); }
-function closeSheet(){ const was = sheetOpen(); S._fa = false; $('#back').classList.remove('on'); if(was && SHEET_OPENER && document.contains(SHEET_OPENER) && SHEET_OPENER.focus){ try{ SHEET_OPENER.focus({preventScroll:true}); }catch(e){} } SHEET_OPENER = null; if(window.__stAway) stReturn(); if(typeof mountPig === 'function') mountPig(); if(was || MQ.q.length) setTimeout(mqPump, 280); }
+function closeSheet(){ const was = sheetOpen(); S._fa = false; S._bw = false; $('#back').classList.remove('on'); if(was && SHEET_OPENER && document.contains(SHEET_OPENER) && SHEET_OPENER.focus){ try{ SHEET_OPENER.focus({preventScroll:true}); }catch(e){} } SHEET_OPENER = null; if(window.__stAway) stReturn(); if(typeof mountPig === 'function') mountPig(); if(was || MQ.q.length) setTimeout(mqPump, 280); }
 function qSheet(fn, id, late){ if(id) MQ.q = MQ.q.filter(x => x.id !== id); MQ.q.push({k:'sheet', fn, id, late}); mqPump(); }   // late: only after the toast
 function mqDrop(id){ MQ.q = MQ.q.filter(x => x.id !== id); }
+/* one demo toast for every row that is only a shell (D7): the row name, "is not part of this demo", a Demo tag, role=status, 3 s */
+const DEMO_TOAST_MS = 3000;
+const demoText = name => `${name} is not part of this demo. It works as in the OTP app.`;
+function demoToast(name){ toast(demoText(name), {demo:name}); }
 function toast(m, o){ if(sheetOpen()){ sheetNote(m); return; } MQ.q = MQ.q.filter(x => x.k !== 'toast'); MQ.q.push({k:'toast', m, o}); mqPump(); }
 function mqPump(){
   if(MQ.banner || demo.locked || window.__ffOn) return;   // nothing pops up during a fast-forward; the queue continues after it
@@ -3150,9 +3251,9 @@ function placeChip(){
 let tt;
 function showToast(m, o){
   o = o || {}; const t = $('#toast');
-  t.innerHTML = `<span class="tm">${esc(m)}</span>`;
-  t.classList.remove('act'); placeToast();
-  t.classList.add('on'); MQ.toast = true; $('#phone').style.setProperty('--toast-pad', (t.offsetHeight + 28) + 'px'); $('#phone').classList.add('toast-on'); clearTimeout(tt); tt = setTimeout(() => hideToast(), 2400);
+  t.innerHTML = o.demo ? `<span class="dtag">Demo</span> <span class="tm"><b>${esc(o.demo)} is not part of this demo.</b> It works as in the OTP app.</span>` : `<span class="tm">${esc(m)}</span>`;
+  t.classList.toggle('demo', !!o.demo); t.classList.remove('act'); placeToast();
+  t.classList.add('on'); MQ.toast = true; $('#phone').style.setProperty('--toast-pad', (t.offsetHeight + 28) + 'px'); $('#phone').classList.add('toast-on'); clearTimeout(tt); tt = setTimeout(() => hideToast(), o.demo ? DEMO_TOAST_MS : 2400);
 }
 function hideToast(quiet){ clearTimeout(tt); $('#toast').classList.remove('on','act'); $('#phone').classList.remove('toast-on'); MQ.toast = false; if(!quiet) mqPump(); }
 function sheetNote(m){   // a message while a sheet is open: shown at the top of the sheet, never over its buttons
@@ -3218,7 +3319,8 @@ function paydayPlan(){
 const SHEETS = {
   befizet:()=>moneySheet('Add money','Junior account → Persely','befizet'),
   kivesz:()=>moneySheet('Withdraw','Persely → Junior account','kivesz'),
-  sajat:()=>moneySheet('Between my accounts','Junior account → Persely','befizet'),
+  // Between my accounts is the shared Add money sheet with From and To choosers for accounts and goals; the last used goal is already chosen (D4)
+  sajat:()=>{ S._bw = true; S._mf = 'a:junior'; const g = lastGoal(); S._mt = g ? 'g:' + g.id : 'a:megt'; S._amt = 0; return SHEETS.hubsave(); },
   uj:()=>`<h2>New transfer</h2>
     <div class="fld"><span class="t"><label for="un">Beneficiary name</label><input id="un" autocomplete="off" aria-describedby="e-un"></span></div><div class="ferr" id="e-un" role="alert"></div>
     <div class="fld"><span class="t"><label for="ua">Account number</label><input id="ua" inputmode="numeric" autocomplete="off" placeholder="16 or 24 digits" aria-describedby="e-ua"></span></div><div class="ferr" id="e-ua" role="alert"></div>
@@ -3227,7 +3329,7 @@ const SHEETS = {
     <div id="cfm"></div>
     <button class="btn pbtn" data-dout>Send transfer</button>`,
   // add money: goal, amount and the account it comes from are all visible before confirming
-  hubsave:()=>{ if(!S.goals.some(g=>g.id===S._goal)) S._goal = S.goals[0].id; S._from = S._from || 'junior';
+  hubsave:()=>{ if(S._bw) return betweenSheet(); if(!S.goals.some(g=>g.id===S._goal)) S._goal = S.goals[0].id; S._from = S._from || 'junior';
     const g = goalById(S._goal), e = isEur(g), v = S._amt || '';
     return `${S._fa ? `<h2>Start your streak?</h2><div class="u-sheet-sub2">Add money now. Any amount counts for this week.</div>` : '<h2>Add money</h2>'}
     <div class="flabel">To</div>
@@ -3467,6 +3569,32 @@ const SHEETS = {
     <button class="btn" data-tourstart>Show me Persi's hints again</button>`
 };
 Object.assign(SHEETS, SHEETS_BILLS);
+/* ---- Between my accounts: one list of places, accounts and plain forint goals; any place to any other ---- */
+const lastGoal = () => { const ok = x => x && x.id && goalIsPlain(x) && !!goalById(x.id); return [goalById(S._goal), ruleGoal(), ...S.goals].find(ok) || null; };
+const placeKey = (k) => k.startsWith('a:') ? acc(k.slice(2)) : goalById(k.slice(2));
+const placeName = k => { const x = placeKey(k); return x ? (k[0] === 'a' ? x.n : x.name) : ''; };
+const placeHas = k => { const x = placeKey(k); return !x ? 0 : k[0] === 'a' ? x.v : mine(x); };
+const placesList = () => [...S.accounts.filter(a => a.id !== 'persely').map(a => 'a:' + a.id), ...S.goals.filter(goalIsPlain).map(g => 'g:' + g.id)];
+function betweenSheet(){
+  const ps = placesList(), v = S._amt || '', chips = (cur, attr, from) => ps.map(k => `<button class="chip ${cur === k ? 'on' : ''}" ${attr}="${k}" aria-pressed="${cur === k}">${esc(placeName(k))}${from ? ` · ${ft(placeHas(k))}` : ''}</button>`).join('');
+  return `<h2>Between my accounts</h2>
+    <div class="flabel">From</div><div class="chips u-mb4" role="group" aria-label="From">${chips(S._mf, 'data-mvfrom', true)}</div>
+    <div class="flabel">To</div><div class="chips u-mb4" role="group" aria-label="To">${chips(S._mt, 'data-mvto', false)}</div>
+    <div class="flabel">Amount</div>
+    <div class="fld"><span class="t"><input id="mv" inputmode="numeric" value="${v}" placeholder="Amount" aria-label="Amount" aria-describedby="e-mv"></span><b>Ft</b></div><div class="ferr" id="e-mv" role="alert"></div>
+    <div class="chips u-mt0">${[1000,5000,10000,20000].map(x=>`<button class="chip" data-setv="${x}">${ft(x)}</button>`).join('')}</div>
+    <div id="cfm"></div>
+    <div class="fine u-note-b14">Your money stays yours. Moving it to a goal counts for this week's streak.</div>
+    <button class="btn pbtn" data-mvgo>Move money</button>`;
+}
+function moveBetween(f, t, v){   // f, t: 'a:junior' / 'g:holiday'; returns true when the move counted for the streak
+  const fa = f[0] === 'a' ? acc(f.slice(2)) : null, ta = t[0] === 'a' ? acc(t.slice(2)) : null, fg = f[0] === 'g' ? goalById(f.slice(2)) : null, tg = t[0] === 'g' ? goalById(t.slice(2)) : null;
+  if(fa && ta){ fa.v -= v; ta.v += v; S.tx.unshift({...stamp(), d:'Today', n:ta.n.toUpperCase(), s:'Between my accounts', a:-v, ic:'wallet'}); return false; }
+  if(fa && tg) return depositTo(tg, v, fa.id);
+  if(fg && ta){ if(ta.id === 'junior') withdrawFrom(fg, v); else { if(fg.id === 'holiday') acc('persely').v -= v; else fg.saved -= v; ta.v += v; S.tx.unshift({...stamp(), d:'Today', n:'PERSELY WITHDRAWAL', s:'Between my accounts', a:v, ic:'piggy', note:fg.name}); } return false; }
+  if(fg && tg){ takeInto(fg, tg, v); return false; }
+  return false;
+}
 function moneySheet(title,sub,kind){
   const out = kind === 'kivesz', max = out ? acc('persely').v : 0;
   return `<h2>${title}</h2><div class="u-sheet-sub2">${sub}</div>
@@ -3501,6 +3629,7 @@ document.addEventListener('click', e=>{
   if(d.tab){ closeSheet(); tab(d.tab); return; }
   if(d.go){ if(sheetOpen()) closeSheet(); pushPage(d.go); return; }
   if('pop' in d){ popPage(); return; }
+  if(d.demo){ demoToast(d.demo); return; }
   if(d.toast){ toast(d.toast); return; }
   if(d.sheet){ if((d.sheet === 'hubsave' || d.sheet === 'hubout') && !S.goals.length){ sheet(SHEETS.newgoal()); sheetNote('Create a goal first'); return; }
     if(RULE_SHEETS.includes(d.sheet)) UNDO.base = snap(); sheet(SHEETS[d.sheet]()); return; }
@@ -3576,6 +3705,15 @@ document.addEventListener('click', e=>{
   if('pkdone' in d){ pkObj(PKM.k).date = PKM.sel; closeSheet(); pkSync(PKM.k); const b = document.querySelector(`[data-pk="${PKM.k}"] [data-pkmonth]`); if(b) b.focus({preventScroll:true}); return; }
   if(d.pickgoal){ keepAmt(); if(S._goal !== d.pickgoal) S._amt = 0; S._goal = d.pickgoal; sheet(SHEETS.hubsave()); return; }
   if(d.hubfrom){ keepAmt(); S._from = d.hubfrom; sheet(SHEETS.hubsave()); return; }
+  if(d.mvfrom || d.mvto){ keepAmt(); if(d.mvfrom) S._mf = d.mvfrom; else S._mt = d.mvto; sheet(SHEETS.hubsave()); return; }
+  if('mvgo' in d){
+    const f = S._mf, t = S._mt, v = amt(); if(!v){ ferr('mv', E_AMT); return; }
+    if(f === t || !placeKey(f) || !placeKey(t)){ ferr('mv', 'Choose two different places'); return; }
+    if(placeHas(f) < v){ ferr('mv', `Not enough money on ${placeName(f)}`); return; }
+    const run = () => { const before = snap(), counted = moveBetween(f, t, v), tg = t[0] === 'g' ? goalById(t.slice(2)) : null; if(tg) S._goal = tg.id; S._amt = 0; closeSheet(); renderAll();
+      undoable(before, `${ft(v)} moved from ${placeName(f)} to ${placeName(t)}${counted ? `. ${S.streak}-week streak` : ''}`); };
+    if(v > REVIEW_OVER){ askInline(`Review: Move ${ft(v)} from ${placeName(f)} to ${placeName(t)}?`, run); return; }
+    run(); return; }
   if('hubsave' in d){
     const v = amt(), g = goalById(S._goal) || S.goals[0], from = S._from || 'junior'; if(!v){ ferr('mv', E_AMT); return; }
     const before = snap(); let counted;
@@ -3751,7 +3889,7 @@ document.addEventListener('click', e=>{
   if('stpay' in d){ S._bill = d.stpay; stAway(); sheet(SHEETS.paybill()); return; }   // Pay now on the bills slide: the story waits, the sheet opens, closing it brings the story back
   if('stinsight' in d){ stInsight(+d.stinsight); return; }
   if('stgoal' in d){ const g = goalById(d.stgoal); if(!g) return; closeStory(); S._detail = g.id; pushPage('goal'); return; }   // Pick a new date on the progress slide: the story closes, the goal page opens (its date and Behind fix are there)
-  if('stshare' in d){ toast('Share card ready. It shows no amounts'); return; }
+  if('stshare' in d){ demoToast('Share'); return; }
   /* update pop-up + onboarding */
   if(d.wnpick){ S.updateSeen = true; save(); closeWhatsNew(); startOnb(d.wnpick); return; }
   if('wnlater' in d){ S.updateSeen = true; save(); closeWhatsNew(); toast('You can set it up any time in the Persely tab'); return; }
@@ -4826,7 +4964,7 @@ function stGo(i){
 function stRender(){
   const s = ST.slides[ST.i], el = $('#story'), body = el.querySelector('.st-body'), foot = el.querySelector('.st-foot');
   body.innerHTML = s.share ? shareCard() : s.build(); body.setAttribute('aria-hidden', s.share ? 'false' : 'true'); body.classList.toggle('share', !!s.share);
-  foot.innerHTML = s.end ? `${s.empty ? '' : `<button class="btn" style="background:#fff;color:var(--green-t)" data-stshare>Share</button>`}<button class="btn w" style="background:none;box-shadow:none;color:#fff" data-stclose>Close</button>`
+  foot.innerHTML = s.end ? `${s.empty ? '' : `<button class="btn" style="background:#fff;color:var(--green-t)" data-stshare>Share (preview)</button>`}<button class="btn w" style="background:none;box-shadow:none;color:#fff" data-stclose>Close</button>`
     : s.btn ? `<button class="btn" data-stbtn ${s.btn.attr}>${s.btn.label}</button>` : '';
   el.querySelector('.st-sr').textContent = `Slide ${ST.i + 1} of ${ST.slides.length}. ${s.say}${s.end ? (s.empty ? ' Button: Close.' : ' Buttons: Share, Close.') : ''}`;
   el.dataset.slide = s.id; mountPig(); stPaint(true);
