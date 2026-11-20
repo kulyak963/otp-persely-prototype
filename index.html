@@ -581,6 +581,14 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .late{color:var(--orange-t);font-weight:600}
 .gwrap.fx .card.goal{margin-bottom:0;border-bottom-left-radius:0;border-bottom-right-radius:0}
 .gfix{display:block;width:100%;min-height:var(--tap);margin:0 0 12px;padding:10px 16px;text-align:left;background:var(--orange-l);color:var(--orange-t);font-weight:700;font-size:var(--fs-s);border-radius:0 0 16px 16px;box-shadow:var(--sh)}
+.tour{position:absolute;inset:0;z-index:79;display:none}.tour.on{display:block}
+.tour-hole{position:absolute;border-radius:18px;box-shadow:0 0 0 3px #fff,0 0 0 2400px rgba(8,18,10,.74);pointer-events:none;transition:left .3s,top .3s,width .3s,height .3s}
+.tour-card{position:absolute;left:14px;right:14px;background:#fff;border-radius:20px;padding:14px 14px 12px;box-shadow:0 14px 34px rgba(0,0,0,.28);display:grid;grid-template-columns:64px 1fr;gap:2px 12px;align-items:start;animation:pop .3s cubic-bezier(.2,.9,.25,1.15)}
+.tour-card .pig3d{grid-row:span 2;margin-top:4px}
+.tour-k{font-size:var(--fs-xs);font-weight:800;color:var(--green-t);margin-top:2px}
+.tour-t{font-size:var(--fs-s);line-height:1.4;color:var(--ink2)}.tour-t b{display:block;font-size:1.0625rem;color:var(--ink);margin-bottom:2px}
+.tour-b{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px;margin-top:10px}.tour-b .btn{flex:none;width:auto;min-width:96px;height:42px;padding:0 18px}
+@media (prefers-reduced-motion:reduce){.tour-hole{transition:none}.tour-card{animation:none}}
 .hint{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:6px 6px 6px 12px;margin:0 0 10px;box-shadow:var(--sh);border-left:4px solid var(--green);font-size:var(--fs-s);line-height:1.4;color:var(--ink2)}
 .hint-p{flex:none;font-weight:800;color:var(--green-t);font-size:var(--fs-xs)}
 .hint-t{flex:1;min-width:0}
@@ -920,6 +928,7 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
   <div class="wn" id="wn"></div>
   <div class="onb" id="onb"></div>
   <div class="story" id="story"></div>
+  <div class="tour" id="tour" role="dialog" aria-modal="true" aria-label="Persi shows you around"></div>
   <div class="ff" id="ff"></div>
   <div class="splash" id="splash"><img src="splash-logo-green.png" alt="otpbank"></div>
   <div class="lock" id="lock">
@@ -1952,9 +1961,32 @@ let HINT_NOW = null;
 function pickHint(force){ if(HINT_NOW && !S.hints[HINT_NOW]) return; const h = (S.onboarded || force) ? HINTS.find(x => !S.hints[x[0]]) : null; HINT_NOW = h ? h[0] : null; }
 function endHint(){ if(!HINT_NOW) return; S.hints[HINT_NOW] = 1; HINT_NOW = null; pickHint(); save(); renderView('hub');   // the next tip follows right away, like a short guided tour
   if(HINT_NOW) setTimeout(() => { const h = document.querySelector('.view.on .hint'); if(h) h.scrollIntoView({block:'center', behavior:stRed() ? 'auto' : 'smooth'}); }, 60); }
+/* ---------- the tour: spotlight on one block, the rest dimmed, Persi explains, Next / Skip ---------- */
+const TOUR = [['total', '[data-tour="total"]'], ['goals', '.sec[data-tour="goals"]', '.gwrap'], ['week', '[data-tour="week"]'], ['auto', '[data-tour="auto"]'], ['story', '[data-tour="story"]']];
+let TR = null;
+function tourStart(){ closeSheet(); while(stack.length) popPage(true); tab('hub'); TR = {i:0}; $('#tour').classList.add('on'); tourShow(); }
+function tourEls(step){ return step.slice(1).map(q => document.querySelector('.view.on ' + q)).filter(Boolean); }
+function tourShow(){
+  if(!TR) return; const step = TOUR[TR.i], els = tourEls(step); if(!els.length) return tourNext();
+  els[0].scrollIntoView({block:'center'}); requestAnimationFrame(() => requestAnimationFrame(tourPlace));
+}
+function tourPlace(){
+  if(!TR) return; const step = TOUR[TR.i], h = HINTS.find(x => x[0] === step[0]), els = tourEls(step), box = $('#tour').getBoundingClientRect(); if(!h || !els.length) return;
+  const rs = els.map(e => e.getBoundingClientRect()), pad = 8, top = Math.min(...rs.map(r => r.top)) - box.top - pad, bottom = Math.max(...rs.map(r => r.bottom)) - box.top + pad,
+    left = Math.min(...rs.map(r => r.left)) - box.left - pad, right = Math.max(...rs.map(r => r.right)) - box.left + pad, below = (top + bottom) / 2 < box.height / 2, n = TR.i + 1, last = n === TOUR.length;
+  $('#tour').innerHTML = `<div class="tour-hole" style="left:${left}px;top:${top}px;width:${right - left}px;height:${bottom - top}px"></div>
+    <div class="tour-card" style="${below ? `top:${Math.min(bottom + 12, box.height - 190)}px` : `bottom:${Math.min(box.height - top + 12, box.height - 190)}px`}">
+      ${pig('happy', 64)}<div class="tour-k">Persi · ${n} of ${TOUR.length}</div><div class="tour-t"><b>${h[1]}</b>${h[2]}</div>
+      <div class="tour-b"><button class="btn w" data-tourskip>Skip</button><button class="btn" data-tournext>${last ? 'Got it' : 'Next'}</button></div></div>`;
+  mountPig(); if(pig3d && TR.i) pig3d.jump();
+}
+function tourNext(){ if(!TR) return; S.hints[TOUR[TR.i][0]] = 1; TR.i++; if(TR.i >= TOUR.length) return tourEnd(); tourShow(); }
+function tourEnd(){ HINTS.forEach(h => { S.hints[h[0]] = 1; }); TR = null; const t = $('#tour'); t.classList.remove('on'); t.innerHTML = ''; save(); renderView('hub'); const v = document.querySelector('.view.on'); if(v) v.scrollTop = 0; mountPig(); }
+window.addEventListener('resize', () => { if(TR) tourPlace(); });
 function skipHints(){ HINTS.forEach(h => { S.hints[h[0]] = 1; }); HINT_NOW = null; save(); renderView('hub'); }
-function showHints(){ S.hints = {}; HINT_NOW = null; save(); closeSheet(); tab('hub'); pickHint(true); renderView('hub'); }   // demo: show them again
-const hintHTML = key => { const h = HINT_NOW === key && HINTS.find(x => x[0] === key); return h ? `<div class="hint"><span class="hint-p">Persi · ${HINTS.indexOf(h) + 1} of ${HINTS.length}</span><span class="hint-t"><b>${h[1]}.</b> ${h[2]}</span><span class="hint-b"><button class="hint-x" data-hintok="1">${HINTS.indexOf(h) === HINTS.length - 1 ? 'Done' : 'Next'}</button><button class="hint-s" data-hintskip>Skip</button></span></div>` : ''; };
+function showHints(){ S.hints = {}; HINT_NOW = null; save(); tourStart(); }   // demo: show them again
+const hintHTML = key => '';   // the tips run as a spotlight tour now (tourStart)
+const hintHTML_old = key => { const h = HINT_NOW === key && HINTS.find(x => x[0] === key); return h ? `<div class="hint"><span class="hint-p">Persi · ${HINTS.indexOf(h) + 1} of ${HINTS.length}</span><span class="hint-t"><b>${h[1]}.</b> ${h[2]}</span><span class="hint-b"><button class="hint-x" data-hintok="1">${HINTS.indexOf(h) === HINTS.length - 1 ? 'Done' : 'Next'}</button><button class="hint-s" data-hintskip>Skip</button></span></div>` : ''; };
 // Persi: one short line
 function persiSays(){
   const g = ruleGoal(), pct = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100));
@@ -2685,7 +2717,7 @@ let NAVC = {n:0};   // counts page changes: something the app plans to open late
 function tab(id){
   NAVC.n++; hideToast();   // a toast belongs to the page where the action happened: it closes when the student goes somewhere else
   if(cur === 'hub' && id !== 'hub' && HINT_NOW){ S.hints[HINT_NOW] = 1; HINT_NOW = null; save(); }   // leaving the tab counts the hint as shown
-  if(id === 'hub') pickHint();
+  // (no inline tips when the tab opens: the tour runs once after the first goal, and again on key T)
   cur=id; document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on', v.id==='v-'+id));
   while(stack.length) popPage(true);
   renderView(id); renderTabs(); $('#v-'+id).scrollTop=0;
@@ -3050,6 +3082,8 @@ document.addEventListener('click', e=>{
     depositTo(g, v); renderAll(); undoable(before, `${ft(v)} moved to ${g.name}`); return; }
   if(d.hintok){ endHint(); return; }
   if('hintskip' in d){ skipHints(); return; }
+  if('tournext' in d){ tourNext(); return; }
+  if('tourskip' in d){ tourEnd(); return; }
   if(d.goal){ S._detail = d.goal; closeSheet(); pushPage('goal'); return; }
   if(d.dm){ closeSheet(); ({payday:salaryArrives, coffee, dori:doriJoins, week:nextWeek, month:()=>fastForward(1, 'month'), month2:()=>fastForward(2, 'month'), year:()=>fastForward(S.months < 12 ? 12 - S.months : 12, 'year'), sem:endSemester, grad:graduation, update:demoUpdateDay,
     bills:billMissed, reset:demoStart})[d.dm](); return; }
@@ -3285,7 +3319,7 @@ document.addEventListener('click', e=>{
     applyOnb(); const g = goalById('onb'); if(O.first) depositTo(g, O.first, O.from);
     S.remind = O.remind;
     if(O.remind && PUSH.supported && (PUSH.standalone || !PUSH.ios) && PUSH.perm === 'default') enablePush();
-    closeOnb(); pickHint(); renderAll();
+    closeOnb(); renderAll(); if(!HINTS.every(h => S.hints[h[0]])) setTimeout(tourStart, 1400);   // after the coin drop and the toast
     toast(`${g.name} created${O.first ? `. ${ft(O.first)} is in` : ''}`);
     if(O.first && pig3d) setTimeout(() => pig3d.celebrate(), 400);   // the first coin drops in
     return;
@@ -3621,7 +3655,7 @@ const pig3d = (() => {
 
   function mount(){
     // priority: onboarding, then the update pop-up, then the screen on top
-    const el = document.querySelector('.story.on .pig3d') || document.querySelector('.onb.on .pig3d') || document.querySelector('.wn.on .pig3d') || document.querySelector('#back.on #sheet .pig3d') || [...document.querySelectorAll('.view.on .pig3d, .page .pig3d')].pop();
+    const el = document.querySelector('.tour.on .pig3d') || document.querySelector('.story.on .pig3d') || document.querySelector('.onb.on .pig3d') || document.querySelector('.wn.on .pig3d') || document.querySelector('#back.on #sheet .pig3d') || [...document.querySelectorAll('.view.on .pig3d, .page .pig3d')].pop();
     if(!el){ holder = null; return; }
     if(holder && holder !== el){ bind(holder, false); dragging = false; }
     if(holder !== el){ bind(el, true); el.style.cursor = 'grab'; el.style.touchAction = 'none'; }
@@ -4582,7 +4616,7 @@ function renderDemoPanel(){
     <button data-dyear>⏩ To month 12<kbd>Y</kbd></button>
     <button data-dgrad>🎉 Junior ends / graduation<kbd>G</kbd></button>
     <button data-dstory>📊 Story<kbd>M</kbd></button>
-    <button data-dtour>💡 Persi hints again<kbd>T</kbd></button>
+    <button data-dtour>💡 Persi's tour again<kbd>T</kbd></button>
     <button data-dupdate>▶ Demo start: Face ID<kbd>U</kbd></button>
     <button data-djump>📅 8 weeks later<kbd>J</kbd></button>
     <button data-ddelay>⏱ Delay: ${demo.delay ? demo.delay+' s' : 'none'}</button>
