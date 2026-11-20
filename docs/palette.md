@@ -1,6 +1,6 @@
 # Colour palette
 
-One palette for the whole prototype. The tokens live in `:root` at the top of `index.html`. JavaScript reads the same tokens once into `PALETTE` (top of the main script), so the category ring, plan buckets, friends, Persi (flat and 3D), the streak flame and the story backgrounds all use these values. `mixHex(token, k)` makes tints (k > 0, towards white) and shades (k < 0, towards black) from a token, for example Persi's belly and the story gradients.
+One palette for the whole prototype. The tokens live in `:root` at the top of `css/app.css`. JavaScript reads the same tokens once into `PALETTE` (top of `js/01-tokens-helpers.js`), so the category ring, plan buckets, friends, Persi (flat and 3D), the streak flame and the story backgrounds all use these values. `mixHex(token, k)` makes tints (k > 0, towards white) and shades (k < 0, towards black) from a token, for example Persi's belly and the story gradients.
 
 Rules
 

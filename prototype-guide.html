@@ -4,7 +4,7 @@
 <style>
 /* Layout: a reference handbook. Sticky table of contents on wide screens, one readable column, tables for rules and controls */
 :root{
-  /* colours = the app palette (index.html :root, docs/palette.md): --bg, --card, --ink, --muted-t, --line, --act (green text), --green-l, --fill, --orange */
+  /* colours = the app palette (css/app.css :root, docs/palette.md): --bg, --card, --ink, --muted-t, --line, --act (green text), --green-l, --fill, --orange */
   --bg:#EEF0F5; --surface:#FFFFFF; --ink:#2B3038; --muted:#62676F; --line:#E2E5EB;
   --green:#2F7A1B; --green-soft:#EAF5E4; --key:#E9ECF1; --flame:#A94F08; --flame-soft:#FDEDE0;
   --font:"Open Sans",-apple-system,"Segoe UI",Roboto,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
@@ -121,7 +121,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
 
   <section id="tab">
     <h2>The Persely tab, top to bottom</h2>
-    <p>Order for a user with goals: Persi line and Total card (Add money, Withdraw, trust line) → Goals (New + at 44 px) → Saving rules → Money in each month panel → Junior card (from 90 days left it moves up under the Total card, never above the setup card) → Your habits → Spending row → Discounts row (becomes Perks in Phase 6) → Your year (only after 12 months) → Friends (only after "Add friends +") → How Persely works. The late-bill card is on Home only (D13). A new user sees the setup card first, then the Total card at 0 Ft, the Junior card, Your habits and How Persely works. The old layout (My split card and the Bills and next month block inside the tab, Friends always shown) is behind the constant <code>NEW_PERSELY_IA</code> in <code>index.html</code>; set it to <code>false</code> to bring it back.</p>
+    <p>Order for a user with goals: Persi line and Total card (Add money, Withdraw, trust line) → Goals (New + at 44 px) → Saving rules → Money in each month panel → Junior card (from 90 days left it moves up under the Total card, never above the setup card) → Your habits → Spending row → Discounts row (becomes Perks in Phase 6) → Your year (only after 12 months) → Friends (only after "Add friends +") → How Persely works. The late-bill card is on Home only (D13). A new user sees the setup card first, then the Total card at 0 Ft, the Junior card, Your habits and How Persely works. The old layout (My split card and the Bills and next month block inside the tab, Friends always shown) is behind the constant <code>NEW_PERSELY_IA</code> in <code>js/05-home-transactions.js</code>; set it to <code>false</code> to bring it back.</p>
     <div class="tbl"><table>
       <thead><tr><th>Block</th><th>What it shows and does</th></tr></thead>
       <tbody>
@@ -276,7 +276,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
     <div class="tbl"><table>
       <thead><tr><th>File</th><th>What it is</th></tr></thead>
       <tbody>
-        <tr><td><code>index.html</code></td><td>The whole app: styles, screens, rules, onboarding, story, 3D piggy, demo panel.</td></tr>
+        <tr><td><code>index.html</code>, <code>css/app.css</code>, <code>js/*.js</code></td><td>The app: <code>index.html</code> is the shell, <code>css/app.css</code> holds the styles, <code>js/01…15</code> hold screens, rules, onboarding, story, 3D piggy, demo panel (loaded in number order).</td></tr>
         <tr><td><code>server.js</code></td><td>Node server on port 8090. Serves only listed files. Push API: <code>/api/vapid</code>, <code>/api/subscribe</code>, <code>/api/test</code>; laptop-only <code>/api/push</code>, <code>/api/subs</code>, <code>/api/clear</code>.</td></tr>
         <tr><td><code>sw.js</code></td><td>Service worker: offline cache and showing push notifications. Bump the cache name after changes.</td></tr>
         <tr><td><code>push.html</code></td><td>Presenter panel for real pushes to all connected phones (laptop only).</td></tr>
@@ -286,7 +286,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
         <tr><td><code>demo-script.html</code>, <code>prototype-guide.html</code></td><td>The demo script and this guide.</td></tr>
       </tbody>
     </table></div>
-    <div class="box"><h3>Map of index.html (search for these headings)</h3><ul>
+    <div class="box"><h3>Map of the code in js/ (search for these headings)</h3><ul>
       <li><code>demo data</code>: <code>fresh()</code>, the starting state (accounts, goals, friends, rules)</li>
       <li><code>Persely tab</code>: constants (rate, tax, cap), <code>vHub()</code>, <code>nextWeek()</code>, <code>monthStep()</code></li>
       <li><code>sub pages</code>: <code>PAGES</code> (goal, create, grad, my cards and the copied OTP pages)</li>

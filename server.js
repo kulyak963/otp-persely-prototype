@@ -37,10 +37,12 @@ const PUBLIC = {
   '/icon-180.png': 'icon-180.png', '/icon-512.png': 'icon-512.png',
   '/splash-1320x2868.png': 'splash-1320x2868.png', '/splash-logo.png': 'splash-logo.png',
   '/splash-light-1320x2868.png': 'splash-light-1320x2868.png', '/splash-logo-green.png': 'splash-logo-green.png',
-  '/three.min.js': 'three.min.js'
+  '/three.min.js': 'three.min.js',
+  '/css/app.css': 'css/app.css',
+  ...Object.fromEntries(fs.readdirSync(path.join(__dirname, 'js')).filter(f => f.endsWith('.js')).map(f => ['/js/' + f, 'js/' + f]))
 };
 const LOCAL_ONLY = { '/push.html': 'push.html' };
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.webmanifest': 'application/manifest+json', '.png': 'image/png' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.css': 'text/css; charset=utf-8' };
 
 // Requests through the internet tunnel carry this header; the presenter panel stays local.
 const isLocal = req => !req.headers['cf-connecting-ip'] && ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress);

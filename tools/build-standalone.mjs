@@ -2,7 +2,7 @@
 //   node tools/build-standalone.mjs        -> dist/otp-persely-demo.html
 // Open it by double-click (file://) or host it on any static host. Plain Node, no dependencies.
 // What it does (on a copy; index.html is never modified):
-//   - inlines three.min.js as an inline <script>, and icon-180.png / splash-logo-green.png as data: URIs
+//   - inlines css/app.css as a <style> and the js/*.js files (in index.html order) as ONE <script>, three.min.js as an inline <script>, and icon-180.png / splash-logo-green.png as data: URIs
 //   - drops the web manifest, the iOS splash image and the Google Fonts links (system font stack is used, see --font)
 //   - sets window.__STANDALONE = true and switches off the server-backed parts: service worker registration,
 //     push subscribe/test (/api/*), "Also send to iPhone" (button hidden, realPush is a no-op).
@@ -29,7 +29,15 @@ html = html.replace(/<link rel="apple-touch-startup-image"[^>]*>\n/, '');
 html = html.replace(/<link rel="preconnect"[^>]*>\n/g, '');
 html = html.replace(/<link href="https:\/\/fonts\.googleapis\.com[^>]*>\n/, '');
 sub('<link rel="apple-touch-icon" href="icon-180.png">', `<link rel="apple-touch-icon" href="${dataUri('icon-180.png')}">`);
-sub('<style>', '<script>window.__STANDALONE = true;</script>\n<style>');
+// css/app.css and js/*.js are inlined again (same text the single-file index.html used to hold)
+const cssTag = '<link rel="stylesheet" href="css/app.css">';
+sub(cssTag, `<script>window.__STANDALONE = true;</script>\n<style>\n${rd('css/app.css').toString('utf8')}</style>`);
+const jsTags = [...html.matchAll(/<script src="(js\/[^"]+\.js)"><\/script>\n?/g)];
+if (!jsTags.length) throw new Error('build-standalone: no js/ script tags found');
+const jsText = jsTags.map(m => rd(m[1]).toString('utf8')).join('');
+const jsBlock = jsTags.map(m => m[0]).join('');
+if (!html.includes(jsBlock)) throw new Error('build-standalone: the js/ script tags are not one consecutive block');
+sub(jsBlock, `<script>\n${jsText}</script>\n`);
 
 // 2) images in markup / JS strings
 sub('src="splash-logo-green.png"', `src="${dataUri('splash-logo-green.png')}"`);

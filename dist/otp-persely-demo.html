@@ -1928,7 +1928,14 @@ function __checkAnalytics(){
     } catch(e){ ok('chk-phase1b: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { S = sv8; cur = cur8; stack.push(...stk8); demo.locked = lock8; try{ Object.keys(O).forEach(k => delete O[k]); Object.assign(O, JSON.parse(O8)); closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views8[i])); }
   }
-  const dmoveSrc = () => document.documentElement.innerHTML + '';
+  // the stylesheet and the app script text: css/app.css and js/*.js are separate files (read once, synchronously, from the same origin); the offline build inlines them, then they are read from the page
+  const srcFile = u => { try{ const x = new XMLHttpRequest(); x.open('GET', u, false); x.send(); return x.status === 200 || (x.status === 0 && x.responseText) ? x.responseText : ''; }catch(e){ return ''; } };
+  let srcMemo = null;
+  const appSrc = () => srcMemo || (srcMemo = {
+    css: [...document.querySelectorAll('style')].map(x => x.textContent).concat([...document.querySelectorAll('link[rel="stylesheet"]')].filter(x => /^css\//.test(x.getAttribute('href'))).map(x => srcFile(x.getAttribute('href')))).join('\n'),
+    js: [...document.scripts].map(x => x.src ? (/^js\//.test(x.getAttribute('src')) ? srcFile(x.getAttribute('src')) : '') : (x.textContent.includes('const PALETTE') ? x.textContent : '')).filter(Boolean).join('\n')   // the app script only (three.js is left out)
+  });
+  const dmoveSrc = () => document.documentElement.innerHTML + '\n' + appSrc().css + '\n' + appSrc().js;
   { // Phase 2: money move safety (D6): empty forms, review above 20 000 Ft, one error wording, Pay now beneficiary, one 10 s Undo chip that reverses one move
     const sv9 = S, cur9 = cur, stk9 = stack.splice(0), lock9 = demo.locked, views9 = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')); demo.locked = false;
     const pl = h => String(h).replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').replace(/\s+/g, ' '), nt = t => String(t).replace(/\s+/g, ' ').trim(), setf = (id, v) => { const f = $('#' + id); f.value = v; f.dispatchEvent(new Event('input', {bubbles:true})); }, clk = sel => { const b = $(sel); if(b) b.click(); return !!b; }, errT = id => { const e = $('#e-' + id); return e ? nt(e.textContent) : ''; };
@@ -2535,7 +2542,7 @@ function __checkAnalytics(){
         const OKS = new Set([0, 1, 2, 4, 8, 12, 16, 24, 32]), skip = /^(\.st-|\.story|\.lock|\.nbanner|\.lcard|\.ff|\.demo|\.rotate|\.device|\.bezel|\.hw|\.sbar|\.isl|\.homebar|\.caption|\.fid|\.phone|body|\.stage)/, off = [];
         const walk = rules => { for(const r of rules){ if(r.cssRules && !r.style){ walk(r.cssRules); continue; } if(!r.style || skip.test(r.selectorText || '')) continue;
           ['margin-top','margin-right','margin-bottom','margin-left','padding-top','padding-right','padding-bottom','padding-left','row-gap','column-gap'].forEach(p => { const m = (r.style.getPropertyValue(p) || '').match(/^(\d+(?:\.\d+)?)px$/); if(m && +m[1] <= 32 && !OKS.has(+m[1])) off.push(r.selectorText + ' ' + p); }); } };
-        try{ walk([...document.styleSheets].find(x => !x.href).cssRules); }catch(e){ off.push('unreadable'); }
+        try{ walk([...document.styleSheets].find(x => !x.href || /\/css\/app\.css$/.test(x.href)).cssRules); }catch(e){ off.push('unreadable'); }
         const keys = {gutter:pxv(v0, 'paddingLeft'), card:pxv(cd, 'paddingLeft'), sec:pxv(sc0, 'marginTop'), short:pxv(shc, 'paddingLeft'), page:pgPad, sheet:shPad};
         ok('chk-spacing-scale: the spacing tokens --sp-1 to --sp-6 are 4/8/12/16/24/32 with role tokens on top; the screen gutter, card padding, section gap, Quick actions, page and sheet padding use them (16/16/24/16/16/16); no rule of the app uses an off-scale px step', tk.join() === '4,8,12,16,24,32' && roles && keys.gutter === 16 && keys.card === 16 && keys.sec === 24 && keys.short === 16 && keys.page === 16 && keys.sheet === 16 && off.length === 0, {tk, roles, keys, off:off.slice(0, 8)}); }
       // chk-home-labels: every Home quick action has an icon, a verb label and a one line helper, is 44 px or more, and does what it says (Add money to a goal opens the shared Add money sheet)
@@ -2551,8 +2558,8 @@ function __checkAnalytics(){
   // chk-palette: one colour palette. Scans the stylesheet (outside :root) and the app script for colour literals: only the documented exceptions may stay
   // (Mastercard logo, iPhone frame hardware, pure black), rgb()/rgba() only as black or white with alpha, no 0x colour ints; PALETTE holds a real #RRGGBB
   // for every token, --ink-rgb equals --ink, theme-color equals --bg, and the spending categories stay told apart.
-  { const css0 = [...document.querySelectorAll('style')].map(x => x.textContent).join('\n'), r0 = css0.indexOf(':root{'), r1 = css0.indexOf('}', r0);
-    const src = css0.slice(0, r0) + css0.slice(r1 + 1) + [...document.scripts].filter(x => !x.src && x.textContent.includes('const PALETTE')).map(x => x.textContent).join('\n');   // the app script only (the offline build inlines three.js too)
+  { const css0 = appSrc().css, r0 = css0.indexOf(':root{'), r1 = css0.indexOf('}', r0);
+    const src = css0.slice(0, r0) + css0.slice(r1 + 1) + appSrc().js;   // the app script only (css/app.css and js/*.js, or the inlined copy in the offline build; three.js is left out)
     const ALLOW = ['#000', '#EB001B', '#F79E1B', '#A5A29C', '#6B6863', '#55524E'];
     const lits = [...new Set((src.match(/(?<![&\w])#[0-9a-f]{6}\b|(?<![&\w])#[0-9a-f]{3}\b/gi) || []).map(x => x.toUpperCase()))];
     const ints = src.match(/0x[0-9a-f]{6}\b/gi) || [], rgb = [...new Set([...src.matchAll(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/g)].map(m => m.slice(1, 4).join(',')))];
@@ -2606,6 +2613,8 @@ function migrateRules(st){
 }
 /* Two seeds (decision D1). fresh() = the brand-new user, the pitch default: 0 Ft on Persely, no goals, no streak, not onboarded.
    fresh('existing') = the existing user (Summer holiday, PS5, Festival, an 8-week streak). The demo panel switches between them (key X). */
+// moved here from js/13-settings-demo.js: used by the code below, and separate script files do not hoist function declarations across files
+function notifDefault(){ return {bills:true, payday:true, story:true, card:true, incoming:true, quiet:false, qfrom:'22:00', qto:'07:00'}; }   // money events and late bills on; the weekly reminder is S.remind and is an opt-in (B7)
 const seedExisting = () => { const H = demoHistory(); const o = ({
   name:'Kiss Anna', ini:'KA',
   updateSeen:true, onboarded:true,     // existing user (the new-user seed turns onboarding off)
@@ -5806,7 +5815,6 @@ window.__story = {
 };
 
 /* ================= Settings, inbox, Perks (Phase 6: D11, D12) ================= */
-function notifDefault(){ return {bills:true, payday:true, story:true, card:true, incoming:true, quiet:false, qfrom:'22:00', qto:'07:00'}; }   // money events and late bills on; the weekly reminder is S.remind and is an opt-in (B7)
 const NOTIF_TOGGLES = [   // [key, title, subtitle]; "streak" is the weekly reminder (S.remind)
   ['bills', 'Bills due', 'Late bills and bills coming up'], ['streak', 'Sunday streak reminder', 'Sunday 18:00, only if the week is still open'], ['payday', 'Payday', 'When your salary arrives'],
   ['story', 'Monthly story', 'When your month story is ready'], ['card', 'Card payments', 'Each card payment and your balance'], ['incoming', 'Incoming transfers', 'Money that arrives on your account']];

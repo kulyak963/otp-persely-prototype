@@ -53,7 +53,10 @@ Open the link in Safari → Share → Add to Home Screen → open the app from t
 
 | File | What it is |
 | --- | --- |
-| `index.html` | The whole app: styles, screens, rules, onboarding, story, 3D piggy, demo panel |
+| `index.html` | Thin shell: head, markup, and the `<link>` and `<script>` tags that load the files below |
+| `css/app.css` | All styles and the colour tokens |
+| `js/*.js` | The app code in 15 plain scripts loaded in number order (shared global scope): tokens, analytics, self-checks, state, Home, Persely, spending, pages and sheets, events, Persi, onboarding, story, settings and demo, fast forward, boot |
+| `tools/build-standalone.mjs` | Builds `dist/otp-persely-demo.html`, one offline file with the css and js inlined |
 | `server.js` | Small Node server: serves the app, stores push subscriptions, sends pushes |
 | `sw.js` | Service worker: offline cache and notifications. Bump `NAME` after changes |
 | `push.html` | Presenter panel for real pushes |
