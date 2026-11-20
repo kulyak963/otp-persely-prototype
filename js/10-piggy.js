@@ -100,7 +100,7 @@ const pig3d = (() => {
 
   function mount(){
     // priority: onboarding, then the update pop-up, then the screen on top
-    const el = document.querySelector('.story.on .pig3d') || document.querySelector('.onb.on .pig3d') || document.querySelector('.wn.on .pig3d') || document.querySelector('#back.on #sheet .pig3d') || [...document.querySelectorAll('.view.on .pig3d, .page .pig3d')].pop();
+    const el = document.querySelector('.story.on .pig3d') || document.querySelector('.sprw.on .pig3d') || document.querySelector('.onb.on .pig3d') || document.querySelector('.wn.on .pig3d') || document.querySelector('#back.on #sheet .pig3d') || [...document.querySelectorAll('.view.on .pig3d, .page .pig3d')].pop();
     if(!el){ holder = null; return; }
     if(holder && holder !== el){ bind(holder, false); dragging = false; }
     if(holder !== el){ bind(el, true); el.style.cursor = 'grab'; el.style.touchAction = 'none'; }

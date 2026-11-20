@@ -88,6 +88,7 @@ function pkSync(k, from){
       r.innerHTML = pkRealHTML(o); r.classList.toggle('hard', !!(v && pkMath(v, o.date, o.saved || 0).hard));
     }
   });
+  if(k === 'onb' && typeof spSyncRows === 'function') spSyncRows();
 }
 function pkSet(k, v, from){ pkObj(k).target = v; pkSync(k, from); if(typeof gateSync === 'function') gateSync(); }
 // month sheet: tentative choice until Done; tapping outside or swiping down closes without changing
@@ -181,6 +182,7 @@ const onbGate = () => O.i !== 0 ? '' : !cleanName(O.name) ? 'Give your goal a na
 const cgGate = () => { const d = S._draft; return !d ? '' : !cleanName(d.name) ? 'Give your goal a name' : !d.target ? 'Type how much you need' : d.target < PK_MIN ? `Minimum is ${ft(PK_MIN)}` : ''; };
 function gateSync(){
   if($('#onb').classList.contains('on') && STEPS[O.i] === 'goal'){ const r = onbGate(), b = $('#onb [data-onbnext]'), w = $('#onb .onb-why'); if(b) b.disabled = !!r; if(w) w.textContent = r; }
+  if(typeof spGate === 'function') spGate();   // Simple Persely confirm screen (js/14b)
   const sv = document.querySelector('.page [data-cgsave]'); if(sv && S._draft){ const r = cgGate(), w = sv.closest('.foot').querySelector('.onb-why'); sv.disabled = !!r; if(w) w.textContent = r; }
 }
 // allocation hints on step 2 (replaces "[Rule] now goes to X instead of Y"): rules are per goal now, so say how they add up with the other goals

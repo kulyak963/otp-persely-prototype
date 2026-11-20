@@ -1073,6 +1073,48 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
   .page .foot{padding-bottom:calc(env(safe-area-inset-bottom) + var(--sp-5))}
   .pkgrid button.chip{min-height:44px}
 }
+/* ===== Simple Persely, Phase 1 (js/14b-simple-persely.js): first-run tab, confirm screen, reward, nudge line, honesty line ===== */
+.spfirst{padding-top:var(--sp-2)}
+.sppersi{margin:0 0 var(--sp-4)}
+.sppersi .persi-t span{font-size:var(--fs-l);color:var(--ink);font-weight:600}
+.sph2{font-size:1.25rem;line-height:1.25;margin:0 0 var(--sp-3)}
+.sptiles{grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+.sptiles button{min-height:96px;font-size:var(--fs-m);background:var(--card);box-shadow:var(--sh)}
+.spmore{display:flex;align-items:center;gap:var(--sp-1);margin:var(--sp-2) auto 0;font-weight:700;color:var(--green-t)}
+.spconfirm{padding-top:var(--sp-1)}
+.sphead{display:flex;align-items:flex-start;gap:var(--sp-3);margin:0 0 var(--sp-3)}
+.spic{width:56px;height:56px;border-radius:18px;background:var(--green-l);color:var(--green-i);display:flex;align-items:center;justify-content:center;flex:none}
+.sprows{flex:1;min-width:0}
+.sprow{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);min-height:var(--tap)}
+.onb-body h2.spname{margin:0;font-size:var(--fs-xl);line-height:1.2;overflow-wrap:anywhere}
+.spchg{flex:none;font-weight:700;color:var(--green-t);font-size:var(--fs-s)}
+.spamt{padding:var(--sp-3) var(--pad-card)}
+.spbig{font-size:1.75rem;font-weight:700;letter-spacing:-.4px}
+.spchips{margin:var(--sp-3) 0 0;flex-wrap:wrap;gap:var(--sp-2)}
+.spchips .chip{min-height:var(--tap);padding:0 var(--sp-3)}
+.spsw{justify-content:space-between}
+.sphon{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--sp-1);font-size:var(--fs-s);color:var(--ink2);margin:var(--sp-3) 0 0}
+.sphon.spfoot,.sphon.spgoalf{justify-content:center;text-align:center}
+.sphi{min-width:var(--tap);min-height:var(--tap);display:inline-flex;align-items:center;justify-content:center;color:var(--green-t);font-size:1.0625rem;margin:-10px -8px -10px -6px}
+.sperr{margin:0 2px var(--sp-2);text-align:center;color:var(--red-t);font-weight:600;font-size:var(--fs-s)}
+.annote.one{border:0;background:none;padding:0 var(--sp-1);margin:0 0 var(--gap-stack);font-size:var(--fs-s);color:var(--ink2);line-height:1.45}
+.annote.one .anl{display:inline-flex;align-items:center;gap:var(--sp-1)}
+.annote.one .link{font-size:var(--fs-s);font-weight:700;color:var(--green-t);padding:0 var(--sp-1)}
+.spnudge .spyn{display:flex;gap:var(--sp-2);margin-top:var(--sp-2)}
+.spnudge .spyn .btn{flex:1;margin:0;white-space:nowrap;padding:0 var(--sp-3);min-width:0}
+.sprw{position:absolute;inset:0;z-index:71;display:none;pointer-events:none}
+.sprw.on{display:block}
+.sprw-card{position:absolute;left:var(--gutter);right:var(--gutter);bottom:var(--sprw-b,96px);background:var(--card);border-radius:24px;box-shadow:var(--sh),0 0 0 1.5px var(--green-l);padding:var(--sp-4) var(--sp-4) var(--sp-5);text-align:center;pointer-events:auto}
+.sprw-card .pig3d{margin:0 auto}
+.sprw-fl{display:flex;align-items:center;justify-content:center;gap:var(--sp-1);color:var(--orange-t);font-size:var(--fs-m);margin:var(--sp-1) 0}
+.sprw-big{display:block;font-size:1.75rem;margin:0 0 var(--sp-4);color:var(--ink)}
+.sprw.pop .sprw-card{animation:sprwpop .38s cubic-bezier(.2,.9,.25,1.15) both}
+.sprw.pop .sprw-fl .flame{animation:sprwflame .6s ease-out .15s both}
+.sprw.fade .sprw-card{animation:sprwfade .25s ease both}
+@keyframes sprwpop{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes sprwflame{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:none}}
+@keyframes sprwfade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.sprw.pop .sprw-card,.sprw.pop .sprw-fl .flame{animation:sprwfade .25s ease both}}
 </style>
 </head>
 <body>
@@ -1214,6 +1256,8 @@ const I = (n,s) => `<svg class="i" viewBox="0 0 24 24"${s?` style="width:${s}px;
 const ft = n => (n<0?'-':'') + Math.abs(Math.round(n)).toLocaleString('en-US').replace(/,/g,' ') + ' Ft';
 const sft = n => (n>0?'+ ':'') + ft(n).replace('-','- ');
 const $ = s => document.querySelector(s);
+/* Simple Persely (docs/simple-persely-plan.md): on by default, ?simple=0 falls back to the pre-Simple behaviour (wizard, setup card, Sunday nudge sheet). */
+const SIMPLE_PERSELY = new URLSearchParams(location.search).get('simple') !== '0';
 // the one switch used everywhere (same look as in onboarding): the switch toggles, the row next to it opens the settings
 const swBtn = (on, attr, label) => `<button class="tg ${on ? 'on' : ''}" role="switch" aria-checked="${on ? 'true' : 'false'}" aria-label="${label}" ${attr}></button>`;
 
@@ -1578,6 +1622,13 @@ function __checkAnalytics(){
   hideBanners();   // a banner from an earlier run would hold every toast back
   const stack0 = stack.length;   // earlier checks open pages (goal page); they are closed again at the end so the app is left as it was
   const out = [], ok = (name, cond, info) => { out.push({name, pass:!!cond, info}); };
+  // Simple Persely (js/14b): with the flag on, a check that tests the pre-Simple first run runs its old assertion on the legacy first run (SP_LEGACY, the same
+  // screens as ?simple=0) AND an equivalent new-world assertion; with ?simple=0 only the old assertion runs, unchanged.
+  const SPF = typeof spOn === 'function' && spOn();
+  const legacyR = fn => { if(typeof SP_LEGACY === 'undefined') return fn(); const k = SP_LEGACY; SP_LEGACY = true; try{ return fn(); } finally { SP_LEGACY = k; } };
+  const SPL0 = typeof SP_LEGACY !== 'undefined' ? SP_LEGACY : false, SP0 = typeof SP !== 'undefined' ? {...SP} : null; if(SP0) SP.dry = true;   // no real sound or vibration while checking
+  const spLeg = on => { if(typeof SP_LEGACY !== 'undefined') SP_LEGACY = on ? true : SPL0; };
+  const spProbe = key => { spOpen(key); const h = $('#onb').innerHTML; O.sp = false; closeOnb(); return h; };   // the confirm screen of a tile, as HTML
   const F = fresh('existing'), clone = () => JSON.parse(JSON.stringify(F));   // the old default seed: the existing user
   const det = detectRecurring(F), keys = det.bills.map(b => b.key), want = {'SZABÓ DÓRA':42000, 'MVM NEXT ENERGIAKERESKEDŐ':3600, 'FŐGÁZ ZRT.':2400, 'DIGI KFT.':4000, 'BKK ZRT. DIÁKBÉRLET':3450, 'YETTEL MAGYARORSZÁG':5550, 'NETFLIX':3490, 'SPOTIFY':1790};
   Object.entries(want).forEach(([k, v]) => { const b = det.bills.find(x => x.key === k); ok('bill found: ' + k, b && b.exp === v, b && b.exp); });
@@ -1840,20 +1891,22 @@ function __checkAnalytics(){
     const sv7 = S, cur7 = cur, txt7 = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
     try{
       const nw = fresh(), ex = fresh('existing');
-      S = nw; const hubN = txt7(vHub()), homeN = txt7(vFooldal());
+      S = nw; const hubN = txt7(legacyR(vHub)), homeN = txt7(legacyR(vFooldal)), spNew = !SPF || (/Hi! Let's save your first 1 000 Ft\./.test(txt7(vHub())) && /What are you saving for\?/.test(txt7(vHub())) && /Save your first 1 000 Ft/.test(txt7(vFooldal())));
       ok('chk-seed-new-default: fresh() is the brand-new user (0 Ft on Persely, no goals, not onboarded, no streak), and no screen contradicts it', nw.seed === 'new' && nw.goals.length === 0 && acc('persely').v === 0 && total() === 0 && !nw.onboarded && nw.streak === 0 && nw.history.length === 0 && nw.friends.length === 0
-        && /What are you saving for\?/.test(hubN) && /Your streak starts with the first deposit/.test(hubN) && /Start your first goal/.test(homeN) && !/[1-9]\d*(\s\d{3})* goals?\b/.test(hubN + homeN.replace(/Persely/g, '')) && !/\d+-week streak/.test(hubN + homeN) && !/110 000/.test(hubN + homeN),
-        [nw.seed, nw.goals.length, nw.onboarded, hubN.slice(0, 160)]);
+        && /What are you saving for\?/.test(hubN) && /Your streak starts with the first deposit/.test(hubN) && /Start your first goal/.test(homeN) && !/[1-9]\d*(\s\d{3})* goals?\b/.test(hubN + homeN.replace(/Persely/g, '')) && !/\d+-week streak/.test(hubN + homeN) && !/110 000/.test(hubN + homeN) && spNew,
+        [spNew, nw.seed, nw.goals.length, nw.onboarded, hubN.slice(0, 160)]);
       S = ex; const hubE = txt7(vHub()), homeE = txt7(vFooldal());
       ok('chk-seed-existing: fresh(\'existing\') is the current seed (3 goals, Summer holiday 64 000 Ft, 8-week streak, onboarded) and keeps the old tab and Home', ex.seed === 'existing' && ex.goals.length === 3 && ex.onboarded && ex.streak === 8 && acc('persely').v === 64000 && /Summer holiday/.test(hubE) && /8-week streak/.test(hubE + homeE) && !/What are you saving for\?/.test(hubE) && !/Start your first goal/.test(homeE)
         && typeof loadSeed === 'function' && /data-dseed/.test($('#demoPanel').innerHTML), [ex.seed, ex.goals.length, ex.streak]);
-      S = nw; cur = 'hub'; renderView('hub'); let tiles = [], fold = null;
+      S = nw; cur = 'hub'; legacyR(() => renderView('hub')); let tiles = [], fold = null;
       const v = $('#v-hub'), first = v.children[1], hubH = v.innerHTML; tiles = [...v.querySelectorAll('#setupcard [data-tilepick]')].map(b => b.textContent.trim());
       const prevOn = v.classList.contains('on'); v.classList.add('on'); document.querySelectorAll('.view').forEach(x => { if(x !== v) x.dataset.chk7 = x.classList.contains('on') ? '1' : ''; x.classList.remove('on'); });
       const last = v.querySelector('#setupcard [data-tilepick="custom"]'), tb = $('#tabbar'), nl = v.querySelector('#setupcard .later');
       if(last && tb && nl){ const r = nl.getBoundingClientRect(), t = tb.getBoundingClientRect(); fold = {bottom:Math.round(r.bottom), tabbarTop:Math.round(t.top), vh:innerHeight}; }
+      let spFold = true; if(SPF){ renderView('hub'); const sm = v.querySelector('.spmore'), spT = [...v.querySelectorAll('.spfirst [data-tilepick]')].map(b => b.textContent.trim()).join('|'), r = sm && sm.getBoundingClientRect(), t = tb.getBoundingClientRect();
+        spFold = v.children[1] && v.children[1].classList.contains('spfirst') && spT === 'Trip|Phone or tech|Safety net|Something else' && !!r && r.bottom <= t.top && !v.querySelector('#setupcard'); fold = {...(fold || {}), spT, spFold}; }
       document.querySelectorAll('.view').forEach(x => { if(x !== v && x.dataset.chk7 === '1') x.classList.add('on'); delete x.dataset.chk7; }); if(!prevOn) v.classList.remove('on');
-      ok('chk-setup-above-fold: the setup card is the first block, with the 6 tiles (Own home, Travel, Driving licence, Safety net, Studies, Something else), no "Trending", Not now, the Junior line and the OTP marker, all above the tab bar', first && first.id === 'setupcard' && tiles.join('|') === 'Own home|Travel|Driving licence|Safety net|Studies|Something else' && !/Trending/.test(hubH) && /<!-- CONFIRM WITH OTP -->/.test(hubH) && /3\.0% a year on up to 500 000 Ft with your Junior account until \d/.test(txt7(hubH)) && /Not now/.test(txt7(hubH)) && (!fold || fold.bottom <= fold.tabbarTop), [tiles, fold]);
+      ok('chk-setup-above-fold: the setup card is the first block, with the 6 tiles (Own home, Travel, Driving licence, Safety net, Studies, Something else), no "Trending", Not now, the Junior line and the OTP marker, all above the tab bar', first && first.id === 'setupcard' && tiles.join('|') === 'Own home|Travel|Driving licence|Safety net|Studies|Something else' && !/Trending/.test(hubH) && /<!-- CONFIRM WITH OTP -->/.test(hubH) && /3\.0% a year on up to 500 000 Ft with your Junior account until \d/.test(txt7(hubH)) && /Not now/.test(txt7(hubH)) && (!fold || fold.bottom === undefined || fold.bottom <= fold.tabbarTop) && spFold, [tiles, fold]);
       const lf = launchFlow.toString(), svU = S.updateSeen; S.updateSeen = false; launchFlow(0); const popOn = $('#wn').classList.contains('on') || !!$('#wn').innerHTML.trim(); S.updateSeen = svU;
       ok('chk-no-autopopup: nothing opens at launch (no what\'s-new modal), both seeds start with the pop-up already seen, and Home is where the app starts', !popOn && !/showWhatsNew/.test(lf) && nw.updateSeen === true && ex.updateSeen === true && TABS[0][0] === 'fooldal', [popOn, nw.updateSeen]);
       // hints: a hint is not seen when it is only rendered, nor when the tab is left, nor when it is off screen; it is seen after it stood on screen for 1 s
@@ -1872,7 +1925,9 @@ function __checkAnalytics(){
     const errs = [], surfaces = kind => {   // the rendered HTML of Home, Persely tab, goal page, both wizards, More, Transfer, the Junior page and the sheets
       const m = {}; S = fresh(kind); if(S.goals[0]) S._detail = S.goals[0].id;
       const add = (k, f) => { try{ m[k] = f(); }catch(e){ errs.push(kind + '/' + k + ': ' + e); m[k] = ''; } };
-      add('home', vFooldal); add('hub', vHub); add('more', vTovabbiak); add('transfer', vUtalas); add('grad', () => PAGES.grad.html()); add('regular', () => SHEETS.saverules());
+      add('home', vFooldal); add('hub', () => legacyR(vHub)); add('more', vTovabbiak);
+      // the Simple Persely first run is scanned too
+      if(SPF){ add('sphub', vHub); add('spconfirm', () => spProbe('travel')); } add('transfer', vUtalas); add('grad', () => PAGES.grad.html()); add('regular', () => SHEETS.saverules());
       if(S.goals[0]) add('goal', () => PAGES.goal.html());
       ['goodtoknow', 'whyp', 'how', 'befizet', 'kivesz', 'newgoal'].concat(S.goals.length ? ['hubsave', 'hubout'] : []).forEach(k => add('sheet-' + k, () => SHEETS[k]()));
       add('titles', () => Object.keys(PAGES).map(k => typeof PAGES[k].title === 'function' ? PAGES[k].title() : PAGES[k].title).join(' | '));
@@ -1885,10 +1940,10 @@ function __checkAnalytics(){
       // glossary: the listed synonyms never appear; the glossary words do
       const BANNED = /take out|taken out|take money out|spending tracker|create persely|new persely|(?<!scheduled and )recurring transfer/i, hits = every(t => BANNED.test(t)).map(([k, t]) => k + ': ' + (t.match(BANNED) || [])[0]);
       const gl = pl(vTovabbiak() + vFooldal() + vHub()), noCar = !/\bCar\b/.test(Object.values(GOAL_PRESETS).map(g => g.label + ' ' + g.name).join(' ') + pl(SHEETS.newgoal()));
-      ok('chk-glossary-terms: no "Take out", "Take money out", "Spending tracker", "Create Persely", "New Persely" or "Recurring transfer" in the text or labels of Home, Persely tab, goal page, both wizards, More, Transfer and the sheets; Withdraw, Spending and Weekly transfer are the words used; "Car" is Driving licence', hits.length === 0 && /Withdraw/.test(pl(A.hub + B.hub + B.goal + B['sheet-kivesz'])) && /Spending/.test(pl(B.more)) && /Weekly transfer/.test(pl(B.persely + B.regular)) && /Create goal/.test(pl(B.wizard3)) && /New goal/.test(B.wizard3) && noCar && /Driving licence/.test(pl(A.hub)), [hits, errs]);
+      ok('chk-glossary-terms: no "Take out", "Take money out", "Spending tracker", "Create Persely", "New Persely" or "Recurring transfer" in the text or labels of Home, Persely tab, goal page, both wizards, More, Transfer and the sheets; Withdraw, Spending and Weekly transfer are the words used; "Car" is Driving licence', hits.length === 0 && /Withdraw/.test(pl(A.hub + B.hub + B.goal + B['sheet-kivesz'])) && /Spending/.test(pl(B.more)) && /Weekly transfer/.test(pl(B.persely + B.regular)) && /Create goal/.test(pl(B.wizard3)) && /New goal/.test(B.wizard3) && noCar && /Driving licence/.test(pl(A.hub)) && (!SPF || (/More goals/.test(pl(A.sphub)) && /data-spmore/.test(A.sphub) && /Driving licence/.test(pl(spOldNewgoal())) && /Withdraw any time/.test(pl(A.spconfirm)))), [hits, errs]);
       // dates and amounts
       const MON = 'January|February|March|April|May|June|July|August|September|October|November|December', SHORT = /\b\d{1,2} (Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b|\b(Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec) \d{4}\b/, noYear = new RegExp('\\b\\d{1,2} (' + MON + ')\\b(?! \\d{4})'), ago = every(t => SHORT.test(t) || noYear.test(t)).map(([k, t]) => k + ': ' + (t.match(SHORT) || t.match(noYear))[0]);
-      ok('chk-date-format: full dates read "1 June 2029", month dates "June 2029", the Junior end date is one concrete day, and no short or year-less dates on the screens', fDate('2029-06-01') === '1 June 2029' && /^\d{1,2} [A-Z][a-z]+ \d{4}$/.test(juniorEndLabel()) && /^[A-Z][a-z]+ \d{4}$/.test(inMonths(5)) && ago.length === 0 && /Junior package until \d{1,2} [A-Z][a-z]+ \d{4}/.test(pl(A.home)) && /Junior package until \d{1,2} [A-Z][a-z]+ \d{4}/.test(pl(A.hub)) && /Junior package until \d{1,2} [A-Z][a-z]+ \d{4}/.test(pl(B.hub)) && !/\bsoon\b/i.test(pl(A.hub + A.home + B.grad + B.hub)), [ago, inMonths(5), juniorEndLabel()]);
+      ok('chk-date-format: full dates read "1 June 2029", month dates "June 2029", the Junior end date is one concrete day, and no short or year-less dates on the screens', fDate('2029-06-01') === '1 June 2029' && /^\d{1,2} [A-Z][a-z]+ \d{4}$/.test(juniorEndLabel()) && /^[A-Z][a-z]+ \d{4}$/.test(inMonths(5)) && ago.length === 0 && /Junior package until \d{1,2} [A-Z][a-z]+ \d{4}/.test(pl(A.home)) && /Junior package until \d{1,2} [A-Z][a-z]+ \d{4}/.test(pl(A.hub)) && /Junior package until \d{1,2} [A-Z][a-z]+ \d{4}/.test(pl(B.hub)) && !/\bsoon\b/i.test(pl(A.hub + A.home + B.grad + B.hub)) && (!SPF || (/until \d{1,2} [A-Z][a-z]+ \d{4}/.test(pl(A.spconfirm)) && /\d{3} Ft · [A-Z][a-z]+ \d{4}/.test(pl(A.spconfirm)))), [ago, inMonths(5), juniorEndLabel()]);
       const bad$ = every(t => /\b\d{1,3} ?k\b(?! ?m)|\b\d+(\.\d+)? ?M Ft|\b\d+ ?M\b(?!\w)|\d{4,} ?Ft|\d{1,3},\d{3} ?Ft/.test(t)).map(([k, t]) => k + ': ' + (t.match(/\b\d{1,3} ?k\b(?! ?m)|\b\d+(\.\d+)? ?M Ft|\b\d+ ?M\b(?!\w)|\d{4,} ?Ft|\d{1,3},\d{3} ?Ft/) || [])[0]);
       const chipsTxt = pl(A.wizard1 + A.onb1 + B.wizard1);
       ok('chk-amount-format: amounts read "87 450 Ft" with a space, chips "50 000 Ft", never "50k", "1 M" or digits stuck together, on every screen', ft(87450).replace(/\s/g, ' ') === '87 450 Ft' && ft(500000).replace(/\s/g, ' ') === '500 000 Ft' && /50 000 Ft/.test(chipsTxt) && bad$.length === 0, [bad$, chipsTxt.slice(0, 200)]);
@@ -1901,7 +1956,7 @@ function __checkAnalytics(){
       ok('chk-rate-has-cap: every 3.0% mention carries its 500 000 Ft cap and a date (or Good to know); the "Your 3.0% rate" headline is followed by its conditions (marked CONFIRM WITH OTP); Copy account number is on step 1', rateBad.length === 0 && /class="gcond"/.test(afterHead) && /<!-- CONFIRM WITH OTP -->/.test(B.grad.slice(headIdx - 120, headIdx + 140)) && /On the first 500 000 Ft · 28% tax · Without a salary at OTP the rate returns to standard after 30 days' notice/.test(gr) && /data-copyacc/.test(B.grad) && /Copy account number/.test(gr), [rateBad.slice(0, 6), errs]);
       // Good to know and Why Persely?
       S = fresh('existing'); sheet(SHEETS.goodtoknow()); const gk = $('#sheet'), gkli = gk.querySelector('.gtk li'), gkfs = gkli ? parseFloat(getComputedStyle(gkli).fontSize) : 0, gkt = pl(SHEETS.goodtoknow()); closeSheet();
-      ok('chk-good-to-know: rate and cap, 28% tax, withdraw any time, no fees, a Deposit protection link (CONFIRM WITH OTP) and the Junior end date, in 14 px text or more; on wizard step 3 (both wizards), the Persely tab trust line and How Persely works', /3\.0% a year on the first 500 000 Ft/.test(gkt) && /28% tax/.test(gkt) && /Withdraw any time/.test(gkt) && /No fees/.test(gkt) && /Deposit protection/.test(gkt) && /Junior package until \d/.test(gkt) && /<!-- CONFIRM WITH OTP -->/.test(SHEETS.goodtoknow()) && gkfs >= 13.99 && /Good to know/.test(pl(A.wizard3 === undefined ? '' : B.wizard3)) && /Good to know/.test(pl(B.onb3)) && /data-sheet="goodtoknow"/.test(A.hub) && /data-sheet="goodtoknow"/.test(B.hub) && /data-sheet="goodtoknow"/.test(B['sheet-how']), [gkfs]);
+      ok('chk-good-to-know: rate and cap, 28% tax, withdraw any time, no fees, a Deposit protection link (CONFIRM WITH OTP) and the Junior end date, in 14 px text or more; on wizard step 3 (both wizards), the Persely tab trust line and How Persely works', /3\.0% a year on the first 500 000 Ft/.test(gkt) && /28% tax/.test(gkt) && /Withdraw any time/.test(gkt) && /No fees/.test(gkt) && /Deposit protection/.test(gkt) && /Junior package until \d/.test(gkt) && /<!-- CONFIRM WITH OTP -->/.test(SHEETS.goodtoknow()) && gkfs >= 13.99 && /Good to know/.test(pl(A.wizard3 === undefined ? '' : B.wizard3)) && /Good to know/.test(pl(B.onb3)) && /data-sheet="goodtoknow"/.test(A.hub) && /data-sheet="goodtoknow"/.test(B.hub) && /data-sheet="goodtoknow"/.test(B['sheet-how']) && (!SPF || (/data-sheet="spgtk"/.test(A.spconfirm) && /data-sheet="spgtk"/.test(B.spconfirm) && /3\.0% a year on the first 500 000 Ft/.test(pl(SHEETS.spgtk())) && /28% tax/.test(pl(SHEETS.spgtk())) && /<!-- CONFIRM WITH OTP -->/.test(SHEETS.spgtk()))), [gkfs]);
       const wy = SHEETS.whyp(), bars = [...wy.matchAll(/class="why-bar"><i style="width:([\d.]+)%/g)].map(m => +m[1]), wyt = pl(wy);
       ok('chk-why-persely: "Why Persely?" sits on the Savings account card on Home and compares per 100 000 Ft on one bar scale (Persely 3.0%, Savings 3.5%, old 0.01%) with one sentence on rate, tax and access, marked CONFIRM WITH OTP, and never says Persely beats 3.5%', /data-sheet="whyp"[^>]*>Why Persely\?/.test(B.home) && /100 000 Ft/.test(wyt) && bars.length === 3 && Math.abs(bars[0] / bars[1] - 3 / 3.5) < .01 && bars[1] === 100 && bars[2] < bars[0] && /3\.0%/.test(wyt) && /3\.5%/.test(wyt) && /0\.01%/.test(wyt) && /<!-- CONFIRM WITH OTP -->/.test(wy) && /rate|a year/.test(wyt) && /taxed at 28%/.test(wyt) && /withdraw any time/.test(wyt) && !/more than the Savings|beats|better than 3\.5/i.test(wyt), [bars]);
       // N5: no hard-coded name
@@ -1995,6 +2050,24 @@ function __checkAnalytics(){
     const reset = kind => { while(stack.length) popPage(true); try{ closeOnb(); }catch(e){} closeSheet(); MQ.q = []; hideChip(true); hideToast(true); S = fresh(kind); SETUP_COLLAPSED = false; renderAll(); };
     const setf = (id, v) => { const f = $('#' + id); f.value = v; f.dispatchEvent(new Event('input', {bubbles:true})); };
     try{
+      // Simple Persely (flag on): the new-world equivalents of chk-one-wizard, chk-create-no-money and chk-first-goal-payday-only; then the old assertions run on the legacy first run
+      const spW = {}; if(SPF){ try{
+        reset('new'); const t4 = [...document.querySelectorAll('#v-hub .spfirst [data-tilepick]')].length; clk('#v-hub [data-tilepick="travel"]');
+        const cA = $('#onb').classList.contains('on') && !!$('#onb .spconfirm'), bA = pl($('#onb .onb-body').innerHTML);
+        clk('#onb [data-spback]'); const backTab = !$('#onb').classList.contains('on') && !!$('#v-hub .spfirst');
+        clk('#v-hub [data-spmore]'); const old6 = sheetOpen() && document.querySelectorAll('#sheet [data-tilepick]').length === 6; clk('#sheet [data-tilepick="car"]'); const carC = !!$('#onb .spconfirm') && /Driving licence/.test(pl($('#onb').innerHTML)); O.sp = false; closeOnb();
+        reset('existing'); clk('#v-hub [data-sheet="newgoal"]'); const s4 = document.querySelectorAll('#sheet [data-tilepick]').length; clk('#sheet [data-tilepick="travel"]'); const bB = pl($('#onb .onb-body').innerHTML);
+        clk('#onb [data-spback]'); const backSheet = sheetOpen() && /What are you saving for\?/.test($('#sheet').textContent); closeSheet();
+        spW.wizard = t4 === 4 && s4 === 4 && cA && backTab && old6 && carC && backSheet && /Trip/.test(bA) && /Trip/.test(bB) && /On payday, Persi asks to save 10%/.test(bA) && /No deposit/.test(bB);
+        reset('existing'); const jb = acc('junior').v, t0 = total(), x0 = S.tx.length; spOpen('safety'); const lab = nt($('#onb [data-spsave]').textContent); clk('#onb [data-spsave]');
+        const ng = S.goals[S.goals.length - 1]; spW.noMoney = lab === 'Create goal' && ng.name === 'Safety net' && acc('junior').v === jb && total() === t0 && S.tx.length === x0 && ng.saved === 0 && !SP.rewardOn; hideChip(true);
+        reset('new'); let asked = 0; const rp = window.Notification && Notification.requestPermission; if(rp) Notification.requestPermission = () => { asked++; return Promise.resolve('default'); };
+        const j1 = acc('junior').v; spOpen('travel'); const lab1 = nt($('#onb [data-spsave]').textContent); SP.celebrated = false; clk('#onb [data-spsave]'); const g1 = S.goals[0];
+        spW.oneK = lab1 === 'Save 1 000 Ft now' && acc('junior').v === j1 - 1000 && total() === 1000 && S.goals.length === 1 && S.onboarded;
+        spW.payOnly = !!g1 && g1.rules.pay.on && g1.rules.pay.pct === 10 && !g1.rules.wk.on && !g1.rules.rr.on && S.ruleGoal === g1.id && !MQ.q.some(x => x.id === 'nudge' || x.id === 'firstadd') && !sheetOpen() && S.nudgeAsk === 'wait' && asked === 0;
+        if(rp) Notification.requestPermission = rp; spHideReward(true); hideChip(true);
+      }catch(e){ spW.err = String(e && e.stack || e); } }
+      spLeg(true);
       // one wizard behind every entry: the tile chooser on the tab and New + open the same step 1
       reset('new'); const tilesN = [...document.querySelectorAll('#v-hub [data-tilepick]')].length; clk('#v-hub [data-tilepick="travel"]'); const bodyA = $('#onb .onb-body').innerHTML, onA = $('#onb').classList.contains('on'), topA = nt($('#onb').textContent);
       clk('[data-onbback]'); const backTiles = !$('#onb').classList.contains('on') && !!$('#v-hub #setupcard');
@@ -2005,14 +2078,14 @@ function __checkAnalytics(){
       reset('existing'); startOnb('travel'); setf('onbName', 'Gym'); pkSet('onb', 2000); const minTxt = nt($('#onb .pkcap').textContent), minOff = $('#onb [data-onbnext]').disabled && /Minimum is 5 000 Ft/.test(nt($('#onb .onb-why').textContent)); pkSet('onb', 600000); const capTxt = nt($('#onb .pkcap').textContent); closeOnb();
       const oneNoPage = !/data-cgnew|data-cgpreset/.test(SHEETS.newgoal()) && PAGES.create.title === 'Edit goal' && typeof PAGES.create.html === 'function';
       ok('chk-one-wizard: the tile chooser (Persely tab setup card) and New + (the tile sheet) both open the same step 1 "Your goal" (Name, Amount with chips 50 000 to 500 000 Ft, By when with the month sheet); Back on step 1 returns to the tiles (card or sheet); disabled Next shows its reason; amounts under 5 000 Ft say "Minimum is 5 000 Ft"; above 500 000 Ft "3.0% applies to the first 500 000 Ft"; Not now asks "Save as draft?"; the old New + page is gone (Edit goal keeps its own page)',
-        tilesN === 6 && sheetTiles === 6 && onA && onB && bodyA.replace(/until [^.<]*\./, '') === bodyB.replace(/until [^.<]*\./, '') && stepOne && backTiles && backSheet && whyT === 'Give your goal a name' && nextOff && draftQ && /Minimum is 5 000 Ft/.test(minTxt) && minOff && /3\.0% applies to the first 500 000 Ft/.test(capTxt) && oneNoPage, [tilesN, sheetTiles, onA, onB, bodyA === bodyB, stepOne, backTiles, backSheet, whyT, nextOff, draftQ, minTxt, minOff, capTxt, oneNoPage]);
+        tilesN === 6 && sheetTiles === 6 && onA && onB && bodyA.replace(/until [^.<]*\./, '') === bodyB.replace(/until [^.<]*\./, '') && stepOne && backTiles && backSheet && whyT === 'Give your goal a name' && nextOff && draftQ && /Minimum is 5 000 Ft/.test(minTxt) && minOff && /3\.0% applies to the first 500 000 Ft/.test(capTxt) && oneNoPage && (!SPF || spW.wizard), [spW, tilesN, sheetTiles, onA, onB, bodyA === bodyB, stepOne, backTiles, backSheet, whyT, nextOff, draftQ, minTxt, minOff, capTxt, oneNoPage]);
 
       // Create goal moves no money, lands on the new goal's page with the goal highlighted
       reset('existing'); const jb = acc('junior').v, tot0 = total(), tx0 = S.tx.length, n0 = S.goals.length; startOnb('safety'); O.i = 2; renderOnb();
       const step3 = pl($('#onb').innerHTML), only3 = /Good to know/.test(step3) && /Create goal/.test(step3) && !/First deposit|Weekly reminder/.test(step3) && /moves no money/.test(step3); clk('[data-onbcreate]');
       const ng = S.goals[S.goals.length - 1], pg = stack[stack.length - 1], noMoney = acc('junior').v === jb && total() === tot0 && S.tx.length === tx0 && S.goals.length === n0 + 1 && ng.saved === 0;
       const landed = !!pg && pg.dataset.id === 'goal' && S._detail === ng.id && !!pg.querySelector('.card.hl') && !$('#onb').classList.contains('on');
-      ok('chk-create-no-money: "Create goal" (step 3 with Good to know, no first deposit) moves no money (Junior balance, Persely total and transactions unchanged, the goal holds 0 Ft), sets onboarded, and lands on the new goal page with the goal highlighted', only3 && noMoney && landed && S.onboarded, [only3, noMoney, landed, ng && ng.saved]);
+      ok('chk-create-no-money: "Create goal" (step 3 with Good to know, no first deposit) moves no money (Junior balance, Persely total and transactions unchanged, the goal holds 0 Ft), sets onboarded, and lands on the new goal page with the goal highlighted; Simple Persely on: "Create goal" (No deposit) on the confirm screen moves no money and "Save 1 000 Ft now" moves exactly 1 000 Ft (D2)', only3 && noMoney && landed && S.onboarded && (!SPF || (spW.noMoney && spW.oneK)), [spW.noMoney, spW.oneK, only3, noMoney, landed, ng && ng.saved]);
 
       // first goal: Payday rule only at 10%, the lines, matched presets, the two follow-up beats, the system prompt only from Turn on
       reset('new'); let asked = 0; const rp0 = window.Notification && Notification.requestPermission; if(rp0) Notification.requestPermission = () => { asked++; return Promise.resolve('default'); };
@@ -2025,7 +2098,7 @@ function __checkAnalytics(){
       const beats = /Start your streak\?/.test(fa) && /Add money now/.test(pl(fa)) && /id="mv"[^>]*value=""/.test(fa) && /data-setv="500"/.test(fa) && /Want a Sunday nudge\?/.test(nu) && /Turn on/.test(nu) && /Not now/.test(nu) && asked === 0;
       if(rp0) Notification.requestPermission = rp0;
       ok('chk-first-goal-payday-only: the first goal defaults to the Payday rule only at 10% (Weekly transfer and Round-ups off) with the lines "Keeps 20 000 Ft on your account; if money is tight, less or nothing moves" and "A 1 190 Ft coffee moves 20 Ft; we double it"; every preset and Something else opens with a forecast that reaches the amount by its date; after Create goal come "Start your streak?" (empty amount) and "Want a Sunday nudge?", and no system permission is asked before Turn on',
-        defaults && lines && presetsOk && rulesOk && beat1 && beats, [defaults, lines, presetsOk, rulesOk, q, beats, asked]);
+        defaults && lines && presetsOk && rulesOk && beat1 && beats && (!SPF || spW.payOnly), [spW.payOnly, defaults, lines, presetsOk, rulesOk, q, beats, asked]);
 
       // re-pointing a rule is announced
       reset('existing'); S.ruleGoal = 'holiday'; setMain(S, 'rr', true); setMain(S, 'pay', true); startOnb('safety'); O.i = 1; O.roundOn = true; renderOnb(); const s2b = pl($('#onb').innerHTML), want = 'Round-ups are shared equally with Summer holiday';
@@ -2073,7 +2146,7 @@ function __checkAnalytics(){
       O.i = 0; renderOnb(); const w1 = pl($('#onb').innerHTML).includes(`${nt(ft(wiz))} a week`); O.i = 2; renderOnb(); clk('[data-onbcreate]'); const ng2 = S.goals[S.goals.length - 1], pageT = pl(PAGES.goal.html()), cardT = pl(vHub()), fig = nt(ft(weeklyOf(ng2)));
       ok('chk-forecast-one-figure: the same goal shows ONE weekly amount on the wizard (steps 1 and 2), the goal card and the goal page: weeklyNeed(amount, saved, date) in 100 Ft steps', wiz > 0 && wiz === weeklyNeed(tgt, 0, dt1) && wiz === weeklyOf(ng2) && w1 && w2 && cardT.includes(`about ${fig} a week`) && pageT.includes(`${fig} a week`) && ng2.date === dt1 && ng2.target === tgt, [wiz, fig, w1, w2, cardT.includes(`about ${fig} a week`), pageT.includes(`${fig} a week`)]);
     } catch(e){ ok('chk-phase3: the new checks ran without errors', false, String(e && e.stack || e)); }
-    finally { hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); S = sv10; cur = cur10; stack.push(...stk10); demo.locked = lock10; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views10[i])); }
+    finally { hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); spLeg(false); S = sv10; cur = cur10; stack.push(...stk10); demo.locked = lock10; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views10[i])); }
   }
   { // Phase 4: placement (flow plan 3.2 to 3.7, B5, C1; decisions D4, D7, D13)
     const sv12 = S, cur12 = cur, stk12 = stack.splice(0), lock12 = demo.locked, views12 = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')); demo.locked = false;
@@ -2116,8 +2189,10 @@ function __checkAnalytics(){
       tab('fooldal'); const sc = [...document.querySelectorAll('#v-fooldal .short button')], scT = sc.map(b => nt((b.querySelector('b') || b).textContent)).join(), scTap = sc.length === 3 && sc.every(b => b.offsetHeight >= 44 && b.offsetWidth >= 44);
       const goSc = []; sc.forEach(b => { b.click(); goSc.push(sheetOpen() ? 'sheet:' + nt($('#sheet h2').textContent) : top()); closeSheet(); while(stack.length) popPage(true); });
       const streakCard = /\d+-week streak/.test(pl(area(H, '.hubteaser')[0].innerHTML)) && area(H, '.hubteaser')[0].dataset.tab === 'hub';
-      reset('new'); const HN = vFooldal(), tn = area(HN, '.hubteaser')[0], newCard = /Start your first goal/.test(tn.textContent) && tn.dataset.sheet === 'newgoal'; tab('fooldal'); clk('#v-fooldal .hubteaser'); const tiles = sheetOpen() && document.querySelectorAll('#sheet [data-tilepick]').length >= 6; closeSheet();
-      ok('chk-home-order: Home runs header (avatar, bell, mail named For you), balance carousel, Junior line, Safe to spend, Quick actions (Add money to a goal, Pay a bill, Manage my card at 44 px), Persely card, My monthly spending, For you; Add money to a goal opens the shared sheet, Pay a bill the bills list, Card the card page; a new user\'s Persely card is "Start your first goal" and opens the tile chooser', order && /Profile and Settings,Notifications,For you/.test(hdr) && scT === 'Add money to a goal,Pay a bill,Manage my card' && scTap && goSc.join() === 'sheet:Add money,bills,kartyaim' && streakCard && newCard && tiles, [order, hdr, scT, scTap, goSc, streakCard, newCard, tiles]);
+      reset('new'); const spH = SPF ? (() => { tab('fooldal'); const c = $('#v-fooldal .sphome'), y = c ? Math.round(c.getBoundingClientRect().bottom - $('#phone').getBoundingClientRect().top) : 9999, one = document.querySelectorAll('#v-fooldal .hubteaser').length === 1 && !!$('#v-fooldal .annote.one') && !$('#v-fooldal .annote:not(.one)');
+        if(c) c.click(); return {ok:!!c && /Save your first 1 000 Ft/.test(nt(c.textContent)) && y < 700 && one && cur === 'hub' && !!$('#v-hub .spfirst'), y, one}; })() : {ok:true};   // Simple Persely: one card above the fold, it opens the first-run tab
+      spLeg(true); reset('new'); const HN = vFooldal(), tn = area(HN, '.hubteaser')[0], newCard = /Start your first goal/.test(tn.textContent) && tn.dataset.sheet === 'newgoal'; tab('fooldal'); clk('#v-fooldal .hubteaser'); const tiles = sheetOpen() && document.querySelectorAll('#sheet [data-tilepick]').length >= 6; closeSheet(); spLeg(false);
+      ok('chk-home-order: Home runs header (avatar, bell, mail named For you), balance carousel, Junior line, Safe to spend, Quick actions (Add money to a goal, Pay a bill, Manage my card at 44 px), Persely card, My monthly spending, For you; Add money to a goal opens the shared sheet, Pay a bill the bills list, Card the card page; a new user\'s Persely card is "Start your first goal" and opens the tile chooser', order && /Profile and Settings,Notifications,For you/.test(hdr) && scT === 'Add money to a goal,Pay a bill,Manage my card' && scTap && goSc.join() === 'sheet:Add money,bills,kartyaim' && streakCard && newCard && tiles && spH.ok, [spH, order, hdr, scT, scTap, goSc, streakCard, newCard, tiles]);
 
       // Persely tab blocks in order, existing and new user
       reset('existing'); S.analyst.on = true; S.analyst.accepted = true; S.juniorDays = 300; renderAll(); const T1 = vHub();
@@ -2127,8 +2202,9 @@ function __checkAnalytics(){
       S.months = 0; const noYear = !/data-go="year"/.test(T1); S.months = 12; const yr = vHub(), yearAfter = inOrder(yr, ['data-go="mymoney"', 'data-go="perks"', 'data-go="year"', 'data-sheet="how"']); S.months = 0;
       const noLate = !/class="card bfc"|Bills first/.test(T1 + T2);
       const goals44 = (() => { tab('hub'); const nb = $('#v-hub [data-sheet="newgoal"]'); return !!nb && nb.offsetHeight >= 44; })();
-      reset('new'); const T3 = vHub(), o3 = inOrder(T3, ['id="setupcard"', 'Total in Persely', 'class="trust"', 'data-go="grad"', 'Your habits', 'data-sheet="how"']) && /Your streak starts with the first deposit/.test(pl(T3)), jrAbove = pos(T3, 'data-go="grad"') > pos(T3, 'id="setupcard"');
-      ok('chk-tab-order: existing user: Total card, Add money and Withdraw with the trust line, Goals (New + at 44 px), Saving rules, Junior card, Your habits, Spending, Perks, Your year (only from month 12), How Persely works; the Junior card moves under the Total card with 90 days left; no late-bill card; new user: setup card first, Junior card never above it', o1 && friendsLast && o2 && noYear && yearAfter && noLate && goals44 && o3 && jrAbove, [o1, friendsLast, o2, noYear, yearAfter, noLate, goals44, o3, jrAbove]);
+      reset('new'); const T3s = vHub(), spT3 = !SPF || (inOrder(T3s, ['class="tabtitle', 'class="spfirst"', 'data-tilepick="travel"', 'data-spmore']) && !/class="sring|class="hint"|id="setupcard"/.test(T3s));
+      const T3 = legacyR(vHub), o3 = inOrder(T3, ['id="setupcard"', 'Total in Persely', 'class="trust"', 'data-go="grad"', 'Your habits', 'data-sheet="how"']) && /Your streak starts with the first deposit/.test(pl(T3)), jrAbove = pos(T3, 'data-go="grad"') > pos(T3, 'id="setupcard"');
+      ok('chk-tab-order: existing user: Total card, Add money and Withdraw with the trust line, Goals (New + at 44 px), Saving rules, Junior card, Your habits, Spending, Perks, Your year (only from month 12), How Persely works; the Junior card moves under the Total card with 90 days left; no late-bill card; new user: setup card first, Junior card never above it', o1 && friendsLast && o2 && noYear && yearAfter && noLate && goals44 && o3 && jrAbove && spT3, [spT3, o1, friendsLast, o2, noYear, yearAfter, noLate, goals44, o3, jrAbove]);
 
       // table 3.6: one primary entry per feature that exists, and the allowed links
       reset('existing'); S.analyst.on = true; S.analyst.accepted = true; renderAll(); const E = {};
@@ -2159,13 +2235,14 @@ function __checkAnalytics(){
       tab('fooldal'); clk('#v-fooldal .short [data-go="bills"]'); E.bills = top() === 'bills'; while(stack.length) popPage(true);
       tab('tovabbiak'); clk('#v-tovabbiak [data-settings="notif"]'); E.notif = top() === 'settings' && !!$('.page [data-sec="notif"].focus'); while(stack.length) popPage(true);
       tab('tovabbiak'); const an0 = S.analyst.on; clk('#v-tovabbiak .mi.sw [data-sw="analyst"]'); E.analyst = an0 && sheetOpen() && !!document.querySelector('#sheet [data-anoffgo]'); clk('#sheet [data-anoffgo]'); E.analyst = E.analyst && S.analyst.on === false; hideChip(true); closeSheet(); S.analyst.on = true; renderAll();
-      tab('hub'); clk('#v-hub .sec [data-sheet="newgoal"]'); E.create = sheetOpen() && document.querySelectorAll('#sheet [data-tilepick]').length >= 6; closeSheet();
+      tab('hub'); spLeg(true); clk('#v-hub .sec [data-sheet="newgoal"]'); E.create = sheetOpen() && document.querySelectorAll('#sheet [data-tilepick]').length >= 6; closeSheet(); spLeg(false);
+      if(SPF){ clk('#v-hub .sec [data-sheet="newgoal"]'); E.create = E.create && sheetOpen() && document.querySelectorAll('#sheet [data-tilepick]').length === 4 && !!$('#sheet [data-spmore]'); closeSheet(); }   // Simple Persely: 4 tiles + More goals
       S.months = 12; renderAll(); tab('hub'); clk('#v-hub [data-go="year"]'); E.year = top() === 'year'; S.months = 0; while(stack.length) popPage(true);
       tab('hub'); E.homeToTab = (() => { tab('fooldal'); clk('#v-fooldal .hubteaser'); return cur === 'hub'; })();
       const bad = Object.keys(E).filter(k => !E[k]);
       ok('chk-entry-map: every feature of table 3.6 that exists now has its one primary entry and only the allowed links: Spending (Home Safe to spend, Home Details, Persely tab row, More), Add money (tab, Home shortcut, goal page, Transfer > Between my accounts with From and To choosers), Saving rules (tab, goal page, Transfer > Scheduled and recurring), Previous transfers, Card (Home, More: block switch at 44 px, Round-ups, Discounts), Pay a bill, Notifications, Financial analyst switch, Create goal, Your year, Home > Persely tab', bad.length === 0, [bad, E]);
     } catch(e){ ok('chk-phase4: the new checks ran without errors', false, String(e && e.stack || e)); }
-    finally { hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); S = sv12; cur = cur12; stack.push(...stk12); demo.locked = lock12; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views12[i])); }
+    finally { hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); spLeg(false); S = sv12; cur = cur12; stack.push(...stk12); demo.locked = lock12; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views12[i])); }
   }
   { // Phase 5: one Spending page, analyst on by default, story at month end, year page (flow plan C2, C3, C4, A5-3; decisions D3, D10)
     const sv13 = S, cur13 = cur, stk13 = stack.splice(0), lock13 = demo.locked, views13 = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')); demo.locked = false;
@@ -2183,15 +2260,20 @@ function __checkAnalytics(){
       ok('chk-analyst-default-on: the Financial analyst is on in both seeds (new and existing), Safe to spend, bills and due dates show from the start, a late bill shows its warning on Home, a payment can be recategorised, and the opt-in entries are gone (only the More switch row opens the analyst sheet)', sN.on && sE.on && sN.accepted && sE.accepted && /Safe to spend/.test(H0) && bf0.rows.length >= 6 && bf0.rows.every(r => r.bill.day > 0) && bfNow().on && /late/.test(pl(vFooldal())) && /Change category/.test(pl(SHEETS.txd())) && optIns[0] === 0 && optIns[1] === 0 && optIns[2] === 0 && optIns[3] === 1, [sN.on, sE.on, bf0.rows.length, optIns, bfNow().on]);
 
       // chk-analyst-notice: shown once on the first Home view, What it reads and Turn off (with a confirm), gone after it has been dealt with or left
-      reset('new'); tab('fooldal'); const n1 = pl(vFooldal()), raw1 = vFooldal(), has1 = !!document.querySelector('#v-fooldal .annote');
+      spLeg(true); reset('new'); tab('fooldal'); const n1 = pl(vFooldal()), raw1 = vFooldal(), has1 = !!document.querySelector('#v-fooldal .annote');
       clk('#v-fooldal [data-anread]'); const readT = pl($('#sheet').innerHTML), readOk = /Payee names, amounts and dates of your card and bank payments/.test(readT) && /Nothing leaves the bank/.test(readT); closeSheet();
       const gone1 = !/annote/.test(vFooldal()) && S.anNote === true;
       reset('new'); tab('fooldal'); tab('hub'); const gone2 = S.anNote === true && !/annote/.test(vFooldal());
       reset('new'); tab('fooldal'); clk('#v-fooldal [data-anask]'); const cf = pl($('#sheet').innerHTML), askOk = /Turn off the Financial analyst\?/.test(cf) && cf.includes('Safe to spend becomes a simpler estimate; bills stay on.') && S.analyst.on === true;
       clk('#sheet [data-closesheet]'); const keep = S.analyst.on === true; sheet(SHEETS.anoffcfm()); clk('#sheet [data-anoffgo]'); const offOk = S.analyst.on === false; hideChip(true);
       reset('existing'); const foot = pl(myMoneyHTML());
-      tab('tovabbiak'); clk('#v-tovabbiak .mi.sw [data-sw="analyst"]'); const sw3 = sheetOpen() && S.analyst.on === true && /Turn off the Financial analyst\?/.test(pl($('#sheet').innerHTML)); closeSheet();
-      ok('chk-analyst-notice: first Home view shows "Your Financial analyst is on. It reads your transactions to show Safe to spend, bills and categories." with What it reads and Turn off, once (gone after a button or after leaving Home), the lawful-basis comment is in the markup, Turn off asks first ("Safe to spend becomes a simpler estimate; bills stay on."), the switch also lives in More and the Spending footer ("Financial analyst is on · Turn off")', has1 && n1.includes('Your Financial analyst is on.') && n1.includes('It reads your transactions to show Safe to spend, bills and categories.') && /What it reads/.test(n1) && /Turn off/.test(n1) && /CONFIRM WITH OTP \/ LEGAL: lawful basis/.test(raw1) && readOk && gone1 && gone2 && askOk && keep && offOk && /Financial analyst is on · Turn off/.test(foot) && sw3, {has1, readOk, gone1, gone2, askOk, keep, offOk, foot: foot.slice(-80), sw3});
+      tab('tovabbiak'); clk('#v-tovabbiak .mi.sw [data-sw="analyst"]'); const sw3 = sheetOpen() && S.analyst.on === true && /Turn off the Financial analyst\?/.test(pl($('#sheet').innerHTML)); closeSheet(); spLeg(false);
+      // Simple Persely: the notice is one line under the Persely card, Learn more and Turn off with the same size and weight, gone after a tap
+      const spA = !SPF || (() => { reset('new'); tab('fooldal'); const l = $('#v-fooldal .annote.one'); if(!l) return false; const bs = [...l.querySelectorAll('button')], st = b => { const c = getComputedStyle(b); return c.fontSize + c.fontWeight; };
+        const t = nt(l.textContent), pos = $('#v-fooldal .sphome').compareDocumentPosition(l) & Node.DOCUMENT_POSITION_FOLLOWING;
+        const good = t.includes('Your analyst reads your OTP payments to show Safe to spend. Nothing leaves OTP.') && bs.length === 2 && bs[0].dataset.anread !== undefined && bs[1].dataset.anask !== undefined && st(bs[0]) === st(bs[1]) && /Learn more/.test(bs[0].textContent) && /Turn off/.test(bs[1].textContent) && /CONFIRM WITH OTP \/ LEGAL: lawful basis/.test(vFooldal()) && !!pos;
+        bs[0].click(); const gone = sheetOpen() && !/annote/.test(vFooldal()); closeSheet(); return good && gone; })();
+      ok('chk-analyst-notice: first Home view shows "Your Financial analyst is on. It reads your transactions to show Safe to spend, bills and categories." with What it reads and Turn off, once (gone after a button or after leaving Home), the lawful-basis comment is in the markup, Turn off asks first ("Safe to spend becomes a simpler estimate; bills stay on."), the switch also lives in More and the Spending footer ("Financial analyst is on · Turn off")', has1 && n1.includes('Your Financial analyst is on.') && n1.includes('It reads your transactions to show Safe to spend, bills and categories.') && /What it reads/.test(n1) && /Turn off/.test(n1) && /CONFIRM WITH OTP \/ LEGAL: lawful basis/.test(raw1) && readOk && gone1 && gone2 && askOk && keep && offOk && /Financial analyst is on · Turn off/.test(foot) && sw3 && spA, {spA, has1, readOk, gone1, gone2, askOk, keep, offOk, foot: foot.slice(-80), sw3});
 
       // chk-analyst-off-fallback: off = Safe to spend is balance minus the upcoming direct debits, bills stay, only categories and the plan are hidden
       reset('existing'); const onS = safeToSpend(); S.analyst.on = false; renderAll(); const offS = safeToSpend(), mmOff = myMoneyHTML(); setMain(S, 'pay', true);
@@ -2255,7 +2337,7 @@ function __checkAnalytics(){
       pushPage('year'); let held = false; qSheet(() => '<h2>Reward test</h2>', 'reward'); held = !sheetOpen() && MQ.q.some(x => x.id === 'reward'); popPage(true); mqPump(); const released = sheetOpen() && /Reward test/.test($('#sheet').innerHTML); closeSheet(); MQ.q = [];
       ok('chk-compare-per-100k: "What your rate earned" is per 100 000 Ft after 28% tax for Persely 3.0% (2 160 Ft), Savings account 3.5% (2 520 Ft) and the old 0.01% (7 Ft) on the same bar scale, with one conclusion sentence on rate, tax and access that does not say Persely earns more; an overfunded goal shows Reached with the amount capped at its target; the health score is shown once as first month against last month; reward sheets wait until the year page closes', /Per 100 000 Ft for a year, after tax/.test(Yt) && /Persely, 3\.0% \+2 160 Ft/.test(Yt) && /Savings account, 3\.5% \+2 520 Ft/.test(Yt) && /Before Persely, 0\.01% \+7 Ft/.test(Yt) && w.length === 3 && Math.abs(w[0] / w[1] - 2160 / 2520) < .01 && w[2] < 2 && /pays the higher rate, 3\.5% against 3\.0%/.test(Yt) && /28% tax/.test(Yt) && /withdraw any time/.test(Yt) && !/Persely (pays|earns) more/.test(Yt) && /Reached/.test(Yt) && Yt.includes(reach) && (Yt.match(/First month \d+, last month \d+ of 100/g) || []).length === 1 && (Yt.match(/Financial health score/g) || []).length === 1 && held && released, {w, held, released, tail: Yt.slice(-200)});
     } catch(e){ ok('chk-phase5: the new checks ran without errors', false, String(e && e.stack || e)); }
-    finally { hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeStory(); }catch(e){} try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); S = sv13; cur = cur13; stack.push(...stk13); demo.locked = lock13; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views13[i])); }
+    finally { hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeStory(); }catch(e){} try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); spLeg(false); S = sv13; cur = cur13; stack.push(...stk13); demo.locked = lock13; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views13[i])); }
   }
   { // Phase 6: real Settings, notification toggles and inbox, pushes in the data, Perks (flow plan B7, C5, C6; decisions D11, D12)
     const sv14 = S, cur14 = cur, stk14 = stack.splice(0), lock14 = demo.locked, views14 = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')), dm14 = DEMO_ON; demo.locked = false;
@@ -2555,6 +2637,82 @@ function __checkAnalytics(){
     } catch(e){ ok('chk-spending-rework: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); txReset(); while(stack.length) popPage(true); S = sv17; cur = cur17; stack.push(...stk17); demo.locked = lock17; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views17[i])); }
   }
+  if(SPF){ // Simple Persely, Phase 1 (docs/simple-persely-phase1-notes.md). Only with the flag on: ?simple=0 keeps exactly the old set.
+    const svS = S, curS = cur, stkS = stack.splice(0), lockS = demo.locked, viewsS = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')), OS = JSON.stringify(O); demo.locked = false;
+    const pl = h => String(h).replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').replace(/\s+/g, ' '), nt = t => String(t).replace(/\s+/g, ' ').trim(), clk = sel => { const b = $(sel); if(b) b.click(); return !!b; };
+    const reset = kind => { hideBanners(); while(stack.length) popPage(true); try{ closeOnb(); }catch(e){} try{ closeStory(); }catch(e){} closeSheet(); MQ.q = []; hideChip(true); hideToast(true); spHideReward(true);
+      Object.assign(SP, {celebrated:false, forceOffline:false, forceFail:false, forceRM:null, last:null}); S = fresh(kind); renderAll(); tab('fooldal'); };
+    // visible words: tokens with a letter; amounts ("1 000 Ft"), percentages and the digits of dates count as numbers, not words; visually hidden text is skipped
+    const frags = el => { const out = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n; while((n = w.nextNode())){ if(n.parentElement.closest('.vhid,[aria-hidden="true"],script,style') || !n.nodeValue.trim()) continue; out.push(n.nodeValue.replace(/\s+/g, ' ').trim()); } return out; };
+    const vis = el => frags(el).join(' ');
+    const numz = t => t.replace(/\d[\d\s.,]*\s?(Ft|%|€)/g, ' # ').replace(/\d[\d\s.,]*/g, ' # ');
+    const words = t => numz(t).split(/\s+/).filter(x => /[A-Za-z]/.test(x)), toks = t => numz(t).split(/\s+/).filter(x => /[A-Za-z#]/.test(x));
+    const primaries = el => [...el.querySelectorAll('.btn')].filter(b => !b.matches('.w,.ghost,.eq,.sm') && b.offsetParent !== null);
+    try{
+      // 3 taps from the Home card, the reward on the same tap, one Undo for both
+      reset('new'); const j0 = acc('junior').v; let taps = 0;
+      if(clk('#v-fooldal .sphome')) taps++; const t1 = cur === 'hub';
+      if(clk('#v-hub .spfirst [data-tilepick="travel"]')) taps++; const t2 = !!$('#onb.on .spconfirm');
+      if(clk('#onb [data-spsave]')) taps++;
+      const g = S.goals[0], home3 = taps === 3 && t1 && t2 && !!g && gSaved(g) === 1000 && acc('junior').v === j0 - 1000 && total() === 1000 && S.streak === 1 && S.history.includes(S.week) && S.savedWeek;
+      const rw = SP.last || {}, rEl = $('#sprw'), rVis = !!rEl && rEl.classList.contains('on') && rEl.getBoundingClientRect().height > 0, rTxt = rEl ? nt(rEl.textContent) : '';
+      const reward = rVis && rw.ms <= 500 && !rw.sheet && !sheetOpen() && rw.pages === 0 && stack.length === 0 && cur === 'hub' && rw.coin && /Week 1 done/.test(rTxt) && /1 000 Ft saved!/.test(rTxt) && !!rEl.querySelector('[data-spgreat]') && !MQ.q.some(x => x.id === 'nudge' || x.id === 'firstadd') && UCH.on && S.nudgeAsk === 'wait';
+      clk('#uchip [data-undo]'); const undone = S.goals.length === 0 && acc('junior').v === j0 && total() === 0 && S.streak === 0 && !SP.rewardOn && !!$('#v-hub .spfirst');
+      reset('new'); taps = 0; if(clk('#tabbar [data-tab="hub"]')) taps++; if(clk('#v-hub [data-tilepick="safety"]')) taps++; if(clk('#onb [data-spsave]')) taps++;
+      const tab3 = taps === 3 && S.goals.length === 1 && total() === 1000 && S.goals[0].name === 'Safety net';
+      // the Sunday nudge: not on day 0, Persi asks on the next visit with equal Yes / Not now, the phone permission only after Yes
+      let asked = 0; const rp = window.Notification && Notification.requestPermission; if(rp) Notification.requestPermission = () => { asked++; return Promise.resolve('default'); };
+      clk('#sprw [data-spgreat]'); const day0 = !/spnudge/.test(vHub()); tab('fooldal'); tab('hub'); const nb = [...document.querySelectorAll('#v-hub .spnudge .btn')];
+      const nudge = day0 && nb.length === 2 && nb[0].className === nb[1].className && /Want a nudge on Sunday\?/.test(nt($('#v-hub .spnudge').textContent)) && asked === 0;
+      clk('#v-hub [data-spnudge="1"]'); const yes = S.remind === true && S.nudgeAsk === 'done' && !/spnudge/.test(vHub()) && (asked === 1 || !PUSH.supported); if(rp) Notification.requestPermission = rp;
+      ok('chk-simple-3-taps: Home card "Save your first 1 000 Ft" -> Trip -> "Save 1 000 Ft now" creates the goal, moves 1 000 Ft from the Junior account and starts the streak (week 1) in 3 taps; the Persely tab icon path is 3 taps too; one Undo reverses the deposit and the goal', home3 && tab3 && undone, {home3, tab3, undone});
+      ok('chk-simple-reward-same-tap: the reward (coin into Persi, "Week 1 done", "1 000 Ft saved!", Great) shows on the Persely tab within 500 ms of tap 3, no sheet or page over it, the Undo chip on screen; no "Start your streak?" or Sunday nudge sheet on day 0; Persi asks "Want a nudge on Sunday?" on the next visit with equal Yes / Not now, and the phone permission comes only after Yes', reward && nudge && yes, {ms:rw.ms, rVis, rw, rTxt, nudge, yes});
+
+      // edge states and later goals
+      reset('new'); acc('junior').v = 20800; spOpen('travel'); const e500 = nt($('#onb [data-spsave]').textContent) === 'Save 500 Ft now'; O.sp = false; closeOnb();
+      acc('junior').v = 20300; spOpen('travel'); const eCreate = nt($('#onb [data-spsave]').textContent) === 'Create goal' && /Persi will ask on payday\./.test(nt($('#onb').textContent)); O.sp = false; closeOnb();
+      acc('junior').v = 87450; SP.forceOffline = true; spOpen('travel'); const ob = $('#onb [data-spsave]'), eOff = ob.disabled && nt(ob.textContent) === 'No connection. Try again.'; spSave(); const offNo = S.goals.length === 0 && acc('junior').v === 87450;
+      SP.forceOffline = false; spRender(); SP.forceFail = true; clk('#onb [data-spsave]'); const eFail = /That did not work\. Your money did not move\. Try again\./.test(nt($('#onb').textContent)) && S.goals.length === 0 && acc('junior').v === 87450 && !UCH.on; SP.forceFail = false; O.sp = false; closeOnb();
+      reset('existing'); const keep = JSON.stringify(S.goals), je = acc('junior').v; spOpen('travel'); const later0 = nt($('#onb [data-spsave]').textContent) === 'Create goal' && !!$('#onb [data-spamt="0"].on');
+      clk('#onb [data-spamt="2000"]'); const later1 = nt($('#onb [data-spsave]').textContent) === 'Save 2 000 Ft now'; clk('#onb [data-spsave]'); const ng = S.goals[S.goals.length - 1];
+      const later = later0 && later1 && ng.name === 'Trip' && gSaved(ng) === 2000 && acc('junior').v === je - 2000 && JSON.stringify(S.goals.slice(0, 3)) === keep && !SP.rewardOn;
+      ok('chk-simple-edge-states: Junior under 21 000 Ft reads "Save 500 Ft now", under 20 500 Ft "Create goal" with "Persi will ask on payday."; offline the button is disabled, reads "No connection. Try again." and nothing moves; a failure says "That did not work. Your money did not move. Try again." and nothing moves; a later goal starts at No deposit (chips), can save 2 000 Ft in the same tap, and the existing goals do not change', e500 && eCreate && eOff && offNo && eFail && later, {e500, eCreate, eOff, offNo, eFail, later0, later1, later});
+
+      // honesty line on the confirm screen, the Add money sheet and the goal page footer
+      reset('new'); spOpen('travel'); const conf = $('#onb').innerHTML, confEnd = juniorEndLabel(); O.sp = false; closeOnb();
+      reset('existing'); S._goal = S.goals[0].id; const hs = SHEETS.hubsave(); S._detail = S.goals[0].id; const gp = PAGES.goal.html(); sheet(SHEETS.spgtk()); const gk = pl($('#sheet').innerHTML); closeSheet();
+      const hon = (h, end = juniorEndLabel()) => /<!-- CONFIRM WITH OTP -->/.test(h) && pl(h).includes(`3.0% until ${end}`) && /Withdraw any time/.test(h) && /Protected/.test(h) && /data-sheet="spgtk"/.test(h) && /Learn more/.test(h);
+      ok('chk-simple-honesty-line: "3.0% until [Junior end date] · Withdraw any time · Protected ⓘ" (Learn more opens the Good to know conditions, CONFIRM WITH OTP kept) on the first-run confirm screen, the Add money sheet and the goal page footer (Phase 2 adds the tab)', hon(conf, confEnd) && hon(hs) && hon(gp) && /3\.0% a year on the first 500 000 Ft/.test(gk) && /28% tax/.test(gk) && /Deposit protection/.test(gk), [hon(conf, confEnd), hon(hs), hon(gp)]);
+
+      // the old first run is still there with ?simple=0 (rendered here with SP_LEGACY)
+      spLeg(true); reset('new'); const legHub = vHub(), legHome = vFooldal(); tab('hub'); clk('#v-hub [data-tilepick="travel"]'); const wiz = /Step 1 of 3/.test(nt($('#onb').textContent)); closeOnb(); spLeg(false); renderAll();
+      const parse = q => new URLSearchParams(q).get('simple') !== '0';
+      ok('chk-simple-flag-fallback: SIMPLE_PERSELY is on by default and ?simple=0 turns it off; off renders the old first run (setup card with 6 tiles, Home "Start your first goal" opening the tile sheet, the 3-step wizard, the Sunday nudge sheet); the full old check set is run with ?simple=0', SIMPLE_PERSELY === true && parse('?simple=0') === false && parse('?demo=1') === true && parse('') === true && /id="setupcard"/.test(legHub) && (legHub.match(/data-tilepick=/g) || []).length === 6 && /Start your first goal/.test(legHome) && /data-sheet="newgoal"/.test(legHome) && wiz && typeof SHEETS.nudge === 'function', {wiz});
+
+      // reduced motion, sound and haptic
+      let cel = 0; const c0 = pig3d && pig3d.celebrate; if(pig3d) pig3d.celebrate = () => { cel++; };
+      reset('new'); SP.forceRM = true; spOpen('travel'); clk('#onb [data-spsave]'); const fadeOk = $('#sprw').classList.contains('fade') && !$('#sprw').classList.contains('pop') && cel === 0 && SP.last.fade && !SP.last.coin;
+      reset('new'); S.sound = false; spOpen('travel'); clk('#onb [data-spsave]'); const popOk = $('#sprw').classList.contains('pop') && cel === 1 && SP.last.sound === false;
+      if(pig3d) pig3d.celebrate = c0;
+      S.sound = false; const s1 = spPlayCoin(); S.sound = true; const ds = demo.sound; demo.sound = false; const s2 = spPlayCoin(); demo.sound = ds; const s3 = spPlayCoin();
+      pushPage('settings'); const sw = $('.page [data-sw="sound"]'), swOn = !!sw && sw.getAttribute('aria-checked') === 'true' && sw.offsetHeight >= 44; if(sw) sw.click(); const swOff = S.sound === false; popPage(true); S.sound = true;
+      ok('chk-simple-motion-sound: reduced motion gives a fade and no jump or falling coin; Sound off (Settings > Persely > Sound, on by default) or the demo sound off gives no audio; the chime uses the ambient audio session so the silent switch mutes it; a haptic tick where the device has one', fadeOk && popOk && s1 === false && s2 === false && s3 === true && swOn && swOff && /ambient/.test(spPlayCoin.toString()) && /vibrate/.test(spHaptic.toString()), {fadeOk, popOk, s1, s2, s3, swOn, swOff});
+
+      // one primary button per first-run screen, and the copy limits of the first run
+      reset('new'); const homeT = nt($('#v-fooldal .sphome').textContent); tab('hub'); const pTab = primaries($('#v-hub')).length, hubF = frags($('#v-hub')), wTab = words(hubF.join(' ')), persiT = nt($('#v-hub .spfirst .persi-t span').textContent);
+      const wConf = {}; SP_TILES.forEach(([k]) => { spOpen(k); wConf[k] = words(vis($('#onb'))).length; O.sp = false; closeOnb(); });
+      spOpen('travel'); const pConf = primaries($('#onb')).length, confF = frags($('#onb')), btnT = nt($('#onb [data-spsave]').textContent); clk('#onb [data-spsave]'); const pRw = primaries($('#sprw')).length, wRw = words(vis($('#sprw'))).length;
+      ok('chk-simple-one-primary: the first-run Persely tab has no primary button (4 tiles and More goals), the confirm screen exactly one ("Save 1 000 Ft now"), the reward exactly one ("Great"); the tab, More goals and Change links are 44 px', pTab === 0 && pConf === 1 && pRw === 1, {pTab, pConf, pRw});
+      const fr = [...hubF, ...confF, homeT, persiT], all = fr.join(' '), sents = fr.flatMap(f => f.split(/[.!?·](?!\d)/)).map(x => toks(x).length);
+      ok('chk-simple-first-run-words: at most 25 words on each first-run screen (tab, confirm screen for each of the 4 tiles, reward; amounts and dates are numbers, not words), Persi at most 8 words, sentences at most 12 words, no "deadline", verb first on the button', wTab.length <= 25 && Object.values(wConf).every(n => n <= 25) && wRw <= 25 && toks(persiT).length <= 8 && sents.every(n => n <= 12) && !/deadline/i.test(all) && /^Save /.test(btnT), {wTab:wTab.length, wConf, wRw, persi:toks(persiT).length, maxSent:Math.max(...sents), longest:fr.flatMap(f => f.split(/[.!?·](?!\d)/)).sort((a, b) => toks(b).length - toks(a).length)[0]});
+      // later phases own the other chk-simple-* checks; these three are stubs until their phase is built
+      ok('chk-simple-grade (stub, Phase 4: in-app FK grade ≤ 4 for tab and first-run texts)', true, 'stub');
+      ok('chk-simple-analyst-line (stub, Phase 6: Learn more and Turn off equal; the Phase 1 one line is checked in chk-analyst-notice)', true, 'stub');
+      ok('chk-simple-hu-keys (stub, Phase 4: every new string has a HU key)', true, 'stub');
+    } catch(e){ ok('chk-simple-phase1: the Simple Persely checks ran without errors', false, String(e && e.stack || e)); }
+    finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); spHideReward(true); }catch(e){} while(stack.length) popPage(true); spLeg(false); S = svS; cur = curS; stack.push(...stkS); demo.locked = lockS;
+      try{ Object.keys(O).forEach(k => delete O[k]); Object.assign(O, JSON.parse(OS)); closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', viewsS[i])); }
+  }
   // chk-palette: one colour palette. Scans the stylesheet (outside :root) and the app script for colour literals: only the documented exceptions may stay
   // (Mastercard logo, iPhone frame hardware, pure black), rgb()/rgba() only as black or white with alpha, no 0x colour ints; PALETTE holds a real #RRGGBB
   // for every token, --ink-rgb equals --ink, theme-color equals --bg, and the spending categories stay told apart.
@@ -2570,6 +2728,7 @@ function __checkAnalytics(){
       r0 >= 0 && lits.length <= ALLOW.length && lits.every(x => ALLOW.includes(x)) && !ints.length && rgbOk && inkOk && tc.toUpperCase() === PALETTE.bg && palOk && new Set(cats).size === cats.length, {lits, ints, rgb, inkRgb, tc, palOk, cats}); }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
+  spLeg(false); if(SP0){ try{ spHideReward(true); }catch(e){} Object.assign(SP, SP0, {rewardOn:false}); }
   const bad = out.filter(r => !r.pass);
   console.log(`__checkAnalytics: ${out.length - bad.length}/${out.length} passed`); bad.forEach(r => console.log('FAIL', r.name, r.info));
   return {passed:out.length - bad.length, total:out.length, failed:bad, results:out};
@@ -2737,13 +2896,14 @@ function vFooldal(){
   return `
   <div class="hhead"><button class="hprof" data-settings="" aria-label="Profile and Settings"><span class="avatar" aria-hidden="true">${S.ini}</span><span class="hn"><b>${S.name}</b><small>Profile and settings</small></span></button><button class="bell hic" data-go="inbox" aria-label="Notifications${inboxUnread() ? ', ' + inboxUnread() + ' unread' : ''}"><span class="hi">${I('bell',24)}${inboxUnread() ? '<i class="bdot" aria-hidden="true"></i>' : ''}</span><small aria-hidden="true">Notifications</small></button><button class="mail hic" data-go="neked" aria-label="For you"><span class="hi">${I('gift',24)}</span><small aria-hidden="true">For you</small></button></div>
   ${bfCard()}
-  ${anNoticeCard()}
+  ${spFirstRun() ? '' : anNoticeCard()}
   <div class="sec"><span>Balance</span><a data-go="szamlaim">All accounts ${I('chev',16)}</a></div>
   <div class="accs" id="accs">${S.accounts.map(a => a.id === 'persely'
     ? `<button class="acc" data-tab="hub"><div class="n">Persely · total</div><div class="v num">${ft(total())}</div><div class="h">${S.goals.length ? plural(S.goals.filter(g => !isEur(g)).length,'goal') : 'No goals yet'}${eurTotal() ? ` + ${eur(eurTotal())}` : ''}</div><div class="go">Open Persely ${I('chev',14)}</div></button>`
     : a.id === 'megt' ? `<div class="acc"><button class="accin" data-go="szamlaim"><div class="n">${a.n}</div><div class="v num">${ft(a.v)}</div><div class="h">${a.h}</div><div class="go">Account details ${I('chev',14)}</div></button><button class="link lnk44 whyl" data-sheet="whyp">Why Persely?</button></div>`
     : `<button class="acc" data-go="szamlaim"><div class="n">${a.n}</div><div class="v num">${ft(a.v)}</div><div class="h">${a.h}</div><div class="go">Account details ${I('chev',14)}</div></button>`).join('')}</div>
   <div class="dots">${S.accounts.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>
+  ${spFirstRun() ? spHomeCard() + spAnLine() : ''}
   ${S.verified || S.bridge ? juniorRow() : ''}
   ${safeRow()}
   <div class="sec"><span>Quick actions</span></div>
@@ -2752,9 +2912,9 @@ function vFooldal(){
     ['data-go="bills"', 'doc', 'Pay a bill', 'See what is due and pay it'],
     ['data-go="kartyaim"', 'cards', 'Manage my card', 'Block it and see your Discounts']
   ].map(([at, ic, l, h]) => `<button ${at}><span class="c" aria-hidden="true">${I(ic)}</span><span class="t"><b>${l}</b><small>${h}</small></span><span class="chev" aria-hidden="true">${I('chev', 18)}</span></button>`).join('')}</div>
-  <button class="card hubteaser" ${S.goals.length ? 'data-tab="hub"' : 'data-sheet="newgoal"'}>${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.goals.length
+  ${spFirstRun() ? '' : `<button class="card hubteaser" ${S.goals.length ? 'data-tab="hub"' : 'data-sheet="newgoal"'}>${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.goals.length
     ? `<b>Start your first goal</b><small>Pick what you are saving for</small>`
-    : `<b style="display:flex;align-items:center;gap:var(--sp-1)">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Persely savings. Safe this week' : 'Persely savings. Save by Sunday to keep it'}</small>`}</span>${I('chev',20)}</button>
+    : `<b style="display:flex;align-items:center;gap:var(--sp-1)">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Persely savings. Safe this week' : 'Persely savings. Save by Sunday to keep it'}</small>`}</span>${I('chev',20)}</button>`}
   ${storyCard()}
   ${insightCard()}
   <div class="sec"><span>My monthly spending</span></div>
@@ -3712,7 +3872,7 @@ function vHubNew(){
   <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:0 var(--sp-4);margin:var(--sp-2) 0 var(--sp-2)"><a class="link lnk44" style="display:inline-flex;align-items:center" data-sheet="how">How Persely works ${I('chev',16)}</a></div>`;
 }
 function vHub(){
-  if(!S.goals.length) return vHubNew();
+  if(!S.goals.length) return spOn() ? spHubFirst() : vHubNew();
   const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
   const weeks = Array.from({length:8}, (_,i) => S.week - 7 + i);
   const gl = S.goals.filter(g => !isEur(g)), gT = gl.reduce((x, g) => x + gTarget(g), 0), gp = gT > 0 ? Math.min(1, gl.reduce((x, g) => x + gSaved(g), 0) / gT) : 0, R = 104, C = 2 * Math.PI * R, arc = C * .75;   // the ring: saved across goals against all targets, as Home shows spent against plan
@@ -3721,7 +3881,7 @@ function vHub(){
   const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
   return `<div class="tabtitle tt-gear">Persely<button class="tgear" data-settings="persely" aria-label="Persely settings">${I('gear',24)}</button></div>
   ${hintHTML('total')}<div class="ptot" data-tour="total">
-    <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
+    <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${spNudgeHTML() || (hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`)}
       ${storyRing()}</div>
     <div class="sec wrapsec"><span>Total in Persely</span><span class="pill ${st?'ok':''}">${juniorPill()}</span></div>
     <div style="margin:-6px 0 0 var(--sp-2);font-size:0.78125rem;color:var(--muted-t)">${gl.length ? `${Math.round(gp * 100)}% of what your goals need` : 'Set a goal to fill the ring'}${et ? ` · + ${eur(et)} in euro goals` : ''}</div>
@@ -3996,6 +4156,7 @@ function renderView(id){ const t=TABS.find(x=>x[0]===id); $('#v-'+id).innerHTML 
 function renderAll(){ syncSplit(); TABS.forEach(t=>renderView(t[0])); renderTabs(); refreshPages(); save(); if(typeof mountPig==='function') mountPig(); }
 let NAVC = {n:0};   // counts page changes: something the app plans to open later checks that nothing else was opened meanwhile
 function tab(id){
+  if(typeof spOnTab === 'function') spOnTab(id);   // Simple Persely: ends the reward; a new visit to the Persely tab turns the Sunday nudge question on (js/14b)
   if(cur === 'tranzakciok' && id !== 'tranzakciok') txReset();   // search and chips (also a category passed in from Spending) clear when the student leaves the tab
   if(cur === 'fooldal' && id !== 'fooldal') anNoteSeen();
   NAVC.n++; hideToast(); setTimeout(placeChip, 60);   // a toast belongs to the page where the action happened: it closes when the student goes somewhere else
@@ -4024,7 +4185,7 @@ const ROUTE_TAB = {persely:'hub', megtakaritas:'hub'}, ROUTE_PAGE = {kiadas:'mym
 function pushPage(id){
   if(ROUTE_TAB[id]){ closeSheet(); tab(ROUTE_TAB[id]); return; }
   if(ROUTE_PAGE[id]) id = ROUTE_PAGE[id];
-  anNoteSeen();
+  anNoteSeen(); if(typeof SP !== 'undefined' && SP.rewardOn) spHideReward(true);
   NAVC.n++; hideToast(); setTimeout(placeChip, 60); setTimeout(placeChip, 320);
   const el = document.createElement('div'); el.className='page'; el.dataset.id=id;
   el.innerHTML = pageHTML(id); $('#stack').appendChild(el); stack.push(el);
@@ -4064,7 +4225,7 @@ const demoText = name => `${name} is not part of this demo. It works as in the O
 function demoToast(name){ toast(demoText(name), {demo:name}); }
 function toast(m, o){ if(sheetOpen()){ sheetNote(m); return; } MQ.q = MQ.q.filter(x => x.k !== 'toast'); MQ.q.push({k:'toast', m, o}); mqPump(); }
 function mqPump(){
-  if(MQ.banner || demo.locked || window.__ffOn) return;   // nothing pops up during a fast-forward; the queue continues after it
+  if(MQ.banner || demo.locked || window.__ffOn || (typeof SP !== 'undefined' && SP.rewardOn)) return;   // nothing pops over the Simple Persely reward (js/14b)   // nothing pops up during a fast-forward; the queue continues after it
   const open = sheetOpen(), hasToast = MQ.q.some(x => x.k === 'toast'), onPage = stack.length > 0;   // N7: reward and goal sheets wait until the page that is open is closed
   const si = MQ.q.findIndex(x => x.k === 'sheet' && !(onPage && x.hold) && (!x.late || (!hasToast && !MQ.toast)));
   if(si >= 0){
@@ -5172,7 +5333,7 @@ const pig3d = (() => {
 
   function mount(){
     // priority: onboarding, then the update pop-up, then the screen on top
-    const el = document.querySelector('.story.on .pig3d') || document.querySelector('.onb.on .pig3d') || document.querySelector('.wn.on .pig3d') || document.querySelector('#back.on #sheet .pig3d') || [...document.querySelectorAll('.view.on .pig3d, .page .pig3d')].pop();
+    const el = document.querySelector('.story.on .pig3d') || document.querySelector('.sprw.on .pig3d') || document.querySelector('.onb.on .pig3d') || document.querySelector('.wn.on .pig3d') || document.querySelector('#back.on #sheet .pig3d') || [...document.querySelectorAll('.view.on .pig3d, .page .pig3d')].pop();
     if(!el){ holder = null; return; }
     if(holder && holder !== el){ bind(holder, false); dragging = false; }
     if(holder !== el){ bind(el, true); el.style.cursor = 'grab'; el.style.touchAction = 'none'; }
@@ -5328,6 +5489,7 @@ function pkSync(k, from){
       r.innerHTML = pkRealHTML(o); r.classList.toggle('hard', !!(v && pkMath(v, o.date, o.saved || 0).hard));
     }
   });
+  if(k === 'onb' && typeof spSyncRows === 'function') spSyncRows();
 }
 function pkSet(k, v, from){ pkObj(k).target = v; pkSync(k, from); if(typeof gateSync === 'function') gateSync(); }
 // month sheet: tentative choice until Done; tapping outside or swiping down closes without changing
@@ -5421,6 +5583,7 @@ const onbGate = () => O.i !== 0 ? '' : !cleanName(O.name) ? 'Give your goal a na
 const cgGate = () => { const d = S._draft; return !d ? '' : !cleanName(d.name) ? 'Give your goal a name' : !d.target ? 'Type how much you need' : d.target < PK_MIN ? `Minimum is ${ft(PK_MIN)}` : ''; };
 function gateSync(){
   if($('#onb').classList.contains('on') && STEPS[O.i] === 'goal'){ const r = onbGate(), b = $('#onb [data-onbnext]'), w = $('#onb .onb-why'); if(b) b.disabled = !!r; if(w) w.textContent = r; }
+  if(typeof spGate === 'function') spGate();   // Simple Persely confirm screen (js/14b)
   const sv = document.querySelector('.page [data-cgsave]'); if(sv && S._draft){ const r = cgGate(), w = sv.closest('.foot').querySelector('.onb-why'); sv.disabled = !!r; if(w) w.textContent = r; }
 }
 // allocation hints on step 2 (replaces "[Rule] now goes to X instead of Y"): rules are per goal now, so say how they add up with the other goals
@@ -5887,6 +6050,7 @@ function settingsHTML(){
     <div class="card set-prof"><span class="avatar" aria-hidden="true">${esc(S.ini)}</span><span class="t"><b class="u-fs-m">${esc(S.name)}</b><div class="k">Junior account · ${esc((S.accounts.find(a => a.id === 'junior') || {}).no || '')}</div></span></div></div>
   <div class="set-sec" data-sec="persely"><div class="sec"><span>Persely</span></div>
     <div class="card set-card">${row('piggy', 'Saving rules', 'Each goal has its own. See them all', 'data-saverules=""')}
+      ${typeof spOn === 'function' && spOn() ? srow('bell', 'Sound', 'A coin sound when you save. Silent mode mutes it', S.sound !== false, 'data-sw="sound"') : ''}
       ${srow('sched', 'Weekly reminder', 'Sunday 18:00, only if the week is still open', !!S.remind, 'data-sw="remind"')}
       ${srow('analyst', 'Financial analyst', S.analyst.on ? 'On. It reads your transactions for Safe to spend and bills' : 'Off. Safe to spend is a simpler estimate', S.analyst.on, 'data-sw="analyst"')}
       ${row('star', 'Junior status', junior + ' · Keep my 3.0%', 'data-go="grad"')}</div>
@@ -6341,6 +6505,193 @@ addEventListener('keydown', e=>{
 });
 renderDemoPanel();
 
+/* ================= Simple Persely, Phase 1: the first 30 seconds (docs/simple-persely-plan.md 2a, docs/simple-persely-phase1-notes.md) =================
+   Flag: SIMPLE_PERSELY (js/01, ?simple=0 falls back). Everything here is gated by spOn().
+   Path: Home card "Save your first 1 000 Ft" (or the Persely tab icon) -> one of 4 tiles -> ONE confirm screen -> "Save 1 000 Ft now".
+   That last tap creates the goal AND moves the first deposit (one undoable() entry, 10 s chip), starts the streak (week 1) and plays the reward
+   on the Persely tab: coin into Persi, a coin chime (Settings > Persely > Sound, follows the silent switch), a haptic tick, "Week 1 done", "1 000 Ft saved!", Great.
+   No "Start your streak?" sheet and no Sunday nudge sheet on day 0: Persi asks "Want a nudge on Sunday?" on the next visit to the tab. */
+let SP_LEGACY = false;   // self-checks only: render the ?simple=0 first run in the same page (SIMPLE_PERSELY is read once from the address)
+const spOn = () => SIMPLE_PERSELY && !SP_LEGACY;
+const spFirstRun = () => spOn() && !S.goals.length;
+// runtime state of this file; force* and dry are for the self-checks and the demo (never saved)
+const SP = {celebrated:false, rewardOn:false, last:null, forceOffline:false, forceFail:false, forceRM:null, dry:false};
+const SP_FLOOR = 20000;   // the first deposit keeps 20 000 Ft on the Junior account, like the payday rule
+// D10: 4 first-run tiles. Trip and Safety net come from GOAL_PRESETS; Phone or tech is new (no preset existed); Something else is the neutral custom goal
+const SP_TILES = [['travel', 'Trip', 'plane'], ['tech', 'Phone or tech', 'phone'], ['safety', 'Safety net', 'lock'], ['custom', 'Something else', 'plus']];
+const SP_NAMES = {travel:'Trip', tech:'New phone', safety:'Safety net', custom:'My goal'};
+const spPreset = key => key === 'tech' ? {ic:'phone', name:'New phone', target:120000} : key === 'custom' ? {...customGoal(), name:'My goal'} : (GOAL_PRESETS[key] || GOAL_PRESETS.travel);
+const spAutoAmt = () => { const j = acc('junior').v; return j >= SP_FLOOR + 1000 ? 1000 : j >= SP_FLOOR + 500 ? 500 : 0; };
+const spFits = v => acc('junior').v - v >= SP_FLOOR;
+const spAmt = () => { const v = O.amt || 0; if(!v || spFits(v)) return v; return O.first ? spAutoAmt() : 0; };
+const spOffline = () => SP.forceOffline || navigator.onLine === false;
+const spReduced = () => SP.forceRM !== null ? SP.forceRM : pkReduced();
+const spEnd = () => S.bridge ? juniorEndLabel(12) : juniorEndLabel();
+// the honesty line (plan 2e): rate and end date, withdraw any time, protected, and Learn more (opens the Good to know conditions)
+const spHonesty = cls => `<p class="fine sphon ${cls || ''}"><!-- CONFIRM WITH OTP --><span>${S.verified || S.bridge ? `${rateLabel()} until ${spEnd()}` : 'Standard rate 0.01%'}</span> · <span>Withdraw any time</span> · <span>Protected</span><button class="sphi" data-sheet="spgtk"><span aria-hidden="true">ⓘ</span><span class="vhid">Learn more: Good to know</span></button></p>`;
+SHEETS.spgtk = () => `<h2>Good to know</h2>${gtkHTML()}<button class="btn ghost" data-closesheet>Close</button>`;
+
+/* ---------- Home (new user): one Persely card above the fold, the analyst notice as one line ---------- */
+const spHomeCard = () => `<button class="card hubteaser sphome" data-tab="hub">${pig('happy', 52)}<span><b>Save your first ${ft(1000)}</b></span>${I('chev', 20)}</button>`;
+// CONFIRM WITH OTP / LEGAL: lawful basis for default-on processing of transaction data; wording is not final.
+function spAnLine(){
+  if(S.anNote || !S.analyst.on) return '';
+  return `<div class="annote one" role="region" aria-label="Financial analyst"><!-- CONFIRM WITH OTP / LEGAL: lawful basis --><span>Your analyst reads your OTP payments to show Safe to spend. Nothing leaves OTP.</span> <span class="anl"><button class="link lnk44" data-anread>Learn more</button><span aria-hidden="true">·</span><button class="link lnk44" data-anask>Turn off</button></span></div>`;
+}
+
+/* ---------- Persely tab, no goal yet ---------- */
+const spTiles = () => `<div class="wn-grid sptiles">${SP_TILES.map(([k, l, ic]) => `<button data-tilepick="${k}">${I(ic, 28)}${l}</button>`).join('')}</div>`;
+function spHubFirst(){
+  return `<div class="tabtitle tt-gear">Persely<button class="tgear" data-settings="persely" aria-label="Persely settings">${I('gear', 24)}</button></div>
+  <div class="spfirst">
+    <div class="persi sppersi">${pig('happy', 72)}<div class="persi-t"><b>Persi</b><span>Hi! Let's save your first ${ft(1000)}.</span></div></div>
+    <h2 class="sph2">What are you saving for?</h2>
+    ${spTiles()}
+    <button class="link lnk44 spmore" data-spmore>More goals ${I('chev', 16)}</button>
+  </div>`;
+}
+// New goal (second and later goals): the same 4 tiles; More goals opens the existing tile set (Own home, Driving licence, Studies, Shared, Euro)
+const spOldNewgoal = SHEETS.newgoal;
+SHEETS.newgoal = () => spOn() ? `<h2>What are you saving for?</h2><div class="u-sheet-sub2">Up to 5 Perselys.</div>${spTiles()}<button class="link lnk44 spmore" data-spmore>More goals ${I('chev', 16)}</button>` : spOldNewgoal();
+
+/* ---------- the one confirm screen (in the #onb layer; O is the shared goal draft, so the existing amount and month pickers work on it) ---------- */
+function spOpen(key){
+  if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
+  if(sheetOpen()) closeSheet();
+  const g = spPreset(key), first = !S.goals.length, dr = rulesFromDefaults(ruleDefaults());
+  Object.keys(O).forEach(k => delete O[k]);
+  Object.assign(O, {i:0, sp:true, key, ic:g.ic, name:SP_NAMES[key] || g.name, target:g.target, typeAmt:0, date:presetDate(g.target), first,
+    payOn:dr.pay.on && payPctWith(null, dr.pay.pct) <= PAY_CAP, pct:dr.pay.pct, weeklyOn:dr.wk.on, weekly:dr.wk.amt, day:dr.wk.day, roundOn:dr.rr.on,
+    amt:first ? spAutoAmt() : 0, edit:'', err:''});
+  tab('hub'); $('#onb').classList.add('on'); spRender();
+}
+const spChg = (k, lab) => `<button class="link lnk44 spchg" data-spchg="${k}" aria-label="${lab}" aria-expanded="${O.edit === k}">Change</button>`;
+function spRender(){
+  const o = $('#onb'); if(!o.classList.contains('on') || !O.sp) return;
+  const v = spAmt(), off = spOffline(), why = onbGate(), first = O.first;
+  const btn = off ? 'No connection. Try again.' : v ? `Save ${ft(v)} now` : 'Create goal';
+  const chips = (first ? [] : [0]).concat([500, 1000, 2000, 5000]);
+  const chipRow = `<div class="chips spchips" role="group" aria-label="First deposit">${chips.map(x => `<button class="chip ${v === x ? 'on' : ''}" data-spamt="${x}" aria-pressed="${v === x}" ${x && !spFits(x) ? 'disabled' : ''}>${x ? ft(x) : 'No deposit'}</button>`).join('')}</div>`;
+  const amt = first ? (v ? `<div class="card spamt"><div class="sprow"><b class="spbig num">${ft(v)} now</b>${spChg('amt', 'Change amount')}</div><div class="k">From your Junior account</div>${O.edit === 'amt' ? chipRow : ''}</div>` : '')
+    : `<div class="card spamt"><b class="spbig num">${v ? `${ft(v)} now` : 'No deposit'}</b><div class="k">From your Junior account</div>${chipRow}</div>`;
+  const persi = first && !v && O.payOn ? `<div class="persi sppersi">${pig('happy', 48)}<div class="persi-t"><span>Persi will ask on payday.</span></div></div>` : '';
+  const also = [O.weeklyOn && `${ft(O.weekly)} every ${dayName(O.day)}`, O.roundOn && 'round-ups'].filter(Boolean);
+  o.innerHTML = `<div class="onb-top"><button class="onb-back" data-spback aria-label="Back to goal types">${I('back', 22)}</button></div>
+    <div class="onb-body spconfirm">
+      <div class="sphead"><span class="spic" aria-hidden="true">${I(O.ic || 'star', 30)}</span><div class="sprows">
+        <div class="sprow"><h2 class="spname">${esc(cleanName(O.name) || 'Your goal')}</h2>${spChg('name', 'Change name')}</div>
+        <div class="sprow"><span class="k spgoalv num">${ft(O.target)} · ${pkMonthName(O.date)}</span>${spChg('goal', 'Change target and date')}</div></div></div>
+      ${O.edit === 'name' ? `<div class="fld"><span class="t"><input id="spName" maxlength="30" value="${esc(O.name)}" placeholder="e.g. New laptop" autocomplete="off" enterkeyhint="done" aria-label="Goal name"></span></div>` : ''}
+      ${O.edit === 'goal' ? amountPicker('onb') + monthPicker('onb') : ''}
+      ${persi}${amt}
+      <div class="opt slim spsw ${O.payOn ? 'on' : ''}"><span class="t"><b>On payday, Persi ${S.payday && S.payday.ask === false ? 'saves' : 'asks to save'} ${O.pct}%</b></span>${swBtn(O.payOn, 'data-sppay', 'Payday rule, ' + O.pct + '% of each salary')}</div>
+      ${also.length ? `<div class="fine">Also: ${also.join(', ')}</div>` : ''}
+      ${spHonesty()}
+    </div>
+    <div class="onb-foot">${O.err ? '<div class="sperr" role="alert">That did not work. Your money did not move. Try again.</div>' : ''}<div class="onb-why fine" role="status">${why}</div><button class="btn" data-spsave ${off || why ? 'disabled' : ''}>${btn}</button></div>`;
+  const nm = $('#spName'); if(nm){ nm.addEventListener('input', e => { O.name = e.target.value; spGate(); }); nm.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); nm.blur(); } }); }
+  mountPig();
+}
+// called by gateSync() and pkSync() (js/11): keep the summary rows and the button in step with the pickers and the name field
+function spSyncRows(){
+  if(!O.sp || !$('#onb').classList.contains('on')) return;
+  const gv = $('#onb .spgoalv'); if(gv) gv.textContent = `${ft(O.target)} · ${pkMonthName(O.date)}`;
+  const nm = $('#onb .spname'); if(nm) nm.textContent = cleanName(O.name) || 'Your goal';
+}
+function spGate(){
+  if(!O.sp || !$('#onb').classList.contains('on')) return;
+  const r = onbGate(), b = $('#onb [data-spsave]'), w = $('#onb .onb-why'); if(b) b.disabled = !!r || spOffline(); if(w) w.textContent = r; spSyncRows();
+}
+// the one tap: create the goal and move the deposit, as ONE undo entry
+function spSave(){
+  if(!O.sp) return;
+  if(spOffline()){ spRender(); return; }
+  if(onbGate()){ spGate(); return; }
+  if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
+  const t0 = performance.now(), before = snap(), v = spAmt(), first = O.first; let r, counted = false;
+  try{
+    if(SP.forceFail) throw new Error('demo failure');
+    O.name = cleanName(O.name) || 'My goal';
+    r = applyOnb();   // the goal with its own rules (Payday rule from the switch); it moves no money by itself
+    if(v > 0){ if(!spFits(v)) throw new Error('funds'); counted = depositTo(r.g, v, 'junior', 'First deposit'); }
+    if(first) HINTS.forEach(h => { S.hints[h[0]] = 1; });   // the first run has no hint strips: Persi's one line replaces them
+    if(first && v > 0 && !S.remind) S.nudgeAsk = 'wait';     // Sunday nudge: asked by Persi on the next visit, never on day 0
+    S._goal = r.g.id;
+  }catch(e){ S = JSON.parse(before); O.err = 'fail'; spRender(); return; }   // nothing moved
+  O.sp = false; closeOnb(); while(stack.length) popPage(true);
+  if(cur !== 'hub') tab('hub'); renderAll();
+  undoable(before, v ? `${r.g.name}: ${ft(v)} saved${counted ? `. Week ${S.streak}` : ''}` : `${r.g.name} created. No money has moved`);
+  const undo = UCH.fn; UCH.fn = () => { spHideReward(true); if(undo) undo(); };
+  if(v > 0 && first && !SP.celebrated) spReward(v, t0);
+  else if(v > 0 && pig3d && !spReduced()) setTimeout(() => pig3d.celebrate(), 250);
+  if(r.notes.length) toast(r.notes.join('. ') + '.');
+}
+
+/* ---------- the reward: same tap, on the Persely tab, at most once per app open ---------- */
+function spPlayCoin(){   // the in-app Sound switch and the demo sound; on iPhone the 'ambient' audio session follows the silent switch
+  if(S.sound === false || !demo.sound) return false;
+  try{ if(navigator.audioSession) navigator.audioSession.type = 'ambient'; }catch(e){}
+  if(!SP.dry) coinSound(); return true;
+}
+function spHaptic(){ try{ if(navigator.vibrate){ if(!SP.dry) navigator.vibrate(12); return true; } }catch(e){} return false; }
+function spPlaceReward(){
+  const el = $('#sprw'); if(!el || !el.classList.contains('on')) return;
+  const ph = $('#phone'), pr = ph.getBoundingClientRect(), sc = pr.width / ph.offsetWidth || 1, tb = $('#tabbar').getBoundingClientRect(), lift = UCH.on ? $('#uchip').offsetHeight + 8 : 0;
+  el.style.setProperty('--sprw-b', Math.round((pr.bottom - tb.top) / sc + 12 + lift) + 'px');
+}
+function spReward(v, t0){
+  SP.celebrated = true;
+  let el = $('#sprw'); if(!el){ el = document.createElement('div'); el.id = 'sprw'; el.className = 'sprw'; $('#phone').appendChild(el); }
+  const rm = spReduced();
+  el.innerHTML = `<div class="sprw-card" role="status" aria-live="polite">${pig('proud', 112)}<div class="sprw-fl">${flame(26, true)}<b>Week ${S.streak} done</b></div><b class="sprw-big num">${ft(v)} saved!</b><button class="btn" data-spgreat>Great</button></div>`;
+  el.classList.toggle('fade', rm); el.classList.toggle('pop', !rm); el.classList.add('on'); SP.rewardOn = true;
+  spPlaceReward(); mountPig();
+  let coin = false; if(!rm && pig3d){ pig3d.celebrate(); coin = true; }   // reduced motion: a fade, no jump and no falling coin
+  const sound = spPlayCoin(), haptic = spHaptic();
+  SP.last = {ms:Math.round(performance.now() - t0), coin, sound, haptic, fade:rm, sheet:sheetOpen(), pages:stack.length, cur};
+  const b = el.querySelector('[data-spgreat]'); if(b) try{ b.focus({preventScroll:true}); }catch(e){}
+}
+function spHideReward(quiet){
+  const el = $('#sprw'); if(!el || !SP.rewardOn) return;
+  el.classList.remove('on', 'pop', 'fade'); el.innerHTML = ''; SP.rewardOn = false; mountPig(); if(!quiet) mqPump();
+}
+
+/* ---------- Sunday nudge on the next visit (plan 2a, P32): equal Yes / Not now, the system permission only after Yes ---------- */
+const spNudgeHTML = () => !spOn() || S.nudgeAsk !== 'ask' || !S.goals.length ? '' : `<div class="persi-t spnudge"><b>Persi</b><span>Want a nudge on Sunday?</span><span class="spyn"><button class="btn sm eq" data-spnudge="1">Yes</button><button class="btn sm eq" data-spnudge="0">Not now</button></span></div>`;
+// tab() calls this first (js/08): a new visit to the Persely tab turns "wait" into "ask"; any tab change ends the reward
+function spOnTab(id){ if(SP.rewardOn) spHideReward(true); if(spOn() && id === 'hub' && cur !== 'hub' && S.nudgeAsk === 'wait') S.nudgeAsk = 'ask'; }
+if(S.nudgeAsk === 'wait') S.nudgeAsk = 'ask';   // a new app open is a new visit
+
+/* ---------- honesty footer on the Add money sheet and the goal page ---------- */
+const spHubsave = SHEETS.hubsave;
+SHEETS.hubsave = () => { const h = spHubsave(); return spOn() && !S._bw ? h + spHonesty('spfoot') : h; };
+const spGoalHtml = PAGES.goal.html;
+PAGES.goal.html = () => { const h = spGoalHtml(); if(!spOn() || !h) return h;
+  const old = /<p class="fine" style="text-align:center;margin:var\(--sp-4\) 0 var\(--sp-1\)">Withdraw any time, free of charge\.<\/p>\s*$/;
+  return old.test(h) ? h.replace(old, spHonesty('spgoalf')) : /class="fine sphon/.test(h) ? h : h + spHonesty('spgoalf'); };
+
+/* ---------- events (capture phase, before the main handler in js/09) ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest && e.target.closest('button,a'); if(!t) return;
+  const d = t.dataset, stop = () => { e.stopImmediatePropagation(); e.preventDefault(); };
+  if(d.sw === 'sound'){ stop(); S.sound = S.sound === false; renderAll(); return; }
+  if(!spOn()) return;
+  if(d.tilepick){ stop(); spOpen(d.tilepick); return; }
+  if('spmore' in d){ stop(); sheet(spOldNewgoal()); return; }
+  if('spback' in d){ stop(); O.sp = false; closeOnb(); if(S.goals.length) sheet(SHEETS.newgoal()); else tab('hub'); return; }
+  if(d.spchg){ stop(); const nm = $('#spName'); if(nm) O.name = nm.value; O.edit = O.edit === d.spchg ? '' : d.spchg; spRender(); const f = $('#spName'); if(f) f.focus({preventScroll:true}); return; }
+  if('sppay' in d){ stop(); if(!O.payOn && payPctWith(null, O.pct) > PAY_CAP){ toast(capText(payPctWith(null, O.pct))); return; } O.payOn = !O.payOn; spRender(); return; }
+  if(d.spamt !== undefined){ stop(); O.amt = +d.spamt; O.err = ''; spRender(); return; }
+  if('spsave' in d){ stop(); spSave(); return; }
+  if('spgreat' in d){ stop(); spHideReward(); return; }
+  if(d.spnudge !== undefined){ stop(); S.nudgeAsk = 'done';
+    if(d.spnudge === '1'){ S.remind = true; renderAll(); enablePush(); }   // the phone permission is asked here, after Yes, and nowhere earlier
+    else { S.remind = false; renderAll(); }
+    return; }
+}, true);
+addEventListener('online', spRender); addEventListener('offline', spRender);
+addEventListener('resize', spPlaceReward);
+window.__simple = SP;   // demo and checks: __simple.forceOffline / forceFail / forceRM
 /* ================= loading screen =================
    Shown on every start, then fades out. The status bar stays light (full-screen mode, see the head). */
 let splashTimer;

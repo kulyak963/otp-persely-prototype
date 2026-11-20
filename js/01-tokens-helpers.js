@@ -77,6 +77,8 @@ const I = (n,s) => `<svg class="i" viewBox="0 0 24 24"${s?` style="width:${s}px;
 const ft = n => (n<0?'-':'') + Math.abs(Math.round(n)).toLocaleString('en-US').replace(/,/g,' ') + ' Ft';
 const sft = n => (n>0?'+ ':'') + ft(n).replace('-','- ');
 const $ = s => document.querySelector(s);
+/* Simple Persely (docs/simple-persely-plan.md): on by default, ?simple=0 falls back to the pre-Simple behaviour (wizard, setup card, Sunday nudge sheet). */
+const SIMPLE_PERSELY = new URLSearchParams(location.search).get('simple') !== '0';
 // the one switch used everywhere (same look as in onboarding): the switch toggles, the row next to it opens the settings
 const swBtn = (on, attr, label) => `<button class="tg ${on ? 'on' : ''}" role="switch" aria-checked="${on ? 'true' : 'false'}" aria-label="${label}" ${attr}></button>`;
 

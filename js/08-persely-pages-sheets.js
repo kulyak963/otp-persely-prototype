@@ -30,7 +30,7 @@ function vHubNew(){
   <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:0 var(--sp-4);margin:var(--sp-2) 0 var(--sp-2)"><a class="link lnk44" style="display:inline-flex;align-items:center" data-sheet="how">How Persely works ${I('chev',16)}</a></div>`;
 }
 function vHub(){
-  if(!S.goals.length) return vHubNew();
+  if(!S.goals.length) return spOn() ? spHubFirst() : vHubNew();
   const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
   const weeks = Array.from({length:8}, (_,i) => S.week - 7 + i);
   const gl = S.goals.filter(g => !isEur(g)), gT = gl.reduce((x, g) => x + gTarget(g), 0), gp = gT > 0 ? Math.min(1, gl.reduce((x, g) => x + gSaved(g), 0) / gT) : 0, R = 104, C = 2 * Math.PI * R, arc = C * .75;   // the ring: saved across goals against all targets, as Home shows spent against plan
@@ -39,7 +39,7 @@ function vHub(){
   const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
   return `<div class="tabtitle tt-gear">Persely<button class="tgear" data-settings="persely" aria-label="Persely settings">${I('gear',24)}</button></div>
   ${hintHTML('total')}<div class="ptot" data-tour="total">
-    <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
+    <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${spNudgeHTML() || (hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`)}
       ${storyRing()}</div>
     <div class="sec wrapsec"><span>Total in Persely</span><span class="pill ${st?'ok':''}">${juniorPill()}</span></div>
     <div style="margin:-6px 0 0 var(--sp-2);font-size:0.78125rem;color:var(--muted-t)">${gl.length ? `${Math.round(gp * 100)}% of what your goals need` : 'Set a goal to fill the ring'}${et ? ` · + ${eur(et)} in euro goals` : ''}</div>
@@ -314,6 +314,7 @@ function renderView(id){ const t=TABS.find(x=>x[0]===id); $('#v-'+id).innerHTML 
 function renderAll(){ syncSplit(); TABS.forEach(t=>renderView(t[0])); renderTabs(); refreshPages(); save(); if(typeof mountPig==='function') mountPig(); }
 let NAVC = {n:0};   // counts page changes: something the app plans to open later checks that nothing else was opened meanwhile
 function tab(id){
+  if(typeof spOnTab === 'function') spOnTab(id);   // Simple Persely: ends the reward; a new visit to the Persely tab turns the Sunday nudge question on (js/14b)
   if(cur === 'tranzakciok' && id !== 'tranzakciok') txReset();   // search and chips (also a category passed in from Spending) clear when the student leaves the tab
   if(cur === 'fooldal' && id !== 'fooldal') anNoteSeen();
   NAVC.n++; hideToast(); setTimeout(placeChip, 60);   // a toast belongs to the page where the action happened: it closes when the student goes somewhere else
@@ -342,7 +343,7 @@ const ROUTE_TAB = {persely:'hub', megtakaritas:'hub'}, ROUTE_PAGE = {kiadas:'mym
 function pushPage(id){
   if(ROUTE_TAB[id]){ closeSheet(); tab(ROUTE_TAB[id]); return; }
   if(ROUTE_PAGE[id]) id = ROUTE_PAGE[id];
-  anNoteSeen();
+  anNoteSeen(); if(typeof SP !== 'undefined' && SP.rewardOn) spHideReward(true);
   NAVC.n++; hideToast(); setTimeout(placeChip, 60); setTimeout(placeChip, 320);
   const el = document.createElement('div'); el.className='page'; el.dataset.id=id;
   el.innerHTML = pageHTML(id); $('#stack').appendChild(el); stack.push(el);
@@ -382,7 +383,7 @@ const demoText = name => `${name} is not part of this demo. It works as in the O
 function demoToast(name){ toast(demoText(name), {demo:name}); }
 function toast(m, o){ if(sheetOpen()){ sheetNote(m); return; } MQ.q = MQ.q.filter(x => x.k !== 'toast'); MQ.q.push({k:'toast', m, o}); mqPump(); }
 function mqPump(){
-  if(MQ.banner || demo.locked || window.__ffOn) return;   // nothing pops up during a fast-forward; the queue continues after it
+  if(MQ.banner || demo.locked || window.__ffOn || (typeof SP !== 'undefined' && SP.rewardOn)) return;   // nothing pops over the Simple Persely reward (js/14b)   // nothing pops up during a fast-forward; the queue continues after it
   const open = sheetOpen(), hasToast = MQ.q.some(x => x.k === 'toast'), onPage = stack.length > 0;   // N7: reward and goal sheets wait until the page that is open is closed
   const si = MQ.q.findIndex(x => x.k === 'sheet' && !(onPage && x.hold) && (!x.late || (!hasToast && !MQ.toast)));
   if(si >= 0){

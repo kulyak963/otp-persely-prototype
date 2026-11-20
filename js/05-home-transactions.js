@@ -34,13 +34,14 @@ function vFooldal(){
   return `
   <div class="hhead"><button class="hprof" data-settings="" aria-label="Profile and Settings"><span class="avatar" aria-hidden="true">${S.ini}</span><span class="hn"><b>${S.name}</b><small>Profile and settings</small></span></button><button class="bell hic" data-go="inbox" aria-label="Notifications${inboxUnread() ? ', ' + inboxUnread() + ' unread' : ''}"><span class="hi">${I('bell',24)}${inboxUnread() ? '<i class="bdot" aria-hidden="true"></i>' : ''}</span><small aria-hidden="true">Notifications</small></button><button class="mail hic" data-go="neked" aria-label="For you"><span class="hi">${I('gift',24)}</span><small aria-hidden="true">For you</small></button></div>
   ${bfCard()}
-  ${anNoticeCard()}
+  ${spFirstRun() ? '' : anNoticeCard()}
   <div class="sec"><span>Balance</span><a data-go="szamlaim">All accounts ${I('chev',16)}</a></div>
   <div class="accs" id="accs">${S.accounts.map(a => a.id === 'persely'
     ? `<button class="acc" data-tab="hub"><div class="n">Persely · total</div><div class="v num">${ft(total())}</div><div class="h">${S.goals.length ? plural(S.goals.filter(g => !isEur(g)).length,'goal') : 'No goals yet'}${eurTotal() ? ` + ${eur(eurTotal())}` : ''}</div><div class="go">Open Persely ${I('chev',14)}</div></button>`
     : a.id === 'megt' ? `<div class="acc"><button class="accin" data-go="szamlaim"><div class="n">${a.n}</div><div class="v num">${ft(a.v)}</div><div class="h">${a.h}</div><div class="go">Account details ${I('chev',14)}</div></button><button class="link lnk44 whyl" data-sheet="whyp">Why Persely?</button></div>`
     : `<button class="acc" data-go="szamlaim"><div class="n">${a.n}</div><div class="v num">${ft(a.v)}</div><div class="h">${a.h}</div><div class="go">Account details ${I('chev',14)}</div></button>`).join('')}</div>
   <div class="dots">${S.accounts.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>
+  ${spFirstRun() ? spHomeCard() + spAnLine() : ''}
   ${S.verified || S.bridge ? juniorRow() : ''}
   ${safeRow()}
   <div class="sec"><span>Quick actions</span></div>
@@ -49,9 +50,9 @@ function vFooldal(){
     ['data-go="bills"', 'doc', 'Pay a bill', 'See what is due and pay it'],
     ['data-go="kartyaim"', 'cards', 'Manage my card', 'Block it and see your Discounts']
   ].map(([at, ic, l, h]) => `<button ${at}><span class="c" aria-hidden="true">${I(ic)}</span><span class="t"><b>${l}</b><small>${h}</small></span><span class="chev" aria-hidden="true">${I('chev', 18)}</span></button>`).join('')}</div>
-  <button class="card hubteaser" ${S.goals.length ? 'data-tab="hub"' : 'data-sheet="newgoal"'}>${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.goals.length
+  ${spFirstRun() ? '' : `<button class="card hubteaser" ${S.goals.length ? 'data-tab="hub"' : 'data-sheet="newgoal"'}>${pig(S.savedWeek ? 'proud' : 'happy', 52)}<span>${!S.goals.length
     ? `<b>Start your first goal</b><small>Pick what you are saving for</small>`
-    : `<b style="display:flex;align-items:center;gap:var(--sp-1)">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Persely savings. Safe this week' : 'Persely savings. Save by Sunday to keep it'}</small>`}</span>${I('chev',20)}</button>
+    : `<b style="display:flex;align-items:center;gap:var(--sp-1)">${flame(17, S.streak > 0)} ${S.streak}-week streak</b><small>${S.savedWeek ? 'Persely savings. Safe this week' : 'Persely savings. Save by Sunday to keep it'}</small>`}</span>${I('chev',20)}</button>`}
   ${storyCard()}
   ${insightCard()}
   <div class="sec"><span>My monthly spending</span></div>
