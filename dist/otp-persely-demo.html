@@ -940,6 +940,11 @@ button.cat{background:none;border:0;padding:4px 0;font:inherit;border-radius:12p
 .stp button{width:40px;height:40px;border-radius:50%;background:var(--bg);font-size:1.375rem;font-weight:700;color:var(--green-t)}
 .srcs-add{display:block;margin:6px 0 2px}.srcs-tot{margin:6px 2px 2px}
 .src-add{border-top:1px solid var(--line);padding:10px 0 4px}
+.limline{display:flex;align-items:center;gap:12px;width:100%;margin:10px 0 2px;padding:8px 14px;border-radius:14px;background:#fff;box-shadow:var(--sh);text-align:left;border-left:4px solid var(--green)}
+.limline .t{display:flex;flex-direction:column;flex:none}.limline b{font-size:var(--fs-s)}.limline small{font-size:var(--fs-xs);color:var(--muted-t)}
+.limline-bar{flex:1;height:6px;border-radius:3px;background:#E3E6EC;overflow:hidden;min-width:40px}.limline-bar i{display:block;height:100%;background:var(--green);border-radius:3px}.limline .chev{display:flex;color:var(--green-i)}
+.lim-hero{padding:16px;margin-top:14px;display:flex;flex-direction:column;gap:6px}.lim-hero small{color:var(--muted-t);font-size:var(--fs-s)}.lim-hero b{font-size:1.75rem;font-weight:800}.lim-hero b span{font-size:var(--fs-m);font-weight:600;color:var(--muted-t)}
+.lim-list{margin-top:12px}.lim-r .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}.lim-h{display:flex;justify-content:space-between;gap:8px}.lim-h small{color:var(--muted-t);font-weight:400}.lim-r .mp2-bar{margin-top:0}.lim-r small{font-size:var(--fs-xs);color:var(--muted-t)}.lim-r small.late{color:var(--orange-t)}
 .ltsline{display:flex;align-items:center;gap:8px;width:100%;margin:4px 0 0;padding:12px 16px;border-radius:14px;background:var(--card, #fff);box-shadow:var(--sh);font-size:var(--fs-m);text-align:left;color:var(--ink)}
 .ltsline span:first-child{flex:1;font-weight:600}.ltsline b{font-size:1.0625rem}.ltsline .chev{display:flex;color:var(--muted-t)}
 .gauge[data-go]{cursor:pointer}
@@ -1505,7 +1510,7 @@ function __checkAnalytics(){
       const H = vFooldal(), P = vHub(), mm = myMoneyHTML(), an = SHEETS.analyst();
       if(keepF){
         const n = (h, re) => (h.match(re) || []).length;
-        ok('Home: the original gauge and categories plus one Left to spend line; no bills card, Safe to spend card or links to Next month or Must-pay bills', n(H, /data-planopen/g) === 1 && /class="ltsline"/.test(H) && cnt(H, 'nextmonth') === 0 && cnt(H, 'bills') === 0 && !/safebtn|Bills first/.test(H), [n(H, /data-planopen/g), cnt(H, 'nextmonth'), cnt(H, 'bills')]);
+        ok('Home: the original gauge and categories plus one Spending vs your limits line; no bills card, Safe to spend card or links to Next month or Must-pay bills', /class="limline"/.test(H) && n(H, /data-go="limits"/g) === 1 && cnt(H, 'nextmonth') === 0 && cnt(H, 'bills') === 0 && !/safebtn|Bills first|ltsline/.test(H), [n(H, /data-go="limits"/g), cnt(H, 'nextmonth'), cnt(H, 'bills')]);
         ok('simple layout: the Persely tab has no analytics, bills or score blocks', !/data-planopen|data-go="mymoney"|Bills first|Financial health score|Bills and next month|data-sheet="score"/.test(P));
         ok('Left to spend page: the number and how it is counted, no category bars or plan bars, no links to Next month or bills pages', /Left to spend in/.test(mm) && /How we count it/.test(mm) && !/mp2-r|class="cats"/.test(mm) && cnt(mm, 'nextmonth') === 0 && cnt(mm, 'bills') === 0, mm.length);
         ok('Left to spend page: the big number is Safe to spend, and the steps add up to it', mm.includes(ft(safeToSpend().safe)) && (() => { const x = safeToSpend(); return x.safe === x.balance - x.unpaidBills - x.savingRule - x.groceries; })());
@@ -1727,9 +1732,9 @@ function vFooldal(){
     <div class="core"><small>Spent so far</small><b class="num">${ft(spent)}</b></div>
   </div>
   <div class="avg">Average monthly spending: <span class="num">${ft(avg)}</span></div>
-  ${ltsLine()}
   <div class="sec"><span>What did I spend on this month?</span></div>
   ${catBars(sp)}
+  ${limitsLine()}
   <div class="sec"><span>For you</span><a data-go="neked">All ${I('chev',16)}</a></div>
   ${nekedCards(true)}`;
 }
@@ -2258,6 +2263,24 @@ function analysisRow(){
 }
 // the Spending analysis page: the circle and categories for the month, the plan and tips, then Safe to spend, My split, Next month, Must-pay bills and Bills pocket
 // Home, under the original spending gauge: the one line that is ours. Opens the Left to spend page.
+// Home, under the category bars: one slim line to every category against its limit
+function limitsLine(){
+  const mo = shownMonth(), sp = catSpend(mo.ym), cats = LIMIT_CATS.filter(c => catLimit(c).lim > 0), spent = cats.reduce((a, c) => a + (sp[c] || 0), 0), lim = cats.reduce((a, c) => a + catLimit(c).lim, 0), over = cats.filter(c => (sp[c] || 0) > catLimit(c).lim).length;
+  return `<button class="limline" data-go="limits"><span class="t"><b>Spending vs your limits</b><small>${ft(spent)} of ${ft(lim)}${over ? ` · <span class="late">${plural(over, 'category')} over</span>` : ''}</small></span><span class="limline-bar"><i style="width:${lim ? Math.min(100, Math.round(spent / lim * 100)) : 0}%"></i></span><span class="chev">${I('chev', 18)}</span></button>`;
+}
+// the page: every everyday and fun category against its limit, biggest share of the limit first; a tap opens the category
+function limitsHTML(){
+  const mo = shownMonth(), sp = catSpend(mo.ym), B = catLimit('groceries').B || 1;
+  const rows = LIMIT_CATS.map(c => { const L = catLimit(c), v = sp[c] || 0; return {c, v, lim:L.lim, used:L.lim ? Math.round(v / L.lim * 100) : 0}; }).filter(r => r.lim > 0 || r.v > 0).sort((a, b) => b.used - a.used);
+  const spent = rows.reduce((a, r) => a + r.v, 0), lim = rows.reduce((a, r) => a + r.lim, 0), pc = x => (Math.round(x / B * 1000) / 10).toFixed(1).replace(/\.0$/, '') + '%';
+  return `<div class="card lim-hero"><small>Everyday and fun in ${mo.name}</small><b class="num">${ft(spent)} <span>of ${ft(lim)}</span></b>
+    <div class="mp2-bar"><i style="width:${lim ? Math.min(100, Math.round(spent / lim * 100)) : 0}%;background:var(--green)"></i></div><small>${ft(Math.max(0, lim - spent))} left · ${plural(mo.left, 'day')} to go · split: ${presetName(S.splitPreset || 'suggested')}</small></div>
+  <div class="card lst lim-list">${rows.map(r => { const over = r.v > r.lim, near = !over && r.used >= 80, col = over ? 'var(--orange)' : near ? '#E8A21A' : 'var(--green)';
+    return `<button class="li lim-r" data-catd="${r.c}"><span class="ic">${I(SPEND_IC[r.c] || 'tag')}</span><span class="t"><span class="lim-h"><b>${catTitle(r.c)}</b><span class="num">${ft(r.v)} <small>of ${ft(r.lim)}</small></span></span>
+      <span class="mp2-bar"><i style="width:${Math.min(100, r.used)}%;background:${col}"></i></span><small class="${over ? 'late' : ''}">${over ? `${ft(r.v - r.lim)} over` : `${ft(r.lim - r.v)} left`} · limit ${pc(r.lim)} of income</small></span><span class="chev">${I('chev', 18)}</span></button>`; }).join('')}</div>
+  <button class="row sp-btn" data-splitopen2><span class="ic">${I('chart')}</span><span class="t"><b>Change your split</b><small>Now: ${presetName(S.splitPreset || 'suggested')} · suggestions or set it yourself</small></span><span class="chev">${I('chev', 20)}</span></button>
+  <div class="fine" style="text-align:center;margin:12px 8px 20px">A plan, not a hard limit.</div>`;
+}
 function ltsLine(){
   const sf = safeToSpend();
   return `<button class="ltsline" data-planopen><span>Left to spend this month</span><b class="num" style="color:${sf.safe < 0 ? 'var(--orange-t)' : 'var(--green-t)'}">${ft(sf.safe)}</b><span class="chev">${I('chev', 18)}</span></button>`;
@@ -2282,6 +2305,8 @@ function myMoneyHTML(){
 // over or under it, what is left this month and per day, and the shops.
 const catTitle = c => SPEND_SHORT[c] || (CATEGORY[c] ? CATEGORY[c][0] : c);
 // the split of income: must-pay / everyday / fun / saving. The suggestion comes from her data; a preset moves points between fun, everyday and saving.
+// the categories that get a limit: everyday essentials and fun
+const LIMIT_CATS = ['groceries', 'transport', 'health', 'edu', 'food', 'shopping', 'fun', 'travel', 'subs'];
 const SPLIT_PRESETS = [
   ['suggested', 'Balanced', 'What you spend now, with your saving rules', 0, 0],
   ['save', 'Save more', 'A little less fun, more into Persely', 0, -5],
@@ -2601,7 +2626,7 @@ function scoreRow(){   // the score part of the "Your habits" card (analyst on o
 }
 function vHub(){
   const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
-  const weeks = Array.from({length:8}, (_,i) => S.week - 7 + i);
+  const wStart = S.streak > 0 && S.streak < 8 ? S.week - S.streak + 1 : S.week - 7, weeks = Array.from({length:8}, (_,i) => wStart + i);   // a new streak fills from the left
   const gl = S.goals.filter(g => !isEur(g)), gT = gl.reduce((x, g) => x + gTarget(g), 0), gp = gT > 0 ? Math.min(1, gl.reduce((x, g) => x + gSaved(g), 0) / gT) : 0, R = 104, C = 2 * Math.PI * R, arc = C * .75;   // the ring: saved across goals against all targets, as Home shows spent against plan
   const chev = `<span class="chev">${I('chev',20)}</span>`;
   const junior = `<button class="row" data-go="grad">${S.juniorDays > 0 ? `<span class="t24d"><b class="num">${S.juniorDays}</b><small>${S.juniorDays === 1 ? 'day' : 'days'}</small></span>` : `<span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span>`}<span class="t"><b class="u-bk-title">${S.bridge ? '3.0% for 12 more months' : S.juniorDays > 0 ? 'Junior ends soon' : 'Junior ends today'}</b><small>${S.bridge ? 'While your salary comes to OTP' : 'Keep 3.0% for 12 more months'}</small></span>${chev}</button>`;
@@ -2889,6 +2914,7 @@ const PAGES = {
     ${recentCards()}`;}},
   mymoney:{title:'Left to spend', html:() => myMoneyHTML()},
   catd:{title:() => catTitle(S._cat || 'food'), html:() => catDetailHTML(S._cat || 'food')},
+  limits:{title:'Spending vs your limits', html:() => limitsHTML()},
   advanced:{title:'Full analysis', html:() => fullAnalysisHTML()},
   nextmonth:{title:'Next month', html:() => nextMonthHTML()},
   bills:{title:'Must-pay bills', html:() => billsHTML()}
@@ -5056,6 +5082,7 @@ const beTxt = h => String(h).replace(/<[^>]+>/g, '');
       beStep('bank', `On her Junior account: ${ft(x.balance)}`, 'Core banking · balance');
       beStep('an', `Minus what is still coming this month: bills ${ft(x.unpaidBills)}, saving ${ft(x.savingRule)}, groceries ${ft(x.groceries)}`, 'Budget service');
       beStep('an', `= ${ft(x.safe)} left to spend`, 'Budget service'); }
+    else if(id === 'limits'){ beEp('Anna checks her limits'); beStep('an', 'The bank adds up her card payments by category for this month'); beStep('an', 'Each category is compared with its limit from her split of income'); }
     else if(id === 'catd'){ const c = S._cat; beEp(`Anna opens ${catTitle(c)}`); const L = catLimit(c), sp = catSpend(shownMonth().ym)[c] || 0; beStep('an', `Her income this month: ${ft(L.B)}. Her plan gives ${catTitle(c).toLowerCase()} ${ft(L.lim)}`, 'Budget service · split'); beStep('an', `Spent so far ${ft(sp)}: ${L.lim - sp >= 0 ? ft(L.lim - sp) + ' left' : 'over by ' + ft(sp - L.lim)}`, 'Budget service');  }
     else if(id === 'advanced'){ beEp('Anna opens the full analysis'); beStep('an', 'Health score from her last 3 months: spending under income, no overdraft, a buffer, regular saving', 'Analytics'); }
     else if(id === 'grad'){ beEp('Her Junior package ends'); beStep('rate', 'The bank checks: can she keep 3.0%?', 'Eligibility'); beStep('rate', 'Yes, for 12 more months, if her salary comes to her OTP account', 'Eligibility'); }

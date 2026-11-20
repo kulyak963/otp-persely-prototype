@@ -58,7 +58,7 @@ node server.js          # http://localhost:8090
 ## How index.html is organised (search for these)
 
 - State: `fresh()` (demo data), `updateDayState()` (demo start, key U), `week8State()` (key J). localStorage key `otp-clone-en-v5`.
-- Home `vFooldal()`: the original OTP spending gauge and category bars; our additions are `ltsLine()` (Left to spend), `homeScore()` (health score) and the tappable bars (`data-catd`).
+- Home `vFooldal()`: the original OTP spending gauge and category bars; our additions are `homeScore()` (health score), the tappable bars (`data-catd`) and `limitsLine()` under them (page `limits`, `limitsHTML()`).
 - Persely tab `vHub()`: Persi strip with the story circle, the white total card, the streak card, goals, `moneyInPanel()` and the Junior row.
 - Pages `PAGES`: `goal`, `create`, `grad`, `year`, `mymoney` (Left to spend), `advanced` (Full analysis, `fullAnalysisHTML()`), `catd` (category page, `catDetailHTML()`), `kiadas` (Details), plus the copied OTP pages.
 - Sheets `SHEETS`: `hubsave`, `hubout`, `payday`, `moneyin`, `payrule`, `newgoal`, `score`, `how` and others.
@@ -77,9 +77,9 @@ node server.js          # http://localhost:8090
 - **3.0% for every Junior customer**, automatically. No student verification (removed on purpose). Badge "Junior 3.0%"; after Junior ends, "Keep my 3.0%" for 12 months if the salary comes to OTP (`grad` page).
 - **Persely tab**: Persi (84 px) with one line, a green "NOV" story circle, the total in a white card, a compact streak card, goals (Summer holiday; PS5 + GTA VI due 7 days from today so it is always "Behind"; shared Balaton trip waiting for Dóri, key D), Money in, Junior ends.
 - **Onboarding**: goal → money in (income sources: salary, family transfer, add a scholarship or job; each with 5/10/15/20% or Custom; weekly transfer with Custom; round-ups) → first deposit → Persi's spotlight tour (5 steps, Next/Skip, key T repeats it).
-- **Streak**: weekly, 1 skip week per 4 weeks; milestones at 10 weeks and a goal at 50%.
-- **Home**: the real OTP gauge and categories, plus one line "Left to spend this month" and a slim "Financial health" row. Tap a category bar: the category page shows spent as % of income, the limit, used %, left this month and per day, then "Change your split" (two suggestions plus "Set it yourself" with a draggable bar).
-- **Left to spend** page: the number, a ladder that adds up (balance − bills − saving − groceries), bills still to pay with Pay now, Persi's tip, a link to **Full analysis** (the team's full analyst, hidden one level down).
+- **Streak**: weekly, 1 skip week per 4 weeks; a new streak fills the circles from the left; milestones at 10 weeks and a goal at 50%.
+- **Home**: the real OTP gauge and categories, plus a slim "Financial health" row under the streak and one slim line "Spending vs your limits" under the category bars (a page with every category against its limit). Tap a category bar: the category page shows spent as % of income, the limit, used %, left this month and per day, then "Change your split" (two suggestions plus "Set it yourself" with a draggable bar).
+- **Left to spend** page (More → Left to spend): the number, a ladder that adds up (balance − bills − saving − groceries), bills still to pay with Pay now, Persi's tip, a link to **Full analysis** (the team's full analyst, hidden one level down).
 - **Monthly story**, Spotify Wrapped style: top places, spending day, days off, biggest buy, subscriptions, "Your Wolt week" (7 orders in one week), into Persely, goal, streak, share card. Monthly only (no semester or year story).
 - **Behind the app** (laptop): a diagram of 8 boxes; each action draws its path with arrows and one big line says what happens. Simulated, except pushes (real, marked REAL).
 - **Fast-forward**: O (+1 month), Q (+2), Y (to month 12, stops at month 10 when Junior ends).
