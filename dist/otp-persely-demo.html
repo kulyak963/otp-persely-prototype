@@ -883,6 +883,16 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
   .pkgrid button.chip{min-height:44px}
 }
 /* simplification pass: Persely total, money plan, story bars */
+button.cat{background:none;border:0;padding:4px 0;font:inherit;border-radius:12px}button.cat:active{background:var(--green-l)}
+.cd-hero{display:flex;align-items:center;gap:14px;padding:18px 16px;margin-top:14px}.cd-hero b{display:block;font-size:2rem;font-weight:800;letter-spacing:-.5px}.cd-hero small{color:var(--muted-t);font-size:var(--fs-s)}
+.cd-ic{flex:none;width:52px;height:52px;border-radius:16px;background:var(--green-l);color:var(--green-i);display:flex;align-items:center;justify-content:center}
+.cd-cmp{padding:16px}.cd-bars{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;height:150px;align-items:end}
+.cd-b{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}.cd-b span{font-size:var(--fs-xs);color:var(--muted-t)}
+.cd-b i{display:block;width:30px;border-radius:8px 8px 3px 3px;background:#D3E7C8}.cd-b.cur i{background:var(--green)}.cd-b.cur span{color:var(--ink);font-weight:700}
+.cd-b small{font-size:var(--fs-xs);color:var(--muted-t);font-weight:600}.cd-line{margin-top:12px}
+.cd-r{margin-left:auto;font-size:var(--fs-xs);color:var(--muted-t)}
+.cd-s .t{flex:1;min-width:0}.cd-sb{display:block;height:6px;border-radius:3px;background:#E3E6EC;margin-top:6px;overflow:hidden}.cd-sb i{display:block;height:100%;background:var(--green);border-radius:3px}
+.cd-plan{padding:14px 16px}
 .ltsline{display:flex;align-items:center;gap:8px;width:100%;margin:4px 0 0;padding:12px 16px;border-radius:14px;background:var(--card, #fff);box-shadow:var(--sh);font-size:var(--fs-m);text-align:left;color:var(--ink)}
 .ltsline span:first-child{flex:1;font-weight:600}.ltsline b{font-size:1.0625rem}.ltsline .chev{display:flex;color:var(--muted-t)}
 .gauge[data-go]{cursor:pointer}
@@ -1263,7 +1273,7 @@ function avgSpend(){
 function catBars(sp){
   const rows = Object.entries(sp).sort((a, b) => b[1] - a[1]).slice(0, 5), max = Math.max(1, ...rows.map(r => r[1]));
   if(!rows.length) return `<div class="card fine" style="padding:14px 16px">No card payments yet this month.</div>`;
-  return `<div class="cats" style="--n:${rows.length}">${rows.map(([c, v], i) => `<div class="cat ${i === 0 ? 'on' : ''}"><span class="ic">${I(SPEND_IC[c] || 'tag', 26)}</span><span class="cl">${SPEND_SHORT[c] || CATEGORY[c][0]}</span><span class="col"><i style="height:${v / max * 100}%"></i></span><span class="num">${ft(v)}</span></div>`).join('')}</div>`;
+  return `<div class="cats" style="--n:${rows.length}">${rows.map(([c, v], i) => `<button class="cat ${i === 0 ? 'on' : ''}" data-catd="${c}" aria-label="${SPEND_SHORT[c] || CATEGORY[c][0]} ${ft(v)}. See the details"><span class="ic">${I(SPEND_IC[c] || 'tag', 26)}</span><span class="cl">${SPEND_SHORT[c] || CATEGORY[c][0]}</span><span class="col"><i style="height:${v / max * 100}%"></i></span><span class="num">${ft(v)}</span></button>`).join('')}</div>`;
 }
 /* ---------- next-month projection ---------- */
 const lrPct = (vals, total) => { const raw = vals.map(v => v / total * 100), fl = raw.map(Math.floor); let rest = 100 - fl.reduce((a, b) => a + b, 0);
@@ -2214,10 +2224,35 @@ function myMoneyHTML(){
   <div class="fine" style="text-align:center;margin:12px 8px 20px">Only your OTP account is counted. Nothing is blocked and nothing moves by itself.</div>`;
 }
 
+// Category detail (slides in from the right): this month, compared with her usual, the shops, her plan and a tip, the payments.
+const catTitle = c => SPEND_SHORT[c] || (CATEGORY[c] ? CATEGORY[c][0] : c);
+function catDetailHTML(c){
+  const mo = shownMonth(), sp = catSpend(mo.ym), v = sp[c] || 0, tot = sumVals(sp) || 1;
+  const hist = (S.closedYm || []).filter(y => y < mo.ym).slice(-3), hv = hist.map(y => catSpend(y)[c] || 0), avg = hv.length ? Math.round(hv.reduce((a, b) => a + b, 0) / hv.length / 10) * 10 : 0;
+  const card = t => !t.parts && (txType(t) === 'card' || txType(t) === 'refund') && classify(t) === c;
+  const now = S.tx.filter(t => txWhen(t).ym === mo.ym && card(t)), span = hist.concat(mo.ym), all = S.tx.filter(t => span.includes(txWhen(t).ym) && card(t));
+  const shops = Object.values(all.reduce((m, t) => { const k = t.n; m[k] = m[k] || {n:k, count:0, sum:0}; m[k].count++; m[k].sum -= t.a; return m; }, {})).sort((a, b) => b.sum - a.sum).slice(0, 6), smax = Math.max(1, ...shops.map(x => x.sum));
+  const bars = hist.map((y, i) => [stShort(y), hv[i], false]).concat([[stShort(mo.ym), v, true]]), bmax = Math.max(1, ...bars.map(b => b[1]));
+  const pct = Math.round(v / tot * 100), usedPc = avg ? Math.round(v / avg * 100) : 0;
+  const plan = (() => { try{ if(!(S.analyst.on && S.analyst.accepted)) return null; const pm = planModel(); for(const g of pm.groups) for(const r of g.rows) if(r.c === c) return r; }catch(e){} return null; })();
+  const T = tipOf(), tip = T && T.kind === 'tip' && T.cat === c && !S.insightUsed ? T : null;
+  const range = span.length > 1 ? `${stShort(span[0])} – ${stShort(span[span.length - 1])}` : stShort(span[0]);
+  return `<div class="card cd-hero"><span class="cd-ic">${I(SPEND_IC[c] || 'tag', 28)}</span><div><b class="num">${ft(v)}</b><small>in ${mo.name} so far · ${pct}% of your card spending</small></div></div>
+  ${avg ? `<div class="sec"><span>Compared with your usual</span></div>
+  <div class="card cd-cmp"><div class="cd-bars">${bars.map(([l, x, cur]) => `<div class="cd-b ${cur ? 'cur' : ''}"><span class="num">${ft(x)}</span><i style="height:${Math.max(3, Math.round(x / bmax * 100))}%"></i><small>${l}</small></div>`).join('')}</div>
+    <div class="fine cd-line">Usually about <b>${ft(avg)}</b> a month. This month you are at <b>${usedPc}%</b> of that, with ${plural(mo.left, 'day')} to go.</div></div>` : ''}
+  ${shops.length ? `<div class="sec"><span>Where it went</span><small class="cd-r">${range}</small></div>
+  <div class="card lst">${shops.map(x => `<div class="li cd-s"><span class="t"><b>${esc(shopName(x.n))}</b><small>${plural(x.count, 'payment')} · about ${ft(Math.round(x.sum / x.count / 10) * 10)} each</small><span class="cd-sb"><i style="width:${Math.round(x.sum / smax * 100)}%"></i></span></span><b class="num">${ft(x.sum)}</b></div>`).join('')}</div>` : ''}
+  ${plan ? `<div class="sec"><span>Your plan</span></div><div class="card cd-plan"><div class="mp2-h"><b>${catTitle(c)}</b><span class="num">${ft(plan.spent)} <small>of ${ft(plan.plan)}</small></span></div><div class="mp2-bar"><i style="width:${Math.min(100, plan.plan ? Math.round(plan.spent / plan.plan * 100) : 0)}%;background:${plan.spent > plan.plan ? 'var(--orange)' : 'var(--green)'}"></i></div><div class="fine" style="margin-top:6px">From your split in Full analysis. A plan, not a limit.</div></div>` : ''}
+  ${tip ? `<div class="card insight"><div class="hrow"><span class="pill ok">Persi's tip</span></div><div class="u-tip-p">Move 10% of ${tip.label} (${ft(tip.ten)}) to ${esc(tip.g.name)} each month${tip.wk >= 1 ? ` and get there <b>${plural(tip.wk, 'week')} sooner</b>` : ''}.</div><div class="hero-btns u-m0"><button class="btn" data-insyes="${tip.ten}">Move 10% a month</button></div></div>` : ''}
+  <div class="sec"><span>Payments in ${mo.name}</span></div>
+  ${now.length ? `<div class="card lst">${now.slice(0, 8).map(t => `<div class="tx"><span class="ic">${I(t.ic)}</span><span class="t"><b>${esc(shopName(t.n))}</b><span>${t.d === 'Today' ? 'Today' : esc(t.d || '')}</span></span><span class="a num">${sft(t.a)}</span></div>`).join('')}</div>` : '<div class="card fine" style="padding:14px 16px">No single card payments to show for this month.</div>'}
+  <div class="fine" style="text-align:center;margin:12px 8px 20px">Only your OTP card payments are counted.</div>`;
+}
 // Monthly spending page: every category in a list, as in the original app
 function catList(sp){
   const rows = Object.entries(sp).sort((a, b) => b[1] - a[1]), tot = sumVals(sp) || 1;
-  return rows.length ? `<div class="sec"><span>Categories</span></div><div class="card lst">${rows.map(([c, v]) => `<div class="li"><span class="ic">${I(SPEND_IC[c] || 'tag')}</span><span class="t"><b>${SPEND_SHORT[c] || (CATEGORY[c] ? CATEGORY[c][0] : c)}</b><small>${Math.round(v / tot * 100)}% of card spending</small></span><b class="num">${ft(v)}</b></div>`).join('')}</div>` : '';
+  return rows.length ? `<div class="sec"><span>Categories</span></div><div class="card lst">${rows.map(([c, v]) => `<button class="li" data-catd="${c}"><span class="ic">${I(SPEND_IC[c] || 'tag')}</span><span class="t"><b>${SPEND_SHORT[c] || (CATEGORY[c] ? CATEGORY[c][0] : c)}</b><small>${Math.round(v / tot * 100)}% of card spending</small></span><b class="num">${ft(v)}</b><span class="chev">${I('chev', 18)}</span></button>`).join('')}</div>` : '';
 }
 // Full analysis: the complete financial analyst (plan by category, Safe to spend, split, next month, bills, health score). Advanced: one level below My money plan and in More.
 function fullAnalysisHTML(){
@@ -2718,6 +2753,7 @@ const PAGES = {
     ${catList(sp)}
     ${recentCards()}`;}},
   mymoney:{title:'Left to spend', html:() => myMoneyHTML()},
+  catd:{title:() => catTitle(S._cat || 'food'), html:() => catDetailHTML(S._cat || 'food')},
   advanced:{title:'Full analysis', html:() => fullAnalysisHTML()},
   nextmonth:{title:'Next month', html:() => nextMonthHTML()},
   bills:{title:'Must-pay bills', html:() => billsHTML()}
@@ -3244,6 +3280,7 @@ document.addEventListener('click', e=>{
   if('claimoffer' in d){ const g = goalById(S._offer); if(g){ const travel = g.ic === 'plane';
       S.rewards.unshift({id:'o' + g.id, title: travel ? 'Travel partner offer' : '5% cashback at a partner', note: travel ? '8% back on one booking. Up to 10 000 Ft.' : 'Up to 2 000 Ft back.', why:`Reached ${g.name}`}); }
     S._offer = null; closeSheet(); renderAll(); toast('Offer added to your rewards'); return; }
+  if(d.catd){ if(sheetOpen()) closeSheet(); S._cat = d.catd; pushPage('catd'); return; }
   if('planopen' in d){ if(sheetOpen()) closeSheet(); pushPage('mymoney'); return; }
   if('planon' in d){ S.analyst.on = true; if(!S.analyst.accepted){ const sg = suggestSplit(); S.analyst.split = {must:sg.must, ess:sg.ess, fun:sg.fun, save:sg.save}; S.analyst.accepted = true; } renderAll(); return; }
   if('anon' in d){ S.analyst.on = true; renderAll(); sheet(SHEETS.analyst()); toast('Analyst on'); return; }
@@ -4107,7 +4144,7 @@ const ST_BG = ['linear-gradient(160deg,#0F3B25,#2C7A3C)', 'linear-gradient(160de
 const stBars = rows => { const mx = Math.max(1, ...rows.map(r => r[1])); return `<div class="sx">${rows.map(([l, v, c], i) => `<div class="sx-r"><span>${l}</span><b class="num">${ft(v)}</b><i><em style="width:${Math.max(2, Math.round(v / mx * 100))}%;background:${c};animation-delay:${i * .15}s"></em></i></div>`).join('')}</div>`; };
 // shop names as people say them
 const SHOP = {'LIDL MAGYARORSZÁG':'Lidl', 'SPAR MAGYARORSZÁG':'Spar', 'PENNY MARKET':'Penny', 'ALDI':'Aldi', 'WOLT HUNGARY':'Wolt', 'BKK BUDAPEST':'BKK', 'MÁV-START':'MÁV', 'BENU GYÓGYSZERTÁR':'Benu', 'LIBRI KÖNYVESBOLT':'Libri', 'CINEMA CITY':'Cinema City', 'STARBUCKS':'Starbucks', "MCDONALD'S":"McDonald's", 'MEDIAMARKT':'MediaMarkt', 'BOLT':'Bolt', 'KFC':'KFC', 'H&M':'H&M', 'NETFLIX':'Netflix', 'SPOTIFY':'Spotify'};
-const shopName = n => SHOP[n] || n.split(/\s+/)[0].replace(/^(.)(.*)$/, (m, x, y) => n.split(/\s+/)[0].length <= 4 ? m : x + y.toLowerCase());
+const shopName = n => { const k = String(n).trim().toUpperCase(), w = k.split(/\s+/)[0], hit = Object.entries(SHOP).find(([key]) => key.split(' ')[0] === w); return SHOP[k] || (hit && hit[1]) || (w.length <= 3 ? w : w.charAt(0) + w.slice(1).toLowerCase()); };
 const WEEKDAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 // the card payments the facts are built from: the story's months, or, when they hold too few (a month that just started, fast-forwarded months),
 // the latest months that have single card payments. The slides say which months they cover.
@@ -4825,6 +4862,7 @@ const beTxt = h => String(h).replace(/<[^>]+>/g, '');
       beStep('bank', `On her Junior account: ${ft(x.balance)}`, 'Core banking · balance');
       beStep('an', `Minus what is still coming this month: bills ${ft(x.unpaidBills)}, saving ${ft(x.savingRule)}, groceries ${ft(x.groceries)}`, 'Budget service');
       beStep('an', `= ${ft(x.safe)} left to spend`, 'Budget service'); }
+    else if(id === 'catd'){ const c = S._cat; beEp(`Anna opens ${catTitle(c)}`); beStep('an', `The bank groups her ${catTitle(c).toLowerCase()} card payments by shop and by month`, 'Analytics · categories'); beStep('an', 'It compares this month with her usual of the last 3 months', 'Analytics'); }
     else if(id === 'advanced'){ beEp('Anna opens the full analysis'); beStep('an', 'Health score from her last 3 months: spending under income, no overdraft, a buffer, regular saving', 'Analytics'); }
     else if(id === 'grad'){ beEp('Her Junior package ends'); beStep('rate', 'The bank checks: can she keep 3.0%?', 'Eligibility'); beStep('rate', 'Yes, for 12 more months, if her salary comes to her OTP account', 'Eligibility'); }
     return r; }; }

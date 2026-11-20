@@ -1,5 +1,5 @@
 // Keeps the app working offline and shows push notifications.
-const NAME = 'otp-demo-v60';
+const NAME = 'otp-demo-v61';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-512.png', './splash-logo-green.png', './splash-light-1320x2868.png', './three.min.js'];
 
 self.addEventListener('install', e => { e.waitUntil(caches.open(NAME).then(c => c.addAll(FILES)).catch(() => {})); self.skipWaiting(); });
