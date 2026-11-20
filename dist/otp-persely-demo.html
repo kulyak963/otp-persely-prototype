@@ -931,6 +931,15 @@ button.cat{background:none;border:0;padding:4px 0;font:inherit;border-radius:12p
 .cd-plan{padding:14px 16px}
 .homescore{display:flex;align-items:center;gap:10px;width:100%;margin-top:8px;padding:6px 12px;text-align:left}.homescore .t{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px}.homescore .t b{font-size:var(--fs-s)}.homescore .t small{font-size:var(--fs-xs);font-weight:600}.homescore .chev{display:flex;color:var(--green-i)}
 .hs-ring{flex:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:conic-gradient(var(--green) calc(var(--p) * 1%), #E3E6EC 0);position:relative}.hs-ring::before{content:"";position:absolute;inset:3px;border-radius:50%;background:#fff}.hs-ring b{position:relative;font-size:.6875rem;font-weight:800}
+.srcs{background:#fff;border-radius:16px;padding:12px 12px 8px;box-shadow:var(--sh);margin-bottom:10px}
+.srcs-h b{font-size:var(--fs-m)}.srcs-h small{display:block;color:var(--muted-t);font-size:var(--fs-s);margin:2px 0 8px}
+.src{border-top:1px solid var(--line);padding:6px 0}.src-t{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:4px 0;min-height:var(--tap)}
+.src-t .t{flex:1;min-width:0}.src-t small{display:block;color:var(--muted-t);font-size:var(--fs-xs)}.src-c{margin:4px 0 2px}
+.src-c.chips.eq,.subopts .chips.eq:has([data-onbwkcust]){grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.src-c.chips.eq .chip,.subopts .chips.eq:has([data-onbwkcust]) .chip{padding-left:2px;padding-right:2px;font-size:.8125rem;min-width:0}
+.stp{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0 4px}.stp b{min-width:84px;text-align:center;font-size:1.125rem}
+.stp button{width:40px;height:40px;border-radius:50%;background:var(--bg);font-size:1.375rem;font-weight:700;color:var(--green-t)}
+.srcs-add{display:block;margin:6px 0 2px}.srcs-tot{margin:6px 2px 2px}
+.src-add{border-top:1px solid var(--line);padding:10px 0 4px}
 .ltsline{display:flex;align-items:center;gap:8px;width:100%;margin:4px 0 0;padding:12px 16px;border-radius:14px;background:var(--card, #fff);box-shadow:var(--sh);font-size:var(--fs-m);text-align:left;color:var(--ink)}
 .ltsline span:first-child{flex:1;font-weight:600}.ltsline b{font-size:1.0625rem}.ltsline .chev{display:flex;color:var(--muted-t)}
 .gauge[data-go]{cursor:pointer}
@@ -1320,7 +1329,7 @@ const lrPct = (vals, total) => { const raw = vals.map(v => v / total * 100), fl 
 //   pct:{must,everyday,fun,other,saving,left} (the raw projection, whole numbers, sum 100: the screens use splitView() below, which folds Other and Left over into Everyday essentials), cats:[...], oneOffs:[...], plan:{rule,weekly,round,total}}
 // what the saving rules move in a month: the payday rule (share of the salary) + the weekly transfer + round-ups
 function savePlan(st = S, withRule = false){
-  const rule = (st.payday.on || withRule) ? Math.round(st.income.amount * st.payday.pct / 100) : 0, weekly = (st.weekly.on ? Math.round(st.weekly.amt * 52 / 12) : 0) + (st.goals || []).reduce((n, g) => n + (g.weekly && !g.shared && !isEur(g) ? Math.round(g.weekly * 52 / 12) : 0), 0), round = st.roundup.on ? ROUND_EST : 0;
+  const rule = ((st.payday.on || withRule) ? Math.round(st.income.amount * st.payday.pct / 100) : 0) + extraRule(st), weekly = (st.weekly.on ? Math.round(st.weekly.amt * 52 / 12) : 0) + (st.goals || []).reduce((n, g) => n + (g.weekly && !g.shared && !isEur(g) ? Math.round(g.weekly * 52 / 12) : 0), 0), round = st.roundup.on ? ROUND_EST : 0;
   return {rule, weekly, round, total:rule + weekly + round};
 }
 function project(st = S, o = {}){
@@ -1868,11 +1877,16 @@ const gSaved = g => g.id==='holiday' ? acc('persely').v : g.shared ? g.members.r
 const gTarget = g => g.id==='holiday' ? S.persely.target : g.target;
 const mine = g => g.shared ? (g.members.find(m => m.me) || {amt:0}).amt : gSaved(g);
 const incomeShare = pct => Math.round(S.income.amount * pct / 100);
+// income sources besides the salary (the salary is S.payday itself): each {id, name, from, day, amt, on, pct}
+const defaultExtras = () => [{id:'family', name:'Family transfer', from:'Kiss István', day:1, amt:FAMILY_AMT, on:false, pct:5}];
+const paydayExtras = (st = S) => (st.payday && st.payday.extra) || defaultExtras();
+const extraRule = (st = S) => paydayExtras(st).reduce((a, x) => a + (x.on ? Math.round(x.amt * x.pct / 100) : 0), 0);
+const ordinalDay = n => n + (['th', 'st', 'nd', 'rd'][(n % 100 - 20) % 10] || ['th', 'st', 'nd', 'rd'][n % 100] || 'th');
 // how much reaches a goal per month from its own rules
 function paceOf(g){
   if(g.shared || isEur(g)) return 0;
   let v = g.pace || 0;
-  if(S.ruleGoal === g.id){ if(S.payday.on) v += incomeShare(S.payday.pct); if(S.weekly.on) v += Math.round(S.weekly.amt * 52 / 12); }
+  if(S.ruleGoal === g.id){ if(S.payday.on) v += incomeShare(S.payday.pct); v += extraRule(); if(S.weekly.on) v += Math.round(S.weekly.amt * 52 / 12); }
   if(g.weekly) v += Math.round(g.weekly * 52 / 12);
   if(S.roundup.on && S.roundup.goal === g.id) v += ROUND_EST;
   return v;
@@ -2539,7 +2553,7 @@ function analysisGauge(m){
 function moneyIn(){
   const gs = S.goals.filter(g => !g.shared && !isEur(g)); let pay = 0, wk = 0, rnd = 0;
   const rows = gs.map(g => {
-    const own = S.ruleGoal === g.id, p = own && S.payday.on ? incomeShare(S.payday.pct) : 0, w = (own && S.weekly.on ? Math.round(S.weekly.amt * 52 / 12) : 0) + (g.weekly ? Math.round(g.weekly * 52 / 12) : 0), r = S.roundup.on && S.roundup.goal === g.id ? ROUND_EST : 0;
+    const own = S.ruleGoal === g.id, p = own ? (S.payday.on ? incomeShare(S.payday.pct) : 0) + extraRule() : 0, w = (own && S.weekly.on ? Math.round(S.weekly.amt * 52 / 12) : 0) + (g.weekly ? Math.round(g.weekly * 52 / 12) : 0), r = S.roundup.on && S.roundup.goal === g.id ? ROUND_EST : 0;
     pay += p; wk += w; rnd += r; return {g, pay:p, wk:w, rnd:r, total:p + w + r};
   });
   const dated = gs.filter(g => g.date && toGo(g) > 0 && daysTo(g) > 0), need = Math.ceil(dated.reduce((a, g) => a + toGo(g) / Math.max(1, Math.round(daysTo(g) / 30.4)), 0) / 100) * 100;   // a goal whose date is today or past is left out: no monthly amount can catch it up
@@ -2663,6 +2677,7 @@ function monthStep(quiet){
   S.savedWeek = ran; S.monthSaved = 0; S.juniorDays = Math.max(0, S.juniorDays - 30);
   acc('junior').v += inc; S.tx.unshift({...stamp(), d:'Today', n:'SALARY', s:'Incoming transfer', a:inc, ic:'money'});
   if(S.payday.on){ const v = incomeShare(S.payday.pct); depositTo(g, v, 'junior', `Payday rule: ${S.payday.pct}%`); moved += v; }
+  paydayExtras().forEach(x => { if(!x.on) return; const v = Math.round(x.amt * x.pct / 100); if(v > 0){ depositTo(g, v, 'junior', `Payday rule: ${x.pct}% of ${x.name.toLowerCase()}`); moved += v; } });
   if(S.weekly.on){ const v = S.weekly.amt * 4; depositTo(g, v, 'junior', 'Weekly transfers (4)'); moved += v; }
   S.goals.filter(x => x.weekly).forEach(x => { depositTo(x, x.weekly * 4, 'junior', 'Weekly transfers (4)'); moved += x.weekly * 4; });
   { const vi = S.months % 12, ev = ESS_VAR[vi], fv = FUN_VAR[vi], card = MONTH_CARD + ev + fv;   // months differ a little, so the fast-forward and the year look real (month 1 is the reference month)
@@ -3500,7 +3515,21 @@ document.addEventListener('click', e=>{
   if('onbwk' in d && !d.onbwk){ O.weeklyOn = !O.weeklyOn; renderOnb(); return; }
   if('onbrr' in d){ O.roundOn = !O.roundOn; renderOnb(); return; }
   if(d.onbpct){ O.pct = +d.onbpct; renderOnb(); return; }
-  if(d.onbweekly){ O.weekly = +d.onbweekly; O.weeklyOn = true; renderOnb(); return; }
+  if(d.onbsrc){ if(d.onbsrc === 'salary') O.payOn = !O.payOn; else { const x = O.extra.find(e => e.id === d.onbsrc); if(x) x.on = !x.on; } renderOnb(); return; }
+  if(d.onbspct){ const [id, v] = d.onbspct.split(':'); O.cust[id] = false; if(id === 'salary') O.pct = +v; else { const x = O.extra.find(e => e.id === id); if(x) x.pct = +v; } renderOnb(); return; }
+  if(d.onbscust){ O.cust[d.onbscust] = true; renderOnb(); return; }
+  if(d.onbsstep){ const [id, st] = d.onbsstep.split(':'), cl = v => Math.max(1, Math.min(50, v + (+st)));
+    if(id === 'salary') O.pct = cl(O.pct); else { const x = O.extra.find(e => e.id === id); if(x) x.pct = cl(x.pct); } renderOnb(); return; }
+  if('onbaddsrc' in d){ O.addSrc = {type:'Scholarship', amt:30000, day:10}; renderOnb(); return; }
+  if(d.onbsrctype){ O.addSrc.type = d.onbsrctype; renderOnb(); return; }
+  if(d.onbsrcamt){ O.addSrc.amt = Math.max(5000, Math.min(500000, O.addSrc.amt + (+d.onbsrcamt))); renderOnb(); return; }
+  if(d.onbsrcday){ O.addSrc.day = +d.onbsrcday; renderOnb(); return; }
+  if('onbsrccancel' in d){ O.addSrc = null; renderOnb(); return; }
+  if('onbsrcok' in d){ const a = O.addSrc, from = a.type === 'Scholarship' ? 'your university' : a.type === 'Part-time job' ? 'your employer' : 'another payer';
+    O.extra.push({id:'s' + Date.now(), name:a.type, from, day:a.day, amt:a.amt, on:true, pct:10}); O.addSrc = null; renderOnb(); return; }
+  if('onbwkcust' in d){ O.wkCust = true; O.weeklyOn = true; renderOnb(); return; }
+  if(d.onbwkstep){ O.weekly = Math.max(500, Math.min(50000, O.weekly + (+d.onbwkstep))); O.wkCust = true; renderOnb(); return; }
+  if(d.onbweekly){ O.weekly = +d.onbweekly; O.weeklyOn = true; O.wkCust = false; renderOnb(); return; }
   if(d.onbboost){ O.weeklyOn = true; O.weekly = +d.onbboost; renderOnb(); toast(`Weekly transfer set to ${ft(O.weekly)}`); return; }
   if(d.onbfirst !== undefined){ O.first = +d.onbfirst; renderOnb(); return; }
   if('onbchange' in d){ const ids = S.accounts.filter(x => x.id !== 'persely').map(x => x.id); O.from = ids[(ids.indexOf(O.from) + 1) % ids.length]; renderOnb(); return; }
@@ -4044,7 +4073,23 @@ function coinSound(){   // a short coin clink, once, when the slider is let go
 }
 const O = { i:0 };
 const STEPS = ['goal','how','sum'];   // 3 screens: goal, money in, summary with the optional first deposit
-const onbMonthly = () => (O.payOn ? incomeShare(O.pct) : 0) + (O.weeklyOn ? Math.round(O.weekly * 52 / 12) : 0) + (O.roundOn ? ROUND_EST : 0);
+// one income source in the onboarding payday rule: switch, % chips and Custom (stepper)
+function onbSrcRow(id, name, sub, on, pct){
+  const cust = O.cust[id] || ![5, 10, 15, 20].includes(pct);
+  return `<div class="src ${on ? 'on' : ''}"><button class="src-t" data-onbsrc="${id}"><span class="t"><b>${esc(name)}</b><small>${sub}</small></span><span class="tg ${on ? 'on' : ''}"></span></button>
+    ${on ? `<div class="chips eq u-m0 src-c">${[5, 10, 15, 20].map(x => `<button class="chip ${!cust && pct === x ? 'on' : ''}" data-onbspct="${id}:${x}">${x}%</button>`).join('')}<button class="chip ${cust ? 'on' : ''}" data-onbscust="${id}">Custom</button></div>
+      ${cust ? `<div class="stp"><button data-onbsstep="${id}:-1" aria-label="1% less">−</button><b class="num">${pct}%</b><button data-onbsstep="${id}:1" aria-label="1% more">+</button></div>` : ''}` : ''}</div>`;
+}
+function onbAddSrc(){
+  const a = O.addSrc;
+  return `<div class="src-add"><div class="flabel" style="margin-top:0">What is it?</div>
+    <div class="chips u-m0">${['Scholarship', 'Part-time job', 'Other'].map(t => `<button class="chip ${a.type === t ? 'on' : ''}" data-onbsrctype="${t}">${t}</button>`).join('')}</div>
+    <div class="flabel">How much a month?</div><div class="stp"><button data-onbsrcamt="-5000">−</button><b class="num">${ft(a.amt)}</b><button data-onbsrcamt="5000">+</button></div>
+    <div class="flabel">Around which day?</div><div class="chips u-m0">${[1, 5, 10, 15, 20, 25].map(dd => `<button class="chip ${a.day === dd ? 'on' : ''}" data-onbsrcday="${dd}">${ordinalDay(dd)}</button>`).join('')}</div>
+    <div class="hero-btns u-mt12"><button class="btn w" data-onbsrccancel>Cancel</button><button class="btn" data-onbsrcok>Add</button></div></div>`;
+}
+const onbExtra = () => (O.extra || []).reduce((a, x) => a + (x.on ? Math.round(x.amt * x.pct / 100) : 0), 0);
+const onbMonthly = () => (O.payOn ? incomeShare(O.pct) : 0) + onbExtra() + (O.weeklyOn ? Math.round(O.weekly * 52 / 12) : 0) + (O.roundOn ? ROUND_EST : 0);
 // the day the update arrives: nothing set up yet
 function updateDayState(){
   Object.assign(S, {streak:0, best:0, history:[], skipped:[], savedWeek:false, skips:0, challenges:{}, friends:[], friendsOptIn:false, friendsOpen:false, toured:false, hints:{}, monthSaved:4000,
@@ -4082,7 +4127,8 @@ function launchFlow(delay=1500){
 function startOnb(key){
   const custom = key === 'custom', g = custom ? customGoal() : (GOAL_PRESETS[key] || GOAL_PRESETS.travel);
   Object.assign(O, {i: 0, key, ic:g.ic, name:g.name, target:g.target, typeAmt:custom ? 0 : g.target, date:g.date, focusName:custom,
-    payOn:true, pct:10, weeklyOn:false, weekly:2000, roundOn:true, first:1000, from:'junior', deposited:0, remind:true, coinShown:false});
+    payOn:true, pct:10, weeklyOn:false, weekly:2000, roundOn:true, first:1000, from:'junior', deposited:0, remind:true, coinShown:false,
+    extra:JSON.parse(JSON.stringify(paydayExtras())), cust:{}, wkCust:false, addSrc:null});
   tab('hub'); $('#onb').classList.add('on'); renderOnb();
 }
 function closeOnb(){ const o = $('#onb'); o.classList.remove('on'); o.innerHTML = ''; mountPig(); }
@@ -4102,10 +4148,14 @@ function renderOnb(){
     const m = monthsTo(O.date), proj = Math.round(onbMonthly() * m), p = Math.min(100, Math.round(proj / O.target * 100)), short = O.target - proj;
     const fc = fcCalc(O.target, 0, onbMonthly(), O.date), weeks = Math.max(1, m * 4.345), extra = short > 0 ? Math.ceil(short / weeks / 500) * 500 : 0;
     body = `<div class="onb-step">Step 2 of ${n}</div><h2>How should money get in?</h2><p class="lead">Switch on what suits you. Change it any time.</p>
-      ${tg(O.payOn, 'data-onbpay', 'Payday rule <span class="rec">Recommended</span>', 'A share of each salary or scholarship. We ask first.',
-        `<div class="chips eq u-m0">${[5,10,15,20].map(x=>`<button class="chip ${O.pct===x?'on':''}" data-onbpct="${x}">${x}%</button>`).join('')}</div>`)}
+      <div class="srcs"><div class="srcs-h"><b>Payday rule</b> <span class="rec">Recommended</span><small>A share of each income, the day it arrives. We ask first.</small></div>
+        ${onbSrcRow('salary', 'Salary', `${ft(S.income.amount)} · around the 5th · from your employer`, O.payOn, O.pct)}
+        ${(O.extra || []).map(x => onbSrcRow(x.id, x.name, `${ft(x.amt)} · around the ${ordinalDay(x.day)} · from ${esc(x.from)}`, x.on, x.pct)).join('')}
+        ${O.addSrc ? onbAddSrc() : '<button class="link lnk44 srcs-add" data-onbaddsrc>+ Add a scholarship or another income</button>'}
+        <div class="fine srcs-tot">${O.payOn || onbExtra() ? `Together: about <b>${ft((O.payOn ? incomeShare(O.pct) : 0) + onbExtra())}</b> a month into your goal.` : 'Switch on an income to save a share of it.'}</div></div>
       ${tg(O.weeklyOn, 'data-onbwk', 'Weekly transfer', 'The same amount every Monday.',
-        `<div class="chips eq u-m0">${[1000,2000,3000,5000].map(x=>`<button class="chip ${O.weekly===x?'on':''}" data-onbweekly="${x}">${ft(x)}</button>`).join('')}</div>`)}
+        `<div class="chips eq u-m0">${[1000,2000,3000,5000].map(x=>`<button class="chip ${!O.wkCust && O.weekly===x?'on':''}" data-onbweekly="${x}">${ft(x)}</button>`).join('')}<button class="chip ${O.wkCust || ![1000,2000,3000,5000].includes(O.weekly) ? 'on' : ''}" data-onbwkcust>Custom</button></div>
+        ${O.wkCust || ![1000,2000,3000,5000].includes(O.weekly) ? `<div class="stp"><button data-onbwkstep="-500" aria-label="500 Ft less">−</button><b class="num">${ft(O.weekly)}</b><button data-onbwkstep="500" aria-label="500 Ft more">+</button></div>` : ''}`)}
       ${tg(O.roundOn, 'data-onbrr', 'Round-ups', `Card payments rounded up to 100 Ft, ×2. About ${ft(ROUND_EST)} a month.`)}
       <div class="card" style="padding:14px 16px;margin-top:6px">
         <b class="u-bk-m14">${onbMonthly() ? (fc.over ? fc.text : `About ${ft(Math.round(proj/1000)*1000)} by ${fDate(O.date)}`) : 'Switch something on to see your forecast'}</b>
@@ -4114,7 +4164,7 @@ function renderOnb(){
       </div>`;
   } else {
     const a = acc(O.from), short = O.first > a.v;
-    const rules = [O.payOn && `${O.pct}% of each salary (asks first)`, O.weeklyOn && `${ft(O.weekly)} weekly`, O.roundOn && 'round-ups'].filter(Boolean).join(', ') || 'You add money yourself';
+    const rules = [O.payOn && `${O.pct}% of each salary (asks first)`, ...(O.extra || []).filter(x => x.on).map(x => `${x.pct}% of ${x.name.toLowerCase()}`), O.weeklyOn && `${ft(O.weekly)} weekly`, O.roundOn && 'round-ups'].filter(Boolean).join(', ') || 'You add money yourself';
     const rows = [['Goal', `${esc(O.name)}, ${ft(O.target)}`], ['By', fDate(O.date)], ['Rate', (S.verified || S.bridge) ? '3.0% with your Junior account' : '0.01% standard rate'], ['Money in', rules]];
     body = `<div class="onb-step">Step 3 of ${n}</div><h2>Check and create</h2>
       <div class="card sumcard">${rows.map(([k,v])=>`<div class="sr"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
@@ -4141,7 +4191,7 @@ function applyOnb(){
     S.goals.unshift({id:'onb', name:cleanName(O.name) || 'My goal', ic:O.ic || (GOAL_PRESETS[O.key] || GOAL_PRESETS.travel).ic, saved:0, target:O.target, pace:0, date:O.date});
   }
   S.ruleGoal = 'onb';
-  S.payday = {on:O.payOn, pct:O.pct, ask:true, floor:true};
+  S.payday = {on:O.payOn, pct:O.pct, ask:true, floor:true, extra:O.extra || defaultExtras()};
   S.weekly = {on:O.weeklyOn, amt:O.weekly};
   S.roundup = {on:O.roundOn, goal:'onb'};
   S.onboarded = true; S.updateSeen = true; save();
