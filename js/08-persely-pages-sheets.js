@@ -91,6 +91,7 @@ function vHub(){
 }
 // demo: one week passes
 function nextWeek(){
+  S.pdAsk = false;
   let note = 'New week. Save any amount by Sunday.';
   if(!S.savedWeek && S.streak > 0){
     if(S.skips > 0){ S.skips--; S.skipped = (S.skipped||[]).concat(S.week); note = 'Last week was open. A skip week kept your streak.'; }
@@ -108,6 +109,7 @@ const MONTH_CARD = 63900, MONTH_ROUND = 3000, MONTH_TX = 30;
 const ESS_VAR = [-500, 0, -900, -400, -1600, -200, -1100, -700, -1300, -300, -1000, -600], FUN_VAR = [600, 0, 1800, -1200, 2400, -600, 1500, -1800, 900, -300, 2100, -900];
 const SAV_RATE = 3.5;   // the Savings account's demo rate (shown on its card); interest after tax is credited each simulated month
 function monthStep(quiet){
+  S.pdAsk = false;
   const g = ruleGoal(), inc = S.income.amount, planDone = splitView(); let moved = 0, lenBefore = S.tx.length;   // planDone: the split the student saw during the month that ends
   const done = new Date(2026, 10 + S.months, 1).toLocaleDateString('en-GB',{month:'long'});   // the month that just ended
   S.txMark = S.tx.length;   // a new month starts: the split use counts from here
@@ -393,6 +395,7 @@ function pushPage(id){
 }
 function popPage(instant){
   const el = stack.pop(); if(!el) return;
+  if(el.querySelector('.annote') && !S.anNote){ S.anNote = true; save(); }   // Phase 6: the analyst notice on Spending goes once the student leaves the page
   NAVC.n++; hideToast(); setTimeout(placeChip, 60); setTimeout(placeChip, 320);
   if(!stack.length && MQ.q.length) setTimeout(mqPump, 300);   // the queued reward and goal sheets come after the page they waited for
   if(instant){ el.remove(); if(typeof mountPig === 'function') mountPig(); return; }

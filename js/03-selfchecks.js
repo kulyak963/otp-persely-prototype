@@ -9,6 +9,12 @@ function __checkAnalytics(){
   const legacyR = fn => { if(typeof SP_LEGACY === 'undefined') return fn(); const k = SP_LEGACY; SP_LEGACY = true; try{ return fn(); } finally { SP_LEGACY = k; } };
   const SPL0 = typeof SP_LEGACY !== 'undefined' ? SP_LEGACY : false, SP0 = typeof SP !== 'undefined' ? {...SP} : null; if(SP0) SP.dry = true;   // no real sound or vibration while checking
   const spLeg = on => { if(typeof SP_LEGACY !== 'undefined') SP_LEGACY = on ? true : SPL0; };
+  // Phase 6, OTP Home (plan 2h): with OTP_HOME on, every check written before Phase 6 runs unchanged on the Home from before Phase 6 (the Home ?otphome=0 shows,
+  // rendered in this page with OH_LEGACY), and the block "Phase 6: OTP Home" at the end runs the new-world equivalents with OH_LEGACY off.
+  // With ?otphome=0 or ?simple=0 only the old set runs, exactly as before.
+  const OHF = typeof ohOn === 'function' && ohOn(), OHL0 = typeof OH_LEGACY !== 'undefined' ? OH_LEGACY : false;
+  const ohLeg = on => { if(typeof OH_LEGACY !== 'undefined') OH_LEGACY = on ? true : OHL0; };
+  if(OHF) ohLeg(true);
   const spProbe = key => { spOpen(key); const h = $('#onb').innerHTML; O.sp = false; closeOnb(); return h; };   // the confirm screen of a tile, as HTML
   const F = fresh('existing'), clone = () => JSON.parse(JSON.stringify(F));   // the old default seed: the existing user
   const det = detectRecurring(F), keys = det.bills.map(b => b.key), want = {'SZABÓ DÓRA':42000, 'MVM NEXT ENERGIAKERESKEDŐ':3600, 'FŐGÁZ ZRT.':2400, 'DIGI KFT.':4000, 'BKK ZRT. DIÁKBÉRLET':3450, 'YETTEL MAGYARORSZÁG':5550, 'NETFLIX':3490, 'SPOTIFY':1790};
@@ -1228,8 +1234,160 @@ function __checkAnalytics(){
     const palOk = Object.values(PALETTE).every(v => /^#[0-9A-F]{6}$/.test(v)), cats = ['groceries','transport','health','edu','food','shopping','fun','travel','subs'].map(c => CAT_COL[c]);
     ok('chk-palette: outside :root the stylesheet and the app script hold at most ' + ALLOW.length + ' distinct hex colours, all documented exceptions; rgba only black or white with alpha; no 0x colour ints; every PALETTE token is a #RRGGBB read from the CSS; --ink-rgb equals --ink and theme-color equals --bg; the 9 spending categories have 9 different colours',
       r0 >= 0 && lits.length <= ALLOW.length && lits.every(x => ALLOW.includes(x)) && !ints.length && rgbOk && inkOk && tc.toUpperCase() === PALETTE.bg && palOk && new Set(cats).size === cats.length, {lits, ints, rgb, inkRgb, tc, palOk, cats}); }
+  if(OHF){ // Phase 6: Home back to the OTP skeleton (plan 2h, docs/simple-persely-phase6-notes.md). New-world equivalents of the Home checks above (they ran on the pre-Phase-6 Home), and chk-home-otp-skeleton
+    ohLeg(false);
+    const sv20 = S, cur20 = cur, stk20 = stack.splice(0), lock20 = demo.locked, dm20 = DEMO_ON, views20 = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')); demo.locked = false;
+    const pl = h => String(h).replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').replace(/\s+/g, ' '), nt = t => String(t).replace(/[\s  ]+/g, ' ').trim(), clk = sel => { const b = $(sel); if(b) b.click(); return !!b; };
+    const reset = kind => { hideBanners(); while(stack.length) popPage(true); try{ closeOnb(); }catch(e){} try{ closeStory(); }catch(e){} closeSheet(); MQ.q = []; hideChip(true); hideToast(true); txReset(); txMode = 0; S = fresh(kind); SETUP_COLLAPSED = false; renderAll(); };
+    const top = () => stack.length ? stack[stack.length - 1].dataset.id : '', pg = () => stack[stack.length - 1], pos = (h, k) => h.indexOf(k), inOrder = (h, ks) => ks.every((k, i) => pos(h, k) > -1 && (i === 0 || pos(h, k) > pos(h, ks[i - 1])));
+    const cnt = (h, k) => (h.match(new RegExp('data-go="' + k + '"', 'g')) || []).length, sheets = (h, k) => (h.match(new RegExp('data-sheet="' + k + '"', 'g')) || []).length;
+    const lateRent = () => { S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); S.bfPush = billToday().ym + '-' + billToday().day; renderAll(); };
+    const details = () => { while(stack.length) popPage(true); tab('fooldal'); clk('#v-fooldal .sec a[data-go="mymoney"]'); return top() === 'mymoney'; };   // Home > Details: one tap from the tab bar
+    const coreOf = h => { const x = String(h).match(/Card spending(?: so far)?<\/small><b class="num">([^<]*)</); return x ? x[1] : ''; };
+    const tz = () => nt(($('#v-fooldal .hubteaser') || {}).textContent || '');
+    // every Persely entry on Home: anything that opens the Persely tab, a Persely sheet, the story or the Junior page; the Persely account card (#accs) is an account and the For you offer is OTP's own card
+    const entries = root => [...root.querySelectorAll('[data-tab="hub"],[data-sheet="hubsave"],[data-sheet="newgoal"],[data-sheet="payday"],[data-sheet="whyp"],[data-sheet="ratesafe"],[data-sheet="goodtoknow"],[data-story],[data-go="grad"],.sphome')].filter(e => !e.closest('#accs') && !e.closest('.offer'));
+    const firstShown = el => [...el.querySelector('.scroll').children].find(e => e.offsetHeight > 0 && !e.classList.contains('hint'));
+    try{
+      // chk-home-otp-skeleton: the eb807a7 order, nothing else, one Persely entry, every moved item at most 2 taps from a tab
+      const sk = ['existing', 'new'].map(kind => { reset(kind); tab('fooldal'); const v = $('#v-fooldal'), h = v.innerHTML;
+        const order = inOrder(h, ['class="hhead', 'id="accs"', 'hubteaser', '<span>My monthly spending</span>', 'class="gauge ohgauge"', 'What did I spend on this month?', 'class="cats"', '<span>For you</span>', 'class="hcar"']);
+        const dA = v.querySelector('.sec a[data-go="mymoney"]'), aA = [...v.querySelectorAll('.sec a[data-go="neked"]')];
+        const gone = !v.querySelector('.short, .safebtn, .bfc, .annote, .insight, .storycard, .whyl, .bell, .clg, .dbtn, [data-go="grad"], [data-go="bills"], .hhead small, .sec-sub, .acc .go') && !/Total out|Quick actions|Why Persely|Safe to spend|Account details|Open Persely|Your November is ready/.test(pl(h));
+        const ent = entries(v);
+        return {kind, order, details:!!dA && nt(dA.textContent) === 'Details', all:aA.length === 1 && nt(aA[0].textContent) === 'All', gone, one:ent.length === 1 && ent[0].classList.contains('hubteaser'), n:ent.length, offer:!!v.querySelector('.offer'), goals:S.goals.length}; });
+      const R = {};
+      reset('existing'); lateRent(); R.lateCard = details() && (() => { const c = pg().querySelector('.scroll .bfc'), ok1 = !!c && firstShown(pg()) === c && !!c.querySelector('[data-paybill]') && !!c.querySelector('[data-go="bills"]'); if(c) c.querySelector('[data-go="bills"]').click(); return ok1 && top() === 'bills'; })();
+      reset('new'); R.notice = details() && !!pg().querySelector('.annote.one [data-anread]') && !!pg().querySelector('.annote.one [data-anask]');
+      reset('existing'); S.anNote = true; renderAll(); R.safe = details() && !!pg().querySelector('.safebig'); R.tips = /Persi's tips/.test(pg().innerHTML) && !!pg().querySelector('.gauge[data-cring="big"]') && !!pg().querySelector('.cs-r[data-fcat]'); clk('.page [data-tour="billsrow"]'); R.bills = top() === 'bills';
+      reset('existing'); tab('fooldal'); clk('#v-fooldal .hhead .hprof'); R.inbox = top() === 'settings' && clk('.page [data-sec="inbox"] [data-go="inbox"]') && top() === 'inbox';
+      reset('existing'); S.monthEnd = true; renderAll(); tab('hub'); R.story = clk('#v-hub [data-story]') && ST.on === true; try{ closeStory(); }catch(e){}
+      reset('existing'); tab('hub'); R.addMoney = clk('#v-hub [data-sheet="hubsave"]') && sheetOpen() && nt($('#sheet h2').textContent) === 'Add money'; closeSheet();
+      tab('hub'); R.junior = clk('#v-hub [data-go="grad"]') && top() === 'grad'; while(stack.length) popPage(true);
+      tab('hub'); R.rateSafety = clk('#v-hub [data-sheet="ratesafe"], #v-hub [data-sheet="goodtoknow"], #v-hub [data-sheet="whyp"]') && sheetOpen() && nt($('#sheet h2').textContent) === 'Rate and safety'; closeSheet();
+      tab('tovabbiak'); R.card = clk('#v-tovabbiak [data-go="kartyaim"]') && top() === 'kartyaim'; while(stack.length) popPage(true);
+      ok('chk-home-otp-skeleton: Home runs the eb807a7 order (header, balance carousel, Persely teaser, My monthly spending gauge with Details, category bars, For you with All) and nothing else; exactly one Persely entry (the For you offer only while there is no goal); each item that left Home is at most 2 taps from a tab: the late-bill card (Pay now, All bills) and the analyst notice on top of Spending, Safe to spend and Persi\'s tips and the category ring on Spending, Bills from the Spending Bills row, the inbox from Settings > Notifications, the story ring, Add money, the Junior page and Rate and safety on the Persely tab, My cards in More',
+        sk.every(x => x.order && x.details && x.all && x.gone && x.one && x.offer === (x.goals === 0)) && Object.values(R).every(Boolean), {sk, R});
+
+      // chk-home-order (OTP Home): header without captions; the teaser states in Persi's order with one action each
+      reset('existing'); tab('fooldal'); const hdr = [...document.querySelectorAll('#v-fooldal .hhead button')].map(b => b.getAttribute('aria-label')).join(), cap0 = !document.querySelector('#v-fooldal .hhead small');
+      S.savedWeek = false; S.streak = 3; renderAll(); const wkOpen = tz() === 'Week 4 · Save by Sunday' && $('#v-fooldal .hubteaser').dataset.tab === 'hub'; clk('#v-fooldal .hubteaser'); const toTab = cur === 'hub'; tab('fooldal');
+      S.savedWeek = true; renderAll(); const wkDone = tz() === nt(`Week 3 done · ${ft(total())} saved`);
+      S.billSkip = {}; mustBills().forEach(b => { S.billSkip[b.id] = billToday().ym; }); setMain(S, 'pay', true); S.payday.ask = true; S.pdAsk = true; renderAll();
+      const pay = paydayAlloc().total, pdOk = pay > 0 && tz() === nt(`Payday · Save ${ft(pay)}?`) && $('#v-fooldal .hubteaser').dataset.sheet === 'payday';
+      clk('#v-fooldal .hubteaser'); const pdSheet = sheetOpen() && !!$('#sheet [data-paymove]'); clk('#sheet [data-paymove]'); const pdDone = !S.pdAsk && /^Week/.test(tz()); hideChip(true); closeSheet();
+      reset('existing'); S.juniorDays = 20; renderAll(); const jr = nt(($('#v-fooldal .hubteaser small') || {}).textContent || '') === `Your 3.0% ends on ${juniorEndLabel()}`; S.juniorDays = 300; renderAll(); const jrOff = !$('#v-fooldal .hubteaser small');
+      reset('new'); tab('fooldal'); const nu = tz() === nt(`Save your first ${ft(1000)}`) && !!$('#v-fooldal .sphome'); clk('#v-fooldal .sphome'); const nuGo = cur === 'hub' && !!$('#v-hub .spfirst');
+      ok('chk-home-order (OTP Home): the header is avatar, name and mail (Profile and settings, Messages and offers) with no captions; the one Persely card reads "Week 4 · Save by Sunday" (opens the tab), "Week 3 done · X saved" once saved, "Payday · Save 7 500 Ft?" after the salary (opens the payday sheet, gone after saving), "Save your first 1 000 Ft" for a new user (opens the first run); in the last 30 days of Junior the subline is "Your 3.0% ends on <date>"',
+        hdr === 'Profile and settings,Messages and offers' && cap0 && wkOpen && toTab && wkDone && pdOk && pdSheet && pdDone && jr && jrOff && nu && nuGo, {hdr, cap0, wkOpen, toTab, wkDone, pdOk, pay, pdSheet, pdDone, jr, jrOff, nu, nuGo});
+
+      // the unnamed one-entry-path, analyst-off, late-bill and number checks
+      S = fresh('existing'); S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.onboarded = true; S.billsConfirmed = true; syncSplit(); const Hh = vFooldal(), mm = myMoneyHTML();
+      ok('one entry path (OTP Home): Home reaches Spending from Details only (the one page); no link to Next month, Must-pay bills or the Safe to spend sheet; Spending has one Bills row', cnt(Hh, 'mymoney') === 1 && cnt(Hh, 'nextmonth') === 0 && cnt(Hh, 'bills') === 0 && sheets(Hh, 'safe') === 0 && cnt(mm, 'bills') === 1, [cnt(Hh, 'mymoney'), cnt(Hh, 'bills'), cnt(mm, 'bills')]);
+      S.analyst.on = false; const Hoff = vFooldal(), mmOff = myMoneyHTML();
+      ok('analyst off (OTP Home): Home keeps the gauge and Details to the one Spending page (no Safe to spend row on Home); Spending offers Turn on in place of the plan and keeps Safe to spend (simple) and Bills', /ohgauge/.test(Hoff) && cnt(Hoff, 'mymoney') === 1 && !/safebtn/.test(Hoff) && /Turn on to see your plan/.test(mmOff) && sheets(mmOff, 'safe') === 1 && cnt(mmOff, 'bills') === 1); S.analyst.on = true;
+      S.tx = S.tx.filter(t => !(t.n === 'SZABÓ DÓRA' && t.ym === '2026-11')); const mmL = myMoneyHTML();
+      ok('late bill (OTP Home): the Bills first card is on top of Spending, above Safe to spend; it is gone from Home and from the Persely tab', pos(mmL, 'Bills first') > -1 && pos(mmL, 'Bills first') < pos(mmL, 'safebig') && !/Bills first|class="card bfc"/.test(vFooldal()) && !/Bills first/.test(vHub()));
+      S = fresh('existing'); S.onboarded = true; S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.billsConfirmed = true; syncSplit();
+      const sp0 = sumVals(catSpend(shownMonth().ym));
+      ok('Home "Card spending so far" = Spending "Card spending" = the category total of the month on screen (OTP Home, D15 label)', sp0 > 0 && /Card spending so far<\/small>/.test(vFooldal()) && coreOf(vFooldal()) === ft(sp0) && coreOf(myMoneyHTML()) === ft(sp0), [sp0, coreOf(vFooldal()), coreOf(myMoneyHTML())]);
+      monthStep(true); const sp1 = sumVals(catSpend(shownMonth().ym));
+      ok('after one simulated month Home and Spending still show the same total (OTP Home)', sp1 > 0 && coreOf(vFooldal()) === ft(sp1) && coreOf(myMoneyHTML()) === ft(sp1), [sp1, coreOf(vFooldal()), coreOf(myMoneyHTML())]);
+      S = fresh('existing'); S.onboarded = true;
+      ok('Home Details opens the one Spending page and Home has no plan (OTP Home: the plan lives on Spending only)', cnt(vFooldal(), 'mymoney') === 1 && !/mp-g/.test(vFooldal()) && /mp-g/.test(myMoneyHTML()) && !/data-go="kiadas"/.test(vFooldal()));
+      S = fresh('existing'); S.onboarded = true; S.insight = true; const tp = tipOf();
+      ok('tip (OTP Home): Home has no tip card (Persi\'s tip moved to Spending); the Spending page shows Persi\'s tips', tp && tp.kind === 'tip' && !/class="card insight"|Move 10% a month/.test(vFooldal()) && /Persi's tips/.test(myMoneyHTML()), tp && tp.kind);
+      S = fresh('existing'); S.goals.slice().forEach(g => { if(!goalEmpty(g)) withdrawFrom(g, gSaved(g)); removeGoal(g.id); });
+      ok('delete every goal (OTP Home): Home renders without errors, its one Persely card is "Save your first 1 000 Ft" again and the For you offer is back', S.goals.length === 0 && (() => { try{ const h = vFooldal(); return /sphome/.test(h) && /Start saving efficiently!/.test(h) && !/NaN|undefined/.test(pl(h)); }catch(e){ return false; } })());
+
+      // Phase 1a, 1b
+      reset('existing'); const homeE = pl(vFooldal());
+      ok('chk-seed-existing (OTP Home): the existing seed\'s Home shows Persely · total (Summer holiday 64 000 Ft inside) and the week line of the 8-week streak, not the new-user card', S.streak === 8 && acc('persely').v === 64000 && homeE.includes(nt(`Persely · total ${ft(total())}`)) && homeE.includes(S.savedWeek ? 'Week 8 done' : 'Week 9 · Save by Sunday') && !/Start your first goal|Save your first/.test(homeE), homeE.slice(0, 200));
+      const BANNED = /take out|taken out|take money out|spending tracker|create persely|new persely|(?<!scheduled and )recurring transfer/i, homes = ['new', 'existing'].map(k => { reset(k); return pl(vFooldal()) + ' ' + pl(settingsHTML()); }).join(' ');
+      ok('chk-glossary-terms (OTP Home): none of the banned synonyms on the new Home or Settings (both seeds)', !BANNED.test(homes), (homes.match(BANNED) || [])[0]);
+      const MON = 'January|February|March|April|May|June|July|August|September|October|November|December', SHORT = /\b\d{1,2} (Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b|\b(Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec) \d{4}\b/, noYear = new RegExp('\\b\\d{1,2} (' + MON + ')\\b(?! \\d{4})');
+      reset('existing'); S.juniorDays = 20; renderAll(); const dH = pl(vFooldal()), mlab = nt(($('#v-fooldal .mlab') || {}).textContent || '');
+      ok('chk-date-format (OTP Home): the gauge range reads "1 November 2026 – 30 November 2026", the Junior subline is one full date, and no short or year-less date is on Home', mlab === '1 November 2026 – 30 November 2026' && /Your 3\.0% ends on \d{1,2} [A-Z][a-z]+ \d{4}/.test(dH) && !SHORT.test(dH + homes) && !noYear.test(dH + homes) && !/\bsoon\b/i.test(dH), [mlab, (dH.match(noYear) || [])[0]]);
+      ok('chk-why-persely (OTP Home): "Why Persely?" left Home; the Persely tab opens Rate and safety (the same sheet as Why Persely?)', !/Why Persely|data-sheet="whyp"|class="[^"]*whyl/.test(homes + vFooldal()) && SHEETS.whyp === SHEETS.ratesafe && R.rateSafety);
+      { const ph = $('#phone'), sc = ph.getBoundingClientRect().width / ph.offsetWidth || 1, small = [], SEL = '.sec a, .link, .hhead button, .hubteaser, .acc, .cat, .nk, .offer';
+        ['new', 'existing'].forEach(k => { reset(k); tab('fooldal'); document.querySelectorAll('#v-fooldal ' + SEL.split(', ').join(', #v-fooldal ')).forEach(el => { const r = el.getBoundingClientRect(); if(r.width === 0 && r.height === 0) return; if(r.height / sc < 43.5 || r.width / sc < 43.5) small.push(`${k}: ${el.className || el.tagName} ${Math.round(r.width / sc)}x${Math.round(r.height / sc)}`); }); });
+        ok('chk-tap-44 (OTP Home): All accounts, Details, All, the avatar, the mail icon, the account cards, the Persely card, the category bars and the For you cards measure 44 px or more at the phone width (both seeds)', small.length === 0, small.slice(0, 8)); }
+
+      // Phase 3: Keep my 3.0% pending lives on the Persely tab; Home only carries the Junior end date in the last 30 days
+      reset('existing'); S.juniorDays = 20; S.keep = {pending:true, at:0}; renderAll();
+      ok('chk-keep-pending (OTP Home): a pending Keep my 3.0% request shows on the Persely tab ("Waiting for your first salary at OTP · 6 months left"); Home keeps one Persely card whose subline is the Junior end date', /Waiting for your first salary at OTP · 6 months left/.test(pl(vHub())) && !/Waiting for your first salary/.test(pl(vFooldal())) && tz().includes(`Your 3.0% ends on ${juniorEndLabel()}`) && entries($('#v-fooldal')).length === 1);
+
+      // Phase 4: entry map
+      reset('existing'); const E = {}, doors = []; [['#v-fooldal .sec a[data-go="mymoney"]', 'fooldal'], ['#v-hub [data-go="mymoney"]', 'hub'], ['#v-tovabbiak [data-go="mymoney"]', 'tovabbiak']].forEach(([sel, t]) => { tab(t); doors.push(clk(sel) ? top() : 'missing:' + sel); while(stack.length) popPage(true); });
+      E.spending = doors.every(x => x === 'mymoney'); E.addMoney = R.addMoney; E.card = R.card; E.bills = R.bills; E.inbox = R.inbox; E.homeToTab = (() => { tab('fooldal'); clk('#v-fooldal .hubteaser'); return cur === 'hub'; })();
+      ok('chk-entry-map (OTP Home): Spending from Home Details, the Persely tab and More; Add money on the Persely tab; Pay a bill from the Spending Bills row; My cards from More; the inbox from Settings; Home > Persely tab through its one card', Object.values(E).every(Boolean), {E, doors});
+
+      // Phase 5: analyst default on, the notice, Safe to spend first, two numbers, story
+      reset('new'); const optH = (vFooldal().match(/data-sheet="analyst"/g) || []).length; lateRent();
+      ok('chk-analyst-default-on (OTP Home): the analyst is on in both seeds; the late warning shows on top of Spending (not on Home); no opt-in entry on Home', S.analyst.on && fresh('existing').analyst.on && optH === 0 && /is late/.test(pl(myMoneyHTML())) && !/is late|bills? late/.test(pl(vFooldal())), optH);
+      reset('new'); tab('fooldal'); const nHome = !document.querySelector('#v-fooldal .annote'); details(); const al = pg().querySelector('.annote.one'), alT = al ? nt(al.textContent) : '', abs = al ? [...al.querySelectorAll('button')] : [];
+      const alOk = !!al && firstShown(pg()) === al && alT.includes('Your analyst reads your OTP payments to show Safe to spend. Nothing leaves OTP.') && abs.length === 2 && abs[0].dataset.anread !== undefined && abs[1].dataset.anask !== undefined && /CONFIRM WITH OTP \/ LEGAL: lawful basis/.test(myMoneyHTML()) && !!al.nextElementSibling && al.nextElementSibling.classList.contains('safebig');
+      popPage(true); const goneLeave = S.anNote === true; details(); const goneAgain = !pg().querySelector('.annote'); while(stack.length) popPage(true);
+      reset('new'); details(); clk('.page .annote [data-anread]'); const readOk = sheetOpen() && /Nothing leaves the bank/.test(pl($('#sheet').innerHTML)) && !pg().querySelector('.annote'); closeSheet();
+      reset('existing'); details(); clk('.page .annote [data-anask]'); const askOk = sheetOpen() && /Turn off the Financial analyst\?/.test(pl($('#sheet').innerHTML)) && S.analyst.on === true; closeSheet(); while(stack.length) popPage(true);
+      ok('chk-analyst-notice (OTP Home): the analyst notice left Home; the first Spending visit opens with the one line "Your analyst reads your OTP payments to show Safe to spend. Nothing leaves OTP." with Learn more and Turn off, right above Safe to spend; it goes after a tap or after leaving the page; Turn off asks first', nHome && alOk && goneLeave && goneAgain && readOk && askOk, {nHome, alOk, alT, goneLeave, goneAgain, readOk, askOk});
+      reset('existing'); S.anNote = true; renderAll(); details(); const p1 = pg(), card = p1.querySelector('.safebig'), sc1 = p1.querySelector('.scroll'), r1 = card && card.getBoundingClientRect(), r2 = sc1.getBoundingClientRect();
+      const stsA = firstShown(p1) === card && nt(card.textContent).includes(nt(ft(safeToSpend().safe))) && r1.top >= r2.top && r1.bottom <= r2.bottom; while(stack.length) popPage(true);
+      reset('existing'); details(); const p2 = pg(), c2 = p2.querySelector('.safebig'), r3 = c2 && c2.getBoundingClientRect(), r4 = p2.querySelector('.scroll').getBoundingClientRect(), stsB = !!c2 && r3.bottom <= r4.bottom && r3.bottom <= Math.min(844, innerHeight); while(stack.length) popPage(true);
+      ok('chk-sts-top (OTP Home): Home Details opens Spending with the Safe to spend card first (the real number), fully visible; on the first visit only the one line analyst notice sits above it and it stays above the fold', stsA && stsB, {stsA, stsB});
+      reset('existing'); const cs = cardSpending(), to = totalOut(), hh = nt(pl(vFooldal())), mm5 = nt(pl(myMoneyHTML())), spentBad = (hh.match(/\bSpent\b(?! on)/g) || []).length + (hh.match(/\bspent so far\b/gi) || []).length;
+      ok('chk-two-spend-numbers (OTP Home): Home shows "Card spending so far" with the same figure as Spending\'s "Card spending"; Total out stays on Spending; "Spent" never stands alone on Home', cs === sumVals(catSpend(shownMonth().ym)) && hh.includes(nt('Card spending so far ' + ft(cs))) && mm5.includes(nt('Card spending ' + ft(cs))) && mm5.includes(nt('Total out ' + ft(to))) && !/Total out/.test(hh) && spentBad === 0, [cs, to, spentBad]);
+      reset('existing'); S.monthEnd = true; S.storySeen = false; renderAll(); const stH = vFooldal(), stT = vHub();
+      ok('chk-story-month-end (OTP Home): at month end Home has no story card ("Your November is ready" is gone); the story opens from the ring on the Persely tab', !/Your November is ready|storycard|data-story/.test(stH) && /data-story/.test((stT.match(/<[^>]*class="sring[^"]*"[^>]*>/) || [''])[0]) && R.story);
+
+      // Phase 6: Settings and the inbox
+      reset('existing'); setDemoMode(false); tab('fooldal'); S.name = 'Kiss Réka'; renderAll(); const av = $('#v-fooldal .hhead .avatar'); av.click(); const avOpen = top() === 'settings', secs = [...document.querySelectorAll('.page .set-sec')].map(x => x.dataset.sec).join(), named = /Kiss Réka/.test(pl($('.page').innerHTML)); while(stack.length) popPage(true);
+      lpTimer = null; av.dispatchEvent(new Event('pointerdown', {bubbles:true})); const lpOff = lpTimer === null; setDemoMode(true); av.dispatchEvent(new Event('pointerdown', {bubbles:true})); const lpOn = lpTimer !== null; clearTimeout(lpTimer); lpTimer = null; setDemoMode(dm20);
+      ok('chk-settings-real (OTP Home): the avatar opens the real Settings page, now with Notifications on top, then Profile (the name from S.name), Persely, Notifications settings, Privacy and Help; the avatar long-press opens the demo panel only behind the flag', avOpen && secs === 'inbox,profile,persely,notif,privacy,help' && named && lpOff && lpOn, [avOpen, secs, named, lpOff, lpOn]);
+      reset('existing'); const rowT = () => { const p = settingsHTML(), m = p.match(/data-sec="inbox">([\s\S]*?)<\/button>/); return m ? nt(pl(m[1])) : ''; }, emptyRow = rowT() === 'Notifications Your messages';
+      for(let i = 0; i < 25; i++) notify({title:'Note ' + i, body:'Body ' + i, url:i === 24 ? 'tranzakciok' : 'hub', persi:true}); hideBanners();
+      const unreadRow = rowT() === 'Notifications Your messages · 20 unread', noBell = !/class="bell|bdot/.test(vFooldal());
+      tab('fooldal'); clk('#v-fooldal .hhead .hprof'); clk('.page [data-sec="inbox"] [data-go="inbox"]'); const inbOpen = top() === 'inbox' && document.querySelectorAll('.page .inb').length === 20 && /Note 24/.test($('.page .inb').textContent);
+      clk('.page [data-inbread]'); const allRead = inboxUnread() === 0 && rowT() === 'Notifications Your messages'; while(stack.length) popPage(true);
+      ok('chk-inbox-20 (OTP Home): the bell left Home; Settings > Notifications opens the inbox (last 20, newest first) and says how many are unread; Mark all as read clears it', emptyRow && unreadRow && noBell && inbOpen && allRead, {emptyRow, unreadRow, noBell, inbOpen, allRead, row:rowT()});
+
+      // Phase 7: the late-bill card on top of Spending, no Bills self-link
+      reset('existing'); lateRent(); const mmB = myMoneyHTML(), lc = (mmB.match(/<div class="card bfc">[\s\S]*?<\/div><\/div>/) || [''])[0], lct = nt(pl(lc));
+      ok('chk-latecard-home-only (OTP Home): the late-bill card moved from Home to the top of Spending: "Rent share is late: 42 000 Ft (due on the 2nd)" with two actions (Pay now, All bills) and no skip links; Home, the Persely tab and the Bills page do not show it', /Rent share is late: 42 000 Ft \(due on the 2nd\)/.test(lct) && (lc.match(/<button/g) || []).length === 2 && /data-paybill="szab-d-ra"/.test(lc) && /data-go="bills"/.test(lc) && !/data-billskip/.test(lc) && pos(mmB, 'class="card bfc"') < pos(mmB, 'safebig') && !/class="card bfc"/.test(vFooldal() + vHub() + billsHTML()), lct);
+      pushPage('bills'); const selfFree = !/data-go="bills"/.test($('.page').innerHTML) && !/class="card bfc"/.test($('.page').innerHTML); while(stack.length) popPage(true);
+      ok('chk-no-bills-selflink (OTP Home): the Bills page has no link to itself; Spending holds All bills on the late card and its one Bills row; Home has no bills link; the Safe to spend sheet keeps its Must-pay bills button', selfFree && cnt(myMoneyHTML(), 'bills') === 2 && cnt(vFooldal(), 'bills') === 0 && /data-go="bills"/.test(SHEETS.safe()));
+
+      // Phase 8 and the circle rework: category bars, gauge, Details, Spending
+      reset('existing'); tab('fooldal'); const cb = $('#v-fooldal .cat[data-fcat]'), cbc = cb && cb.dataset.fcat; if(cb) cb.click(); const barTap = cur === 'tranzakciok' && txF.cat === cbc && !!$('#txchips [data-txrm="cat"]') && $('#txchips [data-txrm="cat"]').textContent.includes(CATEGORY[cbc][0]); txReset(); tab('fooldal');
+      ok('chk-tx-category-passin (OTP Home): tapping a category bar on Home opens Transactions with that category chip on', barTap, cbc);
+      const circ = ['existing', 'new'].map(kind => { reset(kind); tab('fooldal'); const g = $('#v-fooldal .gauge.ohgauge'), arcs = g ? [...g.querySelectorAll('circle')] : [], want = catRows(catSpend(shownMonth().ym)).slice(0, 5), bars = [...document.querySelectorAll('#v-fooldal .cats .cat')];
+        const barsOk = bars.length === want.length && want.every(([c, v], i) => nt(bars[i].textContent).includes(nt(ft(v))));
+        return {ok:!!g && g.getAttribute('role') === 'img' && /^Card spending so far /.test(g.getAttribute('aria-label') || '') && g.querySelector('.core').textContent.replace(/[\s\u00a0\u202f]+/g, '') === ('Card spending so far' + ft(cardSpending())).replace(/[\s\u00a0\u202f]+/g, '') && arcs.length === 2 && arcs[1].getAttribute('stroke') === PALETTE.green && !g.querySelector('circle.seg') && barsOk, bars:bars.length, want:want.length}; });
+      reset('existing'); details(); const big = pg().querySelector('.gauge[data-cring="big"]'), segSum = big ? [...big.querySelectorAll('circle.seg')].reduce((a, c) => a + +c.dataset.v, 0) : -1; while(stack.length) popPage(true);
+      ok('chk-home-circle-categories (OTP Home): Home has the original 270 degree gauge (one green arc, "Card spending so far" with the real card spending, read aloud) and the five biggest categories as bars with their amounts (both seeds); the circle by category moved to Spending, its arcs add up to Card spending', circ.every(x => x.ok) && segSum === cardSpending(), {circ, segSum});
+      reset('existing'); tab('fooldal'); const dl = $('#v-fooldal .sec a[data-go="mymoney"]'), dlr = dl ? dl.getBoundingClientRect() : null; if(dl) dl.click(); const dlOpen = top() === 'mymoney'; while(stack.length) popPage(true);
+      ok('chk-home-details-button (OTP Home): the original Details link next to My monthly spending is 44 px or more and opens the Spending page', !!dl && nt(dl.textContent) === 'Details' && dlr.height >= 44 && dlr.width >= 44 && dlOpen, dlr && [dlr.width, dlr.height]);
+      { reset('existing'); tab('fooldal'); const pxv = (e, p) => e ? parseFloat(getComputedStyle(e)[p]) : -1, keys = {gutter:pxv($('#v-fooldal'), 'paddingLeft'), card:pxv($('#v-fooldal .hubteaser'), 'paddingLeft'), sec:pxv($('#v-fooldal .sec'), 'marginTop'), stack:pxv($('#v-fooldal .hubteaser'), 'marginBottom')};
+        ok('chk-spacing-scale (OTP Home): the Home gutter, the Persely card padding, the section gap and the card gap use the spacing tokens (16/16/24/12)', keys.gutter === 16 && keys.card === 16 && keys.sec === 24 && keys.stack === parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap-stack')) && keys.stack === 12, keys); }
+      reset('existing'); tab('hub'); const hb = $('#v-hub [data-sheet="hubsave"]');
+      ok('chk-home-labels (OTP Home): Home has no Quick actions card; Add money (Persely tab, 44 px), Pay a bill (Spending Bills row) and My cards (More) keep their places', !$('#v-fooldal .short') && !!hb && hb.getBoundingClientRect().height >= 44 && R.addMoney && R.bills && R.card);
+      reset('existing'); S.anNote = true; renderAll(); details(); const p3 = pg(), blocks = ['.safebig', '.gauge[data-cring="big"]', '.cshare', '[data-tour="billsrow"]', '.anfoot'].map(s => p3.querySelector(s)), inOrd = blocks.every((b, i) => b && (i === 0 || (blocks[i - 1].compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING))); while(stack.length) popPage(true);
+      reset('existing'); lateRent(); details(); const p4 = pg(), lateOrd = firstShown(p4) && firstShown(p4).classList.contains('bfc') && !!p4.querySelector('.bfc + .annote.one + .safebig, .bfc + .safebig'); while(stack.length) popPage(true);
+      ok('chk-spending-ui (OTP Home): Spending keeps Safe to spend, the category ring, Where it went, Bills and the footer in order; with a late bill the late card sits on top, then the analyst line (first visit), then Safe to spend', inOrd && lateOrd, {inOrd, lateOrd});
+      ok('chk-simple-rate-safety-one-sheet (OTP Home): Home has no Why Persely? link; Rate and safety opens from the Persely tab', !$('#v-fooldal .whyl') && R.rateSafety);
+
+      // copy and the flag
+      reset('existing'); S.juniorDays = 20; renderAll(); const lines = ['Week 4 · Save by Sunday', 'Payday · Save 7 500 Ft?', 'Save your first 1 000 Ft', `Week 3 done · ${ft(64000)} saved`, `Your 3.0% ends on ${juniorEndLabel()}`, 'Card spending so far', 'You usually spend 102 400 Ft a month by card', 'Your messages · 3 unread', 'What did I spend on this month?'];
+      const fk = lines.map(t => [t, fkGrade(t).grade]), subs = [...document.querySelectorAll('#v-fooldal small')].map(e => e.textContent).concat([settingsHTML().match(/data-sec="inbox"[\s\S]*?<small>([^<]*)/)[1]]);
+      ok('chk-home-otp-copy: the new Home and Settings lines read at grade 4 or below, subtitles have no hyphens, and Home never says "deadline"', fk.every(([, g]) => g <= 4) && subs.every(s => !/-/.test(s)) && !/deadline/i.test(pl(vFooldal())), {fk, subs});
+      const parse = q => { const p = new URLSearchParams(q); return p.get('simple') !== '0' && p.get('otphome') !== '0'; }, legH = (() => { OH_LEGACY = true; try{ return vFooldal(); } finally { OH_LEGACY = false; } })();
+      ok('chk-home-otp-flag: OTP_HOME is on with Simple Persely; ?otphome=0 and ?simple=0 turn it off; off renders the Home from before Phase 6 (Quick actions, Safe to spend, category circle) and the old checks run on it', OTP_HOME === true && parse('?demo=1') && !parse('?otphome=0') && !parse('?simple=0') && /class="short"/.test(legH) && /safebtn/.test(legH) && /data-cring/.test(legH) && !/ohgauge/.test(legH));
+    } catch(e){ ok('chk-phase6-otp-home: the new checks ran without errors', false, String(e && e.stack || e)); }
+    finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); txReset(); try{ closeStory(); }catch(e){} while(stack.length) popPage(true); setDemoMode(dm20); S = sv20; cur = cur20; stack.push(...stk20); demo.locked = lock20; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views20[i])); }
+  }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
+  if(OHF){ ohLeg(false); try{ renderAll(); }catch(e){} }   // back to the OTP Home
   spLeg(false); if(SP0){ try{ spHideReward(true); }catch(e){} Object.assign(SP, SP0, {rewardOn:false}); }
   const bad = out.filter(r => !r.pass);
   console.log(`__checkAnalytics: ${out.length - bad.length}/${out.length} passed`); bad.forEach(r => console.log('FAIL', r.name, r.info));

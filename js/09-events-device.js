@@ -243,8 +243,8 @@ document.addEventListener('click', e=>{
       S.rewards.unshift({id:'o' + g.id, title: travel ? 'Travel partner offer' : '5% cashback at a partner', partner: travel ? 'Horizon Travel' : 'Corner Market', steps: travel ? ['Book one trip with the partner travel agency.', 'Pay with your OTP card.', 'The 8% (up to 10 000 Ft) arrives on your Junior account within 5 working days.'] : REWARD_STEPS, note: travel ? '8% back on one booking. Up to 10 000 Ft.' : 'Up to 2 000 Ft back.', why:`Reached ${g.name}`}); }
     S._offer = null; closeSheet(); renderAll(); toast('Offer added to your rewards'); return; }
   if('anon' in d){ const before = snap(); S.analyst.on = true; S.analyst.accepted = true; closeSheet(); renderAll(); undoable(before, 'Financial analyst on'); return; }
-  if('anread' in d){ S.anNote = true; save(); renderView('fooldal'); sheet(SHEETS.anread()); return; }
-  if('anask' in d || 'anoff' in d){ S.anNote = true; save(); renderView('fooldal'); sheet(SHEETS.anoffcfm()); return; }   // Turn off always asks first
+  if('anread' in d){ S.anNote = true; save(); renderView('fooldal'); if(ohOn()) refreshPages(); sheet(SHEETS.anread()); return; }
+  if('anask' in d || 'anoff' in d){ S.anNote = true; save(); renderView('fooldal'); if(ohOn()) refreshPages(); sheet(SHEETS.anoffcfm()); return; }   // Turn off always asks first
   if('anoffgo' in d){ const before = snap(); S.analyst.on = false; S.anNote = true; closeSheet(); renderAll(); undoable(before, 'Financial analyst off. Safe to spend is a simpler estimate'); return; }
   if('storywait' in d){ toast(`Your story arrives on ${storyDateTxt()}.`); return; }
   if('planback' in d){ popPage(); setTimeout(() => { const t = stack.length ? stack[stack.length - 1] : null, el = t && t.querySelector('[data-tour="plan"]'); if(el) el.scrollIntoView({block:'start'}); }, 260); return; }
@@ -275,7 +275,7 @@ document.addEventListener('click', e=>{
   if('paymove' in d){   // every goal its own payday %, the 20 000 Ft floor on the total
     const A = paydayAlloc(), v = A.total;
     if(!v || acc('junior').v < v){ toast('Not enough money on your Junior account'); return; }
-    const before = snap(); let counted = false; A.rows.forEach(r => { if(r.v > 0) counted = depositTo(r.g, r.v, 'junior', `Payday rule: ${r.pct}%`) || counted; });
+    const before = snap(); S.pdAsk = false; let counted = false; A.rows.forEach(r => { if(r.v > 0) counted = depositTo(r.g, r.v, 'junior', `Payday rule: ${r.pct}%`) || counted; });
     closeSheet(); renderAll(); if(pig3d && cur === 'hub') setTimeout(() => pig3d.celebrate(), 250);
     const to = A.rows.filter(r => r.v > 0); undoable(before, `${to.length > 1 ? to.map(r => `${ft(r.v)} to ${r.g.name}`).join(', ') : `${ft(v)} moved to ${to[0].g.name}`}.${counted ? ` 🔥 ${S.streak}-week streak` : ''}`); return;
   }
