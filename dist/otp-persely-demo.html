@@ -515,7 +515,8 @@ button.avatar{border:0;cursor:pointer}
 /* ---------- small demo panel next to the phone (laptop only) ---------- */
 .demo-panel,.demo-show{display:none}
 @media (min-width:760px) and (hover:hover){
-  .demo-panel{display:flex;flex-direction:column;gap:5px;position:fixed;left:18px;top:50%;transform:translateY(-50%);width:186px;padding:10px;border-radius:16px;max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;
+  html.demo-on .demo-panel{display:flex}
+  .demo-panel{flex-direction:column;gap:5px;position:fixed;left:18px;top:50%;transform:translateY(-50%);width:186px;padding:10px;border-radius:16px;max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;
     background:rgba(255,255,255,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 6px 24px rgba(30,40,60,.12);z-index:200}
   .demo-panel.hidden{display:none}
   .demo-panel h4{margin:2px 4px 3px;font-size:var(--fs-xs);font-weight:700;color:#565B65;display:flex;justify-content:space-between}
@@ -526,8 +527,39 @@ button.avatar{border:0;cursor:pointer}
   .demo-panel button.on kbd{color:#d3d6db}
   .demo-panel .sep{height:1px;background:rgba(0,0,0,.08);margin:3px 0}
   .demo-show{position:fixed;left:0;top:50%;width:12px;height:54px;margin-top:-27px;border-radius:0 8px 8px 0;background:rgba(43,48,56,.18);z-index:200}
-  .demo-show.on{display:block}
+  html.demo-on .demo-show.on{display:block}
 }
+/* ---------- Settings, inbox, Perks (Phase 6) ---------- */
+.vhid{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.hhead .bell .bdot{position:absolute;top:9px;right:9px;width:10px;height:10px;border-radius:50%;background:var(--orange-t);box-shadow:0 0 0 2px var(--bg,#EEF0F5)}
+.tabtitle.tt-gear{position:relative}
+.tabtitle .tgear{position:absolute;right:0;top:50%;transform:translateY(-50%);margin-top:-1px;width:var(--tap);height:var(--tap);display:flex;align-items:center;justify-content:center;color:var(--green-i);border-radius:50%}
+.tabtitle .tgear:active{background:rgba(82,174,48,.12)}
+.set-prof{display:flex;align-items:center;gap:14px}
+.set-prof .avatar{flex:none}
+.set-sec.focus>.sec span{color:var(--green-t);font-weight:700}
+.set-row{display:flex;align-items:center;gap:12px;width:100%;min-height:var(--tap);padding:8px 16px;text-align:left;background:none;border-bottom:1px solid var(--line)}
+.set-row:last-child{border-bottom:0}
+.set-row .ic{color:var(--green-i);display:flex;flex:none}
+.set-row .t{flex:1;min-width:0;font-size:var(--fs-m);color:var(--ink2)}
+.set-row .t small{display:block;font-size:var(--fs-s);color:var(--muted-t);margin-top:2px}
+.set-row .chev{color:var(--green-i);display:flex}
+.set-card{padding:0;overflow:hidden}
+.qh{display:flex;gap:12px;padding:8px 16px 14px}
+.qh label{flex:1;display:flex;flex-direction:column;gap:4px;font-size:var(--fs-s);color:var(--muted-t)}
+.qh input{min-height:var(--tap);border:1px solid var(--line);border-radius:12px;padding:0 12px;font:inherit;font-size:var(--fs-m);color:var(--ink);background:var(--card)}
+.inb{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);min-height:var(--tap)}
+.inb:last-child{border-bottom:0}
+.inb .ic{color:var(--green-i);display:flex;flex:none;margin-top:2px}
+.inb .t{flex:1;min-width:0;font-size:var(--fs-m);color:var(--ink2)}
+.inb .t b{display:block;font-weight:600;color:var(--ink)}
+.inb .t span{display:block;margin-top:2px;line-height:1.35}
+.inb .t small{display:block;margin-top:4px;font-size:var(--fs-s);color:var(--muted-t)}
+.inb .udot{width:10px;height:10px;border-radius:50%;background:var(--orange-t);flex:none;margin-top:6px}
+.inb.read .t b{font-weight:500}
+.steps{margin:8px 0 0;padding-left:20px;font-size:var(--fs-s);color:var(--ink2);line-height:1.5}
+.pk-card{display:block}
+.pk-card .steps{margin-top:6px}
 /* ---------- Persely tab v2: calm, factual, bank-grade ---------- */
 .k{font-size:var(--fs-s);color:var(--muted-t)}
 .hero{padding:18px 18px 14px}
@@ -941,6 +973,7 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
   <div class="stack" id="stack"></div>
   <div class="back" id="back"><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Dialog" tabindex="-1"></div></div>
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div class="vhid" id="nlive" role="status" aria-live="polite" aria-atomic="true"></div>
   <div class="toast uchip" id="uchip" role="status" aria-live="polite" aria-atomic="true"></div>
   <div class="wn" id="wn" role="dialog" aria-modal="true" aria-label="What's new"></div>
   <div class="onb" id="onb" role="dialog" aria-modal="true" aria-label="Set up your goal"></div>
@@ -1357,6 +1390,7 @@ function safeToSpend(st = S){
 }
 /* ---------- console self-checks: window.__checkAnalytics() ---------- */
 function __checkAnalytics(){
+  hideBanners();   // a banner from an earlier run would hold every toast back
   const stack0 = stack.length;   // earlier checks open pages (goal page); they are closed again at the end so the app is left as it was
   const out = [], ok = (name, cond, info) => { out.push({name, pass:!!cond, info}); };
   const F = fresh('existing'), clone = () => JSON.parse(JSON.stringify(F));   // the old default seed: the existing user
@@ -1851,12 +1885,12 @@ function __checkAnalytics(){
       // More: Profile and Settings on top, then Money, Persely, Help; all 24 old rows kept; own icons
       reset('existing'); tab('tovabbiak');
       const mh = vTovabbiak(), secs = area(mh, '.sec span').map(x => nt(x.textContent)), labels = area(mh, '.mi span, .mtop span').map(x => nt(x.textContent));
-      const OLD = ['My cards', 'Notifications', 'Financial analyst', 'My accounts', 'Persely', 'Savings options', 'Spending', 'Discounts', 'For you', 'Settings', 'My partners', 'Mobile top-up', 'Click to Pay', 'Motorway vignette', 'Documents', 'Invite a friend!', 'OTP branches and ATMs in Hungary', 'ATMs abroad', 'Exchange rates', 'QR reader', 'Book a branch appointment', 'Can we help?', 'Block internet and mobile bank access', 'Log out'];
+      const OLD = ['My cards', 'Notifications', 'Financial analyst', 'My accounts', 'Persely', 'Savings options', 'Spending', 'Perks', 'For you', 'Settings', 'My partners', 'Mobile top-up', 'Click to Pay', 'Motorway vignette', 'Documents', 'Invite a friend!', 'OTP branches and ATMs in Hungary', 'ATMs abroad', 'Exchange rates', 'QR reader', 'Book a branch appointment', 'Can we help?', 'Block internet and mobile bank access', 'Log out'];
       const missing = OLD.filter(r => !labels.includes(r)), grp = name => { const i = mh.indexOf('<span>' + name + '</span></div>'), j = [mh.indexOf('<span>Money</span></div>'), mh.indexOf('<span>Persely</span></div>'), mh.indexOf('<span>Help</span></div>'), mh.length].filter(x => x > i).sort((a, b) => a - b)[0]; return area(mh.slice(i, j), '.mi span').map(x => nt(x.textContent)); };
       const gMoney = grp('Money'), gPer = grp('Persely'), gHelp = grp('Help'), icons = area(mh, '.mi > svg, .mi-main > svg, .mtop svg').map(x => x.innerHTML), uniqueIcons = new Set(icons).size === icons.length;
       const topRow = area(mh, '.mtop button').map(x => nt(x.textContent)), sw = area(mh, '.mi.sw [role="switch"]').length === 1, tap = [...document.querySelectorAll('#v-tovabbiak .mtop button, #v-tovabbiak .mi')].every(b => b.offsetHeight >= 44);
       const rowGo = (name, attr) => area(mh, '.mi').some(b => nt(b.textContent) === name && b.matches(attr));
-      ok('chk-more-groups: More has Profile and Settings on top, then Money, Persely and Help; every one of the 24 old rows is kept (Spending replaces Spending tracker); Persely and Savings options open the Persely tab; Financial analyst is a switch row; every row has its own icon (Financial analyst and Savings options differ); rows are 44 px', topRow.join() === 'Profile,Settings' && secs.join() === 'Money,Persely,Help' && missing.length === 0 && !/Spending tracker/.test(pl(mh)) && gMoney.join() === 'My accounts,My cards,Spending,Mobile top-up,Click to Pay,Motorway vignette,Exchange rates,QR reader,Documents' && gPer.join() === 'Persely,Savings options,Discounts,My partners,Financial analyst,For you' && /Financial analyst/.test(pl(mh)) && gHelp.join() === 'Notifications,How Persely works,Can we help?,Invite a friend!,OTP branches and ATMs in Hungary,ATMs abroad,Book a branch appointment,Block internet and mobile bank access,Log out' && rowGo('Persely', '[data-tab="hub"]') && rowGo('Savings options', '[data-tab="hub"]') && rowGo('Spending', '[data-go="mymoney"]') && sw && uniqueIcons && tap, [topRow, secs, missing, gMoney, gPer, gHelp, uniqueIcons, tap]);
+      ok('chk-more-groups: More has Profile and Settings on top, then Money, Persely and Help; every one of the 24 old rows is kept (Spending replaces Spending tracker); Persely and Savings options open the Persely tab; Financial analyst is a switch row; every row has its own icon (Financial analyst and Savings options differ); rows are 44 px', topRow.join() === 'Profile,Settings' && secs.join() === 'Money,Persely,Help' && missing.length === 0 && !/Spending tracker/.test(pl(mh)) && gMoney.join() === 'My accounts,My cards,Spending,Mobile top-up,Click to Pay,Motorway vignette,Exchange rates,QR reader,Documents' && gPer.join() === 'Persely,Savings options,Perks,My partners,Financial analyst,For you' && /Financial analyst/.test(pl(mh)) && gHelp.join() === 'Notifications,How Persely works,Can we help?,Invite a friend!,OTP branches and ATMs in Hungary,ATMs abroad,Book a branch appointment,Block internet and mobile bank access,Log out' && rowGo('Persely', '[data-tab="hub"]') && rowGo('Savings options', '[data-tab="hub"]') && rowGo('Spending', '[data-go="mymoney"]') && sw && uniqueIcons && tap, [topRow, secs, missing, gMoney, gPer, gHelp, uniqueIcons, tap]);
 
       // one demo toast: every shell row says the same thing the same way
       const rowsM = [...document.querySelectorAll('#v-tovabbiak [data-demo]')], names = [];
@@ -1866,7 +1900,7 @@ function __checkAnalytics(){
       pushPage('neked'); const nk = [...document.querySelectorAll('.page [data-demo]')]; let uniN = nk.length === 2; nk.forEach(b => { hideToast(true); b.click(); if(!/is not part of this demo/.test(toastNow().text)) uniN = false; }); popPage(true);
       hideToast(true); demoToast('Share'); const shareT = toastNow(); hideToast(true);
       const allHtml = [vFooldal(), vHub(), vTovabbiak(), vUtalas(), vTranz(), vKartyaim(), PAGES.neked.html(), ...Object.values(SHEETS).filter(f => f.length === 0).map(f => { try{ return f(); }catch(e){ return ''; } })].join(' ');
-      ok('chk-demo-toast-uniform: the 15 More shell rows (14 old + Profile), 4 Transfer rows, 3 card rows, 2 For you cards and Share show one toast: "[Row name] is not part of this demo. It works as in the OTP app.", a Demo tag, role="status", 3 s; no old variant is left in the markup', rowsM.length === 15 && uniform && uniT && uniC && uniN && shareT.on && shareT.text === 'Demo Share is not part of this demo. It works as in the OTP app.' && DEMO_TOAST_MS === 3000 && /DEMO_TOAST_MS/.test(showToast.toString()) && !/data-toast=/.test(allHtml) && !/not available in the demo|hidden in the demo|Daily limit: 300|New features –|No active qvik/.test(pl(allHtml)) && typeof NA === 'undefined', [rowsM.length, uniform, uniT, uniC, uniN, shareT]);
+      ok('chk-demo-toast-uniform: the 12 More shell rows (the rest of the 24 old rows open real screens since Phase 6: Profile, Settings, Notifications, Perks, My partners), 4 Transfer rows, 3 card rows, 2 For you cards and Share show one toast: "[Row name] is not part of this demo. It works as in the OTP app.", a Demo tag, role="status", 3 s; no old variant is left in the markup', rowsM.length === 12 && uniform && uniT && uniC && uniN && shareT.on && shareT.text === 'Demo Share is not part of this demo. It works as in the OTP app.' && DEMO_TOAST_MS === 3000 && /DEMO_TOAST_MS/.test(showToast.toString()) && !/data-toast=/.test(allHtml) && !/not available in the demo|hidden in the demo|Daily limit: 300|New features –|No active qvik/.test(pl(allHtml)) && typeof NA === 'undefined', [rowsM.length, uniform, uniT, uniC, uniN, shareT]);
 
       // no route opens the legacy Persely details
       reset('existing'); pushPage('persely'); const r1 = cur === 'hub' && !stack.length; pushPage('megtakaritas'); const r2 = cur === 'hub' && !stack.length;
@@ -1886,14 +1920,14 @@ function __checkAnalytics(){
 
       // Persely tab blocks in order, existing and new user
       reset('existing'); S.analyst.on = true; S.analyst.accepted = true; S.juniorDays = 300; renderAll(); const T1 = vHub();
-      const base = ['Total in Persely', 'data-sheet="hubsave"', 'class="trust"', 'data-tour="goals"', 'Saving rules', 'data-go="grad"', 'Your habits', 'data-go="mymoney"', 'data-go="kedvezmenyek"'];
-      const o1 = inOrder(T1, base), friendsLast = pos(T1, 'data-sheet="how"') > pos(T1, 'data-go="kedvezmenyek"');
+      const base = ['Total in Persely', 'data-sheet="hubsave"', 'class="trust"', 'data-tour="goals"', 'Saving rules', 'data-go="grad"', 'Your habits', 'data-go="mymoney"', 'data-go="perks"'];
+      const o1 = inOrder(T1, base), friendsLast = pos(T1, 'data-sheet="how"') > pos(T1, 'data-go="perks"');
       S.juniorDays = 60; renderAll(); const T2 = vHub(), o2 = inOrder(T2, ['Total in Persely', 'class="trust"', 'data-go="grad"', 'data-tour="goals"', 'Saving rules', 'Your habits']);
-      S.months = 0; const noYear = !/data-go="year"/.test(T1); S.months = 12; const yr = vHub(), yearAfter = inOrder(yr, ['data-go="mymoney"', 'data-go="kedvezmenyek"', 'data-go="year"', 'data-sheet="how"']); S.months = 0;
+      S.months = 0; const noYear = !/data-go="year"/.test(T1); S.months = 12; const yr = vHub(), yearAfter = inOrder(yr, ['data-go="mymoney"', 'data-go="perks"', 'data-go="year"', 'data-sheet="how"']); S.months = 0;
       const noLate = !/class="card bfc"|Bills first/.test(T1 + T2);
       const goals44 = (() => { tab('hub'); const nb = $('#v-hub [data-sheet="newgoal"]'); return !!nb && nb.offsetHeight >= 44; })();
       reset('new'); const T3 = vHub(), o3 = inOrder(T3, ['id="setupcard"', 'Total in Persely', 'class="trust"', 'data-go="grad"', 'Your habits', 'data-sheet="how"']) && /Your streak starts with the first deposit/.test(pl(T3)), jrAbove = pos(T3, 'data-go="grad"') > pos(T3, 'id="setupcard"');
-      ok('chk-tab-order: existing user: Total card, Add money and Withdraw with the trust line, Goals (New + at 44 px), Saving rules, Junior card, Your habits, Spending, Discounts, Your year (only from month 12), How Persely works; the Junior card moves under the Total card with 90 days left; no late-bill card; new user: setup card first, Junior card never above it', o1 && friendsLast && o2 && noYear && yearAfter && noLate && goals44 && o3 && jrAbove, [o1, friendsLast, o2, noYear, yearAfter, noLate, goals44, o3, jrAbove]);
+      ok('chk-tab-order: existing user: Total card, Add money and Withdraw with the trust line, Goals (New + at 44 px), Saving rules, Junior card, Your habits, Spending, Perks, Your year (only from month 12), How Persely works; the Junior card moves under the Total card with 90 days left; no late-bill card; new user: setup card first, Junior card never above it', o1 && friendsLast && o2 && noYear && yearAfter && noLate && goals44 && o3 && jrAbove, [o1, friendsLast, o2, noYear, yearAfter, noLate, goals44, o3, jrAbove]);
 
       // table 3.6: one primary entry per feature that exists, and the allowed links
       reset('existing'); S.analyst.on = true; S.analyst.accepted = true; renderAll(); const E = {};
@@ -1917,12 +1951,12 @@ function __checkAnalytics(){
       E.rules = r1b && r2b && r3b && r4b;
       // Card: Home shortcut and More > My cards open the one card page; block switch, round-ups, discounts
       tab('fooldal'); clk('#v-fooldal .short [data-go="kartyaim"]'); const c1 = top() === 'kartyaim'; const swb = $('.page .row .tg[data-freeze]'), blk = !!swb && swb.offsetHeight >= 44 && swb.getAttribute('role') === 'switch'; const f0b = S.frozen; if(swb) swb.click(); const blocked = S.frozen === !f0b; if(S.frozen !== f0b){ const s2 = $('.page .tg[data-freeze]'); if(s2) s2.click(); }
-      S.roundup = {on:true, goal:'holiday'}; renderAll(); const rl = $('.page [data-saverules="rr"]'), ru = /Round-ups: on → Summer holiday/.test(nt($('.page').textContent)) && /Edit/.test(rl.textContent); rl.click(); const ruOpen = sheetOpen() && /Saving rules/.test($('#sheet').textContent); closeSheet(); clk('.page [data-go="kedvezmenyek"]'); const disc = top() === 'kedvezmenyek'; while(stack.length) popPage(true);
+      S.roundup = {on:true, goal:'holiday'}; renderAll(); const rl = $('.page [data-saverules="rr"]'), ru = /Round-ups: on → Summer holiday/.test(nt($('.page').textContent)) && /Edit/.test(rl.textContent); rl.click(); const ruOpen = sheetOpen() && /Saving rules/.test($('#sheet').textContent); closeSheet(); clk('.page [data-go="perks"]'); const disc = top() === 'perks'; while(stack.length) popPage(true);
       tab('tovabbiak'); clk('#v-tovabbiak [data-go="kartyaim"]'); const c2 = top() === 'kartyaim'; while(stack.length) popPage(true);
       E.card = c1 && c2 && blk && blocked && ru && ruOpen && disc;
       // Bills: the Pay a bill shortcut; More > Notifications; Financial analyst switch; Your year; create goal
       tab('fooldal'); clk('#v-fooldal .short [data-go="bills"]'); E.bills = top() === 'bills'; while(stack.length) popPage(true);
-      tab('tovabbiak'); clk('#v-tovabbiak [data-go="ertesitesek"]'); E.notif = top() === 'ertesitesek'; while(stack.length) popPage(true);
+      tab('tovabbiak'); clk('#v-tovabbiak [data-settings="notif"]'); E.notif = top() === 'settings' && !!$('.page [data-sec="notif"].focus'); while(stack.length) popPage(true);
       tab('tovabbiak'); const an0 = S.analyst.on; clk('#v-tovabbiak .mi.sw [data-sw="analyst"]'); E.analyst = an0 && sheetOpen() && !!document.querySelector('#sheet [data-anoffgo]'); clk('#sheet [data-anoffgo]'); E.analyst = E.analyst && S.analyst.on === false; hideChip(true); closeSheet(); S.analyst.on = true; renderAll();
       tab('hub'); clk('#v-hub .sec [data-sheet="newgoal"]'); E.create = sheetOpen() && document.querySelectorAll('#sheet [data-tilepick]').length >= 6; closeSheet();
       S.months = 12; renderAll(); tab('hub'); clk('#v-hub [data-go="year"]'); E.year = top() === 'year'; S.months = 0; while(stack.length) popPage(true);
@@ -1986,8 +2020,8 @@ function __checkAnalytics(){
       S.monthEnd = true; renderAll(); const on1 = /data-story/.test(vHub().match(/<[^>]*class="sring[^"]*"[^>]*>/)[0]) && !/sring off/.test(vHub()), card1 = /Your November is ready/.test(pl(vFooldal()));
       openStory(); stGo(3); const was3 = ST.i === 3; closeStory(); openStory(); const restarted = ST.i === 0 && ST.t === 0; closeStory();
       const homeAfter = !/Your November is ready/.test(vFooldal()) && /sring seen/.test(vHub());
-      S.monthEnd = false; S.storySeen = false; unlockPhone(); dispatchEvent(new KeyboardEvent('keydown', {key:'m'})); const keyM = S.monthEnd === true && ST.on === true; closeStory();
-      reset('existing'); dispatchEvent(new KeyboardEvent('keydown', {key:'e'})); const keyE = S.monthEnd === true && ST.on === true && S.period === 'Autumn semester'; closeStory(); reset('existing');
+      const dm0 = DEMO_ON; setDemoMode(true); S.monthEnd = false; S.storySeen = false; unlockPhone(); dispatchEvent(new KeyboardEvent('keydown', {key:'m'})); const keyM = S.monthEnd === true && ST.on === true; closeStory();
+      reset('existing'); dispatchEvent(new KeyboardEvent('keydown', {key:'e'})); const keyE = S.monthEnd === true && ST.on === true && S.period === 'Autumn semester'; closeStory(); reset('existing'); setDemoMode(dm0);
       S.monthEnd = true; monthStep(true); const cleared = S.monthEnd === false;
       ok('chk-story-month-end: before month end the ring is grey and not a story button ("Your story arrives on 30 November 2026") and Home has no story card; at month end the ring opens the story and Home shows "Your November is ready" until it is watched; demo key M and E reach it; a new month clears it; reopening a watched story restarts at slide 1', off0 && !card0 && on1 && card1 && was3 && restarted && homeAfter && keyM && keyE && cleared, {off0, card0, on1, card1, was3, restarted, homeAfter, keyM, keyE, cleared});
 
@@ -2009,10 +2043,103 @@ function __checkAnalytics(){
       // chk-compare-per-100k: Persely 3.0%, Savings account 3.5% and the old 0.01% per 100 000 Ft on one bar scale, one sentence on rate, tax and access; reached goals say Reached, capped; the score once; reward sheets wait
       const g0 = S.goals.find(g => g.id === 'ps5') || S.goals.find(g => !isEur(g)); const keepSaved = g0.saved; g0.saved = gTarget(g0) + 59000; const Y = yearHTML(), Yt = nt(pl(Y)); g0.saved = keepSaved;
       const w = [...Y.matchAll(/--w:([\d.]+)%/g)].map(x => +x[1]), reach = nt(`${g0.name} ${ft(gTarget(g0))} of ${ft(gTarget(g0))}`);
-      pushPage('year'); let held = false; qSheet(() => '<h2>Reward test</h2>', 'rtest'); held = !sheetOpen() && MQ.q.some(x => x.id === 'rtest'); popPage(true); mqPump(); const released = sheetOpen() && /Reward test/.test($('#sheet').innerHTML); closeSheet(); MQ.q = [];
+      pushPage('year'); let held = false; qSheet(() => '<h2>Reward test</h2>', 'reward'); held = !sheetOpen() && MQ.q.some(x => x.id === 'reward'); popPage(true); mqPump(); const released = sheetOpen() && /Reward test/.test($('#sheet').innerHTML); closeSheet(); MQ.q = [];
       ok('chk-compare-per-100k: "What your rate earned" is per 100 000 Ft after 28% tax for Persely 3.0% (2 160 Ft), Savings account 3.5% (2 520 Ft) and the old 0.01% (7 Ft) on the same bar scale, with one conclusion sentence on rate, tax and access that does not say Persely earns more; an overfunded goal shows Reached with the amount capped at its target; the health score is shown once as first month against last month; reward sheets wait until the year page closes', /Per 100 000 Ft for a year, after tax/.test(Yt) && /Persely, 3\.0% \+2 160 Ft/.test(Yt) && /Savings account, 3\.5% \+2 520 Ft/.test(Yt) && /Before Persely, 0\.01% \+7 Ft/.test(Yt) && w.length === 3 && Math.abs(w[0] / w[1] - 2160 / 2520) < .01 && w[2] < 2 && /pays the higher rate, 3\.5% against 3\.0%/.test(Yt) && /28% tax/.test(Yt) && /withdraw any time/.test(Yt) && !/Persely (pays|earns) more/.test(Yt) && /Reached/.test(Yt) && Yt.includes(reach) && (Yt.match(/First month \d+, last month \d+ of 100/g) || []).length === 1 && (Yt.match(/Financial health score/g) || []).length === 1 && held && released, {w, held, released, tail: Yt.slice(-200)});
     } catch(e){ ok('chk-phase5: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeStory(); }catch(e){} try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); S = sv13; cur = cur13; stack.push(...stk13); demo.locked = lock13; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views13[i])); }
+  }
+  { // Phase 6: real Settings, notification toggles and inbox, pushes in the data, Perks (flow plan B7, C5, C6; decisions D11, D12)
+    const sv14 = S, cur14 = cur, stk14 = stack.splice(0), lock14 = demo.locked, views14 = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')), dm14 = DEMO_ON; demo.locked = false;
+    const pl = h => String(h).replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').replace(/\s+/g, ' '), nt = t => String(t).replace(/\s+/g, ' ').trim(), clk = sel => { const b = $(sel); if(b) b.click(); return !!b; };
+    const reset = kind => { hideBanners(); perkTab = 0; while(stack.length) popPage(true); try{ closeOnb(); }catch(e){} try{ closeStory(); }catch(e){} closeSheet(); MQ.q = []; hideChip(true); hideToast(true); S = fresh(kind); SETUP_COLLAPSED = false; renderAll(); };
+    const top = () => stack.length ? stack[stack.length - 1].dataset.id : '', toastT = () => nt($('#toast').textContent);
+    try{
+      // chk-settings-real: the avatar and More > Profile / Settings open a real Settings page with Profile (name from S.name), Persely, Notifications, Privacy and Help; the demo panel and keys sit behind the flag
+      reset('existing'); setDemoMode(false); tab('fooldal'); S.name = 'Kiss Réka'; renderAll();
+      const av = $('#v-fooldal .hhead .avatar'), avOpen = (av.click(), top() === 'settings'), pg = $('.page [data-sec="profile"]') ? pl($('.page').innerHTML) : '';
+      const secs = [...document.querySelectorAll('.page .set-sec')].map(x => x.dataset.sec).join(), noToast = !$('#toast').classList.contains('on') || !/not part of this demo/.test(toastT());
+      while(stack.length) popPage(true); tab('tovabbiak'); const m1 = (clk('#v-tovabbiak .mtop [data-settings="profile"]'), top() === 'settings'); while(stack.length) popPage(true); const m2 = (clk('#v-tovabbiak .mtop [data-settings=""]'), top() === 'settings'); while(stack.length) popPage(true);
+      const panelOff = !document.documentElement.classList.contains('demo-on'); lpTimer = null; av.dispatchEvent(new Event('pointerdown', {bubbles:true})); const lpOff = lpTimer === null;
+      setDemoMode(true); renderDemoPanel(); av.dispatchEvent(new Event('pointerdown', {bubbles:true})); const lpOn = lpTimer !== null; clearTimeout(lpTimer); lpTimer = null; const panelOn = document.documentElement.classList.contains('demo-on') && /data-dseed/.test($('#demoPanel').innerHTML); setDemoMode(false);
+      ok('chk-settings-real: the avatar, More > Profile and More > Settings open a real Settings page (no demo toast) with Profile (the name from S.name), Persely, Notifications, Privacy and Help; the demo panel, its keys and the avatar long-press only work behind the flag (?demo=1)', avOpen && /Kiss Réka/.test(pg) && secs === 'profile,persely,notif,privacy,help' && noToast && m1 && m2 && panelOff && lpOff && lpOn && panelOn, [avOpen, secs, noToast, m1, m2, panelOff, lpOff, lpOn, panelOn]);
+
+      // chk-gear-deeplink: the Persely tab header has a 44 px gear that opens Settings at the Persely section; every Persely setting is reachable there
+      let gearOk = true; ['existing', 'new'].forEach(k => { reset(k); tab('hub'); const g = $('#v-hub .tgear'); if(!g || g.offsetHeight < 44 || g.offsetWidth < 44 || g.dataset.settings !== 'persely' || !g.getAttribute('aria-label')) gearOk = false; });
+      reset('existing'); tab('hub'); clk('#v-hub .tgear'); const pgp = $('.page'), secP = pgp.querySelector('[data-sec="persely"]'), scr = pgp.querySelector('.scroll'), focused = secP.classList.contains('focus') && !pgp.querySelector('[data-sec="notif"].focus');
+      const inView = secP.getBoundingClientRect().top < scr.getBoundingClientRect().top + scr.clientHeight && secP.getBoundingClientRect().bottom > scr.getBoundingClientRect().top;
+      const rules = !!secP.querySelector('[data-saverules=""]'), rem = !!secP.querySelector('[data-sw="remind"][role="switch"]'), ana = !!secP.querySelector('[data-sw="analyst"][role="switch"]'), jr = !!secP.querySelector('[data-go="grad"]');
+      clk('.page [data-saverules=""]'); const sr = sheetOpen() && /Saving rules/.test($('#sheet').textContent); closeSheet();
+      const an0 = S.analyst.on; clk('.page [data-sw="analyst"]'); const cf = sheetOpen() && !!$('#sheet [data-anoffgo]') && S.analyst.on === an0; closeSheet();
+      const r0 = S.remind; clk('.page [data-sw="remind"]'); const remT = S.remind === !r0; clk('.page [data-sw="remind"]'); hideToast(true);
+      clk('.page [data-go="grad"]'); const jrOpen = top() === 'grad' && /Keep my 3\.0%|Request to keep 3\.0%/.test(pl($('.page:last-child').innerHTML)); while(stack.length) popPage(true);
+      tab('tovabbiak'); clk('#v-tovabbiak [data-settings="notif"]'); const nf = top() === 'settings' && !!$('.page [data-sec="notif"].focus'); while(stack.length) popPage(true);
+      ok('chk-gear-deeplink: the Persely tab gear (44 px, both seeds) opens Settings at the Persely section; Saving rules, Weekly reminder, the Financial analyst switch (with its turn-off confirm) and Junior status (Keep my 3.0%) are all in it; More > Notifications opens the Notifications section', gearOk && focused && inView && rules && rem && ana && jr && sr && cf && remT && jrOpen && nf, [gearOk, focused, inView, rules, rem, ana, jr, sr, cf, remT, jrOpen, nf]);
+
+      // chk-notif-toggles: six toggles plus quiet hours with time pickers; money events and late bills on, the weekly reminder an opt-in; an off type sends nothing; push copy follows the state
+      reset('existing'); const D = fresh('existing').notif, newRem = fresh('new').remind === false;
+      const defaults = D.bills && D.payday && D.story && D.card && D.incoming && !D.quiet;
+      tab('tovabbiak'); clk('#v-tovabbiak [data-settings="notif"]');
+      const nsec = $('.page [data-sec="notif"]'), labels = [...nsec.querySelectorAll('.set-row .t')].map(x => nt(x.firstChild.textContent)).join(), sw = [...nsec.querySelectorAll('[role="switch"]')], big = sw.every(b => b.offsetHeight >= 44);
+      clk('.page [data-sw="n:quiet"]'); const tp = [...document.querySelectorAll('.page [data-sec="notif"] input[type="time"]')], pickers = tp.length === 2 && tp[0].dataset.qh === 'qfrom';
+      tp[0].value = '21:30'; tp[0].dispatchEvent(new Event('change', {bubbles:true})); const picked = S.notif.qfrom === '21:30' && S.notif.quiet === true;
+      const quiet = quietAt('23:30', '22:00', '07:00') && quietAt('03:00', '22:00', '07:00') && !quietAt('12:00', '22:00', '07:00') && quietAt('10:00', '09:00', '17:00') && !quietAt('18:00', '09:00', '17:00') && inQuiet('22:00') && !inQuiet('12:00');
+      S.notif.quiet = false; while(stack.length) popPage(true); hideBanners();
+      // card payments off: the card payment still happens in the data, but no banner and no inbox item
+      S.notif.card = false; const b0 = acc('junior').v, n0 = S.inbox.length, t0 = S.tx.length; sendDemo(0); const offQuiet = acc('junior').v === b0 - 5240 && S.tx.length === t0 + 1 && S.inbox.length === n0 && !MQ.banner && /Card payments notifications are off/.test(toastT());
+      S.notif.card = true; hideToast(true); sendDemo(0); const onSends = S.inbox.length === n0 + 1 && MQ.banner === true && /Balance: /.test(S.inbox[0].body); hideBanners();
+      S.remind = false; const nI = S.inbox.length; sendDemo(2); const remOff = S.inbox.length === nI; S.remind = true; S.streak = 0; sendDemo(2); const noZero = !/0-week/.test(S.inbox[0].body); S.streak = 3; hideBanners(); sendDemo(2); const streakOk = /3-week streak/.test(S.inbox[0].body); hideBanners();
+      S.analyst.on = false; const sOff = !/Safe to spend/.test(DEMO[8].body() + (S.inbox[0] ? '' : '')) && stsNow() === ''; S.analyst.on = true; const sOn = /Safe to spend is now/.test(stsNow());
+      reset('new'); const nF = S.inbox.length; sendDemo(4); const noFriend = S.inbox.length === nF && /no friends/.test(toastT()); hideToast(true); reset('existing'); S.friendsOptIn = true; sendDemo(4); const friend = /Bence saved/.test(S.inbox[0].body); hideBanners();
+      const live = $('#nlive'), liveOk = !!live && live.getAttribute('role') === 'status' && live.getAttribute('aria-live') === 'polite' && BANNER_MS >= 6000;
+      ok('chk-notif-toggles: Settings > Notifications has Bills due, Sunday streak reminder, Payday, Monthly story, Card payments, Incoming transfers and Quiet hours (switches at 44 px, from and to time pickers); money events and late bills are on and the weekly reminder is an opt-in by default; an off type sends no banner and no inbox item; quiet hours work across midnight; the streak push only at 1 week or more, Safe to spend wording only with the analyst on, friend pushes real friends only; banners stay 6 s or more and are announced', defaults && newRem && labels === 'Bills due,Sunday streak reminder,Payday,Monthly story,Card payments,Incoming transfers,Quiet hours' && sw.length === 7 && big && pickers && picked && quiet && offQuiet && onSends && remOff && noZero && streakOk && sOff && sOn && noFriend && friend && liveOk, [defaults, newRem, labels, sw.length, big, pickers, picked, quiet, offQuiet, onSends, remOff, noZero, streakOk, sOff, sOn, noFriend, friend, liveOk]);
+
+      // chk-inbox-20: the Home bell opens the inbox: last 20, newest first, unread dot, a tap opens the item's screen, empty state text
+      reset('existing'); const empty = /Nothing yet\. Money events and bill reminders will show here\./.test(pl(PAGES.inbox.html())), noDot = !/bdot/.test(vFooldal());
+      for(let i = 0; i < 25; i++) notify({title:'Note ' + i, body:'Body ' + i, url:i === 24 ? 'tranzakciok' : 'hub', persi:true}); hideBanners();
+      const cap = S.inbox.length === 20 && S.inbox[0].title === 'Note 24' && S.inbox[19].title === 'Note 5', dot = /class="bdot"/.test(vFooldal()) && /20 unread/.test(vFooldal());
+      tab('fooldal'); clk('#v-fooldal .hhead .bell'); const open = top() === 'inbox', items = document.querySelectorAll('.page .inb').length === 20, firstT = /Note 24/.test($('.page .inb').textContent);
+      clk('.page .inb'); const went = cur === 'tranzakciok' && !stack.length && S.inbox[0].read === true && inboxUnread() === 19;
+      tab('fooldal'); clk('#v-fooldal .hhead .bell'); clk('.page [data-inbread]'); const allRead = inboxUnread() === 0 && !/bdot/.test(vFooldal()) && !$('.page [data-inbread]'); while(stack.length) popPage(true);
+      const nB = S.inbox.length; sendDemo(2); const demoIn = S.inbox.length === Math.min(20, nB + 1); hideBanners();
+      ok('chk-inbox-20: the Home bell opens an inbox of the last 20 items, newest first, with an unread dot on the bell; a tap opens the item screen and marks it read; Mark all as read clears the dot; every push that is fired is also listed; the empty state says "Nothing yet. Money events and bill reminders will show here."', empty && noDot && cap && dot && open && items && firstT && went && allRead && demoIn, [empty, noDot, cap, dot, open, items, firstT, went, allRead, demoIn]);
+
+      // chk-push-reflects-balance: a Salary's in push adds the salary and the balance, a card push adds a card payment and moves the balance; the push text shows the real balance
+      reset('existing'); const bj = acc('junior').v, tx0 = S.tx.length; salaryArrives(); hideBanners();
+      const salary = acc('junior').v === bj + S.income.amount && S.tx.length === tx0 + 1 && S.tx[0].n === 'SALARY' && S.tx[0].a === S.income.amount && /\+75 000 Ft/.test(nt(S.inbox[0].body)) && /SALARY/.test(pl(vTranz()));
+      const b1 = acc('junior').v; sendDemo(0); hideBanners(); const card = acc('junior').v === b1 - 5240 && S.tx[0].n === 'LIDL MAGYARORSZÁG' && S.tx[0].a === -5240 && S.inbox[0].body.includes('Balance: ' + ft(acc('junior').v)) && /LIDL/.test(pl(vTranz())) && /Balance: /.test(S.inbox[0].body);
+      const b2 = acc('junior').v; sendDemo(1); hideBanners(); const inc = acc('junior').v === b2 + 20000 && S.tx[0].n === 'NAGY PÉTER' && S.inbox[0].body.includes('Balance: ' + ft(acc('junior').v));
+      ok('chk-push-reflects-balance: the Salary\'s in push (Payday) adds the salary transaction and +75 000 Ft to the balance; the Card payment push adds a LIDL card payment and lowers the balance; Money received adds 20 000 Ft; each push shows the balance after it and the rows are in Transactions', salary && card && inc, [salary, card, inc, acc('junior').v]);
+
+      // chk-perks-rewards: Perks (More, My partners, the Persely tab row, the card page) with Discounts and My rewards; earned rewards list a partner name and steps; empty state
+      reset('existing'); tab('tovabbiak'); const mh = vTovabbiak(); const perksRowMore = /data-go="perks"[^>]*>[^<]*<svg[\s\S]*?<span>Perks<\/span>/.test(mh) && !/<span>Discounts<\/span>/.test(mh), partners = /data-go="perks"[^>]*>(?:(?!<\/button>)[\s\S])*My partners/.test(mh);
+      const hubRow = pl(vHub()).includes('Perks') && !/Discounts/.test(pl(vHub().match(/<button class="row" data-go="perks">[\s\S]*?<\/button>/)[0]));
+      clk('#v-tovabbiak .mi[data-go="perks"]'); const pOpen = top() === 'perks', tabsT = [...document.querySelectorAll('.page [data-perktab]')].map(x => nt(x.textContent)).join();
+      clk('.page [data-perktab="1"]'); const emptyT = /Stay within your plan for a month and your first reward arrives\./.test(pl($('.page').innerHTML));
+      S.rewards.unshift({id:'r9', title:'5% cashback at a partner', partner:'Corner Market', steps:REWARD_STEPS, note:'Valid in December. Up to 2 000 Ft back.', why:'Stayed within the split in October'}, {id:'r1', title:'Old reward', note:'Up to 1 000 Ft back.', why:'Old'}); renderAll();
+      const rt = pl($('.page').innerHTML), listed = /Corner Market/.test(rt) && (document.querySelectorAll('.page .pk-card .steps li').length >= 6) && /Shop at the partner with your OTP card/.test(rt) && /Old reward/.test(rt);
+      while(stack.length) popPage(true); S.rewards = []; S._offer = 'holiday'; sheet(SHEETS.goaloffer()); clk('#sheet [data-claimoffer]'); const claimed = S.rewards.length === 1 && !!S.rewards[0].partner && S.rewards[0].steps.length === 3; hideToast(true);
+      tab('hub'); clk('#v-hub [data-go="perks"]'); const fromTab = top() === 'perks'; while(stack.length) popPage(true); clk('#v-hub .tgear'); while(stack.length) popPage(true);
+      tab('fooldal'); pushPage('kartyaim'); clk('.page [data-go="perks"]'); const fromCard = top() === 'perks'; while(stack.length) popPage(true);
+      tab('tovabbiak'); const mp = [...document.querySelectorAll('#v-tovabbiak .mi')].find(b => /My partners/.test(b.textContent)); mp.click(); const fromPartners = top() === 'perks'; while(stack.length) popPage(true);
+      ok('chk-perks-rewards: Perks replaces Discounts in More and on the Persely tab; My partners and the card page row open it; two tabs Discounts and My rewards; the empty state says "Stay within your plan for a month and your first reward arrives."; earned rewards (also old ones) list a partner name and steps; a goal offer claimed lands there with a partner and steps', perksRowMore && partners && hubRow && pOpen && tabsT.startsWith('Discounts,My rewards') && emptyT && listed && claimed && fromTab && fromCard && fromPartners, [perksRowMore, partners, hubRow, pOpen, tabsT, emptyT, listed, claimed, fromTab, fromCard, fromPartners]);
+
+      // chk-discount-detail-first: a discount row opens a detail sheet first (partner, offer, redeem steps); only Activate switches it on, with the Undo chip; Add to my rewards lands in My rewards with a toast; partner names are marked for OTP
+      reset('existing'); pushPage('perks'); clk('.page [data-perk="d1"]'); const sh1 = pl($('#sheet').innerHTML), detail = sheetOpen() && /Pizzeria Roma/.test(sh1) && /15% instant discount/.test(sh1) && /How to redeem/.test(sh1) && $('#sheet .steps').children.length === 3 && !!$('#sheet [data-perkact="d1"]') && S.disc.activated.length === 0;
+      clk('#sheet [data-perkact="d1"]'); const act = S.disc.activated.join() === 'd1' && !sheetOpen() && /Discount activated: Pizzeria Roma/.test($('#uchip').textContent) && !!$('#uchip [data-undo]'); clk('#uchip [data-undo]'); const undone = S.disc.activated.length === 0; hideChip(true);
+      clk('.page [data-perk="d2"]'); clk('#sheet [data-perkadd="d2"]'); const added = S.rewards.some(r => r.id === 'pd2' && r.partner && r.steps.length) && perkTab === 1 && /Added to my rewards/.test(toastT()) && /Theatre/.test(pl($('.page').innerHTML)); hideToast(true); perkTab = 0;
+      const marked = /CONFIRM WITH OTP: partners/.test(SHEETS.perk.toString()) && /CONFIRM WITH OTP: partners/.test(perksHTML.toString());
+      const noBare = !/data-act1|data-actall/.test(perksHTML.toString());
+      ok('chk-discount-detail-first: tapping a discount opens a detail sheet first with the partner, the offer and numbered how-to-redeem steps and activates nothing; Activate switches it on and shows the Undo chip (Undo switches it off); Add to my rewards lands it in My rewards with a "Added to my rewards" toast; partner names are marked CONFIRM WITH OTP', detail && act && undone && added && marked && noBare, [detail, act, undone, added, marked, noBare]);
+
+      // chk-reward-queue: reward and goal sheets that open by themselves wait until the open page is closed (every page, not only the year), then open one at a time
+      reset('existing'); S._detail = S.goals[0].id; pushPage('goal'); qSheet(() => '<h2>Reward queue test</h2>', 'reward'); qSheet(() => '<h2>Goal queue test</h2>', 'goaloffer');
+      const heldGoal = !sheetOpen() && MQ.q.length === 2; popPage(true); mqPump(); const first = sheetOpen() && /Reward queue test/.test($('#sheet').textContent) && MQ.q.length === 1; closeSheet(); mqPump(); const second = sheetOpen() && /Goal queue test/.test($('#sheet').textContent); closeSheet(); MQ.q = [];
+      pushPage('settings'); qSheet(() => '<h2>Reward queue test</h2>', 'reward'); const heldSet = !sheetOpen(); popPage(true); mqPump(); const afterSet = sheetOpen(); closeSheet(); MQ.q = [];
+      tab('fooldal'); qSheet(() => '<h2>No page test</h2>', 'goaloffer'); const direct = sheetOpen(); closeSheet(); MQ.q = [];
+      pushPage('year'); qSheet(() => '<h2>Reward queue test</h2>', 'reward'); const heldYear = !sheetOpen(); popPage(true); mqPump(); const afterYear = sheetOpen(); closeSheet(); MQ.q = [];
+      ok('chk-reward-queue: a reward or goal-reached sheet queued while any page is open (goal page, Settings, year) waits; it opens when the page is closed, one sheet at a time, and straight away when no page is open', heldGoal && first && second && heldSet && afterSet && direct && heldYear && afterYear && HOLD_FOR_PAGE.includes('reward') && HOLD_FOR_PAGE.includes('goaloffer'), [heldGoal, first, second, heldSet, afterSet, direct, heldYear, afterYear]);
+    } catch(e){ ok('chk-phase6: the new checks ran without errors', false, String(e && e.stack || e)); }
+    finally { hideBanners(); setDemoMode(dm14); hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeStory(); }catch(e){} try{ closeOnb(); }catch(e){} perkTab = 0; while(stack.length) popPage(true); S = sv14; cur = cur14; stack.push(...stk14); demo.locked = lock14; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views14[i])); }
   }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
@@ -2056,7 +2183,7 @@ const seedExisting = () => { const H = demoHistory(); const o = ({
     {id:'megt', n:'Savings account', no:'11770116 - 10066601', v:120000, h:'Interest: 3.5%'}
   ],
   persely:{name:'Summer holiday', target:134000, auto:false, freq:'Monthly', day:'On the 1st of the month', amt:4000},
-  disc:{activated:[]},
+  disc:{activated:[]}, notif:notifDefault(), inbox:[],
   tx:H.tx
 });
   o.bills = mergeBills([], detectRecurring(o).bills); o.seed = 'existing'; return o; };
@@ -2064,7 +2191,8 @@ const seedExisting = () => { const H = demoHistory(); const o = ({
 const seedNew = () => { const o = seedExisting();
   Object.assign(o, {seed:'new', updateSeen:true, onboarded:false, streak:0, best:0, skips:0, history:[], skipped:[], savedWeek:false, challenges:{}, friends:[], friendsOpen:false, friendsOptIn:false,
     toured:false, hints:{}, monthSaved:0, juniorDays:300, goals:[], rewards:[], goalRewarded:[],
-    payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday', insight:false, insightUsed:false});
+    payday:{on:false, pct:10, ask:true, floor:true}, weekly:{on:false, amt:2000}, roundup:{on:false, goal:'holiday'}, ruleGoal:'holiday', insight:false, insightUsed:false,
+    remind:false});   // the weekly reminder is an opt-in (B7): the first goal asks, Settings can turn it on
   o.accounts = o.accounts.map(a => a.id === 'persely' ? {...a, n:'Persely', v:0, h:'No goals yet'} : a);
   return o; };
 const fresh = (kind = 'new') => kind === 'existing' ? seedExisting() : seedNew();
@@ -2074,6 +2202,8 @@ if(!S.analyst) S.analyst = fresh().analyst;   // state saved before the analyst 
 if(S.txMark === undefined) S.txMark = 0;
 if(!S.scoreHist) S.scoreHist = fresh().scoreHist;   // state saved before the health score existed
 if(!S.rewards) S.rewards = [];
+if(!S.notif) S.notif = notifDefault();   // state saved before Settings > Notifications existed
+if(!S.inbox) S.inbox = [];
 if(!S.hints) S.hints = {};   // Persi's one-time hints already shown
 if(!S.goalRewarded) S.goalRewarded = [];
 // state saved before the 3-month history: tag old rows with month + day, add the history behind them (older = further down, so txMark grows by the same number), then find the bills
@@ -2143,7 +2273,7 @@ function vFooldal(){
   // gauge: 270° arc, gap at the bottom
   const R=104, C=2*Math.PI*R, arc=C*.75, p=Math.min(1,spent/ (avg*1.15));
   return `
-  <div class="hhead"><button class="avatar" data-demo="Profile" aria-label="Profile and Settings">${S.ini}</button><b>${S.name}</b><button class="bell" data-go="ertesitesek" aria-label="Notifications">${I('bell',26)}</button><button class="mail" data-go="neked" aria-label="For you">${I('mail',26)}</button></div>
+  <div class="hhead"><button class="avatar" data-settings="" aria-label="Profile and Settings">${S.ini}</button><b>${S.name}</b><button class="bell" data-go="inbox" aria-label="Notifications${inboxUnread() ? ', ' + inboxUnread() + ' unread' : ''}">${I('bell',26)}${inboxUnread() ? '<i class="bdot" aria-hidden="true"></i>' : ''}</button><button class="mail" data-go="neked" aria-label="For you">${I('mail',26)}</button></div>
   ${bfCard()}
   ${anNoticeCard()}
   <div class="sec"><span>Balance</span><a data-go="szamlaim">All accounts ${I('chev',16)}</a></div>
@@ -2258,16 +2388,16 @@ function vKartyaim(){
   <button class="row" data-saverules="rr"><span class="ic">${I('piggy')}</span><span class="t">Round-ups: ${rg ? `on → ${esc(rg.name)}` : 'off'}<small class="g">Edit in Saving rules</small></span><span class="lnk44 u-edit">Edit</span></button>
   <button class="row" data-demo="Change daily limit"><span class="ic">${I('limit')}</span><span class="t">Change daily limit</span>${chev}</button>
   <button class="row" data-demo="View card details"><span class="ic">${I('eye')}</span><span class="t">View card details</span>${chev}</button>
-  <button class="row" data-go="kedvezmenyek"><span class="ic">${I('tag')}</span><span class="t">Discounts<small class="g">${5-S.disc.activated.length} offers waiting for activation</small></span>${chev}</button>
+  <button class="row" data-go="perks"><span class="ic">${I('tag')}</span><span class="t">Discounts<small class="g">${5-S.disc.activated.length} offers waiting for activation</small></span>${chev}</button>
   <button class="row" data-demo="Click to Pay"><span class="ic">${I('ctp')}</span><span class="t">Click to Pay</span>${chev}</button>`;
 }
 
-/* More: Profile and Settings on top, then Money, Persely and Help (flow plan 3.4). Every row of the old list is kept; a row with data-demo is a shell row and shows the one demo toast (D7).
-   Settings and Profile are shell rows until Phase 6; the Discounts row becomes Perks with the Perks page (Phase 6). */
+/* More: Profile and Settings on top (both open Settings), then Money, Persely and Help (flow plan 3.4). Every row of the old list is kept; a row with data-demo is a shell row and shows the one demo toast (D7).
+   Perks (Discounts and My rewards) replaces the Discounts row; My partners opens Perks; Notifications opens Settings > Notifications. */
 function vTovabbiak(){
   const it = (ic, t, attr) => `<button class="mi" ${attr || `data-demo="${t}"`}>${I(ic)}<span>${t}</span></button>`;
   return `<div class="menu">
-  <div class="mtop"><button data-demo="Profile">${I('user')}<span>Profile</span></button><button data-demo="Settings">${I('gear')}<span>Settings</span></button></div>
+  <div class="mtop"><button data-settings="profile">${I('user')}<span>Profile</span></button><button data-settings="">${I('gear')}<span>Settings</span></button></div>
   <div class="sec"><span>Money</span></div>
   ${it('wallet','My accounts','data-go="szamlaim"')}
   ${it('cards','My cards','data-go="kartyaim"')}
@@ -2276,12 +2406,12 @@ function vTovabbiak(){
   <div class="sec"><span>Persely</span></div>
   ${it('piggy','Persely','data-tab="hub"')}
   ${it('coins','Savings options','data-tab="hub"')}
-  ${it('tag','Discounts','data-go="kedvezmenyek"')}${it('gift','My partners')}
+  ${it('tag','Perks','data-go="perks"')}${it('gift','My partners','data-go="perks"')}
   <div class="mi sw"><button class="mi-main" data-sheet="analyst">${I('analyst')}<span>Financial analyst</span></button>${swBtn(S.analyst.on, 'data-sw="analyst"', 'Financial analyst')}</div>
   ${it('mail','For you','data-go="neked"')}
   ${(S.months || 0) >= 12 ? it('star','Your year','data-go="year"') : ''}
   <div class="sec"><span>Help</span></div>
-  ${it('bell','Notifications','data-go="ertesitesek"')}
+  ${it('bell','Notifications','data-settings="notif"')}
   ${it('info','How Persely works','data-sheet="how"')}
   ${it('help','Can we help?')}${it('invite','Invite a friend!')}
   ${it('mapq','OTP branches and ATMs in Hungary')}${it('mapp','ATMs abroad')}${it('cal','Book a branch appointment')}${it('lock','Block internet and mobile bank access')}
@@ -2745,8 +2875,8 @@ function analysisRow(){
   const v = splitView(), plan = v.by.ess.amt + v.by.fun.amt;
   return row('data-go="mymoney"', `Card spending ${ft(cardSpending())} of ${ft(plan)} planned`);
 }
-// Persely tab rows after the habits: Perks (the Discounts page until the Perks page exists) and Your year (only after 12 months, C4.1)
-const perksRow = () => `<button class="row" data-go="kedvezmenyek"><span class="ic">${I('gift')}</span><span class="t"><b>Discounts</b><small>${DISC.length - S.disc.activated.length} offers waiting for activation</small></span><span class="chev">${I('chev', 20)}</span></button>`;
+// Persely tab rows after the habits: Perks (Discounts and My rewards) and Your year (only after 12 months, C4.1)
+const perksRow = () => `<button class="row" data-go="perks"><span class="ic">${I('gift')}</span><span class="t"><b>Perks</b><small>${DISC.length - S.disc.activated.length} offers waiting for activation · ${plural(S.rewards.length, 'reward')}</small></span><span class="chev">${I('chev', 20)}</span></button>`;
 const yearRow = () => (S.months || 0) >= 12 ? `<button class="row" data-go="year"><span class="ic">${I('star')}</span><span class="t"><b>Your year</b><small>12 months in Persely</small></span><span class="chev">${I('chev', 20)}</span></button>` : '';
 /* The ONE Spending page (C2, D3), in this order: 1 Safe to spend, 2 month circle (Card spending, Total out, days left, month end projection),
    3 Bills row, 4 My plan (categories expandable, one Edit), 5 Persi's tips, 6 Next month row, 7 Latest card payments, 8 footer with the analyst switch.
@@ -3012,7 +3142,7 @@ function setupCard(){   // the 500 000 Ft cap and the end date in the line below
 function vHubNew(){
   const chev = `<span class="chev">${I('chev',20)}</span>`, R = 104, C = 2 * Math.PI * R, arc = C * .75;
   const junior = juniorRow();
-  return `<div class="tabtitle">Persely</div>
+  return `<div class="tabtitle tt-gear">Persely<button class="tgear" data-settings="persely" aria-label="Persely settings">${I('gear',24)}</button></div>
   ${setupCard()}
   ${hintHTML('total')}<div class="ptot" data-tour="total">
     <div class="persi" data-tour="persi">${pig('happy', 48)}${hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>Hi, I'm Persi. Let's pick a goal.</span></div>`}
@@ -3037,7 +3167,7 @@ function vHub(){
   const chev = `<span class="chev">${I('chev',20)}</span>`;
   const junior = juniorRow();
   const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
-  return `<div class="tabtitle">Persely</div>
+  return `<div class="tabtitle tt-gear">Persely<button class="tgear" data-settings="persely" aria-label="Persely settings">${I('gear',24)}</button></div>
   ${hintHTML('total')}<div class="ptot" data-tour="total">
     <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`}
       ${storyRing()}</div>
@@ -3153,7 +3283,7 @@ function monthStep(quiet){
   const newScore = scoreNow(); S._rw = null;
   const sv = planDone;   // budgets of the split as My split showed them during the month, in the same base
   if(a.on && a.accepted && u.ess <= sv.by.ess.amt && u.fun <= sv.by.fun.amt){
-    const rew = {id:'r' + S.months, title:'5% cashback at a partner', note:`Valid in ${nextMonthName()}. Up to 2 000 Ft back.`, why:`Stayed within the split in ${done}`};
+    const rew = {id:'r' + S.months, title:'5% cashback at a partner', partner:'Corner Market', steps:REWARD_STEPS, note:`Valid in ${nextMonthName()}. Up to 2 000 Ft back.`, why:`Stayed within the split in ${done}`};
     S.rewards.unshift(rew); S._rw = {old:oldScore.t, now:newScore.t, rew, ess:u.ess, fun:u.fun, essB:sv.by.ess.amt, funB:sv.by.fun.amt};
   }
   renderAll();
@@ -3259,34 +3389,12 @@ const PAGES = {
   szamlaim:{title:'My accounts', html:()=>S.accounts.map(a=>`<div class="card"><b class="u-fs-m">${a.n}</b><div class="u-k-xs">${a.no}</div>
     <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:0.84375rem"><span>${a.id==='persely'?'Balance':'Available balance'}</span><b class="num u-fs-16">${ft(a.v)}</b></div>
     <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:0.78125rem;color:var(--muted-t)"><span>${a.h.split(':')[0]}</span><span class="num">${a.h.split(':')[1]||''}</span></div></div>`).join('')},
-  kedvezmenyek:{title:'Discounts', right:`<span class="u-df">${I('filter',22)}</span>`, foot:()=>discTab===0&&S.disc.activated.length<DISC.length?`<button class="btn" data-actall>Activate all</button>`:'', html:()=>{
-    const list = DISC.filter(d=> discTab===0 ? !S.disc.activated.includes(d.id) : S.disc.activated.includes(d.id));
-    return `<div class="seg"><button class="${discTab===0?'on':''}" data-disctab="0">Waiting for activation</button><button class="${discTab===1?'on':''}" data-disctab="1">Activated</button></div>
-    ${list.length?list.map(d=>`<button class="card disc" data-act1="${d.id}"><span class="t"><span class="u-rowc"><span class="lg" style="background:${d.bg};color:${d.c}">${d.lg}</span><b>${d.n}</b></span><p>${d.t}</p><small>Valid until 31 December 2026</small></span><span class="u-c-g">${discTab===0?I('chev',20):I('check',22)}</span></button>`).join(''):`<div class="card" style="text-align:center;color:var(--muted-t);padding:28px">${discTab===0?'You have activated every offer.':'No activated discounts yet.'}</div>`}`;}},
+  perks:{title:'Perks', html:() => perksHTML()},
   neked:{title:'For you', right:`<span style="display:flex;color:var(--blue-i)">${I('info',24)}</span>`, html:()=>`
     <div class="utabs">${['All','Tips','News','Offers'].map((t,i)=>`<button class="${nekTab===i?'on':''}" data-nektab="${i}">${t}</button>`).join('')}</div>
     <div class="sec u-mt6"><span>Featured</span></div>${nekedCards(false)}`},
-  ertesitesek:{title:'Notifications', html:()=>{
-    const st = PUSH;
-    let status, action = '';
-    if(PUSH.on){ status = `<span class="ok">${I('check',18)} On</span>`;
-      action = `<button class="btn" data-pushtest>Send a test notification in 5 seconds</button>
-        <p style="font-size:var(--fs-s);color:var(--muted-t);text-align:center;margin:10px 0 0">Tap it, then lock your phone. The notification shows up on the lock screen too.</p>`;
-    } else if(st.ios && !st.standalone){ status = '<span class="badge">Not available</span>';
-      action = `<div class="note"><b>To get notifications, add the app to your Home Screen:</b><br>1. Tap the Share button<br>2. Choose “Add to Home Screen”<br>3. Open the app from the icon and come back here.</div>`;
-    } else if(!st.supported){ status = '<span class="badge">Not supported</span>';
-      action = `<div class="note">Real push notifications are switched off in this offline demo file. In-app banners and lock-screen notifications still work.</div>`;
-    } else if(st.perm === 'denied'){ status = '<span class="badge">Blocked</span>';
-      action = `<div class="note">Notifications are blocked. Turn them on in iPhone Settings → Notifications → OTP demo.</div>`;
-    } else { status = '<span class="badge" style="background:#E9ECF1;color:var(--muted-t)">Off</span>';
-      action = `<button class="btn" data-pushon>Turn on notifications</button>`; }
-    return `<div class="card u-p18"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b class="u-fs-m">Push notifications</b>${status}</div>
-      <p style="margin:12px 0 0;font-size:var(--fs-s);color:var(--muted-t);line-height:1.5">We let you know right away about card payments, incoming transfers and how your Persely is doing.</p></div>
-      ${action}
-      <div class="sec"><span>What you get notified about</span></div>
-      <div class="row"><span class="ic">${I('cards')}</span><span class="t">Card payments</span><span class="tg on"></span></div>
-      <div class="row"><span class="ic">${I('money')}</span><span class="t">Incoming transfers</span><span class="tg on"></span></div>
-      <div class="row"><span class="ic">${I('piggy')}</span><span class="t">Persely weekly reminder<small class="g">Sunday 18:00, only if the week is still open</small></span><span class="tg ${S.remind?'on':''}"></span></div>`;}},
+  inbox:{title:'Notifications', right:`<button data-settings="notif" aria-label="Notification settings" style="display:flex;color:inherit">${I('gear',22)}</button>`, html:() => inboxHTML()},
+  settings:{title:'Settings', html:() => settingsHTML()},
   challenges:{title:'Weekly challenges', html:()=>`<div class="card" style="padding:4px 16px 10px;margin-top:6px"><ul class="bul sm"><li>New challenges every Monday, the week ends on Sunday</li><li>Progress is checked automatically from your card payments</li><li>Join as many as you like</li></ul></div>${CH_DEFS.map(chCard).join('')}`},
   kiadas:{title:'Monthly spending', right:`<button data-plangear aria-label="Edit my monthly plan" style="display:flex;color:inherit">${I('gear',22)}</button>`, html:()=>{
     const mo = shownMonth(), sp = catSpend(mo.ym);
@@ -3298,14 +3406,19 @@ const PAGES = {
   nextmonth:{title:'Next month', html:() => nextMonthHTML()},
   bills:{title:'Must-pay bills', html:() => billsHTML()}
 };
-let discTab = 0;
+let perkTab = 0;   // 0 Discounts, 1 My rewards
+/* Partner names are placeholders: <!-- CONFIRM WITH OTP: partners --> the real list and the redemption steps come from OTP (D12, C6). */
 const DISC = [
-  {id:'d1',lg:'PZ',n:'Pizzeria Roma',t:'15% instant discount. Tap for details!',bg:'#FDE3E1',c:'#B02A24'},
-  {id:'d2',lg:'TH',n:'Theatre (junior offer)',t:'10% off every purchase. Tap for details!',bg:'#F8E0EA',c:'#B0234F'},
-  {id:'d3',lg:'SP',n:'Sport Outlet',t:'10% off every purchase over 25,000 Ft.',bg:'#E7ECF3',c:'#3B4A63'},
-  {id:'d4',lg:'CR',n:'Car rental',t:'12% off weekend rentals.',bg:'#FFF0D8',c:'#8F5600'},
-  {id:'d5',lg:'CF',n:'Coffee chain',t:'Every 5th coffee is free when you pay by card.',bg:'#EFE6DD',c:'#6E4B2E'}
+  {id:'d1',lg:'PZ',n:'Pizzeria Roma',t:'15% instant discount.',bg:'#FDE3E1',c:'#B02A24',steps:['Tap Activate here.','At the restaurant, say you pay with your OTP card.','Pay by card. The 15% comes off the bill.']},
+  {id:'d2',lg:'TH',n:'Theatre (junior offer)',t:'10% off every purchase.',bg:'#F8E0EA',c:'#B0234F',steps:['Tap Activate here.','Buy tickets at the box office or online with your OTP card.','The 10% comes off at the payment.']},
+  {id:'d3',lg:'SP',n:'Sport Outlet',t:'10% off every purchase over 25 000 Ft.',bg:'#E7ECF3',c:'#3B4A63',steps:['Tap Activate here.','Shop for 25 000 Ft or more.','Pay with your OTP card. The 10% comes off at the till.']},
+  {id:'d4',lg:'CR',n:'Car rental',t:'12% off weekend rentals.',bg:'#FFF0D8',c:'#8F5600',steps:['Tap Activate here.','Book a rental that starts on a Friday, Saturday or Sunday.','Pay with your OTP card. The 12% comes off the price.']},
+  {id:'d5',lg:'CF',n:'Coffee chain',t:'Every 5th coffee is free when you pay by card.',bg:'#EFE6DD',c:'#6E4B2E',steps:['Tap Activate here.','Pay for your coffee with your OTP card.','Your 5th coffee is free. The shop counts them for you.']}
 ];
+/* Rewards earned from the health score or a reached goal carry a partner name and steps (placeholders until OTP confirms: partners). */
+const REWARD_STEPS = ['Shop at the partner with your OTP card.', 'Pay by card before the reward ends.', 'The cashback arrives on your Junior account within 5 working days.'];
+const rewardPartner = r => r.partner || 'Corner Market';
+const rewardSteps = r => (r.steps && r.steps.length) ? r.steps : REWARD_STEPS;
 
 /* ================= rendering ================= */
 const TABS = [['fooldal','home','Home',vFooldal],['utalas','money','Transfer',vUtalas],['hub','piggy','Persely',vHub],['tranzakciok','list','Transactions',vTranz],['tovabbiak','menu','More',vTovabbiak]];
@@ -3332,7 +3445,7 @@ function pageHTML(id){
   <div class="scroll">${p.html()}</div>${p.foot&&p.foot()?`<div class="foot">${p.foot()}</div>`:''}`;
 }
 /* routes that no longer have a page (D4): the old Persely details and Savings options go to the Persely tab, the old Monthly spending page to the one Spending page */
-const ROUTE_TAB = {persely:'hub', megtakaritas:'hub'}, ROUTE_PAGE = {kiadas:'mymoney'};
+const ROUTE_TAB = {persely:'hub', megtakaritas:'hub'}, ROUTE_PAGE = {kiadas:'mymoney', kedvezmenyek:'perks', ertesitesek:'inbox'};
 function pushPage(id){
   if(ROUTE_TAB[id]){ closeSheet(); tab(ROUTE_TAB[id]); return; }
   if(ROUTE_PAGE[id]) id = ROUTE_PAGE[id];
@@ -3345,7 +3458,7 @@ function pushPage(id){
 function popPage(instant){
   const el = stack.pop(); if(!el) return;
   NAVC.n++; hideToast(); setTimeout(placeChip, 60); setTimeout(placeChip, 320);
-  if(el.dataset.id === 'year' && MQ.q.length) setTimeout(mqPump, 300);   // the queued reward sheets come after the year page
+  if(!stack.length && MQ.q.length) setTimeout(mqPump, 300);   // the queued reward and goal sheets come after the page they waited for
   if(instant){ el.remove(); if(typeof mountPig === 'function') mountPig(); return; }
   el.classList.add('out'); setTimeout(()=>{ el.remove(); if(typeof mountPig === 'function') mountPig(); },220);
 }
@@ -3367,7 +3480,8 @@ function sheet(html){ hideToast(true); if(!sheetOpen()) SHEET_OPENER = document.
   const h = sh.querySelector('h2'); sh.setAttribute('aria-label', h ? h.textContent.trim() : 'Dialog'); $('#back').classList.add('on'); try{ sh.focus({preventScroll:true}); }catch(e){}
   if(typeof mountPig === 'function') mountPig(); }
 function closeSheet(){ const was = sheetOpen(); S._fa = false; S._bw = false; $('#back').classList.remove('on'); if(was && SHEET_OPENER && document.contains(SHEET_OPENER) && SHEET_OPENER.focus){ try{ SHEET_OPENER.focus({preventScroll:true}); }catch(e){} } SHEET_OPENER = null; if(window.__stAway) stReturn(); if(typeof mountPig === 'function') mountPig(); if(was || MQ.q.length) setTimeout(mqPump, 280); }
-function qSheet(fn, id, late){ if(id) MQ.q = MQ.q.filter(x => x.id !== id); MQ.q.push({k:'sheet', fn, id, late}); mqPump(); }   // late: only after the toast
+const HOLD_FOR_PAGE = ['reward', 'goaloffer'];   // reward and goal sheets never open over a page: they wait until the page is closed (N7, C6.5)
+function qSheet(fn, id, late){ if(id) MQ.q = MQ.q.filter(x => x.id !== id); MQ.q.push({k:'sheet', fn, id, late, hold:HOLD_FOR_PAGE.includes(id)}); mqPump(); }   // late: only after the toast
 function mqDrop(id){ MQ.q = MQ.q.filter(x => x.id !== id); }
 /* one demo toast for every row that is only a shell (D7): the row name, "is not part of this demo", a Demo tag, role=status, 3 s */
 const DEMO_TOAST_MS = 3000;
@@ -3376,8 +3490,8 @@ function demoToast(name){ toast(demoText(name), {demo:name}); }
 function toast(m, o){ if(sheetOpen()){ sheetNote(m); return; } MQ.q = MQ.q.filter(x => x.k !== 'toast'); MQ.q.push({k:'toast', m, o}); mqPump(); }
 function mqPump(){
   if(MQ.banner || demo.locked || window.__ffOn) return;   // nothing pops up during a fast-forward; the queue continues after it
-  const open = sheetOpen(), hasToast = MQ.q.some(x => x.k === 'toast'), onYear = stack.length > 0 && stack[stack.length - 1].dataset.id === 'year';   // N7: reward and goal sheets wait until the year page is closed
-  const si = onYear ? -1 : MQ.q.findIndex(x => x.k === 'sheet' && (!x.late || (!hasToast && !MQ.toast)));
+  const open = sheetOpen(), hasToast = MQ.q.some(x => x.k === 'toast'), onPage = stack.length > 0;   // N7: reward and goal sheets wait until the page that is open is closed
+  const si = MQ.q.findIndex(x => x.k === 'sheet' && !(onPage && x.hold) && (!x.late || (!hasToast && !MQ.toast)));
   if(si >= 0){
     if(open || MQ.toast) return;
     const it = MQ.q.splice(si, 1)[0], html = it.fn();
@@ -3567,6 +3681,15 @@ const SHEETS = {
     <button class="opt slim ${p.floor?'on':''}" data-prfloor><span class="t"><b class="u-fs-14">Always keep 20 000 Ft on my account</b><small>If money is tight, less or nothing moves</small></span><span class="tg ${p.floor?'on':''}"></span></button>
     <div class="fine u-note-t6">From a ${ft(S.income.amount)} salary: ${ft(incomeShare(p.pct))}.${S.analyst.on ? ' It is the biggest part of Saving in your monthly split, with any weekly transfer and round-ups.' : ''}</div>
     <button class="btn" data-pron>${p.on ? 'Save' : 'Turn on'}</button>${p.on ? '<button class="btn ghost" data-proff>Turn off</button>' : ''}`; },
+  // a discount: detail first (partner, offer, how to redeem), then Activate with Undo, or Add to my rewards (D12)
+  perk:()=>{ const d = DISC.find(x => x.id === S._perk); if(!d) return '';
+    const on = S.disc.activated.includes(d.id), inR = S.rewards.some(r => r.id === 'p' + d.id);
+    return `<h2>${esc(d.n)}</h2><div class="fine u-sheet-sub">${esc(d.t)} Valid until 31 December 2026.</div>
+    <div class="card" style="padding:12px 16px"><div class="u-rowc"><span class="lg" style="background:${d.bg};color:${d.c};width:44px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:var(--fs-xs);font-weight:800">${d.lg}</span><span><div class="k">Partner</div><b class="u-bk-m">${esc(d.n)}</b></span></div><!-- CONFIRM WITH OTP: partners -->
+      <div class="k" style="margin-top:12px">Offer</div><b class="u-bk-m">${esc(d.t)}</b>
+      <div class="k" style="margin-top:12px">How to redeem</div><ol class="steps">${d.steps.map(x => `<li>${esc(x)}</li>`).join('')}</ol></div>
+    ${on ? `<div class="note"><b>Activated.</b> It is ready to use at the partner.</div>` : `<button class="btn" data-perkact="${d.id}">Activate</button>`}
+    <button class="btn ghost" data-perkadd="${d.id}">${inR ? 'In my rewards' : 'Add to my rewards'}</button><button class="link lnk44 u-pd-no" data-closesheet>Close</button>`; },
   // what the analyst reads: opened from the first-run notice, the analyst sheet and the Spending footer
   anread:()=>{
     return `<h2>What it reads</h2><div class="fine u-sheet-sub">The Financial analyst is on by default. You can turn it off any time.</div>
@@ -3788,10 +3911,16 @@ document.addEventListener('click', e=>{
     if(k === 'payday'){ S.payday.on = !S.payday.on; syncSplit(); renderAll(); undoable(before, S.payday.on ? `Payday rule on: ${S.payday.pct}% of each salary` : 'Payday rule off'); }
     else if(k === 'weekly'){ S.weekly.on = !S.weekly.on; renderAll(); undoable(before, S.weekly.on ? `${ft(S.weekly.amt)} every Monday` : 'Weekly transfer off'); }
     else if(k === 'round'){ S.roundup.on = !S.roundup.on; renderAll(); undoable(before, S.roundup.on ? `Round-ups on: they go to ${(goalById(S.roundup.goal)||ruleGoal()).name}` : 'Round-ups off'); }
+    else if(k === 'remind'){ S.remind = !S.remind; renderAll(); toast(S.remind ? 'Sunday streak reminder on: Sunday 18:00' : 'Sunday streak reminder off'); }
+    else if(k.indexOf('n:') === 0){ const key = k.slice(2); if(!(key in notifDefault())) return; S.notif[key] = !S.notif[key]; renderAll(); }
     else if(k === 'analyst'){   // on by default (D10): turning it off asks first, turning it on is one tap
       if(S.analyst.on) sheet(SHEETS.anoffcfm());
       else { S.analyst.on = true; S.analyst.accepted = true; renderAll(); undoable(before, 'Financial analyst on'); } }
     return; }
+  if('settings' in d){ if(sheetOpen()) closeSheet(); openSettings(d.settings); return; }
+  if(d.inb !== undefined){ const it = (S.inbox || [])[+d.inb]; if(!it) return; it.read = true; save(); popPage(true); renderAll(); openFromNote(it.url); return; }
+  if('inbread' in d){ (S.inbox || []).forEach(x => { x.read = true; }); renderAll(); return; }
+  if('ver' in d){ VER_TAPS++; if(VER_TAPS >= 5){ VER_TAPS = 0; setDemoMode(!DEMO_ON); toast(DEMO_ON ? 'Demo controls are on' : 'Demo controls are off'); } return; }
   if(d.tab){ closeSheet(); tab(d.tab); return; }
   if(d.go){ if(sheetOpen()) closeSheet(); pushPage(d.go); return; }
   if('pop' in d){ popPage(); return; }
@@ -3832,9 +3961,13 @@ document.addEventListener('click', e=>{
   }
   if(d.txmode){ txMode=+d.txmode; renderView('tranzakciok'); return; }
   if('freeze' in d){ S.frozen=!S.frozen; renderAll(); toast(S.frozen?'Your card is temporarily blocked':'Your card is active again'); return; }
-  if(d.disctab){ discTab=+d.disctab; refreshPages(); return; }
-  if(d.act1){ if(discTab===0){ S.disc.activated.push(d.act1); renderAll(); toast('Discount activated'); } return; }
-  if('actall' in d){ S.disc.activated = DISC.map(x=>x.id); renderAll(); toast('All discounts activated'); return; }
+  if(d.perktab){ perkTab = +d.perktab; refreshPages(); return; }
+  if(d.perk){ S._perk = d.perk; sheet(SHEETS.perk()); return; }
+  if(d.perkact){ const x = DISC.find(q => q.id === d.perkact); if(!x || S.disc.activated.includes(x.id)) return; const before = snap();
+    S.disc.activated.push(x.id); closeSheet(); renderAll(); undoable(before, `Discount activated: ${x.n}`); return; }
+  if(d.perkadd){ const x = DISC.find(q => q.id === d.perkadd); if(!x) return; const had = S.rewards.some(r => r.id === 'p' + x.id);
+    if(!had) S.rewards.unshift({id:'p' + x.id, title:`${x.n}: ${x.t}`, partner:x.n, steps:x.steps, note:'Valid until 31 December 2026.', why:'Added from Perks'});
+    perkTab = 1; closeSheet(); renderAll(); toast(had ? 'Already in my rewards' : `Added to my rewards: ${x.n}`); return; }
   if(d.nektab){ nekTab=+d.nektab; refreshPages(); return; }
   if('reset' in d){ closeOnb(); closeWhatsNew(); S=fresh(); renderAll(); tab('fooldal'); showSplash(1100); return; }
   if('pushon' in d){ enablePush(); return; }
@@ -3978,7 +4111,7 @@ document.addEventListener('click', e=>{
   if('txcat2' in d){ sheet(SHEETS.txcat()); return; }
   /* financial analyst */
   if('claimoffer' in d){ const g = goalById(S._offer); if(g){ const travel = g.ic === 'plane';
-      S.rewards.unshift({id:'o' + g.id, title: travel ? 'Travel partner offer' : '5% cashback at a partner', note: travel ? '8% back on one booking. Up to 10 000 Ft.' : 'Up to 2 000 Ft back.', why:`Reached ${g.name}`}); }
+      S.rewards.unshift({id:'o' + g.id, title: travel ? 'Travel partner offer' : '5% cashback at a partner', partner: travel ? 'Horizon Travel' : 'Corner Market', steps: travel ? ['Book one trip with the partner travel agency.', 'Pay with your OTP card.', 'The 8% (up to 10 000 Ft) arrives on your Junior account within 5 working days.'] : REWARD_STEPS, note: travel ? '8% back on one booking. Up to 10 000 Ft.' : 'Up to 2 000 Ft back.', why:`Reached ${g.name}`}); }
     S._offer = null; closeSheet(); renderAll(); toast('Offer added to your rewards'); return; }
   if('anon' in d){ const before = snap(); S.analyst.on = true; S.analyst.accepted = true; closeSheet(); renderAll(); undoable(before, 'Financial analyst on'); return; }
   if('anread' in d){ S.anNote = true; save(); renderView('fooldal'); sheet(SHEETS.anread()); return; }
@@ -4261,10 +4394,11 @@ function routeHash(){
   else if(h === 'payday'){ tab('hub'); if(S.payday.on || paydayBills()) setTimeout(() => sheet(SHEETS.payday()), 300); }
   else if(h === 'grad'){ tab('hub'); pushPage('grad'); }
   else if(TABS.some(t=>t[0]===h)) tab(h);
-  else if(PAGES[h]){ tab('fooldal'); pushPage(h); }
+  else if(PAGES[h] || ROUTE_PAGE[h]){ tab('fooldal'); pushPage(h); }
   history.replaceState(null,'',location.pathname);
 }
 addEventListener('hashchange', routeHash);
+document.addEventListener('change', e => { const f = e.target; if(!f || !f.dataset || !f.dataset.qh || !/^\d\d:\d\d$/.test(f.value)) return; S.notif[f.dataset.qh] = f.value; save(); refreshPages(); });
 
 /* ================= keep headers below the iPhone status bar =================
    New iOS shows the page under the status bar, and taps there go to iOS, not to the page.
@@ -5219,19 +5353,114 @@ window.__story = {
   info:() => ({on:ST.on, i:ST.i, t:ST.t, n:ST.slides.length, total:ST.total, slides:ST.slides.map(s => ({id:s.id, dur:s.dur, say:s.say}))})
 };
 
+/* ================= Settings, inbox, Perks (Phase 6: D11, D12) ================= */
+function notifDefault(){ return {bills:true, payday:true, story:true, card:true, incoming:true, quiet:false, qfrom:'22:00', qto:'07:00'}; }   // money events and late bills on; the weekly reminder is S.remind and is an opt-in (B7)
+const NOTIF_TOGGLES = [   // [key, title, subtitle]; "streak" is the weekly reminder (S.remind)
+  ['bills', 'Bills due', 'Late bills and bills coming up'], ['streak', 'Sunday streak reminder', 'Sunday 18:00, only if the week is still open'], ['payday', 'Payday', 'When your salary arrives'],
+  ['story', 'Monthly story', 'When your month story is ready'], ['card', 'Card payments', 'Each card payment and your balance'], ['incoming', 'Incoming transfers', 'Money that arrives on your account']];
+const notifOn = kind => !kind ? true : kind === 'streak' ? !!S.remind : S.notif[kind] !== false;
+const hhmm = (d = new Date()) => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+// quiet hours: from/to as HH:MM; the window may cross midnight
+const quietAt = (t, from, to) => from === to ? false : from < to ? (t >= from && t < to) : (t >= from || t < to);
+const inQuiet = (t = hhmm()) => !!S.notif.quiet && quietAt(t, S.notif.qfrom, S.notif.qto);
+const inboxUnread = () => (S.inbox || []).filter(x => !x.read).length;
+let INB_N = 0, VER_TAPS = 0;
+function addInbox(n){   // every push and banner is kept: last 20, newest first
+  const it = {id:Date.now() * 100 + (INB_N++ % 100), title:n.title, body:n.body, url:n.url, persi:!!n.persi, at:'Today, ' + hhmm(), read:false};
+  S.inbox = [it].concat(S.inbox || []).slice(0, 20); save();
+  try{ renderView('fooldal'); refreshPages(); }catch(e){}
+  return it;
+}
+const NOTE_KIND_OFF = {card:'Card payments', incoming:'Incoming transfers', bills:'Bills due', payday:'Payday', story:'Monthly story', streak:'Sunday streak reminder'};
+function inboxHTML(){
+  const L = S.inbox || [];
+  if(!L.length) return `<div class="card" style="text-align:center;color:var(--muted-t);padding:28px">Nothing yet. Money events and bill reminders will show here.</div>`;
+  return `${inboxUnread() ? `<div style="text-align:right"><button class="link lnk44" data-inbread>Mark all as read</button></div>` : ''}
+  <div class="card set-card">${L.map((n, i) => `<button class="inb ${n.read ? 'read' : ''}" data-inb="${i}"><span class="ic">${I(n.persi ? 'piggy' : 'bell', 22)}</span><span class="t"><b>${esc(n.title)}</b><span>${esc(n.body)}</span><small>${esc(n.at)}${n.read ? '' : ' · Unread'}</small></span>${n.read ? '' : '<i class="udot" aria-hidden="true"></i>'}</button>`).join('')}</div>`;
+}
+function openSettings(sec){
+  const top = stack.length ? stack[stack.length - 1] : null;
+  if(!top || top.dataset.id !== 'settings'){ while(stack.length) popPage(true); pushPage('settings'); }
+  const el = stack[stack.length - 1]; if(!sec || !el) return;
+  const t = el.querySelector(`[data-sec="${sec}"]`); if(!t) return;
+  el.querySelectorAll('.set-sec.focus').forEach(x => x.classList.remove('focus')); t.classList.add('focus');
+  const sc = el.querySelector('.scroll'); if(sc) sc.scrollTop = Math.max(0, t.offsetTop - 8);
+  try{ t.scrollIntoView({block:'start'}); }catch(e){}
+}
+function pushStatusBlock(){
+  let status, action = '';
+  if(PUSH.on){ status = `<span class="ok">${I('check',18)} On</span>`;
+    action = `<button class="btn" data-pushtest>Send a test notification in 5 seconds</button>
+      <p style="font-size:var(--fs-s);color:var(--muted-t);text-align:center;margin:10px 0 0">Tap it, then lock your phone. The notification shows up on the lock screen too.</p>`;
+  } else if(PUSH.ios && !PUSH.standalone){ status = '<span class="badge">Not available</span>';
+    action = `<div class="note"><b>To get notifications, add the app to your Home Screen:</b><br>1. Tap the Share button<br>2. Choose “Add to Home Screen”<br>3. Open the app from the icon and come back here.</div>`;
+  } else if(!PUSH.supported){ status = '<span class="badge">Not supported</span>';
+    action = `<div class="note">Real push notifications are switched off in this offline demo file. In-app banners and lock-screen notifications still work.</div>`;
+  } else if(PUSH.perm === 'denied'){ status = '<span class="badge">Blocked</span>';
+    action = `<div class="note">Notifications are blocked. Turn them on in iPhone Settings → Notifications → OTP demo.</div>`;
+  } else { status = '<span class="badge" style="background:#E9ECF1;color:var(--muted-t)">Off</span>';
+    action = `<button class="btn" data-pushon>Turn on notifications</button>`; }
+  return `<div class="card u-p18"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b class="u-fs-m">Push notifications</b>${status}</div>
+    <p style="margin:12px 0 0;font-size:var(--fs-s);color:var(--muted-t);line-height:1.5">We let you know right away about card payments, incoming transfers and how your Persely is doing.</p></div>${action}`;
+}
+function settingsHTML(){
+  const n = S.notif, ch = `<span class="chev">${I('chev', 18)}</span>`;
+  const row = (ic, title, sub, attr) => `<button class="set-row" ${attr}><span class="ic">${I(ic, 22)}</span><span class="t">${title}${sub ? `<small>${sub}</small>` : ''}</span>${ch}</button>`;
+  const srow = (ic, title, sub, on, attr) => `<div class="set-row"><span class="ic">${I(ic, 22)}</span><span class="t">${title}${sub ? `<small>${sub}</small>` : ''}</span>${swBtn(on, attr, title)}</div>`;
+  const junior = S.bridge ? `Keeping 3.0% until ${juniorEndLabel(12)}` : `Junior package until ${juniorEndLabel()}`;
+  const quiet = n.quiet ? `<div class="qh"><label>From<input type="time" value="${n.qfrom}" data-qh="qfrom" aria-label="Quiet hours from"></label><label>To<input type="time" value="${n.qto}" data-qh="qto" aria-label="Quiet hours to"></label></div>
+    <div class="fine" style="padding:0 16px 12px">Between ${n.qfrom} and ${n.qto} notifications arrive silently. You can still read them in the inbox.</div>` : '';
+  return `<div class="set-sec" data-sec="profile"><div class="sec"><span>Profile</span></div>
+    <div class="card set-prof"><span class="avatar" aria-hidden="true">${esc(S.ini)}</span><span class="t"><b class="u-fs-m">${esc(S.name)}</b><div class="k">Junior account · ${esc((S.accounts.find(a => a.id === 'junior') || {}).no || '')}</div></span></div></div>
+  <div class="set-sec" data-sec="persely"><div class="sec"><span>Persely</span></div>
+    <div class="card set-card">${row('piggy', 'Saving rules', 'Payday rule, Weekly transfer and Round-ups', 'data-saverules=""')}
+      ${srow('sched', 'Weekly reminder', 'Sunday 18:00, only if the week is still open', !!S.remind, 'data-sw="remind"')}
+      ${srow('analyst', 'Financial analyst', S.analyst.on ? 'On. It reads your transactions for Safe to spend and bills' : 'Off. Safe to spend is a simpler estimate', S.analyst.on, 'data-sw="analyst"')}
+      ${row('star', 'Junior status', junior + ' · Keep my 3.0%', 'data-go="grad"')}</div></div>
+  <div class="set-sec" data-sec="notif"><div class="sec"><span>Notifications</span></div>
+    ${pushStatusBlock()}
+    <div class="card set-card" style="margin-top:12px">${NOTIF_TOGGLES.map(([k, t, sub]) => srow(k === 'streak' ? 'piggy' : k === 'card' ? 'cards' : k === 'incoming' ? 'money' : k === 'payday' ? 'wallet' : k === 'story' ? 'star' : 'list', t, sub, notifOn(k), k === 'streak' ? 'data-sw="remind"' : `data-sw="n:${k}"`)).join('')}
+      ${srow('bell', 'Quiet hours', n.quiet ? `Silent from ${n.qfrom} to ${n.qto}` : 'Off', !!n.quiet, 'data-sw="n:quiet"')}${quiet}</div></div>
+  <div class="set-sec" data-sec="privacy"><div class="sec"><span>Privacy</span></div>
+    <div class="card set-card">${row('lock', 'What the analyst reads', 'Payments, transfers and income on this OTP account', 'data-sheet="anread"')}</div></div>
+  <div class="set-sec" data-sec="help"><div class="sec"><span>Help</span></div>
+    <div class="card set-card">${row('info', 'How Persely works', '', 'data-sheet="how"')}${row('lock', 'What the analyst reads', '', 'data-sheet="anread"')}${row('help', 'Can we help?', '', 'data-demo="Can we help?"')}</div></div>
+  <button class="link lnk44" data-ver style="display:block;margin:10px auto 0;color:var(--muted-t)">Persely prototype</button>`;
+}
+function perksHTML(){
+  const seg = `<div class="seg" role="tablist" aria-label="Perks"><button role="tab" aria-selected="${perkTab === 0}" class="${perkTab === 0 ? 'on' : ''}" data-perktab="0">Discounts</button><button role="tab" aria-selected="${perkTab === 1}" class="${perkTab === 1 ? 'on' : ''}" data-perktab="1">My rewards${S.rewards.length ? ` (${S.rewards.length})` : ''}</button></div>`;
+  if(perkTab === 0) return seg + DISC.map(d => { const on = S.disc.activated.includes(d.id);
+    return `<button class="card disc" data-perk="${d.id}"><span class="t"><span class="u-rowc"><span class="lg" style="background:${d.bg};color:${d.c}">${d.lg}</span><b>${esc(d.n)}</b></span><p>${esc(d.t)}</p><small>${on ? 'Activated · ' : ''}Valid until 31 December 2026</small></span><span class="u-c-g">${on ? I('check', 22) : I('chev', 20)}</span></button>`; }).join('') + '<!-- CONFIRM WITH OTP: partners -->';
+  if(!S.rewards.length) return seg + `<div class="card" style="text-align:center;color:var(--muted-t);padding:28px">Stay within your plan for a month and your first reward arrives.</div>`;
+  return seg + S.rewards.map(r => `<div class="card pk-card"><div class="u-rowc"><span class="u-ico-g">${I('star', 26)}</span><span><b class="u-bk-m">${esc(r.title)}</b><span class="fine">${esc(rewardPartner(r))} · ${esc(r.note || '')}</span></span></div>
+    <div class="k" style="margin-top:10px">How to use it</div><ol class="steps">${rewardSteps(r).map(x => `<li>${esc(x)}</li>`).join('')}</ol></div>`).join('');
+}
+/* the demo panel and the keys sit behind a flag: ?demo=1 in the address (remembered; ?demo=0 clears it) or five taps on "Persely prototype" at the bottom of Settings */
+let DEMO_ON = (() => { try{ const q = new URLSearchParams(location.search).get('demo'); if(q === '1') localStorage.setItem('otp-demo', '1'); else if(q === '0') localStorage.removeItem('otp-demo'); return localStorage.getItem('otp-demo') === '1'; }catch(e){ return false; } })();
+function setDemoMode(on){ DEMO_ON = !!on; try{ if(on) localStorage.setItem('otp-demo', '1'); else localStorage.removeItem('otp-demo'); }catch(e){} document.documentElement.classList.toggle('demo-on', DEMO_ON); }
+document.documentElement.classList.toggle('demo-on', DEMO_ON);
+
 /* ================= laptop demo: fake iOS notifications + lock screen =================
    Small panel left of the phone (laptop only). Keys: 1–7 send a notification, L locks/unlocks, H hides the panel. */
 const DEMO = [
-  {e:'💳', label:'Card payment',      title:'Card payment',            body:'-5 240 Ft · LIDL MAGYARORSZÁG. Balance: 82 210 Ft', url:'tranzakciok'},
-  {e:'💸', label:'Money received',    title:'Money received',          body:'+20 000 Ft from NAGY PÉTER – instant transfer',     url:'tranzakciok'},
-  {e:'🐷', label:'Week still open',   title:'Persi · Persely', persi:true, body:()=>S.streak >= 1 ? `🔥 Your ${S.streak}-week streak ends Sunday. Drop in any amount and it keeps going.` : 'A new week is open. Drop in any amount and your streak starts.', url:'hub'},
+  {e:'💳', label:'Card payment',      title:'Card payment', kind:'card', url:'tranzakciok',   // the push is real: the card payment is booked and the balance moves (N6)
+    fx:() => { acc('junior').v -= 5240; S.tx.unshift({...stamp(), d:'Today', n:'LIDL MAGYARORSZÁG', s:'Card payment', a:-5240, ic:'food'}); renderAll(); },
+    body:() => `-5 240 Ft · LIDL MAGYARORSZÁG. Balance: ${ft(acc('junior').v)}`},
+  {e:'💸', label:'Money received',    title:'Money received', kind:'incoming', url:'tranzakciok',
+    fx:() => { acc('junior').v += 20000; S.tx.unshift({...stamp(), d:'Today', n:'NAGY PÉTER', s:'Instant transfer', a:20000, ic:'money'}); renderAll(); },
+    body:() => `+20 000 Ft from NAGY PÉTER, instant transfer. Balance: ${ft(acc('junior').v)}`},
+  {e:'🐷', label:'Week still open',   title:'Persi · Persely', persi:true, kind:'streak', body:()=>S.streak >= 1 ? `🔥 Your ${S.streak}-week streak ends Sunday. Drop in any amount and it keeps going.` : 'A new week is open. Drop in any amount and your streak starts.', url:'hub'},
   {e:'💚', label:'Interest paid',     title:'Persi · Persely', persi:true, body:()=>`Your Junior rate (3.0% on the first 500 000 Ft) paid ${ft(Math.max(130, Math.round(Math.min(total(),CAP)*RATE/100/12*(1-TAX))))} this month, after tax.`, url:'hub'},
-  {e:'👯', label:'Friend saved too',  title:'Persi · Persely', persi:true, body:'Dóri added 5 000 Ft to Balaton in July. Your turn?', url:'hub'},
+  {e:'👯', label:'Friend saved too',  title:'Persi · Persely', persi:true, body:()=>{ const f = realFriends()[0]; return f ? `${f} saved 5 000 Ft this week. Your turn?` : null; }, none:'You have no friends in Persely yet. Add one first.', url:'hub'},   // real friends only
   {e:'🎓', label:'Junior ends',       title:'Persi · Persely', persi:true, body:()=>`Your Junior package ends on ${juniorEndLabel()}. Get your salary paid to OTP and keep my 3.0% on the first 500 000 Ft for 12 more months.`, url:'grad'},
-  {e:'📊', label:'Monthly story',     title:'Persi · Persely', persi:true, body:()=>`Your ${S.period} story is ready. Take a look.`, url:'story'},
-  {e:'🏷️', label:'New discount',      title:'New discount',            body:'15% instant discount at Pizzeria Roma. Activate it now!', url:'kedvezmenyek'},
-  {e:'🧾', label:'Bills first',       title:'Persi · Persely', persi:true, body:()=>{ const bf = billsFirst(); return bf.on ? `${bf.text}. Safe to spend is now ${ft(safeToSpend().safe)}.` : bf.total ? `Nothing is late. Safe to spend is now ${ft(safeToSpend().safe)}.` : 'All your must-pay bills are paid. Fun is back on.'; }, url:'hub'}
+  {e:'📊', label:'Monthly story',     title:'Persi · Persely', persi:true, kind:'story', body:()=>`Your ${S.period} story is ready. Take a look.`, url:'story'},
+  {e:'🏷️', label:'New discount',      title:'New discount',            body:'15% instant discount at Pizzeria Roma. Activate it now!', url:'perks'},
+  {e:'🧾', label:'Bills first',       title:'Persi · Persely', persi:true, kind:'bills', body:()=>{ const bf = billsFirst(); return bf.on ? `${bf.text}.${stsNow()}` : bf.total ? `Nothing is late.${stsNow() || ' Your bills are on track.'}` : 'All your must-pay bills are paid. Fun is back on.'; }, url:'hub'}
 ];
+// Safe to spend wording only with the analyst on
+const stsNow = () => S.analyst.on ? ` Safe to spend is now ${ft(safeToSpend().safe)}.` : '';
+// friends that really exist: the Friends list once it is on, and members of a shared Persely
+const realFriends = () => (S.friendsOptIn ? (S.friends || []).map(f => f.n) : []).concat((S.goals || []).filter(g => g.shared).flatMap(g => (g.members || []).filter(m => !m.me).map(m => m.n))).filter(Boolean);
 const demo = { delay:0, sound:true, phone:false, locked:false, hidden:false };
 let audioCtx;
 function chime(){
@@ -5256,22 +5485,24 @@ function openFromNote(url){
   if(url === 'grad'){ tab('hub'); pushPage('grad'); return; }
   if(TABS.some(t=>t[0]===url)) tab(url); else if(PAGES[url]){ tab('fooldal'); pushPage(url); }
 }
-let bannerTimer; const BANNER_MS = 4200;
+let bannerTimer; const BANNER_MS = 6500;   // a banner stays at least 6 s or until it is tapped
 function hideBanners(){ clearTimeout(bannerTimer); document.querySelectorAll('.nbanner').forEach(b=>b.remove()); MQ.banner = false; }
 function showBanner(n){
   document.querySelectorAll('.nbanner').forEach(b=>b.remove());
   hideToast(true); MQ.banner = true;   // while the banner shows, sheets and toasts wait
   const b = document.createElement('div'); b.className = 'nbanner'; b.innerHTML = noteHTML(n);
-  b.addEventListener('click', ()=>{ hideBanners(); openFromNote(n.url); setTimeout(mqPump, 300); });
+  const lv = $('#nlive'); if(lv){ lv.textContent = ''; setTimeout(() => { lv.textContent = `${n.title}. ${n.body}`; }, 60); }   // announced through the live region
+  b.addEventListener('click', ()=>{ markRead(n.id); hideBanners(); openFromNote(n.url); setTimeout(mqPump, 300); });
   $('#phone').appendChild(b);
   b.getBoundingClientRect();                 // let the start position apply, then slide in
   setTimeout(()=>b.classList.add('in'), 20);
   clearTimeout(bannerTimer);
   bannerTimer = setTimeout(()=>{ b.classList.remove('in'); setTimeout(()=>{ if(!b.isConnected) return; b.remove(); MQ.banner = false; mqPump(); }, 500); }, BANNER_MS);   // the next sheet or toast waits until the banner has slid away
 }
+function markRead(id){ const it = (S.inbox || []).find(x => x.id === id); if(it && !it.read){ it.read = true; save(); try{ renderView('fooldal'); refreshPages(); }catch(e){} } }
 function addLockCard(n){
   const c = document.createElement('div'); c.className = 'lcard'; c.innerHTML = noteHTML(n);
-  c.addEventListener('click', e=>{ e.stopPropagation(); openFromNote(n.url); });
+  c.addEventListener('click', e=>{ e.stopPropagation(); markRead(n.id); openFromNote(n.url); });
   $('#lockNotes').prepend(c);
 }
 function lockClock(){
@@ -5295,12 +5526,12 @@ $('#lock').addEventListener('click', unlockPhone);
 setInterval(()=>{ if(demo.locked) lockClock(); }, 15000);
 
 function sendDemo(i){
-  if(!DEMO[i]) return;
-  const n = {...DEMO[i], body: typeof DEMO[i].body === 'function' ? DEMO[i].body() : DEMO[i].body};
+  const d = DEMO[i]; if(!d) return;
   const go = () => {
-    if(demo.locked) addLockCard(n); else showBanner(n);
-    chime();
-    if(demo.phone) realPush(n);
+    if(d.fx) d.fx();   // the money event really happens (balance, Transactions) whether or not the push is switched on
+    const body = typeof d.body === 'function' ? d.body() : d.body;
+    if(body === null){ toast(d.none || 'Nothing to show right now'); return; }
+    if(!notify({...d, body})) toast(`${NOTE_KIND_OFF[d.kind]} notifications are off. Turn them on in Settings.`);
   };
   if(demo.delay) setTimeout(go, demo.delay*1000); else go();
 }
@@ -5312,9 +5543,13 @@ function realPush(n){ if(window.__STANDALONE) return;
 }
 // a notification from the demo (banner or lock screen, optionally a real push to the iPhone)
 function notify(n){
+  if(!notifOn(n.kind)) return false;   // switched off in Settings > Notifications: nothing is sent and nothing is listed
+  n.id = addInbox(n).id;               // every push is kept in the inbox
+  if(inQuiet()) return true;           // quiet hours: it arrives silently
   if(demo.locked) addLockCard(n); else showBanner(n);
   chime();
   if(demo.phone) realPush(n);
+  return true;
 }
 // salary arrives: the payday rule asks first (or moves automatically if the user chose that)
 function salaryArrives(){
@@ -5325,7 +5560,7 @@ function salaryArrives(){
   if((S.payday.on && S.payday.ask) || paydayBills()){   // with bills open the sheet is "Bills first": salary, bills, saving rule, left for Fun
     renderAll();
     const bfv = paydayBills(), ps = S.payday.on && S.payday.ask;
-    notify({title:'Persi · Persely', persi:true, body: bfv ? `Salary's in: +${ft(inc)}. ${ft(billsFirst().total)} of bills still to pay.${ps ? ' Then Persely.' : ''}` : `Salary's in: +${ft(inc)}. Move ${ft(share)} to ${g.name}?`, url:'payday'});
+    notify({title:'Persi · Persely', persi:true, body: bfv ? `Salary's in: +${ft(inc)}. ${ft(billsFirst().total)} of bills still to pay.${ps ? ' Then Persely.' : ''}` : `Salary's in: +${ft(inc)}. Move ${ft(share)} to ${g.name}?`, url:'payday', kind:'payday'});
     if(!demo.locked){ tab('hub'); qSheet(() => SHEETS.payday(), 'payday'); }   // after the banner
     return;
   }
@@ -5335,7 +5570,7 @@ function salaryArrives(){
     if(v > 0){ const counted = depositTo(g, v, 'junior', `Payday rule: ${S.payday.pct}%`); body = `Salary's in: +${ft(inc)}. I moved ${ft(v)} to ${g.name}.${counted ? ' This week is done.' : ''}`; persi = true; }
   }
   renderAll();
-  notify({title: persi ? 'Persi · Persely' : 'Salary arrived', body, url:'hub', persi});
+  notify({title: persi ? 'Persi · Persely' : 'Salary arrived', body, url:'hub', persi, kind:'payday'});
 }
 // card purchase: a 1 190 Ft coffee, the round-up (×2) goes to its Persely
 function coffee(){
@@ -5350,7 +5585,7 @@ function coffee(){
 // one push a day at most (never at night) after a Fun card payment while a bill is open: "Bills first: X Ft still to pay. Safe to spend is now Y Ft."
 function billsPush(delay){
   const bf = bfNow(), day = billToday().ym + '-' + billToday().day; if(!bf.on || S.bfPush === day) return; S.bfPush = day; save();
-  setTimeout(() => notify({title:'Persi · Persely', persi:true, body:`${bf.text}. Safe to spend is now ${ft(safeToSpend().safe)}.`, url:'hub'}), delay || 0);
+  setTimeout(() => notify({title:'Persi · Persely', persi:true, body:`${bf.text}.${stsNow()}`, url:'hub', kind:'bills'}), delay || 0);
 }
 // demo key B: this month's rent is not paid. The analyst goes on if it was off; the bills-first card, the Fun hold-off, Persi and a push appear. Pay now clears it.
 function billMissed(){
@@ -5360,7 +5595,7 @@ function billMissed(){
   const i = S.tx.findIndex(t => t.a < 0 && payeeKey(t) === b.key && txWhen(t).ym === now.ym);
   if(i >= 0){ const t = S.tx.splice(i, 1)[0]; if(t.note === 'Paid from Bills pocket') S.billsPocket.bal += -t.a; else acc('junior').v += -t.a; }   // the rent was not sent: the money is still here
   delete S.billSkip[b.id]; S.bfDone = false; S.bfPush = now.ym + '-' + now.day; renderAll(); tab('fooldal');
-  notify({title:'Persi · Persely', persi:true, body:`${billsFirst().text}. Safe to spend is now ${ft(safeToSpend().safe)}.`, url:'hub'});
+  notify({title:'Persi · Persely', persi:true, body:`${billsFirst().text}.${stsNow()}`, url:'hub', kind:'bills'});
 }
 // a friend joins the shared Persely
 function doriJoins(){
@@ -5599,16 +5834,17 @@ $('#demoPanel').addEventListener('click', e=>{
   else if('dhide' in d){ demo.hidden = true; renderDemoPanel(); }
 });
 $('#demoShow').addEventListener('click', ()=>{ demo.hidden = false; renderDemoPanel(); });
-// on the phone itself: long-press Anna's avatar on Home opens the demo controls (idea from the team handoff)
+// on the phone itself, with the demo flag on: long-press the avatar on Home opens the demo controls (idea from the team handoff). A tap on the avatar opens Settings.
 function demoSheet(){
   const b = (a, e, t, s) => `<button data-dm="${a}">${e} ${t}<small>${s}</small></button>`;
   return `<h2>Demo controls</h2><div class="dsheet">${b('payday','💰','Payday','Salary, asks 10%')}${b('coffee','☕','Card purchase','Coffee, round-up')}${b('dori','👯','Dóri joins','Shared Persely')}${b('week','⏭','Next week','')}${b('bills','🧾','Bill missed','Rent unpaid, Bills first')}${b('month','⏩','+1 month','Cash flow, rules, interest')}${b('month2','⏩','+2 months','Cash flow')}${b('year','⏩','To month 12','Stops at Junior ends')}${b('sem','🎓','End of semester','Semester story')}${b('grad','🎉','Junior ends','Keep my 3.0%')}${b('seed','👤','Seed','New or existing user')}${b('update','▶','Demo start','Face ID, new user')}${b('reset','↺','Reset','Back to the start')}</div>`;
 }
 let lpTimer = null;
-document.addEventListener('pointerdown', e => { if(!(e.target.closest && e.target.closest('.hhead .avatar'))) return; clearTimeout(lpTimer); lpTimer = setTimeout(() => { lpTimer = null; sheet(demoSheet()); }, 650); });
+document.addEventListener('pointerdown', e => { if(!DEMO_ON || !(e.target.closest && e.target.closest('.hhead .avatar'))) return; clearTimeout(lpTimer); lpTimer = setTimeout(() => { lpTimer = null; sheet(demoSheet()); }, 650); });
 ['pointerup','pointercancel','pointermove'].forEach(ev => document.addEventListener(ev, e => { if(ev === 'pointermove' && !(e.target.closest && e.target.closest('.hhead .avatar'))) clearTimeout(lpTimer); else if(ev !== 'pointermove') clearTimeout(lpTimer); }));
 addEventListener('keydown', e=>{
   if(e.target.closest && e.target.closest('input')) return;
+  if(!DEMO_ON || e.metaKey || e.ctrlKey || e.altKey) return;   // the presenter keys work while the demo flag is on
   const k = e.key.toLowerCase();
   if(k >= '1' && k <= String(DEMO.length)) sendDemo(+k - 1);
   else if(k === 'l') demo.locked ? unlockPhone() : lockPhone();
