@@ -54,7 +54,8 @@
      --gap-title under a section title, --gap-btn between buttons side by side, --row-y / --row-x inside a list row. */
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --tap:44px;
   --gutter:var(--sp-4); --pad-card:var(--sp-4); --gap-stack:var(--sp-3); --gap-sec:var(--sp-5); --gap-title:var(--sp-2); --gap-btn:var(--sp-2); --row-y:var(--sp-3); --row-x:var(--sp-4);
-  --sh:0 4px 16px rgba(48,60,90,.08); --sh-up:0 -2px 16px rgba(48,60,90,.06);
+  --ink-rgb:43,48,56;   /* --ink as r,g,b: every tinted shadow and scrim is rgba(var(--ink-rgb),alpha); a self-check keeps it equal to --ink */
+  --sh:0 4px 16px rgba(var(--ink-rgb),.08); --sh-up:0 -2px 16px rgba(var(--ink-rgb),.06);
   --font:"Open Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -87,7 +88,7 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stro
   .stage{height:100vh;flex-direction:column}
   .device{display:block;position:relative;flex:none;width:450px;height:952px;padding:4px;border-radius:78px;
     background:linear-gradient(135deg,#A5A29C 0%,#6B6863 25%,#55524E 45%,#A5A29C 70%,#55524E 100%);   /* iPhone titanium: hardware, not app UI (palette exception) */
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),inset 0 0 6px rgba(0,0,0,.35),0 50px 90px -20px rgba(25,30,45,.45),0 18px 36px -12px rgba(25,30,45,.35);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),inset 0 0 6px rgba(0,0,0,.35),0 50px 90px -20px rgba(var(--ink-rgb),.45),0 18px 36px -12px rgba(var(--ink-rgb),.35);
     transform-origin:center center}
   .bezel{display:block;height:100%;border-radius:74px;background:#000;padding:11px;box-shadow:inset 0 0 0 1.5px var(--ink)}
   .phone{width:100%;height:100%;border-radius:63px;isolation:isolate}
@@ -107,7 +108,7 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stro
   .sheet{padding-bottom:40px}
   .toast{bottom:110px}
   .caption{display:block;margin-top:22px;font-size:var(--fs-s);color:var(--ink2);text-align:center}
-  .phone, .phone *{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='34'%3E%3Ccircle cx='17' cy='17' r='14' fill='rgba(60,60,70,.22)' stroke='rgba(255,255,255,.9)' stroke-width='2'/%3E%3C/svg%3E") 17 17, pointer}
+  .phone, .phone *{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='34'%3E%3Ccircle cx='17' cy='17' r='14' fill='rgba(0,0,0,.2)' stroke='rgba(255,255,255,.9)' stroke-width='2'/%3E%3C/svg%3E") 17 17, pointer}
   .phone.drag, .phone.drag *{user-select:none}
 }
 /* --top = height of the iPhone status bar area; set by JS below (fallback: safe area) */
@@ -223,7 +224,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .dots i.on{background:var(--green)}
 .gauge{position:relative;width:clamp(200px,64vw,250px);aspect-ratio:1;margin:var(--sp-2) auto 0}
 .gauge>svg{display:block;width:100%;height:100%}
-.gauge .core{position:absolute;inset:16.8%;border-radius:50%;background:linear-gradient(145deg,var(--white),var(--fill));box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge .core{position:absolute;inset:16.8%;border-radius:50%;background:linear-gradient(145deg,var(--white),var(--fill));box-shadow:8px 8px 18px rgba(var(--ink-rgb),.15),-8px -8px 18px var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center}
 .gauge .core small{font-size:0.84375rem;color:var(--ink2)}
 .gauge .core b{font-size:1.5625rem;color:var(--green-t);font-weight:700}
 .avg{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);font-size:0.84375rem;color:var(--ink2);margin:var(--sp-2) 0 var(--sp-1)}
@@ -339,13 +340,13 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .note{background:var(--green-l);border-radius:12px;padding:var(--sp-3) var(--sp-4);font-size:var(--fs-s);color:var(--ink2);margin-bottom:var(--sp-3)}
 
 /* tab bar: fixed at the very bottom, full width, white down to the screen edge, never moves */
-.tabbar{flex:none;position:relative;z-index:15;background:var(--white);box-shadow:0 -1px 0 var(--line),0 -6px 18px rgba(48,60,90,.05);display:flex;padding:6px 8px calc(env(safe-area-inset-bottom) + 4px);touch-action:none}
+.tabbar{flex:none;position:relative;z-index:15;background:var(--white);box-shadow:0 -1px 0 var(--line),0 -6px 18px rgba(var(--ink-rgb),.05);display:flex;padding:6px 8px calc(env(safe-area-inset-bottom) + 4px);touch-action:none}
 .tb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:var(--fs-xs);color:var(--ink2);padding:var(--sp-2) 0 var(--sp-1);border-radius:20px}
 .tb svg{width:25px;height:25px;stroke-width:1.5}
 .tb.on{color:var(--green-t);background:var(--bg)}
 
 /* sheet & toast */
-.back{position:absolute;inset:0;z-index:74;background:rgba(30,35,45,.4);display:none;align-items:flex-end}
+.back{position:absolute;inset:0;z-index:74;background:rgba(var(--ink-rgb),.4);display:none;align-items:flex-end}
 .back.on{display:flex}
 .sheet{width:100%;max-height:88%;overflow-y:auto;background:var(--bg);border-radius:24px 24px 0 0;padding:var(--sp-2) var(--gutter) calc(env(safe-area-inset-bottom) + var(--sp-5));animation:up .22s ease-out}
 .sheet::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:var(--line-2);margin:0 auto var(--sp-3)}
@@ -407,7 +408,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .tb .nd{position:absolute;top:5px;left:calc(50% + 7px);width:9px;height:9px;border-radius:50%;background:var(--orange);border:2px solid var(--white)}
 
 /* ---------- "what's new" pop-up after the update ---------- */
-.wn{position:absolute;inset:0;z-index:72;background:rgba(20,28,22,.45);display:none;align-items:center;justify-content:center;padding:var(--sp-5)}
+.wn{position:absolute;inset:0;z-index:72;background:rgba(var(--ink-rgb),.45);display:none;align-items:center;justify-content:center;padding:var(--sp-5)}
 .wn.on{display:flex}
 .wn-card{width:100%;background:var(--white);border-radius:26px;padding:var(--sp-2) var(--sp-5) var(--sp-4);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:pop .4s cubic-bezier(.2,.9,.25,1.15)}
 .wn-card .pig3d{margin:0 auto -4px}
@@ -520,7 +521,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 
 /* ---------- fake iOS notification (for the laptop demo) ---------- */
 .nbanner{position:absolute;left:8px;right:8px;top:calc(var(--top) + 6px);z-index:85;display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:22px;
-  background:rgba(246,246,248,.88);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);
+  background:rgba(255,255,255,.85);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);
   box-shadow:0 10px 34px rgba(0,0,0,.2);transform:translateY(-150%);transition:transform .5s cubic-bezier(.2,.9,.25,1.12);text-align:left;color:var(--ink);width:auto}
 .nbanner.in{transform:none}
 .nbanner img,.lcard img{width:38px;height:38px;border-radius:9px;flex:none}
@@ -544,8 +545,8 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .fid.fid-done .fid-ok{opacity:1;stroke-dashoffset:0;transition:stroke-dashoffset .35s ease-out .05s}
 .ff{position:absolute;inset:0;z-index:78;display:none;pointer-events:auto;background:transparent;--sbb:env(safe-area-inset-bottom)}
 .ff.on{display:block}
-.ff-hud{position:absolute;left:12px;right:12px;bottom:calc(var(--sbb) + 74px);background:rgba(28,33,40,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:var(--white);border-radius:18px;
-  padding:10px 14px 0;box-shadow:0 12px 30px rgba(20,25,35,.35);display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 12px;overflow:hidden;cursor:pointer;animation:pop .35s cubic-bezier(.2,.9,.25,1.15)}
+.ff-hud{position:absolute;left:12px;right:12px;bottom:calc(var(--sbb) + 74px);background:rgba(var(--ink-rgb),.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:var(--white);border-radius:18px;
+  padding:10px 14px 0;box-shadow:0 12px 30px rgba(var(--ink-rgb),.35);display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 12px;overflow:hidden;cursor:pointer;animation:pop .35s cubic-bezier(.2,.9,.25,1.15)}
 .ff-hl{display:flex;align-items:center;gap:10px}.ff-hl small{display:block;font-size:var(--fs-xs);color:var(--line-2);font-weight:600}.ff-hl b{display:block;font-size:var(--fs-m);font-weight:700;white-space:nowrap}
 .ff-ic{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center}
 .ff-ev{justify-self:end;text-align:right;min-width:0;opacity:0;transform:translateY(6px)}.ff-ev.in{opacity:1;transform:none;transition:opacity .25s,transform .25s}
@@ -572,7 +573,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .lock .ld{font-size:1.1875rem;font-weight:600;opacity:.92}
 .lock .lt{font-size:5.75rem;font-weight:700;line-height:1;letter-spacing:-3px;margin-top:2px}
 .lock .lnotes{width:100%;padding:0 10px;margin-top:auto;margin-bottom:130px;display:flex;flex-direction:column;gap:8px}
-.lcard{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:22px;background:rgba(246,246,248,.82);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);color:var(--ink);text-align:left;width:100%;animation:pop .45s cubic-bezier(.2,.9,.25,1.15)}
+.lcard{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:22px;background:rgba(255,255,255,.8);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);color:var(--ink);text-align:left;width:100%;animation:pop .45s cubic-bezier(.2,.9,.25,1.15)}
 @keyframes pop{from{transform:translateY(24px) scale(.96);opacity:0}}
 .lock .lbot{position:absolute;bottom:46px;left:0;right:0;display:flex;justify-content:space-between;padding:0 44px}
 .lock .lbot i{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.18);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center}
@@ -589,7 +590,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 @media (min-width:760px) and (hover:hover){
   html.demo-on .demo-panel{display:flex}
   .demo-panel{flex-direction:column;gap:5px;position:fixed;left:18px;top:50%;transform:translateY(-50%);width:186px;padding:10px;border-radius:16px;max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;
-    background:rgba(255,255,255,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 6px 24px rgba(30,40,60,.12);z-index:200}
+    background:rgba(255,255,255,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 6px 24px rgba(var(--ink-rgb),.12);z-index:200}
   .demo-panel.hidden{display:none}
   .demo-panel h4{margin:2px 4px 3px;font-size:var(--fs-xs);font-weight:700;color:var(--ink2);display:flex;justify-content:space-between}
   .demo-panel button{display:flex;align-items:center;gap:7px;width:100%;padding:6px 8px;border-radius:9px;background:var(--white);box-shadow:0 1px 0 var(--line);font-size:var(--fs-xs);color:var(--ink);text-align:left;line-height:1.25}
@@ -1018,8 +1019,8 @@ button.mp-r{width:100%;min-height:var(--tap);align-items:center;margin-top:0;tex
 .pkin{position:absolute;inset:0 14px}
 .pkin::before{content:"";position:absolute;left:-14px;right:-14px;top:50%;height:8px;margin-top:-4px;border-radius:4px;background:var(--line)}
 .pkfill{position:absolute;left:-14px;top:50%;height:8px;margin-top:-4px;border-radius:4px;background:var(--green);width:calc(var(--p) + 14px)}
-.pkthumb{position:absolute;top:50%;left:var(--p);width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:var(--white);box-shadow:0 2px 6px rgba(30,40,60,.32),0 0 0 1px rgba(0,0,0,.06)}
-.pksl:focus-visible .pkthumb{box-shadow:0 0 0 3px var(--act),0 2px 6px rgba(30,40,60,.32)}
+.pkthumb{position:absolute;top:50%;left:var(--p);width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:var(--white);box-shadow:0 2px 6px rgba(var(--ink-rgb),.32),0 0 0 1px rgba(0,0,0,.06)}
+.pksl:focus-visible .pkthumb{box-shadow:0 0 0 3px var(--act),0 2px 6px rgba(var(--ink-rgb),.32)}
 .pkchips{margin:2px 0 0;gap:var(--sp-2);flex-wrap:nowrap}
 .pkchips button.chip{flex:1 1 auto;min-width:0;padding:0 var(--sp-2);font-size:.8125rem;white-space:nowrap}
 .pkd .fld{cursor:pointer;margin-bottom:var(--sp-3);min-height:64px;padding:var(--sp-3) var(--sp-4)}
@@ -1147,6 +1148,7 @@ const PALETTE = (() => {
 const mixHex = (hex, k) => { const n = parseInt(hex.slice(1), 16), t = k > 0 ? 255 : 0, a = Math.abs(k);
   return '#' + [16, 8, 0].map(sh => Math.round(((n >> sh) & 255) * (1 - a) + t * a).toString(16).padStart(2, '0')).join('').toUpperCase(); };
 const hexInt = hex => parseInt(hex.slice(1), 16);   // for three.js materials and lights
+const rgbaHex = (hex, a) => { const n = hexInt(hex); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; };   // a token with alpha, for canvas
 /* ================= icons (simple line icons) ================= */
 const P = {
   home:'<path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h4.5v-5.5h4V20h4.5V9.5"/>',
@@ -2544,12 +2546,19 @@ function __checkAnalytics(){
     } catch(e){ ok('chk-spending-rework: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); txReset(); while(stack.length) popPage(true); S = sv17; cur = cur17; stack.push(...stk17); demo.locked = lock17; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views17[i])); }
   }
-  // chk-palette: one colour palette. Outside :root the stylesheet keeps at most a few documented literal colours (Mastercard logo, iPhone frame, mask black);
-  // PALETTE (what JS draws with) holds a real #RRGGBB for every token, and the spending categories stay told apart.
-  { const css = (document.querySelector('style') || {}).textContent || '', r0 = css.indexOf(':root{'), r1 = css.indexOf('}', r0), rest = css.slice(0, r0) + css.slice(r1 + 1);
-    const lits = [...new Set((rest.match(/#[0-9a-f]{6}\b|#[0-9a-f]{3}\b/gi) || []).map(x => x.toUpperCase()))], ALLOW = ['#000', '#EB001B', '#F79E1B', '#A5A29C', '#6B6863', '#55524E'];
+  // chk-palette: one colour palette. Scans the stylesheet (outside :root) and the app script for colour literals: only the documented exceptions may stay
+  // (Mastercard logo, iPhone frame hardware, pure black), rgb()/rgba() only as black or white with alpha, no 0x colour ints; PALETTE holds a real #RRGGBB
+  // for every token, --ink-rgb equals --ink, theme-color equals --bg, and the spending categories stay told apart.
+  { const css0 = [...document.querySelectorAll('style')].map(x => x.textContent).join('\n'), r0 = css0.indexOf(':root{'), r1 = css0.indexOf('}', r0);
+    const src = css0.slice(0, r0) + css0.slice(r1 + 1) + [...document.scripts].filter(x => !x.src && x.textContent.includes('const PALETTE')).map(x => x.textContent).join('\n');   // the app script only (the offline build inlines three.js too)
+    const ALLOW = ['#000', '#EB001B', '#F79E1B', '#A5A29C', '#6B6863', '#55524E'];
+    const lits = [...new Set((src.match(/(?<![&\w])#[0-9a-f]{6}\b|(?<![&\w])#[0-9a-f]{3}\b/gi) || []).map(x => x.toUpperCase()))];
+    const ints = src.match(/0x[0-9a-f]{6}\b/gi) || [], rgb = [...new Set([...src.matchAll(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/g)].map(m => m.slice(1, 4).join(',')))];
+    const rgbOk = rgb.every(x => x === '0,0,0' || x === '255,255,255'), inkRgb = getComputedStyle(document.documentElement).getPropertyValue('--ink-rgb').replace(/\s/g, '');
+    const inkOk = inkRgb === [16, 8, 0].map(sh => hexInt(PALETTE.ink) >> sh & 255).join(','), tc = (document.querySelector('meta[name="theme-color"]') || {}).content || '';
     const palOk = Object.values(PALETTE).every(v => /^#[0-9A-F]{6}$/.test(v)), cats = ['groceries','transport','health','edu','food','shopping','fun','travel','subs'].map(c => CAT_COL[c]);
-    ok('chk-palette: outside :root the stylesheet has at most 8 distinct colour literals, all documented exceptions; every PALETTE token is a #RRGGBB read from the CSS; the 9 spending categories have 9 different colours', r0 >= 0 && lits.length <= 8 && lits.every(x => ALLOW.includes(x)) && palOk && new Set(cats).size === cats.length, {lits, palOk, cats}); }
+    ok('chk-palette: outside :root the stylesheet and the app script hold at most ' + ALLOW.length + ' distinct hex colours, all documented exceptions; rgba only black or white with alpha; no 0x colour ints; every PALETTE token is a #RRGGBB read from the CSS; --ink-rgb equals --ink and theme-color equals --bg; the 9 spending categories have 9 different colours',
+      r0 >= 0 && lits.length <= ALLOW.length && lits.every(x => ALLOW.includes(x)) && !ints.length && rgbOk && inkOk && tc.toUpperCase() === PALETTE.bg && palOk && new Set(cats).size === cats.length, {lits, ints, rgb, inkRgb, tc, palOk, cats}); }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
   const bad = out.filter(r => !r.pass);
@@ -3945,7 +3954,7 @@ const PAGES = {
   challenges:{title:'Weekly challenges', html:()=>`<div class="card" style="padding:var(--sp-1) var(--sp-4) var(--sp-3);margin-top:var(--sp-2)"><ul class="bul sm"><li>New challenges every Monday, the week ends on Sunday</li><li>Progress is checked automatically from your card payments</li><li>Join as many as you like</li></ul></div>${CH_DEFS.map(chCard).join('')}`},
   kiadas:{title:'Monthly spending', right:`<button data-plangear aria-label="Edit my monthly plan" style="display:flex;color:inherit">${I('gear',22)}</button>`, html:()=>{
     const mo = shownMonth(), sp = catSpend(mo.ym);
-    return `<div style="margin:var(--sp-4) auto var(--sp-5);width:230px;padding:var(--sp-4);border-radius:40px;text-align:center;background:linear-gradient(145deg,var(--white),var(--fill));box-shadow:8px 8px 18px rgba(150,160,180,.35),-8px -8px 18px var(--white)"><b class="num u-fs-22">${ft(sumVals(sp))}</b><div style="color:var(--act-d);font-size:var(--fs-s)">${mo.name}${mo.year !== 2026 ? ' ' + mo.year : ''} · card spending</div></div>
+    return `<div style="margin:var(--sp-4) auto var(--sp-5);width:230px;padding:var(--sp-4);border-radius:40px;text-align:center;background:linear-gradient(145deg,var(--white),var(--fill));box-shadow:8px 8px 18px rgba(var(--ink-rgb),.15),-8px -8px 18px var(--white)"><b class="num u-fs-22">${ft(sumVals(sp))}</b><div style="color:var(--act-d);font-size:var(--fs-s)">${mo.name}${mo.year !== 2026 ? ' ' + mo.year : ''} · card spending</div></div>
     ${catBars(sp)}
     ${recentCards()}
     ${S.analyst.on && S.analyst.accepted ? '' : `<div class="card"><b class="u-bk-m14">How does this fit your income?</b><div class="fine u-mt4-b12">The analyst shows how your ${ft(S.income.amount)} splits into Essentials, Fun and Saving.</div><button class="btn" data-sheet="analyst">See the suggested split</button></div>`}`;}},
@@ -5115,7 +5124,7 @@ const pig3d = (() => {
   // soft shadow on the ground
   const sc = document.createElement('canvas'); sc.width = sc.height = 128;
   const sx = sc.getContext('2d'), gr = sx.createRadialGradient(64,64,4,64,64,62);
-  gr.addColorStop(0,'rgba(20,40,20,.28)'); gr.addColorStop(1,'rgba(20,40,20,0)'); sx.fillStyle = gr; sx.fillRect(0,0,128,128);
+  gr.addColorStop(0, rgbaHex(mixHex(PALETTE.greenDk, -.5), .28)); gr.addColorStop(1, rgbaHex(mixHex(PALETTE.greenDk, -.5), 0)); sx.fillStyle = gr; sx.fillRect(0,0,128,128);
   const shadow = new T.Mesh(new T.PlaneGeometry(2.8, 2.8), new T.MeshBasicMaterial({ map:new T.CanvasTexture(sc), transparent:true, depthWrite:false }));
   shadow.rotation.x = -Math.PI/2; shadow.position.y = -1.1; scene.add(shadow);
   // gold coin for celebrate()

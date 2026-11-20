@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Панель пушей</title>
 <style>
-:root{--bg:#EEF0F5;--card:#FFFFFF;--white:var(--card);--ink:#2B3038;--muted:#62676F;--green:#52AE30;--green-t:#2F7A1B;--line:#E2E5EB}   /* the app palette (index.html :root): --muted is --muted-t, text green is --green-t */
+:root{--bg:#EEF0F5;--card:#FFFFFF;--white:var(--card);--ink:#2B3038;--ink-rgb:43,48,56;--muted:#62676F;--green:#52AE30;--green-t:#2F7A1B;--line:#E2E5EB}   /* the app palette (index.html :root): --muted is --muted-t, text green is --green-t */
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 "Open Sans",-apple-system,"Segoe UI",sans-serif}
 main{max-width:760px;margin:0 auto;padding:28px 16px 60px}
 h1{font-size:24px;margin:0 0 4px}
 .sub{color:var(--muted);margin:0 0 20px}
-.card{background:var(--card);border-radius:16px;box-shadow:0 4px 16px rgba(48,60,90,.08);padding:18px;margin-bottom:14px}
+.card{background:var(--card);border-radius:16px;box-shadow:0 4px 16px rgba(var(--ink-rgb),.08);padding:18px;margin-bottom:14px}
 .status{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .count{font-size:28px;font-weight:700}
 .count small{font-size:14px;font-weight:500;color:var(--muted);margin-left:6px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-.sc{text-align:left;border:0;background:var(--card);border-radius:16px;box-shadow:0 4px 16px rgba(48,60,90,.08);padding:14px 16px;cursor:pointer;font:inherit;color:inherit}
-.sc:hover{box-shadow:0 0 0 2px var(--green),0 4px 16px rgba(48,60,90,.08)}
+.sc{text-align:left;border:0;background:var(--card);border-radius:16px;box-shadow:0 4px 16px rgba(var(--ink-rgb),.08);padding:14px 16px;cursor:pointer;font:inherit;color:inherit}
+.sc:hover{box-shadow:0 0 0 2px var(--green),0 4px 16px rgba(var(--ink-rgb),.08)}
 .sc b{display:block;margin-bottom:6px}
 .sc .pv{font-size:13px;color:var(--muted)}
 .sc .who{display:inline-block;font-size:12px;font-weight:600;color:var(--green-t);margin-top:8px}

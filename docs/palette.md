@@ -8,7 +8,8 @@ Rules
 - `--green`, `--orange`, `--blue`, `--yellow`, `--red` and the `--c-*` colours are for bars, rings, icons, dots and fills. Never use them for small text on white.
 - Grey text is `--muted-t` or `--ink2`. `--muted` is for decoration only.
 - Do not type a colour anywhere else. In CSS and inline styles use `var(--token)`. In SVG attributes and three.js use `PALETTE.name` (camelCase of the token, for example `PALETTE.greenI`).
-- `window.__checkAnalytics()` includes `chk-palette`: outside `:root` the stylesheet may hold at most 8 distinct colour literals, all from the exception list below, every `PALETTE` value must be a `#RRGGBB`, and the 9 spending categories must have 9 different colours.
+- Shadows and scrims with a tint use `rgba(var(--ink-rgb), alpha)`. Plain `rgba(0,0,0,a)` and `rgba(255,255,255,a)` are allowed. In canvas code use `rgbaHex(PALETTE.name, a)`.
+- `window.__checkAnalytics()` includes `chk-palette`: it scans the stylesheet outside `:root` and the app script. They may hold at most 6 distinct hex colours, all from the exception list below; rgb() and rgba() only as black or white; no `0x` colour ints. Every `PALETTE` value must be a `#RRGGBB`, `--ink-rgb` must equal `--ink`, `theme-color` must equal `--bg`, and the 9 spending categories must have 9 different colours.
 
 ## Neutrals
 
@@ -25,6 +26,7 @@ Rules
 | `--muted-t` | #62676F | Secondary text (4.99 on `--bg`, 4.81 on `--fill`) | 5.69 |
 | `--ink2` | #4A505A | Section titles, captions on grey, slate category | 8.12 |
 | `--ink` | #2B3038 | Body text, toast and note background, status bar | 13.27 |
+| `--ink-rgb` | 43,48,56 | `--ink` as r,g,b for tinted shadows, scrims and the fast forward HUD | |
 
 ## Green
 
@@ -79,6 +81,7 @@ Bright and told apart by hue. Never text.
 
 - Story slide backgrounds (`ST_BG`): green `--green-dk` to `--act`, blue `--blue-t` to `--blue-i`, and orange, violet, mint and pink from `--orange`, `--c-violet`, `--c-mint`, `--c-pink` (55% to black at the top, 20% to black at the bottom).
 - Persi (`PIG`, used by the flat SVG and the 3D pig): body `--green`, legs and ears `--green-i`, belly `--green` 12% lighter, slot `--act`, snout `--green-lt`, nostrils `--green-dk`, eyes and mouth `--green-dk` 35% darker, cheeks `--red` 40% lighter, sparkles `--c-yellow`. 3D lights use `--white` and `--green-l`.
+- 3D pig ground shadow (canvas): `--green-dk` 50% darker, with alpha, through `rgbaHex`.
 - Friends and shared goal members: `--blue-i`, `--c-pink`, `--yellow`, `--c-coral`, `--c-mint`, `--green-i`, `--c-violet`, `--blue-t`; you are `--orange`.
 
 ## Documented exceptions (literal on purpose)
@@ -88,7 +91,7 @@ Bright and told apart by hue. Never text.
 | #EB001B, #F79E1B | Card art, Mastercard circles | Third party brand colours |
 | #A5A29C, #6B6863, #55524E | Desktop iPhone frame and side buttons | Device hardware, not app UI |
 | #000 | iPhone bezel, Dynamic Island, mask images, lock screen and story shading | Pure black for hardware and masks |
-| rgba() with alpha | Shadows and scrims | Neutral transparency, no hue |
+| rgba(0,0,0,a), rgba(255,255,255,a) | Shadows, overlays, story bars, the desktop touch cursor | Neutral transparency, no hue |
 | #EEF0F5 | `theme-color` meta and the web manifest | Must be a literal there; equals `--bg` |
 
 ## Other pages
