@@ -498,6 +498,27 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 
 /* ---------- small demo panel next to the phone (laptop only) ---------- */
 .demo-panel,.demo-show{display:none}
+.be-panel{display:none}
+@media (min-width:1180px) and (hover:hover){
+  .be-panel{display:flex;flex-direction:column;position:fixed;right:18px;top:50%;transform:translateY(-50%);width:min(400px, calc(50vw - 260px));max-height:calc(100vh - 32px);padding:14px 14px 8px;border-radius:18px;
+    background:#0F1712;color:#DCE6D8;box-shadow:0 14px 40px rgba(10,20,12,.35);z-index:200;font-size:12.5px}
+  .be-panel.hidden{display:none}
+  .be-h{display:flex;justify-content:space-between;align-items:baseline}.be-h b{font-size:15px;color:#fff}.be-h span{font-size:11px;color:#7E8C79}
+  .be-sub{font-size:11px;color:#8FA08A;margin:3px 0 10px;line-height:1.35}
+  .be-map{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+  .be-svc{padding:4px 8px;border-radius:99px;font-size:10.5px;font-weight:700;color:var(--c);border:1px solid color-mix(in srgb, var(--c) 45%, transparent);background:color-mix(in srgb, var(--c) 10%, transparent);transition:background .25s, box-shadow .25s}
+  .be-svc.hit{background:var(--c);color:#0F1712;box-shadow:0 0 14px var(--c)}
+  .be-log{overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px;scrollbar-width:thin}
+  .be-e{border-left:3px solid var(--c);background:#16211A;border-radius:0 10px 10px 0;padding:7px 9px}
+  .be-e.new{animation:bein .35s ease-out}
+  @keyframes bein{from{opacity:0;transform:translateX(12px)}}
+  .be-r{display:flex;align-items:center;gap:6px}.be-tag{font-weight:700;color:var(--c);font-size:11px}.be-t{margin-left:auto;color:#6F7D6A;font:10.5px ui-monospace,Consolas,monospace}
+  .be-real{font-size:9.5px;font-weight:800;background:#FF8A65;color:#0F1712;border-radius:4px;padding:1px 5px}
+  .be-l{display:block;font:11.5px ui-monospace,Consolas,monospace;color:#fff;margin-top:3px;word-break:break-all}
+  .be-w{color:#B9C6B3;margin-top:2px;line-height:1.35}
+  .be-d{display:block;font:10.5px ui-monospace,Consolas,monospace;color:#7E8C79;margin-top:3px;word-break:break-word}
+  .be-empty{color:#6F7D6A;padding:18px 4px;text-align:center}
+}
 @media (min-width:760px) and (hover:hover){
   .demo-panel{display:flex;flex-direction:column;gap:5px;position:fixed;left:18px;top:50%;transform:translateY(-50%);width:186px;padding:10px;border-radius:16px;max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;
     background:rgba(255,255,255,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 6px 24px rgba(30,40,60,.12);z-index:200}
@@ -948,6 +969,7 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
 <div class="rotate" id="rotate" role="alert"></div>
 <script src="three.min.js"></script>
 <aside class="demo-panel" id="demoPanel"></aside>
+<aside class="be-panel" id="bePanel" aria-label="Behind the app: what the bank's services do"></aside>
 <button class="demo-show" id="demoShow" aria-label="Show demo panel"></button>
 </div>
 
@@ -4617,6 +4639,7 @@ function renderDemoPanel(){
     <button data-dgrad>🎉 Junior ends / graduation<kbd>G</kbd></button>
     <button data-dstory>📊 Story<kbd>M</kbd></button>
     <button data-dtour>💡 Persi's tour again<kbd>T</kbd></button>
+    <button data-dbe>🧩 Backend view<kbd>A</kbd></button>
     <button data-dupdate>▶ Demo start: Face ID<kbd>U</kbd></button>
     <button data-djump>📅 8 weeks later<kbd>J</kbd></button>
     <button data-ddelay>⏱ Delay: ${demo.delay ? demo.delay+' s' : 'none'}</button>
@@ -4642,6 +4665,7 @@ $('#demoPanel').addEventListener('click', e=>{
   else if('dgrad' in d) graduation();
   else if('dstory' in d){ unlockPhone(); tab('hub'); openStory(); }
   else if('dtour' in d){ unlockPhone(); showHints(); }
+  else if('dbe' in d){ BE.on = !BE.on; beRender(); }
   else if('dupdate' in d) demoUpdateDay();
   else if('djump' in d) week8State();
   else if('ddelay' in d){ demo.delay = {0:3, 3:10, 10:0}[demo.delay]; renderDemoPanel(); }
@@ -4675,6 +4699,7 @@ addEventListener('keydown', e=>{
   else if(k === 'g') graduation();
   else if(k === 'm'){ unlockPhone(); tab('hub'); openStory(); }
   else if(k === 't'){ unlockPhone(); showHints(); }
+  else if(k === 'a'){ BE.on = !BE.on; beRender(); }
   else if(k === 'u') demoUpdateDay();
   else if(k === 'j') week8State();
   else if(k === 'h'){ demo.hidden = !demo.hidden; renderDemoPanel(); }
@@ -4704,6 +4729,82 @@ launchFlow(1500);   // first launch after the update: show the pop-up
 if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost')) navigator.serviceWorker.register('sw.js').then(pushRefresh).catch(()=>{});
 else pushInfo();
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) pushRefresh(); });
+
+/* ---------- Backend view (laptop only, key A): what the bank's services would do behind each tap ----------
+   Simulated: gateway, Persely service, ledger, rules, analytics, scheduler, eligibility (the architecture we propose to OTP).
+   Real: push notifications (server.js with web-push), marked REAL. Nothing here changes the app; it only writes the log. */
+const BE = {on:true, mute:0, log:[], next:0};
+const BE_SVC = {gw:['API gateway','#7FB2E5'], ps:['Persely service','#7BD35A'], led:['Core ledger','#F0B35A'], rules:['Rules engine','#C792EA'],
+  notif:['Notifications','#FF8A65'], an:['Analytics','#4DD0C4'], sched:['Scheduler','#B0BEC5'], elig:['Eligibility','#FFD54F']};
+const beAcct = id => id === 'junior' ? 'Junior account' : id === 'megt' ? 'Savings account' : id;
+function be(svc, line, what, data, real){
+  if(!BE.on || BE.mute || ffRunning()) return;
+  const now = Date.now(), at = Math.max(now, BE.next); BE.next = at + 170;
+  setTimeout(() => { BE.log.unshift({t:new Date(), svc, line, what, data, real}); BE.log = BE.log.slice(0, 40); beRender(svc); }, at - now);
+}
+function beRender(hit){
+  const p = $('#bePanel'); if(!p) return;
+  const tm = d => d.toLocaleTimeString('en-GB', {hour12:false}) + '.' + String(d.getMilliseconds()).padStart(3, '0');
+  const js = o => o ? esc(JSON.stringify(o).replace(/"([a-zA-Z_]+)":/g, '$1: ').replace(/,/g, ', ')) : '';
+  p.classList.toggle('hidden', !BE.on);
+  p.innerHTML = `<div class="be-h"><b>Behind the app</b><span>A hides</span></div>
+    <div class="be-sub">What OTP's services do on each tap. Simulated, except push notifications (real server).</div>
+    <div class="be-map">${Object.entries(BE_SVC).map(([k, [n, c]]) => `<span class="be-svc ${k === hit ? 'hit' : ''}" style="--c:${c}">${n}</span>`).join('')}</div>
+    <div class="be-log">${BE.log.length ? BE.log.map((e, i) => `<div class="be-e ${i === 0 ? 'new' : ''}" style="--c:${BE_SVC[e.svc][1]}"><div class="be-r"><span class="be-tag">${BE_SVC[e.svc][0]}</span>${e.real ? '<span class="be-real">REAL</span>' : ''}<span class="be-t">${tm(e.t)}</span></div>
+      <code class="be-l">${esc(e.line)}</code><div class="be-w">${esc(e.what)}</div>${e.data ? `<code class="be-d">${js(e.data)}</code>` : ''}</div>`).join('') : '<div class="be-empty">Tap something in the app.</div>'}</div>`;
+}
+// hook into the app's own functions (they keep working the same; the wrapper only logs)
+{ const o = depositTo; depositTo = function(g, v, fromId = 'junior', how = 'Between my accounts'){
+    const r = o.apply(this, arguments); if(BE.mute || ffRunning() || !g) return r;
+    const pc = Math.min(100, Math.round(gSaved(g) / Math.max(1, gTarget(g)) * 100));
+    if(/^Payday/.test(how)) be('rules', 'EVENT payday.rule.matched', `Payday rule: ${S.payday.pct}% of the salary goes to ${g.name}`, {rule:'payday', pct:S.payday.pct, goal:g.id});
+    else if(/^Round/.test(how)) be('rules', 'EVENT roundup.matched', `Round-up ×2 goes to ${g.name}`, {rule:'roundup', amount:v, goal:g.id});
+    else if(/^Weekly/.test(how)) be('sched', 'CRON weekly.transfer', `Monday transfer to ${g.name}`, {amount:v, goal:g.id});
+    else be('gw', `POST /v1/persely/goals/${g.id}/deposits`, `Add ${ft(v)} to ${g.name}`, {amount:v, from:fromId});
+    be('led', 'LEDGER transfer', `${beAcct(fromId)} → Persely “${g.name}”: ${ft(v)}`, {debit:fromId, credit:'persely:' + g.id, amount:v, currency:'HUF'});
+    be('ps', 'goal.progress', `${g.name}: ${pc}% · ${forecast(g).replace(/<[^>]+>/g, '')}`, {saved:gSaved(g), target:gTarget(g)});
+    if(r) be('ps', 'streak.update', `This week counts: ${S.streak}-week streak`, {week:S.week, streak:S.streak, best:S.best});
+    return r; }; }
+{ const o = withdrawFrom; withdrawFrom = function(g, v){ const r = o.apply(this, arguments);
+    be('gw', `POST /v1/persely/goals/${g.id}/withdrawals`, `Take ${ft(r || v)} out of ${g.name}`, {amount:r || v, to:'junior'});
+    be('led', 'LEDGER transfer', `Persely “${g.name}” → Junior account: ${ft(r || v)}, no fee`, {debit:'persely:' + g.id, credit:'junior', fee:0});
+    be('ps', 'streak.unchanged', 'Taking money out never breaks the streak', {streak:S.streak}); return r; }; }
+{ const o = applyOnb; applyOnb = function(){ const r = o.apply(this, arguments), g = goalById('onb');
+    if(g){ be('gw', 'POST /v1/persely/goals', `New goal: ${g.name}, ${ft(gTarget(g))} by ${fDate(g.date)}`, {name:g.name, target:gTarget(g), date:g.date});
+      be('ps', 'forecast.compute', forecast(g).replace(/<[^>]+>/g, ''), {pace:paceOf(g), months:gMonths(g)});
+      be('rules', 'PUT /v1/rules', 'Saving rules saved', {payday:S.payday.on ? S.payday.pct + '%' : 'off', weekly:S.weekly.on ? S.weekly.amt : 'off', roundups:S.roundup.on}); }
+    return r; }; }
+{ const o = salaryArrives; salaryArrives = function(){
+    be('led', 'EVENT incoming.transfer', `Salary arrived: +${ft(S.income.amount)} on the Junior account`, {type:'salary', amount:S.income.amount});
+    if(S.payday.on) be('rules', 'rule.evaluate payday', S.payday.ask ? `Payday rule ${S.payday.pct}%: ask the student first` : `Payday rule ${S.payday.pct}%: move automatically`, {ask:!!S.payday.ask, amount:incomeShare(S.payday.pct)});
+    return o.apply(this, arguments); }; }
+{ const o = coffee; coffee = function(){ be('led', 'EVENT card.authorized', 'Card payment: Espresso Bar, 1 190 Ft', {merchant:'ESPRESSO BAR', amount:1190, category:'food'}); return o.apply(this, arguments); }; }
+{ const o = notify; notify = function(n){ be('notif', demo.phone ? 'PUSH web-push → iPhone' : 'PUSH in-app banner', `${n.title}: ${n.body}`, {deeplink:n.url || 'hub'}, !!demo.phone); return o.apply(this, arguments); }; }
+{ const o = billMissed; billMissed = function(){ const r = o.apply(this, arguments), bf = billsFirst();
+    if(bf.on) be('an', 'bill.late detected', `${bf.text}. Found from the payment history (same payee every month).`, {payee:bf.late[0].bill.key, amount:bf.lateTotal});
+    return r; }; }
+{ const o = payBill; payBill = function(id){ const b = billById(id), r = o.apply(this, arguments);
+    if(b && !r.err){ be('gw', 'POST /v1/payments', `Pay ${b.name}: ${ft(r.amt || b.exp)}`, {to:b.key, amount:r.amt || b.exp});
+      be('led', 'LEDGER transfer', `Junior account → ${b.key}`, {amount:r.amt || b.exp}); }
+    return r; }; }
+{ const o = doriJoins; doriJoins = function(){ const g = S.goals.find(x => x.shared), had = g && g.members.some(m => m.n === 'Dóri'), r = o.apply(this, arguments);
+    if(g && !had && g.members.some(m => m.n === 'Dóri')) be('ps', 'shared.member.joined', `Dóri joined ${g.name} and added 15 000 Ft`, {goal:g.id, members:g.members.length, total:gSaved(g)});
+    return r; }; }
+{ const o = monthStep; monthStep = function(q){ const i0 = S.interest || 0; BE.mute++; let r; try{ r = o.apply(this, arguments); } finally { BE.mute--; }
+    const mo = new Date(2026, 9 + S.months, 1).toLocaleDateString('en-GB', {month:'long'});
+    if(!BE.mute){ const add = (S.interest || 0) - i0; const save = BE.on; if(save){ BE.log.unshift({t:new Date(), svc:'sched', line:'CRON month.close', what:`${mo} closed: salary, saving rules, bills, round-ups, interest`, data:{interest:add, perselyTotal:total()}}); BE.log.unshift({t:new Date(), svc:'an', line:'interest.accrue 3.0%', what:`Interest +${ft(add)} after 28% tax, on the first 500 000 Ft`, data:{rate:'3.0%', tax:'28%', net:add}}); BE.log = BE.log.slice(0, 40); beRender('sched'); } }
+    return r; }; }
+{ const o = openStory; openStory = function(n){ const r = o.apply(this, arguments);
+    be('an', `GET /v1/insights/story?month=${S.period}`, 'Monthly story built from card payments: top places, spending day, days off, subscriptions', {slides:ST.slides.length}); return r; }; }
+{ const o = pushPage; pushPage = function(id){ const r = o.apply(this, arguments);
+    if(id === 'mymoney'){ const x = safeToSpend(); be('gw', 'GET /v1/budget/left-to-spend', 'Left to spend this month', null);
+      be('an', 'budget.compute', `${ft(x.balance)} − bills ${ft(x.unpaidBills)} − saving ${ft(x.savingRule)} − groceries ${ft(x.groceries)} = ${ft(x.safe)}`, {balance:x.balance, bills:x.unpaidBills, saving:x.savingRule, groceries:x.groceries, left:x.safe}); }
+    else if(id === 'advanced') be('an', 'GET /v1/insights/health', 'Health score from the last 3 months: spending vs income, no overdraft, buffer, regular saving', {score:scoreNow().t});
+    else if(id === 'grad') be('elig', 'GET /v1/eligibility/rate-bridge', 'Junior ends: can she keep 3.0%? Yes, for 12 months, if her salary comes to OTP', {juniorDaysLeft:S.juniorDays, months:12});
+    return r; }; }
+document.addEventListener('click', e => { if(e.target.closest && e.target.closest('[data-keeprate]')) be('elig', 'POST /v1/rate-bridge', 'Keep 3.0% for 12 months: set, starts with the first salary at OTP', {rate:'3.0%', months:12}); }, true);
+{ const o = __checkAnalytics; __checkAnalytics = function(){ BE.mute++; try{ return o.apply(this, arguments); } finally { BE.mute--; } }; window.__checkAnalytics = __checkAnalytics; }
+beRender();
 </script>
 </body>
 </html>

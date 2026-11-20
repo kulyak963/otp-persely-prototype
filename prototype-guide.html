@@ -65,6 +65,7 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
   <a href="#analyst">Left to spend and Full analysis</a>
   <a href="#screens">Other screens</a>
   <a href="#rules">Rules and numbers</a>
+  <a href="#backend">Behind the app</a>
   <a href="#persi">Persi and pushes</a>
   <a href="#demo">Demo controls</a>
   <a href="#build">How it is built</a>
@@ -195,6 +196,22 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
     </table></div>
     <div class="box"><h3>Persona and demo data</h3><p>Kiss Anna. Junior account 87,450 Ft, Savings account 120,000 Ft, salary 75,000 Ft around the 5th, a regular family transfer of 67,000 Ft on the 1st (from Kiss István, a family rent contribution). Goals: Summer holiday 64,000 of 134,000 Ft, PS5 + GTA VI 46,000 of 230,000 Ft, due 7 days from the day the demo runs (so it always shows as behind), Festival ticket 30,000 of 45,000 Ft. Friends: Bence, Lili, Márk; suggestions Dóra, Ádám, Zsófi, Gergő. Shared Persely example: Balaton in July with Dóri. A shared Persely, <b>Balaton trip</b> (Anna 20,000 Ft of 120,000 Ft), waits for Dóri; key <kbd>D</kbd>: she joins with 15,000 Ft.</p></div>
     <p class="note"><b>Important:</b> the rates are the team's proposal, not current OTP terms. Quote the research numbers as OTP's own data.</p>
+  </section>
+
+  <section id="backend">
+    <h2>Behind the app (backend view)</h2>
+    <p>On a wide laptop screen (1180 px or more) a dark panel sits to the right of the phone. Every tap in the app writes what OTP's services would do: which service, the request (for example <code>POST /v1/persely/goals/holiday/deposits</code>), one plain line and the key data. The service chips at the top light up when they are hit. Key <kbd>A</kbd> or the panel button hides it.</p>
+    <div class="tbl"><table><thead><tr><th>Service</th><th>What it does in the log</th></tr></thead><tbody>
+      <tr><td>API gateway</td><td>Requests from the app: deposits, withdrawals, new goal, payments, Left to spend</td></tr>
+      <tr><td>Persely service</td><td>Goal progress and forecast, streak updates, shared goals</td></tr>
+      <tr><td>Core ledger</td><td>Money moves between the Junior account and the Persely sub-accounts; incoming salary; card payments</td></tr>
+      <tr><td>Rules engine</td><td>Payday rule (asks first or moves), round-ups ×2, saving rules saved</td></tr>
+      <tr><td>Notifications</td><td>Persi's pushes; <b>REAL</b> when "Also send to iPhone" is on (server.js, web-push)</td></tr>
+      <tr><td>Analytics</td><td>Left to spend calculation, late bill detection, monthly interest, the monthly story, health score</td></tr>
+      <tr><td>Scheduler</td><td>Monday transfers, month close during the fast-forward</td></tr>
+      <tr><td>Eligibility</td><td>Junior ends: the 3.0% bridge for 12 months with salary at OTP</td></tr>
+    </tbody></table></div>
+    <p class="note">Simulated: everything except push notifications. It shows the architecture we propose; nothing in the panel changes the app. Code: search for <code>Backend view</code> in index.html (the <code>be()</code> function and the wrappers under it).</p>
   </section>
 
   <section id="persi">
