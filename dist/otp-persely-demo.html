@@ -1170,6 +1170,13 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
 .sp-learn{color:var(--green-t);font-weight:700;white-space:nowrap}
 .row.sp-more{margin-bottom:0}
 .sp-msub{margin:calc(-1 * var(--sp-1)) 0 var(--sp-3) var(--sp-1)}
+/* Simple Persely Phase 7 (js/14c-simple-optin.js): the one "Try the new Persely" card on the classic tab, the "What did not work?" answers */
+.spoptin{display:flex;flex-direction:column;gap:var(--sp-1);margin:0 0 var(--sp-3);padding:var(--sp-3) var(--sp-4);background:var(--card);border-radius:16px;box-shadow:var(--sh)}
+.spoptin > span:not(.spyn){font-size:var(--fs-s);color:var(--muted-t)}
+.spoptin .spyn{display:flex;gap:var(--sp-2);margin-top:var(--sp-2)}
+.spoptin .spyn .btn{flex:1;margin:0;min-width:0;padding:0 var(--sp-3);white-space:nowrap}
+.spwhy{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-2);margin-top:var(--sp-3)}
+.spwhy button.chip{width:100%}
 </style>
 </head>
 <body>
@@ -1691,6 +1698,9 @@ function __checkAnalytics(){
   // Simple Persely (js/14b): with the flag on, a check that tests the pre-Simple first run runs its old assertion on the legacy first run (SP_LEGACY, the same
   // screens as ?simple=0) AND an equivalent new-world assertion; with ?simple=0 only the old assertion runs, unchanged.
   const SPF = typeof spOn === 'function' && spOn();
+  // Phase 7 (js/14c-simple-optin.js): the existing seed starts in the Classic view for a real student. Every check below that reads the new tab for that seed
+  // runs under an explicit simple view (SP_CHECK_VIEW, the whole run); spOptinChecks clears it and sets S.persely.view itself. Restored at the end.
+  const SPV0 = typeof SP_CHECK_VIEW !== 'undefined' ? SP_CHECK_VIEW : null; if(typeof SP_CHECK_VIEW !== 'undefined') SP_CHECK_VIEW = 'simple';
   const legacyR = fn => { if(typeof SP_LEGACY === 'undefined') return fn(); const k = SP_LEGACY; SP_LEGACY = true; try{ return fn(); } finally { SP_LEGACY = k; } };
   const SPL0 = typeof SP_LEGACY !== 'undefined' ? SP_LEGACY : false, SP0 = typeof SP !== 'undefined' ? {...SP} : null; if(SP0) SP.dry = true;   // no real sound or vibration while checking
   const spLeg = on => { if(typeof SP_LEGACY !== 'undefined') SP_LEGACY = on ? true : SPL0; };
@@ -2941,8 +2951,10 @@ function __checkAnalytics(){
     ok('chk-palette: outside :root the stylesheet and the app script hold at most ' + ALLOW.length + ' distinct hex colours, all documented exceptions; rgba only black or white with alpha; no 0x colour ints; every PALETTE token is a #RRGGBB read from the CSS; --ink-rgb equals --ink and theme-color equals --bg; the 9 spending categories have 9 different colours',
       r0 >= 0 && lits.length <= ALLOW.length && lits.every(x => ALLOW.includes(x)) && !ints.length && rgbOk && inkOk && tc.toUpperCase() === PALETTE.bg && palOk && new Set(cats).size === cats.length, {lits, ints, rgb, inkRgb, tc, palOk, cats}); }
   if(SIMPLE_PERSELY && typeof simpleTabChecks === 'function') simpleTabChecks(ok);   // Phase 2 simple tab (js/14b-simple-tab.js); off with ?simple=0
+  if(SIMPLE_PERSELY && typeof spOptinChecks === 'function') spOptinChecks(ok);   // Phase 7 opt in and Classic view (js/14c-simple-optin.js); off with ?simple=0
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
+  if(typeof SP_CHECK_VIEW !== 'undefined') SP_CHECK_VIEW = SPV0;
   spLeg(false); if(SP0){ try{ spHideReward(true); }catch(e){} Object.assign(SP, SP0, {rewardOn:false}); }
   const bad = out.filter(r => !r.pass);
   console.log(`__checkAnalytics: ${out.length - bad.length}/${out.length} passed`); bad.forEach(r => console.log('FAIL', r.name, r.info));
@@ -4102,15 +4114,17 @@ function goalCardHTML(g){ const s=gSaved(g), t=gTarget(g), pc=pctOf(g), fx=lateF
   const sub = pc.first && !g.shared ? `${money(g,s)} in · first step · ${forecast(g)}${wkTxt}` : `${money(g, Math.min(s, t))} of ${money(g,t)} · ${forecast(g)}${wkTxt}`;
   return `<div class="gwrap ${fx || bf ? 'fx' : ''}"><button class="card goal" ${attr}><div class="u-rowc"><span class="gic">${I(g.shared ? 'user' : isEur(g) ? 'euro' : g.ic,22)}</span><span class="u-fx0"><b class="u-bk-m">${esc(g.name)}</b><span class="num u-k-sm">${sub}</span></span>${right}</div><div class="prog" style="margin:var(--sp-3) 0 0"><i style="width:${pc.w}%"></i></div></button>${fx ? `<button class="gfix" data-latefix="${g.id}">${fixLabel(fx)}</button>` : bf ? `<button class="gfix" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}</div>`; }
 function vHub(){
+  if(spOn() && typeof spView === 'function') spView();   // Phase 7: first sight records the view (no goal yet = simple, a goal = classic)
   if(!S.goals.length) return spOn() ? spHubFirst() : vHubNew();   // Phase 1: the first-run tab (js/14b-simple-persely.js); ?simple=0 keeps vHubNew
-  if(spOn()) return vHubSimple();   // Phase 2: 4 blocks + honesty line + More (js/14b-simple-tab.js); ?simple=0 keeps the tab below
+  if(spOn() && (typeof spSimpleView !== 'function' || spSimpleView())) return vHubSimple();   // Phase 2: 4 blocks + honesty line + More (js/14b-simple-tab.js); ?simple=0 keeps the tab below
+  // Phase 7 (js/14c-simple-optin.js): an existing student in the Classic view gets the tab below, with one "Try the new Persely" card at the top
   const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
   const weeks = Array.from({length:8}, (_,i) => S.week - 7 + i);
   const gl = S.goals.filter(g => !isEur(g)), gT = gl.reduce((x, g) => x + gTarget(g), 0), gp = gT > 0 ? Math.min(1, gl.reduce((x, g) => x + gSaved(g), 0) / gT) : 0, R = 104, C = 2 * Math.PI * R, arc = C * .75;   // the ring: saved across goals against all targets, as Home shows spent against plan
   const chev = `<span class="chev">${I('chev',20)}</span>`;
   const junior = juniorRow();
   const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
-  return `<div class="tabtitle tt-gear">Persely<button class="tgear" data-settings="persely" aria-label="Persely settings">${I('gear',24)}</button></div>
+  return `<div class="tabtitle tt-gear">Persely<button class="tgear" data-settings="persely" aria-label="Persely settings">${I('gear',24)}</button></div>${typeof spOptinCard === 'function' ? spOptinCard() : ''}
   ${hintHTML('total')}<div class="ptot" data-tour="total">
     <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${spNudgeHTML() || (hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`)}
       ${storyRing()}</div>
@@ -6380,6 +6394,7 @@ function settingsHTML(){
     <div class="card set-prof"><span class="avatar" aria-hidden="true">${esc(S.ini)}</span><span class="t"><b class="u-fs-m">${esc(S.name)}</b><div class="k">Junior account · ${esc((S.accounts.find(a => a.id === 'junior') || {}).no || '')}</div></span></div></div>
   <div class="set-sec" data-sec="persely"><div class="sec"><span>Persely</span></div>
     <div class="card set-card">${row('piggy', 'Saving rules', 'Each goal has its own. See them all', 'data-saverules=""')}
+      ${typeof spViewSetting === 'function' ? spViewSetting(srow) : ''}
       ${typeof spOn === 'function' && spOn() ? srow('bell', 'Sound', 'A coin sound when you save. Silent mode mutes it', S.sound !== false, 'data-sw="sound"') : ''}
       ${srow('sched', 'Weekly reminder', 'Sunday 18:00, only if the week is still open', !!S.remind, 'data-sw="remind"')}
       ${srow('analyst', 'Financial analyst', S.analyst.on ? 'On. It reads your transactions for Safe to spend and bills' : 'Off. Safe to spend is a simpler estimate', S.analyst.on, 'data-sw="analyst"')}
@@ -7272,6 +7287,144 @@ function simpleTabChecks(ok){
     ok('chk-simple-add-last-amount: Add money on the tab opens the Add money sheet with the last amount pre-selected (S.lastAddAmount, stored after a deposit; 1 000 Ft the first time); the Withdraw link opens the withdraw sheet', empty0 && stored && pre && wd, {empty0, stored, pre, wd});
   } catch(e){ ok('chk-simple-tab: the simple tab checks ran without errors', false, String(e && e.stack || e)); }
   finally { HINT_FORCE = hf0; HINT_SHOWN.clear(); SP_AWAY = away0; hideChip(true); hideToast(true); closeSheet(); while(stack.length) popPage(true); S = sv; cur = cur0; stack.push(...stk); demo.locked = lock0; try{ renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views[i])); }
+}
+/* ================= Simple Persely, Phase 7: existing users opt in, with a Classic view way back (docs/simple-persely-plan.md, Rollout 7, risk 1: P42, E1-002) =================
+   Behind SIMPLE_PERSELY (?simple=0 keeps today's whole app; nothing here runs then). Only the Persely TAB follows the view. First run, Home and the
+   phase 3 sheets keep following the flag. Nothing migrates: the view is a setting, the money and goals are the same in both.
+   S.persely (the object the seeds already carry) gets: view 'classic' | 'simple', since (app day of first sight), old (had a goal at first sight),
+   askedAt / asks (the "Try the new Persely" card: Not now hides it for 7 app days, then it may come back once), tried / switchedAt (Try it),
+   why: [{a, day}] (the "What did not work?" answers, kept in the state only, never sent).
+   App day = S.week * 7: N (next week) is +7, a fast-forward month (O, Q, Y) is +28. The demo clock, the same in every run.
+   First sight = the first time the view is needed and none is stored: a student with a goal starts in 'classic' (+ the card), one without in 'simple'.
+   ?view=classic / ?view=simple (presenter) set the view at load and are used for every first sight in that page (key X, U, Reset).
+   Self-checks: __checkAnalytics sets SP_CHECK_VIEW = 'simple' for the whole run, so every older check that reads the new tab for the existing seed
+   runs under an explicit simple view (their assertions are unchanged). spOptinChecks clears it and sets S.persely.view per state. */
+const SP_DAY = () => (S.week || 0) * 7;
+const SP_WINDOW = 14, SP_SNOOZE = 7;
+let SP_CHECK_VIEW = null;   // self-checks only (see above)
+const spViewUrl = q => { const v = new URLSearchParams(q || '').get('view'); return v === 'classic' || v === 'simple' ? v : null; };
+let SP_VIEW_URL = spViewUrl(location.search);   // the self-checks clear it while they run
+const spP = () => S.persely || (S.persely = {});
+function spFirstSight(urlView = SP_VIEW_URL){
+  const p = spP(), old = (S.goals || []).length > 0;
+  p.view = urlView || (old ? 'classic' : 'simple'); p.since = SP_DAY(); p.old = old;
+  if(p.view === 'simple' && old){ p.tried = true; p.switchedAt = SP_DAY(); }   // an existing user put in the new tab (?view=simple) still gets the way back
+  try{ save(); }catch(e){}
+}
+function spView(){ if(SP_CHECK_VIEW) return SP_CHECK_VIEW; const p = spP(); if(p.view !== 'classic' && p.view !== 'simple') spFirstSight(); return p.view; }
+const spSimpleView = () => spView() === 'simple';
+// the card on the classic tab: never tried, asked fewer than 2 times, and 7 app days since the last Not now
+const spCardDue = () => { if(!spOn() || !S.goals.length || spView() !== 'classic') return false; const p = spP();
+  return !p.tried && (p.asks || 0) < 2 && (p.askedAt == null || SP_DAY() >= p.askedAt + SP_SNOOZE); };
+// the Classic view row on More: 14 app days from the switch
+const spInWindow = () => { const p = spP(); return p.switchedAt != null && SP_DAY() - p.switchedAt < SP_WINDOW; };
+const SP_COPY = {cardT:'Try the new Persely', cardL:'Simpler. Your money and goals stay the same.', yes:'Try it', no:'Not now',
+  on:'New Persely is on. Classic view is in More.', rowT:'Classic view', rowL:'Go back to the old tab',
+  setIn:'The old Persely tab. Your money stays the same.', setOut:'The old Persely tab. It moved here from More.',
+  q:'What did not work?', qSub:'One tap. It stays on this phone.', thanks:'Thanks. Classic view is on.', back:'Classic view is on.'};
+const SP_WHY = [['find', 'Hard to find things'], ['old', 'I like the old one'], ['info', 'I miss some info'], ['bug', 'Some parts broke']];
+
+function spOptinCard(){
+  if(!spCardDue()) return '';
+  return `<div class="spoptin" data-spoptin role="region" aria-label="${SP_COPY.cardT}"><b>${SP_COPY.cardT}</b><span>${SP_COPY.cardL}</span>
+    <span class="spyn"><button class="btn sm eq" data-spview-try>${SP_COPY.yes}</button><button class="btn sm eq" data-spview-later>${SP_COPY.no}</button></span></div>`;
+}
+const spClassicRow = () => !spOn() || !S.goals.length || spView() !== 'simple' || !spInWindow() ? '' :
+  `<button class="row" data-spview-classic data-more="classic" aria-label="${SP_COPY.rowT}. ${SP_COPY.rowL}"><span class="ic">${I('list')}</span><span class="t"><b>${SP_COPY.rowT}</b><small>${SP_COPY.rowL}</small></span><span class="chev">${I('chev', 20)}</span></button>`;
+// Settings > Persely: the switch, for a student who had Persely before (or who has tried the new tab)
+const spViewSetting = srow => { if(!spOn() || !S.goals.length) return ''; const p = spP(); if(!p.old && !p.tried && spView() !== 'classic') return '';
+  return srow('list', SP_COPY.rowT, p.switchedAt != null && !spInWindow() ? SP_COPY.setOut : SP_COPY.setIn, spView() === 'classic', 'data-sw="spview"'); };
+SHEETS.spwhy = () => `<h2>${SP_COPY.q}</h2><div class="u-sheet-sub2">${SP_COPY.qSub}</div>
+  <div class="spwhy" role="group" aria-label="${SP_COPY.q}">${SP_WHY.map(([k, t]) => `<button class="chip" data-spwhy="${k}">${t}</button>`).join('')}<button class="chip" data-spwhy="skip">Skip</button></div>`;
+// the More page ends with the Classic view row while the window is open (Help and settings group)
+if(PAGES.persmore){ const spMore0 = PAGES.persmore.html; PAGES.persmore.html = () => spMore0() + spClassicRow(); }
+
+function spSetView(v, how){
+  const p = spP(); p.view = v;
+  if(v === 'simple' && (how === 'try' || p.switchedAt == null)){ p.tried = true; p.switchedAt = SP_DAY(); }
+  renderAll(); try{ renderDemoPanel(); }catch(e){}
+}
+function spToClassic(ask){   // the student goes back: the tab turns classic now, then one question with 4 answers and Skip
+  while(stack.length && stack[stack.length - 1].dataset.id === 'persmore') popPage(true);
+  spSetView('classic'); if(ask) sheet(SHEETS.spwhy());
+}
+const spWhyCount = () => (spP().why || []).length;
+document.addEventListener('click', e => {
+  const t = e.target && e.target.closest ? e.target.closest('button') : null; if(!t || !SIMPLE_PERSELY) return; const d = t.dataset;
+  if('spviewTry' in d){ e.stopPropagation(); spSetView('simple', 'try'); toast(SP_COPY.on); return; }
+  if('spviewLater' in d){ e.stopPropagation(); const p = spP(); p.asks = (p.asks || 0) + 1; p.askedAt = SP_DAY(); renderAll(); return; }
+  if('spviewClassic' in d){ e.stopPropagation(); spToClassic(true); return; }
+  if(d.sw === 'spview'){ e.stopPropagation(); if(spView() === 'classic'){ spSetView('simple'); toast(SP_COPY.on); } else spToClassic(true); return; }
+  if(d.spwhy){ e.stopPropagation(); const p = spP(); (p.why = p.why || []).push({a:d.spwhy, day:SP_DAY()}); save(); closeSheet(); toast(d.spwhy === 'skip' ? SP_COPY.back : SP_COPY.thanks); try{ renderDemoPanel(); }catch(x){} return; }
+  if('dview' in d){ e.stopPropagation(); spSetView(spView() === 'classic' ? 'simple' : 'classic'); toast('Demo: Persely view ' + spView()); return; }
+}, true);
+// demo panel: "Persely view" toggles it (no question asked); the count of "What did not work?" answers is for the presenter
+if(typeof renderDemoPanel === 'function'){ const spRdp0 = renderDemoPanel;
+  renderDemoPanel = function(){ spRdp0.apply(this, arguments); if(!SIMPLE_PERSELY) return; const p = $('#demoPanel'), r = p && p.querySelector('[data-dreset]'); if(!r) return;
+    const n = spWhyCount(), b = document.createElement('button'); b.dataset.dview = ''; b.textContent = `🔀 Persely view: ${spView()}${n ? ` · ${n} answer${n > 1 ? 's' : ''}` : ''}`; r.before(b); };
+  try{ renderDemoPanel(); }catch(e){} }
+// ?view= at load: the presenter's choice wins over the stored view
+if(SIMPLE_PERSELY && SP_VIEW_URL){ const p = spP(); if(p.view !== SP_VIEW_URL){ p.view = SP_VIEW_URL; if(p.since == null) p.since = SP_DAY(); if(SP_VIEW_URL === 'simple' && S.goals.length && p.switchedAt == null){ p.tried = true; p.switchedAt = SP_DAY(); } } try{ save(); }catch(e){} }
+
+/* ---------- self-checks (called from __checkAnalytics when SIMPLE_PERSELY is on) ---------- */
+function spOptinChecks(ok){
+  const sv = S, cur0 = cur, stk = stack.splice(0), lock0 = demo.locked, views = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')), cv0 = SP_CHECK_VIEW, url0 = SP_VIEW_URL;
+  demo.locked = false; SP_CHECK_VIEW = null; SP_VIEW_URL = null;   // first sight as a real student without ?view=; test 4 passes the address in
+  const showHub = () => { closeSheet(); cur = 'hub'; document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-hub')); renderView('hub'); $('#v-hub').scrollTop = 0; return $('#v-hub'); };
+  const isSimple = () => !!$('#v-hub [data-block="persi"]') && !$('#v-hub .gauge'), isClassic = () => !!$('#v-hub .gauge') && !$('#v-hub [data-block]');
+  const cards = () => $('#v-hub').querySelectorAll('[data-spoptin]').length;
+  const data = () => JSON.stringify({acc:S.accounts.map(a => [a.id, a.v]), goals:S.goals, streak:[S.streak, S.best, S.skips, S.history, S.skipped, S.week, S.savedWeek], tx:S.tx.length, total:total()});
+  const h44 = el => !!el && el.getBoundingClientRect().height >= 44;
+  const openMore = () => { while(stack.length) popPage(true); showHub(); const m = $('#v-hub [data-go="persmore"]'); if(m) m.click(); return stack.length ? stack[stack.length - 1] : null; };
+  try{
+    // 1 existing seed: classic tab + exactly one card; Try it keeps every number; Classic view comes back; Not now hides it for 7 days, then once more
+    S = fresh('existing'); delete S.persely.view; let v = showHub(); const first = S.persely.view === 'classic' && S.persely.since === SP_DAY() && isClassic() && cards() === 1;
+    const cd = v.querySelector('[data-spoptin]'), yb = cd && cd.querySelector('[data-spview-try]'), nb = cd && cd.querySelector('[data-spview-later]');
+    const eq = yb && nb && yb.className === nb.className && getComputedStyle(yb).backgroundColor === getComputedStyle(nb).backgroundColor && Math.abs(yb.getBoundingClientRect().width - nb.getBoundingClientRect().width) <= 1 && h44(yb) && h44(nb);
+    const copy = [SP_COPY.cardT + '.', SP_COPY.cardL, SP_COPY.on, SP_COPY.rowL, SP_COPY.setIn, SP_COPY.setOut, SP_COPY.q, SP_COPY.qSub, SP_COPY.thanks, ...SP_WHY.map(x => x[1] + '.')].map(t => [t, fkGrade(t)]);
+    const copyOk = copy.every(([t, g]) => g.grade <= 4 && g.longest <= 12 && !/deadline|-/.test(t));
+    const top = v.children[1] && v.children[1].hasAttribute('data-spoptin');
+    const before = data(); yb.click(); hideToast(true); v = showHub(); const tried = S.persely.view === 'simple' && isSimple() && cards() === 0 && before === data();
+    const pg = openMore(), row = pg && pg.querySelector('[data-spview-classic]'); if(row) row.click();
+    const back = S.persely.view === 'classic' && sheetOpen() && /What did not work\?/.test($('#sheet').textContent); closeSheet(); v = showHub(); const backOk = back && isClassic() && cards() === 0 && before === data();   // tried once: the card does not come back
+    S = fresh('existing'); delete S.persely.view; showHub(); $('#v-hub [data-spview-later]').click(); const d0 = SP_DAY(); showHub();
+    const nn = [cards() === 0 && S.persely.asks === 1 && S.persely.view === 'classic'];
+    S.week = (d0 + 7) / 7 - 1; showHub(); nn.push(cards() === 0); S.week = (d0 + 7) / 7; showHub(); nn.push(cards() === 1);
+    $('#v-hub [data-spview-later]').click(); S.week += 20; showHub(); nn.push(cards() === 0 && S.persely.asks === 2);
+    ok('chk-simple-optin: the existing seed opens on the classic Persely tab with exactly one "Try the new Persely" card at the top (Try it / Not now equal, 44 px, copy grade 4 or less, 12 words or less a sentence); Try it switches to the simple tab with balances, goals and streak unchanged; Classic view on More brings the classic tab back; Not now hides the card for 7 app days, then it comes back once',
+      first && top && eq && copyOk && tried && backOk && nn.every(Boolean), {first, top, eq, copy:copy.filter(([t, g]) => !(g.grade <= 4 && g.longest <= 12)), tried, backOk, nn});
+    // 2 a new user (no goal at first sight): simple straight away, no card, still simple after the first goal
+    S = fresh('new'); delete S.persely.view; showHub(); const nu1 = S.persely.view === 'simple' && cards() === 0 && !S.persely.old;
+    S.goals.push({id:'x1', name:'Trip', ic:'plane', saved:1000, target:50000, pace:1000, date:'2027-09-01', rules:offRules()}); showHub();
+    const nu2 = isSimple() && cards() === 0 && S.persely.view === 'simple', pgN = openMore(), nu3 = pgN && !pgN.querySelector('[data-spview-classic]');
+    ok('chk-simple-optin-new-user: a user with no goals at first sight goes straight to the simple view (no card), and stays there after the first goal with no Classic view row', nu1 && nu2 && nu3, {nu1, nu2, nu3});
+    // 3 the Classic view row: on More for 14 app days after the switch, then only in Settings with a note; the one question sheet records the answer
+    S = fresh('existing'); delete S.persely.view; showHub(); $('#v-hub [data-spview-try]').click(); hideToast(true); const sw = S.persely.switchedAt;
+    const rowAt = dd => { S.week = (sw + dd) / 7; const m = openMore(); return !!(m && m.querySelector('[data-spview-classic]')); };
+    const win = [rowAt(0), rowAt(7), !rowAt(14), !rowAt(28)];
+    const setAt = dd => { S.week = (sw + dd) / 7; while(stack.length) popPage(true); openSettings('persely'); const pgS = stack[stack.length - 1], r = pgS && pgS.querySelector('[data-sw="spview"]'), row = r && r.closest('.set-row'); const t = row ? row.textContent : ''; return {on:!!r, txt:t, h:h44(r && r.closest('.set-row'))}; };
+    const s0 = setAt(0), s1 = setAt(14), sets = s0.on && s0.txt.includes(SP_COPY.setIn) && s1.on && s1.txt.includes(SP_COPY.setOut) && s0.h;
+    S.week = sw / 7; const m2 = openMore(); m2.querySelector('[data-spview-classic]').click(); const sh = $('#sheet'), chips = sh ? [...sh.querySelectorAll('[data-spwhy]')] : [];
+    const chipOk = chips.length === 5 && chips.every(c => c.className === chips[0].className && h44(c)) && chips[4].dataset.spwhy === 'skip' && new Set(chips.map(c => Math.round(c.getBoundingClientRect().height))).size === 1;
+    const n0 = spWhyCount(); chips[1] && chips[1].click(); hideToast(true); const rec = spWhyCount() === n0 + 1 && S.persely.why[S.persely.why.length - 1].a === 'old' && !sheetOpen() && S.persely.view === 'classic';
+    while(stack.length) popPage(true); openSettings('persely'); const sb = stack[stack.length - 1].querySelector('[data-sw="spview"]'); sb && sb.click(); hideToast(true); const viaSet = S.persely.view === 'simple'; while(stack.length) popPage(true); openSettings('persely'); const sb2 = stack[stack.length - 1].querySelector('[data-sw="spview"]'); sb2 && sb2.click();
+    const setAsk = S.persely.view === 'classic' && sheetOpen() && /What did not work\?/.test($('#sheet').textContent); $('#sheet [data-spwhy="skip"]') && $('#sheet [data-spwhy="skip"]').click(); hideToast(true);
+    const skipRec = spWhyCount() === n0 + 2 && S.persely.why[S.persely.why.length - 1].a === 'skip';
+    renderDemoPanel(); const panel = /Persely view: classic · 2 answers/.test(($('#demoPanel [data-dview]') || {}).textContent || '');
+    ok('chk-simple-classic-window: after Try it the More page has a Classic view row for 14 app days (day 0 and 7 yes, 14 and 28 no), Settings > Persely keeps the Classic view switch (with a note after 14 days); going back opens "What did not work?" with 4 answers and Skip of equal weight, the answer is kept in the state and counted in the demo panel',
+      win.every(Boolean) && sets && chipOk && rec && viaSet && setAsk && skipRec && panel, {win, s0, s1, chipOk, rec, viaSet, setAsk, skipRec, panel});
+    // 4 the presenter overrides: ?view=classic / ?view=simple pick the view at first sight; the demo panel button toggles it
+    const ov = {};
+    ov.parse = spViewUrl('?demo=1&view=classic') === 'classic' && spViewUrl('?view=simple') === 'simple' && spViewUrl('?view=x') === null && spViewUrl('') === null;
+    const firstWith = (url, kind) => { S = fresh(kind); delete S.persely.view; spFirstSight(spViewUrl(url)); showHub(); return {v:S.persely.view, simple:isSimple(), classic:isClassic(), card:cards()}; };
+    const ec = firstWith('?view=classic', 'existing'), es = firstWith('?view=simple', 'existing'), en = firstWith('', 'existing');
+    ov.urls = ec.classic && ec.card === 1 && es.simple && es.card === 0 && en.classic && en.card === 1;
+    ov.live = url0 === spViewUrl(location.search) && (!url0 || !!(sv.persely && sv.persely.view));
+    S = fresh('existing'); delete S.persely.view; showHub(); renderDemoPanel(); const db = $('#demoPanel [data-dview]'); db && db.click(); hideToast(true); const t1 = S.persely.view === 'simple' && isSimple() && !sheetOpen();
+    const db2 = $('#demoPanel [data-dview]'); db2 && db2.click(); hideToast(true); ov.panel = t1 && S.persely.view === 'classic' && isClassic() && !sheetOpen() && /Persely view: classic/.test(($('#demoPanel [data-dview]') || {}).textContent || '');
+    ok('chk-simple-view-overrides: ?view=classic and ?view=simple are read from the address and decide the existing seed\'s first sight (classic with the card, simple without it; no ?view = classic with the card); the demo panel "Persely view" button toggles the view without asking', ov.parse && ov.urls && ov.live && ov.panel, ov);
+  } catch(e){ ok('chk-simple-optin: the opt in checks ran without errors', false, String(e && e.stack || e)); }
+  finally { SP_CHECK_VIEW = cv0; SP_VIEW_URL = url0; hideChip(true); hideToast(true); closeSheet(); while(stack.length) popPage(true); S = sv; cur = cur0; stack.push(...stk); demo.locked = lock0; try{ renderAll(); renderDemoPanel(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views[i])); }
 }
 /* ================= loading screen =================
    Shown on every start, then fades out. The status bar stays light (full-screen mode, see the head). */

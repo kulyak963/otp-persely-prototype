@@ -6,6 +6,9 @@ function __checkAnalytics(){
   // Simple Persely (js/14b): with the flag on, a check that tests the pre-Simple first run runs its old assertion on the legacy first run (SP_LEGACY, the same
   // screens as ?simple=0) AND an equivalent new-world assertion; with ?simple=0 only the old assertion runs, unchanged.
   const SPF = typeof spOn === 'function' && spOn();
+  // Phase 7 (js/14c-simple-optin.js): the existing seed starts in the Classic view for a real student. Every check below that reads the new tab for that seed
+  // runs under an explicit simple view (SP_CHECK_VIEW, the whole run); spOptinChecks clears it and sets S.persely.view itself. Restored at the end.
+  const SPV0 = typeof SP_CHECK_VIEW !== 'undefined' ? SP_CHECK_VIEW : null; if(typeof SP_CHECK_VIEW !== 'undefined') SP_CHECK_VIEW = 'simple';
   const legacyR = fn => { if(typeof SP_LEGACY === 'undefined') return fn(); const k = SP_LEGACY; SP_LEGACY = true; try{ return fn(); } finally { SP_LEGACY = k; } };
   const SPL0 = typeof SP_LEGACY !== 'undefined' ? SP_LEGACY : false, SP0 = typeof SP !== 'undefined' ? {...SP} : null; if(SP0) SP.dry = true;   // no real sound or vibration while checking
   const spLeg = on => { if(typeof SP_LEGACY !== 'undefined') SP_LEGACY = on ? true : SPL0; };
@@ -1256,8 +1259,10 @@ function __checkAnalytics(){
     ok('chk-palette: outside :root the stylesheet and the app script hold at most ' + ALLOW.length + ' distinct hex colours, all documented exceptions; rgba only black or white with alpha; no 0x colour ints; every PALETTE token is a #RRGGBB read from the CSS; --ink-rgb equals --ink and theme-color equals --bg; the 9 spending categories have 9 different colours',
       r0 >= 0 && lits.length <= ALLOW.length && lits.every(x => ALLOW.includes(x)) && !ints.length && rgbOk && inkOk && tc.toUpperCase() === PALETTE.bg && palOk && new Set(cats).size === cats.length, {lits, ints, rgb, inkRgb, tc, palOk, cats}); }
   if(SIMPLE_PERSELY && typeof simpleTabChecks === 'function') simpleTabChecks(ok);   // Phase 2 simple tab (js/14b-simple-tab.js); off with ?simple=0
+  if(SIMPLE_PERSELY && typeof spOptinChecks === 'function') spOptinChecks(ok);   // Phase 7 opt in and Classic view (js/14c-simple-optin.js); off with ?simple=0
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
+  if(typeof SP_CHECK_VIEW !== 'undefined') SP_CHECK_VIEW = SPV0;
   spLeg(false); if(SP0){ try{ spHideReward(true); }catch(e){} Object.assign(SP, SP0, {rewardOn:false}); }
   const bad = out.filter(r => !r.pass);
   console.log(`__checkAnalytics: ${out.length - bad.length}/${out.length} passed`); bad.forEach(r => console.log('FAIL', r.name, r.info));

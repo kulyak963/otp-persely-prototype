@@ -72,6 +72,7 @@ function settingsHTML(){
     <div class="card set-prof"><span class="avatar" aria-hidden="true">${esc(S.ini)}</span><span class="t"><b class="u-fs-m">${esc(S.name)}</b><div class="k">Junior account · ${esc((S.accounts.find(a => a.id === 'junior') || {}).no || '')}</div></span></div></div>
   <div class="set-sec" data-sec="persely"><div class="sec"><span>Persely</span></div>
     <div class="card set-card">${row('piggy', 'Saving rules', 'Each goal has its own. See them all', 'data-saverules=""')}
+      ${typeof spViewSetting === 'function' ? spViewSetting(srow) : ''}
       ${typeof spOn === 'function' && spOn() ? srow('bell', 'Sound', 'A coin sound when you save. Silent mode mutes it', S.sound !== false, 'data-sw="sound"') : ''}
       ${srow('sched', 'Weekly reminder', 'Sunday 18:00, only if the week is still open', !!S.remind, 'data-sw="remind"')}
       ${srow('analyst', 'Financial analyst', S.analyst.on ? 'On. It reads your transactions for Safe to spend and bills' : 'Off. Safe to spend is a simpler estimate', S.analyst.on, 'data-sw="analyst"')}

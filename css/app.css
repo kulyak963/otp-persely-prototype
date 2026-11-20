@@ -1153,3 +1153,10 @@ html.kb .onb-body,html.kb .page .scroll{scroll-padding:12px 0 24px}
 .sp-learn{color:var(--green-t);font-weight:700;white-space:nowrap}
 .row.sp-more{margin-bottom:0}
 .sp-msub{margin:calc(-1 * var(--sp-1)) 0 var(--sp-3) var(--sp-1)}
+/* Simple Persely Phase 7 (js/14c-simple-optin.js): the one "Try the new Persely" card on the classic tab, the "What did not work?" answers */
+.spoptin{display:flex;flex-direction:column;gap:var(--sp-1);margin:0 0 var(--sp-3);padding:var(--sp-3) var(--sp-4);background:var(--card);border-radius:16px;box-shadow:var(--sh)}
+.spoptin > span:not(.spyn){font-size:var(--fs-s);color:var(--muted-t)}
+.spoptin .spyn{display:flex;gap:var(--sp-2);margin-top:var(--sp-2)}
+.spoptin .spyn .btn{flex:1;margin:0;min-width:0;padding:0 var(--sp-3);white-space:nowrap}
+.spwhy{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-2);margin-top:var(--sp-3)}
+.spwhy button.chip{width:100%}

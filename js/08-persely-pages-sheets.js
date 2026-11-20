@@ -37,15 +37,17 @@ function goalCardHTML(g){ const s=gSaved(g), t=gTarget(g), pc=pctOf(g), fx=lateF
   const sub = pc.first && !g.shared ? `${money(g,s)} in · first step · ${forecast(g)}${wkTxt}` : `${money(g, Math.min(s, t))} of ${money(g,t)} · ${forecast(g)}${wkTxt}`;
   return `<div class="gwrap ${fx || bf ? 'fx' : ''}"><button class="card goal" ${attr}><div class="u-rowc"><span class="gic">${I(g.shared ? 'user' : isEur(g) ? 'euro' : g.ic,22)}</span><span class="u-fx0"><b class="u-bk-m">${esc(g.name)}</b><span class="num u-k-sm">${sub}</span></span>${right}</div><div class="prog" style="margin:var(--sp-3) 0 0"><i style="width:${pc.w}%"></i></div></button>${fx ? `<button class="gfix" data-latefix="${g.id}">${fixLabel(fx)}</button>` : bf ? `<button class="gfix" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}</div>`; }
 function vHub(){
+  if(spOn() && typeof spView === 'function') spView();   // Phase 7: first sight records the view (no goal yet = simple, a goal = classic)
   if(!S.goals.length) return spOn() ? spHubFirst() : vHubNew();   // Phase 1: the first-run tab (js/14b-simple-persely.js); ?simple=0 keeps vHubNew
-  if(spOn()) return vHubSimple();   // Phase 2: 4 blocks + honesty line + More (js/14b-simple-tab.js); ?simple=0 keeps the tab below
+  if(spOn() && (typeof spSimpleView !== 'function' || spSimpleView())) return vHubSimple();   // Phase 2: 4 blocks + honesty line + More (js/14b-simple-tab.js); ?simple=0 keeps the tab below
+  // Phase 7 (js/14c-simple-optin.js): an existing student in the Classic view gets the tab below, with one "Try the new Persely" card at the top
   const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
   const weeks = Array.from({length:8}, (_,i) => S.week - 7 + i);
   const gl = S.goals.filter(g => !isEur(g)), gT = gl.reduce((x, g) => x + gTarget(g), 0), gp = gT > 0 ? Math.min(1, gl.reduce((x, g) => x + gSaved(g), 0) / gT) : 0, R = 104, C = 2 * Math.PI * R, arc = C * .75;   // the ring: saved across goals against all targets, as Home shows spent against plan
   const chev = `<span class="chev">${I('chev',20)}</span>`;
   const junior = juniorRow();
   const juniorTop = !S.bridge && S.juniorDays <= 90;   // in the last 90 days it moves to the top
-  return `<div class="tabtitle tt-gear">Persely<button class="tgear" data-settings="persely" aria-label="Persely settings">${I('gear',24)}</button></div>
+  return `<div class="tabtitle tt-gear">Persely<button class="tgear" data-settings="persely" aria-label="Persely settings">${I('gear',24)}</button></div>${typeof spOptinCard === 'function' ? spOptinCard() : ''}
   ${hintHTML('total')}<div class="ptot" data-tour="total">
     <div class="persi" data-tour="persi">${pig(ps.mood, 48)}${spNudgeHTML() || (hintOn('total') ? '<div class="persi-t"></div>' : `<div class="persi-t"><b>Persi</b><span>${ps.text}</span></div>`)}
       ${storyRing()}</div>
