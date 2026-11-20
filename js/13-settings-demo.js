@@ -1,7 +1,7 @@
 /* ================= Settings, inbox, Perks (Phase 6: D11, D12) ================= */
 const NOTIF_TOGGLES = [   // [key, title, subtitle]; "streak" is the weekly reminder (S.remind)
   ['bills', 'Bills due', 'Late bills and bills coming up'], ['streak', 'Sunday streak reminder', 'Sunday 18:00, only if the week is still open'], ['payday', 'Payday', 'When your salary arrives'],
-  ['story', 'Monthly story', 'When your month story is ready'], ['card', 'Card payments', 'Each card payment and your balance'], ['incoming', 'Incoming transfers', 'Money that arrives on your account']];
+  ['story', 'Monthly story', SIMPLE_PERSELY ? 'When your month story is here' : 'When your month story is ready'], ['card', 'Card payments', 'Each card payment and your balance'], ['incoming', 'Incoming transfers', 'Money that arrives on your account']];
 if(SIMPLE_PERSELY) NOTIF_TOGGLES.push(['junior', 'Junior ends', 'At 90, 30 and 7 days before'], ['goal', 'Goal milestones', 'At 25, 50, 75 and 100%'], ['mkt', 'Offers and perks', 'Only with your OK. Off until you turn it on']);
 const notifOn = kind => !kind ? true : kind === 'streak' ? !!S.remind : kind === 'mkt' ? S.notif.mkt === true : S.notif[kind] !== false;
 const hhmm = (d = new Date()) => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
@@ -65,7 +65,7 @@ function settingsHTML(){
   const n = S.notif, ch = `<span class="chev">${I('chev', 18)}</span>`;
   const row = (ic, title, sub, attr) => `<button class="set-row" ${attr}><span class="ic">${I(ic, 22)}</span><span class="t">${title}${sub ? `<small>${sub}</small>` : ''}</span>${ch}</button>`;
   const srow = (ic, title, sub, on, attr) => `<div class="set-row"><span class="ic">${I(ic, 22)}</span><span class="t">${title}${sub ? `<small>${sub}</small>` : ''}</span>${swBtn(on, attr, title)}</div>`;
-  const junior = S.bridge ? `Keeping 3.0% until ${juniorEndLabel(12)}` : `Junior package until ${juniorEndLabel()}`;
+  const junior = S.bridge ? `Keeping 3.0% until ${juniorEndLabel(12)}` : SIMPLE_PERSELY ? `Your 3.0% ends on ${juniorEndLabel()}` : `Junior package until ${juniorEndLabel()}`;   // SIMPLE_PERSELY: plan 2f item 6
   const quiet = n.quiet ? `<div class="qh"><label>From<input type="time" value="${n.qfrom}" data-qh="qfrom" aria-label="Quiet hours from"></label><label>To<input type="time" value="${n.qto}" data-qh="qto" aria-label="Quiet hours to"></label></div>
     <div class="fine" style="padding:0 var(--sp-4) var(--sp-3)">Between ${n.qfrom} and ${n.qto} notifications arrive silently. You can still read them in the inbox.</div>` : '';
   return `<div class="set-sec" data-sec="profile"><div class="sec"><span>Profile</span></div>
@@ -75,7 +75,7 @@ function settingsHTML(){
       ${typeof spOn === 'function' && spOn() ? srow('bell', 'Sound', 'A coin sound when you save. Silent mode mutes it', S.sound !== false, 'data-sw="sound"') : ''}
       ${srow('sched', 'Weekly reminder', 'Sunday 18:00, only if the week is still open', !!S.remind, 'data-sw="remind"')}
       ${srow('analyst', 'Financial analyst', S.analyst.on ? 'On. It reads your transactions for Safe to spend and bills' : 'Off. Safe to spend is a simpler estimate', S.analyst.on, 'data-sw="analyst"')}
-      ${row('star', 'Junior status', junior + ' · Keep my 3.0%', 'data-go="grad"')}</div>
+      ${row('star', 'Junior status', junior + (SIMPLE_PERSELY ? ' · Keep your 3.0%' : ' · Keep my 3.0%'), 'data-go="grad"')}</div>
   ${ruleDefaultsHTML(srow)}</div>
   <div class="set-sec" data-sec="notif"><div class="sec"><span>Notifications</span></div>
     ${pushStatusBlock()}
@@ -115,7 +115,7 @@ const DEMO = [
     ? {e:'🎯', label:'Goal milestone',    title:'Persi · Persely', persi:true, kind:'goal', pri:3, body:() => { const m = milestoneNow(); return m ? `${m.g.name} is ${m.pct}% saved: ${ft(m.saved)} of ${ft(m.target)}.` : null; }, none:'You have no goals in Persely yet. Add one first.', url:'hub'}
     : {e:'👯', label:'Friend saved too',  title:'Persi · Persely', persi:true, body:()=>{ const f = realFriends()[0]; return f ? `${f} saved 5 000 Ft this week. Your turn?` : null; }, none:'You have no friends in Persely yet. Add one first.', url:'hub'},   // real friends only
   {e:'🎓', label:'Junior ends',       title:'Persi · Persely', persi:true, kind:SIMPLE_PERSELY ? 'junior' : undefined, pri:2, body:()=> SIMPLE_PERSELY ? `Your Junior package ends on ${juniorEndLabel()}. Get your salary paid to OTP to keep your 3.0% on the first 500 000 Ft for 12 more months.` : `Your Junior package ends on ${juniorEndLabel()}. Get your salary paid to OTP and keep my 3.0% on the first 500 000 Ft for 12 more months.`, url:'grad'},
-  {e:'📊', label:'Monthly story',     title:'Persi · Persely', persi:true, kind:'story', pri:5, body:()=>`Your ${S.period} story is ready. Take a look.`, url:'story'},
+  {e:'📊', label:'Monthly story',     title:'Persi · Persely', persi:true, kind:'story', pri:5, body:()=> SIMPLE_PERSELY ? `Your ${S.period} story is here.` : `Your ${S.period} story is ready. Take a look.`, url:'story'},
   SIMPLE_PERSELY   // marketing: not the Persi channel, its own switch (off by default), no urgency
     ? {e:'🏷️', label:'New discount',      title:'Perks', kind:'mkt', pri:7, body:'Pizzeria Roma: 15% off. You can turn it on in Perks.', url:'perks'}
     : {e:'🏷️', label:'New discount',      title:'New discount',            body:'15% instant discount at Pizzeria Roma. Activate it now!', url:'perks'},

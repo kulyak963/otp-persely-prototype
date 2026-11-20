@@ -170,7 +170,7 @@ function analysisRow(){
   return row('data-go="mymoney"', `Card spending ${ft(cardSpending())} of ${ft(plan)} planned`);
 }
 // Persely tab rows after the habits: Perks (Discounts and My rewards) and Your year (only after 12 months, C4.1)
-const perksRow = () => `<button class="row" data-go="perks"><span class="ic">${I('gift')}</span><span class="t"><b>Perks</b><small>${DISC.length - S.disc.activated.length} offers waiting for activation · ${plural(S.rewards.length, 'reward')}</small></span><span class="chev">${I('chev', 20)}</span></button>`;
+const perksRow = () => `<button class="row" data-go="perks"><span class="ic">${I('gift')}</span><span class="t"><b>Perks</b><small>${SIMPLE_PERSELY ? plural(DISC.length - S.disc.activated.length, 'deal') + ' to turn on' : `${DISC.length - S.disc.activated.length} offers waiting for activation · ${plural(S.rewards.length, 'reward')}`}</small></span><span class="chev">${I('chev', 20)}</span></button>`;
 const yearRow = () => (S.months || 0) >= 12 ? `<button class="row" data-go="year"><span class="ic">${I('star')}</span><span class="t"><b>Your year</b><small>12 months in Persely</small></span><span class="chev">${I('chev', 20)}</span></button>` : '';
 /* The ONE Spending page (C2, D3), in this order: 1 Safe to spend, 2 month circle (Card spending, Total out, days left, month end projection),
    3 Bills row, 4 My plan (categories expandable, one Edit), 5 Persi's tips, 6 Next month row, 7 Latest card payments, 8 footer with the analyst switch.

@@ -3,7 +3,7 @@ function setupCard(){   // the 500 000 Ft cap and the end date in the line below
   if(SETUP_COLLAPSED) return `<button class="setup" data-setupopen><span class="u-ico-g">${I('star',24)}</span><span class="u-fx1"><b>Pick a goal when you're ready</b></span><span class="u-ico-g">${I('chev',20)}</span></button>`;
   return `<div class="card setupcard" id="setupcard"><h2>What are you saving for?</h2>
     <!-- CONFIRM WITH OTP -->
-    <div class="k">3.0% a year on up to 500 000 Ft with your Junior account until ${juniorEndLabel()}</div>
+    <div class="k">${typeof spOn === 'function' && spOn() ? `3.0% a year on up to ${ft(CAP)}. Until ${juniorEndLabel()}.` : `3.0% a year on up to 500 000 Ft with your Junior account until ${juniorEndLabel()}`}</div>
     ${S.draft ? `<button class="row" data-onbresume><span class="ic">${I('star')}</span><span class="t">Continue your draft<small>${esc(S.draft.name || 'Your goal')}, ${ft(S.draft.target)}</small></span><span class="chev">${I('chev',20)}</span></button>` : ''}
     <div class="wn-grid three">${Object.entries(GOAL_PRESETS).map(([k,g]) => `<button data-tilepick="${k}">${I(g.ic,24)}${g.label}</button>`).join('')}<button data-tilepick="custom">${I('plus',24)}Something else</button></div>
     <button class="later" data-setuplater>Not now</button></div>`;
@@ -836,7 +836,7 @@ function hubsaveSimple(){
     <div class="flabel">Amount</div>
     <div class="fld"><span class="t"><input id="mv" inputmode="numeric" value="${v}" placeholder="Amount" aria-label="Amount" aria-describedby="e-mv"></span><b>${e ? '€' : 'Ft'}</b></div><div class="ferr" id="e-mv" role="alert"></div>
     <div class="chips u-mt0 hsamt" role="group" aria-label="Amount">${chips.map(x=>`<button class="chip ${+v === x ? 'on' : ''}" data-setv="${x}" aria-pressed="${+v === x}">${e ? eur(x) : ft(x)}</button>`).join('')}</div>
-    ${open ? `<div class="flabel">From</div>${S.accounts.filter(a=>a.id!=='persely').map(a=>`<button class="opt slim ${S._from===a.id?'on':''}" data-hubfrom="${a.id}"><span class="ic">${I('wallet',22)}</span><span class="t"><b>${a.n}</b><small class="num">${ft(a.v)} available</small></span>${S._from===a.id?`<span class="u-ico-g">${I('check',22)}</span>`:''}</button>`).join('')}`
+    ${open ? `<div class="flabel">From</div>${S.accounts.filter(a=>a.id!=='persely').map(a=>`<button class="opt slim ${S._from===a.id?'on':''}" data-hubfrom="${a.id}"><span class="ic">${I('wallet',22)}</span><span class="t"><b>${a.n}</b><small class="num">You have ${ft(a.v)}</small></span>${S._from===a.id?`<span class="u-ico-g">${I('check',22)}</span>`:''}</button>`).join('')}`
       : `<div class="hsfrom"><span>From ${esc(fromName(S._from))}</span><span aria-hidden="true">·</span><button class="link lnk44" data-hubchange aria-label="Change the account or the goal">Change</button></div>`}
     <div class="fine u-note-t6">${e ? `Demo rate 1 € = ${EUR_RATE} Ft. Euro goals don't get the Junior rate.` : S.savedWeek ? 'This week already counts for your streak.' : `Counts for this week: your streak goes to ${S.streak+1}.`}</div>
     <button class="btn" data-hubsave>${v ? `Add ${money(g, +v)}` : 'Add money'}</button>

@@ -712,10 +712,11 @@ function __checkAnalytics(){
       // SIMPLE_PERSELY: no ring at all before month end (no grey ring), at month end the ring around Persi (sp-ring) opens the story
       const ringOff = () => SIMPLE_PERSELY ? !/sp-ring|class="sring|data-storywait/.test(vHub()) : /sring off/.test(vHub()) && !/data-story[ >]/.test(vHub().match(/<[^>]*sring off[^>]*>/)[0]) && /Your story arrives on 30 November 2026/.test(vHub());
       const ringOn = () => SIMPLE_PERSELY ? /<button class="sp-ring[^"]*" data-story data-persi-ring/.test(vHub()) && !/data-storywait|class="sring/.test(vHub()) : /data-story/.test(vHub().match(/<[^>]*class="sring[^"]*"[^>]*>/)[0]) && !/sring off/.test(vHub());
-      reset('existing'); tab('hub'); const ring0 = pl(vHub()), off0 = ringOff(), card0 = /Your November is ready/.test(vFooldal());
-      S.monthEnd = true; renderAll(); const on1 = ringOn(), card1 = /Your November is ready/.test(pl(vFooldal()));
+      const STC = SIMPLE_PERSELY ? /Your November story is here/ : /Your November is ready/;   // SIMPLE_PERSELY: plan 2f, "Your November story is here"
+      reset('existing'); tab('hub'); const ring0 = pl(vHub()), off0 = ringOff(), card0 = STC.test(vFooldal());
+      S.monthEnd = true; renderAll(); const on1 = ringOn(), card1 = STC.test(pl(vFooldal()));
       openStory(); stGo(3); const was3 = ST.i === 3; closeStory(); openStory(); const restarted = ST.i === 0 && ST.t === 0; closeStory();
-      const homeAfter = !/Your November is ready/.test(vFooldal()) && (SIMPLE_PERSELY ? /sp-ring seen/ : /sring seen/).test(vHub());
+      const homeAfter = !STC.test(vFooldal()) && (SIMPLE_PERSELY ? /sp-ring seen/ : /sring seen/).test(vHub());
       const dm0 = DEMO_ON; setDemoMode(true); S.monthEnd = false; S.storySeen = false; unlockPhone(); dispatchEvent(new KeyboardEvent('keydown', {key:'m'})); const keyM = S.monthEnd === true && ST.on === true; closeStory();
       reset('existing'); dispatchEvent(new KeyboardEvent('keydown', {key:'e'})); const keyE = S.monthEnd === true && ST.on === true && S.period === 'Autumn semester'; closeStory(); reset('existing'); setDemoMode(dm0);
       S.monthEnd = true; monthStep(true); const cleared = S.monthEnd === false;
@@ -1153,9 +1154,7 @@ function __checkAnalytics(){
       const fr = [...hubF, ...confF, homeT, persiT], all = fr.join(' '), sents = fr.flatMap(f => f.split(/[.!?·](?!\d)/)).map(x => toks(x).length);
       ok('chk-simple-first-run-words: at most 25 words on each first-run screen (tab, confirm screen for each of the 4 tiles, reward; amounts and dates are numbers, not words), Persi at most 8 words, sentences at most 12 words, no "deadline", verb first on the button', wTab.length <= 25 && Object.values(wConf).every(n => n <= 25) && wRw <= 25 && toks(persiT).length <= 8 && sents.every(n => n <= 12) && !/deadline/i.test(all) && /^Save /.test(btnT), {wTab:wTab.length, wConf, wRw, persi:toks(persiT).length, maxSent:Math.max(...sents), longest:fr.flatMap(f => f.split(/[.!?·](?!\d)/)).sort((a, b) => toks(b).length - toks(a).length)[0]});
       // later phases own the other chk-simple-* checks; these three are stubs until their phase is built
-      ok('chk-simple-grade (stub, Phase 4: in-app FK grade ≤ 4 for tab and first-run texts)', true, 'stub');
       ok('chk-simple-analyst-line (stub, Phase 6: Learn more and Turn off equal; the Phase 1 one line is checked in chk-analyst-notice)', true, 'stub');
-      ok('chk-simple-hu-keys (stub, Phase 4: every new string has a HU key)', true, 'stub');
     } catch(e){ ok('chk-simple-phase1: the Simple Persely checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); spHideReward(true); }catch(e){} while(stack.length) popPage(true); spLeg(false); S = svS; cur = curS; stack.push(...stkS); demo.locked = lockS;
       try{ Object.keys(O).forEach(k => delete O[k]); Object.assign(O, JSON.parse(OS)); closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', viewsS[i])); }
@@ -1242,6 +1241,7 @@ function __checkAnalytics(){
     } catch(e){ ok('chk-simple-phase3: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideBanners(); hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); S = svR; cur = curR; stack.push(...stkR); demo.locked = lockR; try{ Object.keys(O).forEach(k => delete O[k]); Object.assign(O, JSON.parse(oR)); closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', viewsR[i])); }
   }
+  if(SIMPLE_PERSELY && typeof spGradeChecks === 'function') spGradeChecks(ok);   // Phase 4 copy pass: chk-simple-grade and chk-simple-hu-keys (js/14c-simple-copy.js)
   // chk-palette: one colour palette. Scans the stylesheet (outside :root) and the app script for colour literals: only the documented exceptions may stay
   // (Mastercard logo, iPhone frame hardware, pure black), rgb()/rgba() only as black or white with alpha, no 0x colour ints; PALETTE holds a real #RRGGBB
   // for every token, --ink-rgb equals --ink, theme-color equals --bg, and the spending categories stay told apart.
