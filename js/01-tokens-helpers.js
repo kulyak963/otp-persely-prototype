@@ -1,4 +1,3 @@
-const SIMPLE_PERSELY = new URLSearchParams(location.search).get('simple') !== '0';
 /* ================= colour palette: read ONCE from the CSS tokens in :root (single source of truth, see docs/palette.md) =================
    JS never types a colour: SVG attributes, the 3D pig, canvas-like tables and inline styles that need a real hex value use PALETTE;
    inline styles that can take var(--token) use the token. mixHex() derives tints and shades from a token (story backgrounds, Persi's details). */
