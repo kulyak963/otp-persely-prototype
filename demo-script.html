@@ -4,16 +4,17 @@
 <style>
 /* Layout: one readable column, a run sheet of scenes, each with what to press, what the jury sees and what to say */
 :root{
-  --bg:#F3F5F1; --surface:#FFFFFF; --ink:#1F2A1C; --muted:#5E6A5A; --line:#DCE3D7;
-  --green:#3E8E22; --green-soft:#E6F2DF; --key:#EEF1EA; --flame:#E8701A;
+  /* colours = the app palette (index.html :root, docs/palette.md): --bg, --card, --ink, --muted-t, --line, --act (green text), --green-l, --fill, --orange */
+  --bg:#EEF0F5; --surface:#FFFFFF; --ink:#2B3038; --muted:#62676F; --line:#E2E5EB;
+  --green:#2F7A1B; --green-soft:#EAF5E4; --key:#E9ECF1; --flame:#F07D19;
   --font:"Open Sans",-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#141912; --surface:#1C2319; --ink:#E7EEE3; --muted:#9DAA97; --line:#2E3A2A;
-  --green:#7CCB5A; --green-soft:#24331E; --key:#26301F; --flame:#FF9A4A; color-scheme:dark } }
+  --bg:#1A1D22; --surface:#2B3038; --ink:#EEF0F5; --muted:#C9CED6; --line:#4A505A;
+  --green:#8FDB6B; --green-soft:#1E5410; --key:#4A505A; --flame:#FFB37A; color-scheme:dark } }
 :root[data-theme="dark"]{
-  --bg:#141912; --surface:#1C2319; --ink:#E7EEE3; --muted:#9DAA97; --line:#2E3A2A;
-  --green:#7CCB5A; --green-soft:#24331E; --key:#26301F; --flame:#FF9A4A; color-scheme:dark }
+  --bg:#1A1D22; --surface:#2B3038; --ink:#EEF0F5; --muted:#C9CED6; --line:#4A505A;
+  --green:#8FDB6B; --green-soft:#1E5410; --key:#4A505A; --flame:#FFB37A; color-scheme:dark }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.55;
   padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:32px 56px}
