@@ -29,8 +29,16 @@ function vHubNew(){
   <div class="card hab" data-tour="week"><div class="u-rowc">${flame(36, false)}<div class="u-fx1"><div style="font-size:1.0625rem;font-weight:700">Your streak starts with the first deposit</div><div class="u-k-sm">Any amount once a week keeps it going</div></div></div></div>
   <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:0 var(--sp-4);margin:var(--sp-2) 0 var(--sp-2)"><a class="link lnk44" style="display:inline-flex;align-items:center" data-sheet="how">How Persely works ${I('chev',16)}</a></div>`;
 }
+// one goal card with its fix button (Persely tab; the More page when SIMPLE_PERSELY is on)
+function goalCardHTML(g){ const s=gSaved(g), t=gTarget(g), pc=pctOf(g), fx=lateFix(g), bf=behindFix(g);
+  const attr = `data-goal="${g.id}"`;
+  const right = g.shared ? `<span class="avs">${g.members.map(m=>avatar(m,24)).join('')}</span>` : pc.txt ? `<b class="u-c-gt">${pc.txt}</b>` : '';
+  const wkTxt = weeklyShown(g) && !fx && !bf ? ` · about ${ft(weeklyOf(g))} a week` : '';   // N6: the same weekly figure as the wizard and the goal page
+  const sub = pc.first && !g.shared ? `${money(g,s)} in · first step · ${forecast(g)}${wkTxt}` : `${money(g, Math.min(s, t))} of ${money(g,t)} · ${forecast(g)}${wkTxt}`;
+  return `<div class="gwrap ${fx || bf ? 'fx' : ''}"><button class="card goal" ${attr}><div class="u-rowc"><span class="gic">${I(g.shared ? 'user' : isEur(g) ? 'euro' : g.ic,22)}</span><span class="u-fx0"><b class="u-bk-m">${esc(g.name)}</b><span class="num u-k-sm">${sub}</span></span>${right}</div><div class="prog" style="margin:var(--sp-3) 0 0"><i style="width:${pc.w}%"></i></div></button>${fx ? `<button class="gfix" data-latefix="${g.id}">${fixLabel(fx)}</button>` : bf ? `<button class="gfix" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}</div>`; }
 function vHub(){
   if(!S.goals.length) return vHubNew();
+  if(SIMPLE_PERSELY) return vHubSimple();   // Phase 2: 4 blocks + honesty line + More (js/14b-simple-tab.js); ?simple=0 keeps the tab below
   const tot = total(), et = eurTotal(), ps = persiSays(), st = S.verified || S.bridge;
   const weeks = Array.from({length:8}, (_,i) => S.week - 7 + i);
   const gl = S.goals.filter(g => !isEur(g)), gT = gl.reduce((x, g) => x + gTarget(g), 0), gp = gT > 0 ? Math.min(1, gl.reduce((x, g) => x + gSaved(g), 0) / gT) : 0, R = 104, C = 2 * Math.PI * R, arc = C * .75;   // the ring: saved across goals against all targets, as Home shows spent against plan
@@ -61,12 +69,7 @@ function vHub(){
   ${juniorTop ? junior : ''}
 
   ${hintHTML('goals')}<div class="sec" data-tour="goals"><span>Goals</span><a data-sheet="newgoal">New ${I('plus',16)}</a></div>
-  ${S.goals.map(g=>{ const s=gSaved(g), t=gTarget(g), pc=pctOf(g), fx=lateFix(g), bf=behindFix(g);
-    const attr = `data-goal="${g.id}"`;
-    const right = g.shared ? `<span class="avs">${g.members.map(m=>avatar(m,24)).join('')}</span>` : pc.txt ? `<b class="u-c-gt">${pc.txt}</b>` : '';
-    const wkTxt = weeklyShown(g) && !fx && !bf ? ` · about ${ft(weeklyOf(g))} a week` : '';   // N6: the same weekly figure as the wizard and the goal page
-    const sub = pc.first && !g.shared ? `${money(g,s)} in · first step · ${forecast(g)}${wkTxt}` : `${money(g, Math.min(s, t))} of ${money(g,t)} · ${forecast(g)}${wkTxt}`;
-    return `<div class="gwrap ${fx || bf ? 'fx' : ''}"><button class="card goal" ${attr}><div class="u-rowc"><span class="gic">${I(g.shared ? 'user' : isEur(g) ? 'euro' : g.ic,22)}</span><span class="u-fx0"><b class="u-bk-m">${esc(g.name)}</b><span class="num u-k-sm">${sub}</span></span>${right}</div><div class="prog" style="margin:var(--sp-3) 0 0"><i style="width:${pc.w}%"></i></div></button>${fx ? `<button class="gfix" data-latefix="${g.id}">${fixLabel(fx)}</button>` : bf ? `<button class="gfix" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}</div>`; }).join('')}
+  ${S.goals.map(goalCardHTML).join('')}
   ${S.goals.length ? '' : `<div class="card"><b class="u-bk-m">No goals yet</b><div class="k" style="margin:var(--sp-1) 0 var(--sp-3)">Set a goal and Persely shows you the month you get there.</div><button class="btn" data-sheet="newgoal">Set a goal</button></div>`}
 
   ${S.goals.length ? savingRulesBlock() : ''}

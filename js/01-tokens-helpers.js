@@ -80,3 +80,4 @@ const $ = s => document.querySelector(s);
 // the one switch used everywhere (same look as in onboarding): the switch toggles, the row next to it opens the settings
 const swBtn = (on, attr, label) => `<button class="tg ${on ? 'on' : ''}" role="switch" aria-checked="${on ? 'true' : 'false'}" aria-label="${label}" ${attr}></button>`;
 
+const SIMPLE_PERSELY = new URLSearchParams(location.search).get('simple') !== '0';
