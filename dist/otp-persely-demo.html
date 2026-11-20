@@ -495,25 +495,26 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 /* ---------- small demo panel next to the phone (laptop only) ---------- */
 .demo-panel,.demo-show{display:none}
 .be-panel{display:none}
-@media (min-width:1180px) and (hover:hover){
-  .be-panel{display:flex;flex-direction:column;position:fixed;right:18px;top:50%;transform:translateY(-50%);width:min(400px, calc(50vw - 260px));max-height:calc(100vh - 32px);padding:14px 14px 8px;border-radius:18px;
-    background:#0F1712;color:#DCE6D8;box-shadow:0 14px 40px rgba(10,20,12,.35);z-index:200;font-size:12.5px}
+@media (min-width:980px) and (hover:hover){
+  .be-panel{display:flex;flex-direction:column;position:fixed;right:14px;top:50%;transform:translateY(-50%);width:clamp(250px, calc(50vw - 245px), 420px);max-height:calc(100vh - 28px);padding:14px 14px 8px;border-radius:18px;
+    background:#0F1712;color:#DCE6D8;box-shadow:0 14px 40px rgba(10,20,12,.35);z-index:200;font-size:13px}
   .be-panel.hidden{display:none}
-  .be-h{display:flex;justify-content:space-between;align-items:baseline}.be-h b{font-size:15px;color:#fff}.be-h span{font-size:11px;color:#7E8C79}
-  .be-sub{font-size:11px;color:#8FA08A;margin:3px 0 10px;line-height:1.35}
+  .be-h{display:flex;justify-content:space-between;align-items:baseline}.be-h b{font-size:16px;color:#fff}.be-h span{font-size:11px;color:#7E8C79}
+  .be-sub{font-size:11.5px;color:#9FB09A;margin:3px 0 10px;line-height:1.35}
   .be-map{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
-  .be-svc{padding:4px 8px;border-radius:99px;font-size:10.5px;font-weight:700;color:var(--c);border:1px solid color-mix(in srgb, var(--c) 45%, transparent);background:color-mix(in srgb, var(--c) 10%, transparent);transition:background .25s, box-shadow .25s}
+  .be-svc{padding:4px 8px;border-radius:99px;font-size:11px;font-weight:700;color:var(--c);border:1px solid color-mix(in srgb, var(--c) 45%, transparent);background:color-mix(in srgb, var(--c) 10%, transparent);transition:background .25s, box-shadow .25s, color .25s}
   .be-svc.hit{background:var(--c);color:#0F1712;box-shadow:0 0 14px var(--c)}
-  .be-log{overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px;scrollbar-width:thin}
-  .be-e{border-left:3px solid var(--c);background:#16211A;border-radius:0 10px 10px 0;padding:7px 9px}
-  .be-e.new{animation:bein .35s ease-out}
-  @keyframes bein{from{opacity:0;transform:translateX(12px)}}
-  .be-r{display:flex;align-items:center;gap:6px}.be-tag{font-weight:700;color:var(--c);font-size:11px}.be-t{margin-left:auto;color:#6F7D6A;font:10.5px ui-monospace,Consolas,monospace}
-  .be-real{font-size:9.5px;font-weight:800;background:#FF8A65;color:#0F1712;border-radius:4px;padding:1px 5px}
-  .be-l{display:block;font:11.5px ui-monospace,Consolas,monospace;color:#fff;margin-top:3px;word-break:break-all}
-  .be-w{color:#B9C6B3;margin-top:2px;line-height:1.35}
-  .be-d{display:block;font:10.5px ui-monospace,Consolas,monospace;color:#7E8C79;margin-top:3px;word-break:break-word}
-  .be-empty{color:#6F7D6A;padding:18px 4px;text-align:center}
+  .be-log{overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-right:2px;scrollbar-width:thin}
+  .be-ep{background:#16211A;border-radius:14px;padding:10px 12px;opacity:.62}.be-ep.cur{opacity:1;box-shadow:inset 0 0 0 1px #2C3D30}
+  .be-et{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}.be-et b{font-size:14px;color:#fff}.be-et span{font-size:10.5px;color:#6F7D6A;white-space:nowrap}
+  .be-ep ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+  .be-ep li{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:start;line-height:1.35;color:#DCE6D8}
+  .be-ep li.new{animation:bein .4s ease-out}
+  @keyframes bein{from{opacity:0;transform:translateY(6px)}}
+  .be-i{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;background:color-mix(in srgb, var(--c) 22%, #16211A);box-shadow:inset 0 0 0 1.5px var(--c)}
+  .be-x small{display:block;font-size:10.5px;color:#6F7D6A;margin-top:1px}
+  .be-real{font-size:9.5px;font-weight:800;background:#FF8A65;color:#0F1712;border-radius:4px;padding:1px 5px;align-self:center}
+  .be-empty{color:#7E8C79;padding:18px 4px;text-align:center;line-height:1.5}
 }
 @media (min-width:760px) and (hover:hover){
   .demo-panel{display:flex;flex-direction:column;gap:5px;position:fixed;left:18px;top:50%;transform:translateY(-50%);width:186px;padding:10px;border-radius:16px;max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;
@@ -4666,7 +4667,7 @@ $('#demoPanel').addEventListener('click', e=>{
   else if('dgrad' in d) graduation();
   else if('dstory' in d){ unlockPhone(); tab('hub'); openStory(); }
   else if('dtour' in d){ unlockPhone(); showHints(); }
-  else if('dbe' in d){ BE.on = !BE.on; beRender(); }
+  else if('dbe' in d) beToggle();
   else if('dupdate' in d) demoUpdateDay();
   else if('djump' in d) week8State();
   else if('ddelay' in d){ demo.delay = {0:3, 3:10, 10:0}[demo.delay]; renderDemoPanel(); }
@@ -4700,7 +4701,7 @@ addEventListener('keydown', e=>{
   else if(k === 'g') graduation();
   else if(k === 'm'){ unlockPhone(); tab('hub'); openStory(); }
   else if(k === 't'){ unlockPhone(); showHints(); }
-  else if(k === 'a'){ BE.on = !BE.on; beRender(); }
+  else if(k === 'a') beToggle();
   else if(k === 'u') demoUpdateDay();
   else if(k === 'j') week8State();
   else if(k === 'h'){ demo.hidden = !demo.hidden; renderDemoPanel(); }
@@ -4731,80 +4732,106 @@ if(!window.__STANDALONE && 'serviceWorker' in navigator && (location.protocol===
 else pushInfo();
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) pushRefresh(); });
 
-/* ---------- Backend view (laptop only, key A): what the bank's services would do behind each tap ----------
-   Simulated: gateway, Persely service, ledger, rules, analytics, scheduler, eligibility (the architecture we propose to OTP).
-   Real: push notifications (server.js with web-push), marked REAL. Nothing here changes the app; it only writes the log. */
-const BE = {on:true, mute:0, log:[], next:0};
-const BE_SVC = {gw:['API gateway','#7FB2E5'], ps:['Persely service','#7BD35A'], led:['Core ledger','#F0B35A'], rules:['Rules engine','#C792EA'],
-  notif:['Notifications','#FF8A65'], an:['Analytics','#4DD0C4'], sched:['Scheduler','#B0BEC5'], elig:['Eligibility','#FFD54F']};
-const beAcct = id => id === 'junior' ? 'Junior account' : id === 'megt' ? 'Savings account' : id;
-function be(svc, line, what, data, real){
-  if(!BE.on || BE.mute || ffRunning()) return;
-  const now = Date.now(), at = Math.max(now, BE.next); BE.next = at + 170;
-  setTimeout(() => { BE.log.unshift({t:new Date(), svc, line, what, data, real}); BE.log = BE.log.slice(0, 40); beRender(svc); }, at - now);
+/* ---------- Behind the app (laptop, key A): what happens on the bank's side, in plain words ----------
+   Each thing Anna does opens a card ("Anna gets her salary") with the steps the bank runs, in order. The small grey label under a step
+   names the system that would do it (for the technical people in the room). Simulated, except Persi's push messages (real server).
+   The wrappers below only write this log; the app works the same without them. */
+const BE = {on:true, mute:0, eps:[], next:0, cur:null};
+const BE_ACT = {bank:['🏦', 'Bank account', '#F0B35A'], rules:['⚙️', 'Saving rules', '#C792EA'], persely:['🐷', 'Persely', '#7BD35A'], persi:['🔔', 'Persi messages', '#FF8A65'],
+  an:['📊', 'Analysis', '#4DD0C4'], clock:['⏰', 'Every month', '#B0BEC5'], rate:['✅', '3.0% rate', '#FFD54F']};
+const beQuiet = () => !BE.on || BE.mute > 0 || ffRunning();
+function beEp(title, force){ if(!force && beQuiet()) return; if(force && (!BE.on || BE.mute > 0)) return; const ep = {t:Date.now(), title, steps:[]}; BE.eps.unshift(ep); BE.eps = BE.eps.slice(0, 8); BE.cur = ep; BE.next = Date.now(); beRender(); }
+function beStep(who, text, tech, real, force){
+  if(!force && beQuiet()) return; if(force && (!BE.on || BE.mute > 0)) return; if(!BE.cur) beEp('Behind the scenes', force);
+  const ep = BE.cur, now = Date.now(), at = Math.max(now + 150, BE.next + (force ? 120 : 420)); BE.next = at;
+  setTimeout(() => { ep.steps.push({who, text, tech, real}); beRender(who); }, at - now);
 }
 function beRender(hit){
-  const p = $('#bePanel'); if(!p) return;
-  const tm = d => d.toLocaleTimeString('en-GB', {hour12:false}) + '.' + String(d.getMilliseconds()).padStart(3, '0');
-  const js = o => o ? esc(JSON.stringify(o).replace(/"([a-zA-Z_]+)":/g, '$1: ').replace(/,/g, ', ')) : '';
-  p.classList.toggle('hidden', !BE.on);
+  const p = $('#bePanel'); if(!p) return; p.classList.toggle('hidden', !BE.on);
+  const tm = t => new Date(t).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
   p.innerHTML = `<div class="be-h"><b>Behind the app</b><span>A hides</span></div>
-    <div class="be-sub">What OTP's services do on each tap. Simulated, except push notifications (real server).</div>
-    <div class="be-map">${Object.entries(BE_SVC).map(([k, [n, c]]) => `<span class="be-svc ${k === hit ? 'hit' : ''}" style="--c:${c}">${n}</span>`).join('')}</div>
-    <div class="be-log">${BE.log.length ? BE.log.map((e, i) => `<div class="be-e ${i === 0 ? 'new' : ''}" style="--c:${BE_SVC[e.svc][1]}"><div class="be-r"><span class="be-tag">${BE_SVC[e.svc][0]}</span>${e.real ? '<span class="be-real">REAL</span>' : ''}<span class="be-t">${tm(e.t)}</span></div>
-      <code class="be-l">${esc(e.line)}</code><div class="be-w">${esc(e.what)}</div>${e.data ? `<code class="be-d">${js(e.data)}</code>` : ''}</div>`).join('') : '<div class="be-empty">Tap something in the app.</div>'}</div>`;
+    <div class="be-sub">What the bank does each time Anna taps. Simulated, except Persi's push messages.</div>
+    <div class="be-map">${Object.entries(BE_ACT).map(([k, [ic, n, c]]) => `<span class="be-svc ${k === hit ? 'hit' : ''}" style="--c:${c}">${ic} ${n}</span>`).join('')}</div>
+    <div class="be-log">${BE.eps.length ? BE.eps.map((ep, i) => `<div class="be-ep ${i ? '' : 'cur'}"><div class="be-et"><b>${esc(ep.title)}</b><span>${tm(ep.t)}</span></div>
+      <ol>${ep.steps.map((st, j) => `<li class="${i === 0 && j === ep.steps.length - 1 ? 'new' : ''}" style="--c:${BE_ACT[st.who][2]}"><span class="be-i">${BE_ACT[st.who][0]}</span><span class="be-x">${esc(st.text)}${st.tech ? `<small>${esc(st.tech)}</small>` : ''}</span>${st.real ? '<span class="be-real">REAL</span>' : ''}</li>`).join('')}</ol></div>`).join('')
+      : '<div class="be-empty">Tap something in the app, or press P (salary), C (coffee), O (+1 month).</div>'}</div>`;
 }
-// hook into the app's own functions (they keep working the same; the wrapper only logs)
+const beTxt = h => String(h).replace(/<[^>]+>/g, '');
 { const o = depositTo; depositTo = function(g, v, fromId = 'junior', how = 'Between my accounts'){
-    const r = o.apply(this, arguments); if(BE.mute || ffRunning() || !g) return r;
-    const pc = Math.min(100, Math.round(gSaved(g) / Math.max(1, gTarget(g)) * 100));
-    if(/^Payday/.test(how)) be('rules', 'EVENT payday.rule.matched', `Payday rule: ${S.payday.pct}% of the salary goes to ${g.name}`, {rule:'payday', pct:S.payday.pct, goal:g.id});
-    else if(/^Round/.test(how)) be('rules', 'EVENT roundup.matched', `Round-up ×2 goes to ${g.name}`, {rule:'roundup', amount:v, goal:g.id});
-    else if(/^Weekly/.test(how)) be('sched', 'CRON weekly.transfer', `Monday transfer to ${g.name}`, {amount:v, goal:g.id});
-    else be('gw', `POST /v1/persely/goals/${g.id}/deposits`, `Add ${ft(v)} to ${g.name}`, {amount:v, from:fromId});
-    be('led', 'LEDGER transfer', `${beAcct(fromId)} → Persely “${g.name}”: ${ft(v)}`, {debit:fromId, credit:'persely:' + g.id, amount:v, currency:'HUF'});
-    be('ps', 'goal.progress', `${g.name}: ${pc}% · ${forecast(g).replace(/<[^>]+>/g, '')}`, {saved:gSaved(g), target:gTarget(g)});
-    if(r) be('ps', 'streak.update', `This week counts: ${S.streak}-week streak`, {week:S.week, streak:S.streak, best:S.best});
+    const r = o.apply(this, arguments); if(beQuiet() || !g) return r;
+    const pc = Math.min(100, Math.round(gSaved(g) / Math.max(1, gTarget(g)) * 100)), src = fromId === 'megt' ? 'Savings account' : 'Junior account';
+    if(/^Payday/.test(how)){ beStep('persi', 'She taps “Move”', 'App → API'); }
+    else if(/^Round/.test(how)) beStep('rules', `Round-up: the price goes up to the next 100 Ft and the change is doubled: ${ft(v)}`, 'Rules engine');
+    else if(/^Weekly/.test(how)) beStep('clock', `It is Monday: her weekly transfer runs, ${ft(v)}`, 'Scheduler');
+    else beEp(`Anna adds ${ft(v)} to ${g.name}`);
+    beStep('bank', `The bank moves ${ft(v)} from her ${src} to Persely “${g.name}”`, 'Core banking · ledger transfer');
+    beStep('persely', `${g.name} is now at ${pc}%. ${beTxt(forecast(g)).replace(/ · late$/, ' (late)')}`, 'Persely service · forecast');
+    if(r) beStep('persely', `This week counts: her streak is now ${S.streak} weeks`, 'Persely service · streak');
     return r; }; }
 { const o = withdrawFrom; withdrawFrom = function(g, v){ const r = o.apply(this, arguments);
-    be('gw', `POST /v1/persely/goals/${g.id}/withdrawals`, `Take ${ft(r || v)} out of ${g.name}`, {amount:r || v, to:'junior'});
-    be('led', 'LEDGER transfer', `Persely “${g.name}” → Junior account: ${ft(r || v)}, no fee`, {debit:'persely:' + g.id, credit:'junior', fee:0});
-    be('ps', 'streak.unchanged', 'Taking money out never breaks the streak', {streak:S.streak}); return r; }; }
+    beEp(`Anna takes ${ft(r || v)} out of ${g.name}`);
+    beStep('bank', `The bank moves ${ft(r || v)} back to her Junior account. Instantly, no fee`, 'Core banking · ledger transfer');
+    beStep('persely', 'Her streak stays: taking money out never breaks it', 'Persely service');
+    return r; }; }
 { const o = applyOnb; applyOnb = function(){ const r = o.apply(this, arguments), g = goalById('onb');
-    if(g){ be('gw', 'POST /v1/persely/goals', `New goal: ${g.name}, ${ft(gTarget(g))} by ${fDate(g.date)}`, {name:g.name, target:gTarget(g), date:g.date});
-      be('ps', 'forecast.compute', forecast(g).replace(/<[^>]+>/g, ''), {pace:paceOf(g), months:gMonths(g)});
-      be('rules', 'PUT /v1/rules', 'Saving rules saved', {payday:S.payday.on ? S.payday.pct + '%' : 'off', weekly:S.weekly.on ? S.weekly.amt : 'off', roundups:S.roundup.on}); }
+    if(g){ beEp('Anna creates her first goal');
+      beStep('persely', `Goal saved: ${g.name}, ${ft(gTarget(g))} by ${fDate(g.date)}`, 'Persely service');
+      beStep('persely', `Forecast: ${beTxt(forecast(g))}`, 'Forecast engine');
+      const on = [S.payday.on ? `${S.payday.pct}% of each salary` : '', S.weekly.on ? `${ft(S.weekly.amt)} every Monday` : '', S.roundup.on ? 'round-ups' : ''].filter(Boolean);
+      if(on.length) beStep('rules', `Saving rules switched on: ${on.join(', ')}`, 'Rules engine');
+      beStep('rate', 'Her goal earns 3.0% a year because she has a Junior account', 'Eligibility'); }
     return r; }; }
 { const o = salaryArrives; salaryArrives = function(){
-    be('led', 'EVENT incoming.transfer', `Salary arrived: +${ft(S.income.amount)} on the Junior account`, {type:'salary', amount:S.income.amount});
-    if(S.payday.on) be('rules', 'rule.evaluate payday', S.payday.ask ? `Payday rule ${S.payday.pct}%: ask the student first` : `Payday rule ${S.payday.pct}%: move automatically`, {ask:!!S.payday.ask, amount:incomeShare(S.payday.pct)});
+    beEp('Anna gets her salary');
+    beStep('bank', `+${ft(S.income.amount)} arrives on her Junior account`, 'Core banking · incoming transfer');
+    if(S.payday.on) beStep('rules', `Her payday rule wants ${S.payday.pct}% (${ft(incomeShare(S.payday.pct))}) for ${ruleGoal().name}${S.payday.ask ? ', but asks her first' : ''}`, 'Rules engine');
     return o.apply(this, arguments); }; }
-{ const o = coffee; coffee = function(){ be('led', 'EVENT card.authorized', 'Card payment: Espresso Bar, 1 190 Ft', {merchant:'ESPRESSO BAR', amount:1190, category:'food'}); return o.apply(this, arguments); }; }
-{ const o = notify; notify = function(n){ be('notif', demo.phone ? 'PUSH web-push → iPhone' : 'PUSH in-app banner', `${n.title}: ${n.body}`, {deeplink:n.url || 'hub'}, !!demo.phone); return o.apply(this, arguments); }; }
-{ const o = billMissed; billMissed = function(){ const r = o.apply(this, arguments), bf = billsFirst();
-    if(bf.on) be('an', 'bill.late detected', `${bf.text}. Found from the payment history (same payee every month).`, {payee:bf.late[0].bill.key, amount:bf.lateTotal});
+{ const o = coffee; coffee = function(){ beEp('Anna pays for a coffee'); beStep('bank', 'Card payment: 1 190 Ft at Espresso Bar', 'Core banking · card'); return o.apply(this, arguments); }; }
+{ const o = notify; notify = function(n){
+    if(!beQuiet()){ if(!BE.cur || Date.now() - BE.cur.t > 6000) beEp('Persi sends her a message');
+      beStep('persi', `Push to her phone: “${beTxt(n.body)}”`, demo.phone ? 'Real push through our server (web-push)' : 'Notification service', !!demo.phone); }
+    return o.apply(this, arguments); }; }
+{ const o = billMissed; billMissed = function(){ BE.mute++; let r; try{ r = o.apply(this, arguments); } finally { BE.mute--; } const bf = billsFirst();
+    if(bf.on){ beEp('Her rent did not go out this month');
+      beStep('an', `The bank notices: ${bf.late[0].bill.name} goes out every month, but not this month (${ft(bf.lateTotal)})`, 'Bill detection');
+      beStep('persi', `Push to her phone: “${bf.text}”`, demo.phone ? 'Real push through our server (web-push)' : 'Notification service', !!demo.phone); }
     return r; }; }
-{ const o = payBill; payBill = function(id){ const b = billById(id), r = o.apply(this, arguments);
-    if(b && !r.err){ be('gw', 'POST /v1/payments', `Pay ${b.name}: ${ft(r.amt || b.exp)}`, {to:b.key, amount:r.amt || b.exp});
-      be('led', 'LEDGER transfer', `Junior account → ${b.key}`, {amount:r.amt || b.exp}); }
+{ const o = payBill; payBill = function(id){ const bl = billById(id), r = o.apply(this, arguments);
+    if(bl && !r.err){ beEp(`Anna pays ${bl.name}`);
+      beStep('bank', `The bank sends ${ft(r.amt || bl.exp)} to ${bl.key}`, 'Core banking · payment');
+      beStep('an', `Left to spend is updated: ${ft(safeToSpend().safe)}`, 'Budget service'); }
     return r; }; }
-{ const o = doriJoins; doriJoins = function(){ const g = S.goals.find(x => x.shared), had = g && g.members.some(m => m.n === 'Dóri'), r = o.apply(this, arguments);
-    if(g && !had && g.members.some(m => m.n === 'Dóri')) be('ps', 'shared.member.joined', `Dóri joined ${g.name} and added 15 000 Ft`, {goal:g.id, members:g.members.length, total:gSaved(g)});
+{ const o = doriJoins; doriJoins = function(){ const g = S.goals.find(x => x.shared), had = g && g.members.some(m => m.n === 'Dóri');
+    if(g && !had) beEp(`Dóri joins the shared “${g.name}”`);
+    const r = o.apply(this, arguments);
+    if(g && !had && g.members.some(m => m.n === 'Dóri')){ beStep('bank', 'Dóri puts in 15 000 Ft from her own OTP account', 'Core banking'); beStep('persely', `Together ${ft(gSaved(g))}. Each person can always take back their own share`, 'Persely service · shared goal'); }
     return r; }; }
 { const o = monthStep; monthStep = function(q){ const i0 = S.interest || 0; BE.mute++; let r; try{ r = o.apply(this, arguments); } finally { BE.mute--; }
-    const mo = new Date(2026, 9 + S.months, 1).toLocaleDateString('en-GB', {month:'long'});
-    if(!BE.mute){ const add = (S.interest || 0) - i0; const save = BE.on; if(save){ BE.log.unshift({t:new Date(), svc:'sched', line:'CRON month.close', what:`${mo} closed: salary, saving rules, bills, round-ups, interest`, data:{interest:add, perselyTotal:total()}}); BE.log.unshift({t:new Date(), svc:'an', line:'interest.accrue 3.0%', what:`Interest +${ft(add)} after 28% tax, on the first 500 000 Ft`, data:{rate:'3.0%', tax:'28%', net:add}}); BE.log = BE.log.slice(0, 40); beRender('sched'); } }
+    const mo = new Date(2026, 9 + S.months, 1).toLocaleDateString('en-GB', {month:'long', year:'numeric'}), add = (S.interest || 0) - i0;
+    beEp(`A month passes: ${mo}`, true);
+    beStep('clock', 'Salary and the family transfer arrive', 'Scheduler', false, true);
+    beStep('rules', 'Her saving rules run: payday share, Monday transfers, round-ups', 'Rules engine', false, true);
+    beStep('bank', 'Her bills go out on time: rent, internet, power, gas, phone', 'Core banking · direct debits', false, true);
+    beStep('an', `Persely pays interest: +${ft(add)} after tax (3.0% a year). Persely now holds ${ft(total())}`, 'Interest engine', false, true);
     return r; }; }
 { const o = openStory; openStory = function(n){ const r = o.apply(this, arguments);
-    be('an', `GET /v1/insights/story?month=${S.period}`, 'Monthly story built from card payments: top places, spending day, days off, subscriptions', {slides:ST.slides.length}); return r; }; }
-{ const o = pushPage; pushPage = function(id){ const r = o.apply(this, arguments);
-    if(id === 'mymoney'){ const x = safeToSpend(); be('gw', 'GET /v1/budget/left-to-spend', 'Left to spend this month', null);
-      be('an', 'budget.compute', `${ft(x.balance)} − bills ${ft(x.unpaidBills)} − saving ${ft(x.savingRule)} − groceries ${ft(x.groceries)} = ${ft(x.safe)}`, {balance:x.balance, bills:x.unpaidBills, saving:x.savingRule, groceries:x.groceries, left:x.safe}); }
-    else if(id === 'advanced') be('an', 'GET /v1/insights/health', 'Health score from the last 3 months: spending vs income, no overdraft, buffer, regular saving', {score:scoreNow().t});
-    else if(id === 'grad') be('elig', 'GET /v1/eligibility/rate-bridge', 'Junior ends: can she keep 3.0%? Yes, for 12 months, if her salary comes to OTP', {juniorDaysLeft:S.juniorDays, months:12});
+    beEp('Anna opens her monthly story');
+    beStep('an', "The bank reads her card payments for the month", 'Analytics');
+    beStep('an', 'It finds her top places, her spending day, days without spending, subscriptions', 'Analytics · monthly insights');
+    beStep('persely', 'It adds her saving: what went into Persely, her goal, her streak', 'Persely service');
     return r; }; }
-document.addEventListener('click', e => { if(e.target.closest && e.target.closest('[data-keeprate]')) be('elig', 'POST /v1/rate-bridge', 'Keep 3.0% for 12 months: set, starts with the first salary at OTP', {rate:'3.0%', months:12}); }, true);
+{ const o = pushPage; pushPage = function(id){ const r = o.apply(this, arguments);
+    if(id === 'mymoney'){ const x = safeToSpend(); beEp('Anna checks what she can still spend');
+      beStep('bank', `On her Junior account: ${ft(x.balance)}`, 'Core banking · balance');
+      beStep('an', `Minus what is still coming this month: bills ${ft(x.unpaidBills)}, saving ${ft(x.savingRule)}, groceries ${ft(x.groceries)}`, 'Budget service');
+      beStep('an', `= ${ft(x.safe)} left to spend`, 'Budget service'); }
+    else if(id === 'advanced'){ beEp('Anna opens the full analysis'); beStep('an', 'Health score from her last 3 months: spending under income, no overdraft, a buffer, regular saving', 'Analytics'); }
+    else if(id === 'grad'){ beEp('Her Junior package ends'); beStep('rate', 'The bank checks: can she keep 3.0%?', 'Eligibility'); beStep('rate', 'Yes, for 12 more months, if her salary comes to her OTP account', 'Eligibility'); }
+    return r; }; }
+document.addEventListener('click', e => { if(e.target.closest && e.target.closest('[data-keeprate]')) beStep('rate', 'Done: 3.0% continues for 12 months from her first salary at OTP', 'Eligibility'); }, true);
 { const o = __checkAnalytics; __checkAnalytics = function(){ BE.mute++; try{ return o.apply(this, arguments); } finally { BE.mute--; } }; window.__checkAnalytics = __checkAnalytics; }
+// the panel needs room next to the phone: say so when the window is too narrow
+function beToggle(){ BE.on = !BE.on; beRender(); if(BE.on && innerWidth < 980) toast('Make the window wider (980 px or more) to see Behind the app'); }
 beRender();
 </script>
 </body>

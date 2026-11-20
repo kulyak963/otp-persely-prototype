@@ -200,18 +200,9 @@ td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
 
   <section id="backend">
     <h2>Behind the app (backend view)</h2>
-    <p>On a wide laptop screen (1180 px or more) a dark panel sits to the right of the phone. Every tap in the app writes what OTP's services would do: which service, the request (for example <code>POST /v1/persely/goals/holiday/deposits</code>), one plain line and the key data. The service chips at the top light up when they are hit. Key <kbd>A</kbd> or the panel button hides it.</p>
-    <div class="tbl"><table><thead><tr><th>Service</th><th>What it does in the log</th></tr></thead><tbody>
-      <tr><td>API gateway</td><td>Requests from the app: deposits, withdrawals, new goal, payments, Left to spend</td></tr>
-      <tr><td>Persely service</td><td>Goal progress and forecast, streak updates, shared goals</td></tr>
-      <tr><td>Core ledger</td><td>Money moves between the Junior account and the Persely sub-accounts; incoming salary; card payments</td></tr>
-      <tr><td>Rules engine</td><td>Payday rule (asks first or moves), round-ups ×2, saving rules saved</td></tr>
-      <tr><td>Notifications</td><td>Persi's pushes; <b>REAL</b> when "Also send to iPhone" is on (server.js, web-push)</td></tr>
-      <tr><td>Analytics</td><td>Left to spend calculation, late bill detection, monthly interest, the monthly story, health score</td></tr>
-      <tr><td>Scheduler</td><td>Monday transfers, month close during the fast-forward</td></tr>
-      <tr><td>Eligibility</td><td>Junior ends: the 3.0% bridge for 12 months with salary at OTP</td></tr>
-    </tbody></table></div>
-    <p class="note">Simulated: everything except push notifications. It shows the architecture we propose; nothing in the panel changes the app. Code: search for <code>Backend view</code> in index.html (the <code>be()</code> function and the wrappers under it).</p>
+    <p>On a laptop screen 980 px or wider a dark panel sits to the right of the phone. It is written for people who do not code: every thing Anna does opens a card, for example <b>Anna gets her salary</b>, with the steps the bank runs, in order: 🏦 +75,000 Ft arrives on her Junior account → ⚙️ her payday rule wants 10%, but asks first → 🔔 push to her phone → she taps Move → 🏦 the bank moves 7,500 Ft to Persely → 🐷 goal at 53%, streak 9 weeks. A small grey line under each step names the system (core banking, rules engine, Persely service, analytics, scheduler, eligibility) for the technical people in the room. The chips at the top light up when they act. Key <kbd>A</kbd> hides it.</p>
+    <p>Cards: salary, adding and taking out money, a new goal, a coffee with round-up, Persi's pushes, a missed and a paid bill, Dóri joining, each month in the fast-forward (salary, rules, bills, interest), Left to spend (balance minus bills, saving and groceries), the monthly story, the full analysis, Junior ends and Keep my 3.0%.</p>
+    <p class="note">Simulated, except Persi's push messages when "Also send to iPhone" is on (real, marked REAL). It does not show inside a narrow window (the app then shows as a plain phone screen): open the app in a full-width browser window. Code: search for <code>Behind the app</code> in index.html.</p>
   </section>
 
   <section id="persi">
