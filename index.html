@@ -442,7 +442,7 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .nbanner small,.lcard small{font-size:var(--fs-s);color:#66666d;flex:none}
 .nbanner p,.lcard p{margin:1px 0 0;font-size:var(--fs-m);line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 /* lock screen */
-.lock{position:absolute;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;color:#fff;transition:transform .35s ease,opacity .35s ease;
+.lock{position:absolute;inset:0;z-index:84;display:none;flex-direction:column;align-items:center;color:#fff;transition:transform .35s ease,opacity .35s ease;
   background:radial-gradient(120% 70% at 15% 5%,#4F63C9 0%,transparent 60%),radial-gradient(110% 80% at 95% 95%,#2E9E77 0%,transparent 55%),linear-gradient(165deg,#1C2340,#0D1222);
   padding-top:calc(var(--top) + 46px)}
 .lock.on{display:flex}
@@ -1508,6 +1508,17 @@ function __checkAnalytics(){
     S.goals.slice().forEach(g => { if(!goalEmpty(g)) withdrawFrom(g, gSaved(g)); removeGoal(g.id); });
     ok('delete every goal (also Summer holiday and its Persely account): rules off, tab, Home, story, share card and sheets render without errors', S.goals.length === 0 && !S.payday.on && !S.weekly.on && !S.roundup.on && !acc('persely') && (() => { try{ const t = [vHub(), vFooldal(), storySlides().map(x => x.build ? x.build() : '').join(''), shareCard(), SHEETS.newgoal(), SHEETS.payrule(), SHEETS.weeklyrule(), SHEETS.roundrule(), SHEETS.moneyin(), myMoneyHTML(), PAGES.kiadas.html()].join(''); return typeof t === 'string'; }catch(e){ return String(e); } })() === true);
   } finally { S = sv3; } }
+  { const lz = id => +getComputedStyle(document.getElementById(id)).zIndex || 0;
+    ok('chk-lock-over-popup: the lock screen layers above the what\'s-new pop-up and the sheets', lz('lock') > lz('wn') && lz('lock') > lz('back'), [lz('lock'), lz('wn'), lz('back')]);
+    const mv = document.createElement('input'); mv.id = 'mv'; document.body.appendChild(mv); mv.value = 'a1b,2.3 Ft-4'; mv.dispatchEvent(new Event('input', {bubbles:true})); const mvv = mv.value; mv.remove();
+    ok('chk-addmoney-digits: the Add money amount keeps digits only', mvv === '1234', mvv);
+    const sv5 = S; let z0 = '', z8 = '';
+    try{ S = JSON.parse(JSON.stringify(F)); S.streak = 0; z0 = DEMO[2].body(); S.streak = 8; z8 = DEMO[2].body(); } finally { S = sv5; }
+    ok('chk-push-zero-streak: no streak number in the push at 0 weeks, worded from 1 week', !/\d+-week|0 week/.test(z0) && /8-week streak/.test(z8), [z0, z8]);
+    const sv6 = S, svt = document.createElement('button'); let onb0 = null;
+    try{ S = JSON.parse(JSON.stringify(F)); S.goals = []; S.onboarded = false; S._draft = {name:'Check goal', ic:'star', target:100000, date:'2028-06-01', weekly:0, round:false}; svt.dataset.cgcreate = ''; document.body.appendChild(svt); svt.click(); onb0 = S.onboarded; }
+    catch(e){ onb0 = String(e); } finally { svt.remove(); S = sv6; try{ renderAll(); }catch(e){} }
+    ok('chk-onboarded-any-path: the New + create page marks the user onboarded', onb0 === true, onb0); }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   const bad = out.filter(r => !r.pass);
   console.log(`__checkAnalytics: ${out.length - bad.length}/${out.length} passed`); bad.forEach(r => console.log('FAIL', r.name, r.info));
@@ -3056,7 +3067,7 @@ document.addEventListener('click', e=>{
   if('cgcreate' in d){
     if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
     const dr = S._draft, g = {id:'g'+Date.now(), name:cleanName(dr.name), ic:dr.ic || 'star', saved:0, target:dr.target, pace:0, date:dr.date, weekly:dr.weekly};
-    S.goals.push(g); if(dr.round) S.roundup = {on:true, goal:g.id};
+    S.goals.push(g); S.onboarded = true; if(dr.round) S.roundup = {on:true, goal:g.id};
     S._draft = null; popPage(true); renderAll(); S._detail = g.id; pushPage('goal');
     toast(`${g.name} created.${g.weekly ? ' First transfer next Monday.' : ''}`); return; }
   if(d.pickgoal){ keepAmt(); if(S._goal !== d.pickgoal) S._amt = 0; S._goal = d.pickgoal; sheet(SHEETS.hubsave()); return; }
@@ -3112,18 +3123,18 @@ document.addEventListener('click', e=>{
     const name = (($('#shName') && $('#shName').value) || 'Shared goal').trim().slice(0,30) || 'Shared goal', first = S._shFirst || 15000;
     if(acc('junior').v < first){ toast('Not enough money on your Junior account'); return; }
     const g = {id:'s'+Date.now(), name, ic:'user', shared:true, target:S._shGoal || 120000, date:'2027-06-30', members:[{n:'Anna', me:true, amt:0, c:'#F07D19'}]};
-    S.goals.push(g); depositTo(g, first, 'junior', 'Shared Persely');
+    S.goals.push(g); S.onboarded = true; depositTo(g, first, 'junior', 'Shared Persely');
     renderAll(); closeSheet(); S._detail = g.id; pushPage('goal'); toast('Shared Persely created. Invite link ready to send'); return;
   }
   if('neweur' in d){
     if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
-    S.goals.push({id:'e'+Date.now(), name:'Lisbon spending money', ic:'euro', cur:'EUR', saved:0, target:300, date:'2027-09-01'});
+    S.goals.push({id:'e'+Date.now(), name:'Lisbon spending money', ic:'euro', cur:'EUR', saved:0, target:300, date:'2027-09-01'}); S.onboarded = true;
     closeSheet(); renderAll(); S._detail = S.goals[S.goals.length-1].id; pushPage('goal'); toast('Euro Persely created. Buy euros bit by bit before the trip'); return;
   }
   if(d.addgoal){
     if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
     const [n, ic, t] = d.addgoal.split('|');
-    S.goals.push({id:'g'+Date.now(), name:n, ic, target:+t, saved:0, pace:0, date:'2028-06-01'});
+    S.goals.push({id:'g'+Date.now(), name:n, ic, target:+t, saved:0, pace:0, date:'2028-06-01'}); S.onboarded = true;
     closeSheet(); renderAll(); toast(`${n} added`); return;
   }
   /* bills: pay, skip, lock, confirm, Bills pocket, transaction detail */
@@ -3304,6 +3315,7 @@ document.addEventListener('focusout', e => {
   const t = e.target; if(!t.classList || !t.classList.contains('pkamt')) return;
   const k = pkKind(t); if(pkObj(k).target < PK_MIN){ pkSet(k, PK_MIN); }
 });
+document.addEventListener('input', e => { const t = e.target; if(t && t.id === 'mv' && /\D/.test(t.value)) t.value = t.value.replace(/\D/g, ''); });   // Add money: digits only
 const amt = () => parseFloat((($('#mv') && $('#mv').value) || '').replace(/[^\d.]/g,'')) || 0;
 const keepAmt = () => { if($('#mv')) S._amt = amt(); };
 const keepOnbName = () => { if($('#onbName')) O.name = $('#onbName').value; };
@@ -4334,7 +4346,7 @@ window.__story = {
 const DEMO = [
   {e:'💳', label:'Card payment',      title:'Card payment',            body:'-5 240 Ft · LIDL MAGYARORSZÁG. Balance: 82 210 Ft', url:'tranzakciok'},
   {e:'💸', label:'Money received',    title:'Money received',          body:'+20 000 Ft from NAGY PÉTER – instant transfer',     url:'tranzakciok'},
-  {e:'🐷', label:'Week still open',   title:'Persi · Persely', persi:true, body:()=>`🔥 Your ${S.streak}-week streak ends Sunday. Drop in any amount and it keeps going.`, url:'hub'},
+  {e:'🐷', label:'Week still open',   title:'Persi · Persely', persi:true, body:()=>S.streak >= 1 ? `🔥 Your ${S.streak}-week streak ends Sunday. Drop in any amount and it keeps going.` : 'A new week is open. Drop in any amount and your streak starts.', url:'hub'},
   {e:'💚', label:'Interest paid',     title:'Persi · Persely', persi:true, body:()=>`Your 3.0% Junior rate paid ${ft(Math.max(130, Math.round(Math.min(total(),CAP)*RATE/100/12*(1-TAX))))} this month, after tax.`, url:'hub'},
   {e:'👯', label:'Friend saved too',  title:'Persi · Persely', persi:true, body:'Dóri added 5 000 Ft to Balaton in July. Your turn?', url:'hub'},
   {e:'🎓', label:'Junior ends',       title:'Persi · Persely', persi:true, body:'Your Junior package ends in 30 days. Get your salary paid to OTP and keep 3.0% for 12 more months.', url:'grad'},
