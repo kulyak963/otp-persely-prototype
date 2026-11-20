@@ -575,6 +575,15 @@ button.tg:focus-visible{outline:2px solid var(--act);outline-offset:3px}
 .btn[disabled]{opacity:.45;pointer-events:none}
 .btn.ghost{background:none;box-shadow:none;color:var(--green-t);margin-top:8px}
 .onb-step{font-size:0.78125rem;font-weight:700;color:var(--green-t);margin-top:6px}
+.onb-why{min-height:20px;margin:0 2px 6px;text-align:center;color:var(--orange-t);font-weight:600}.onb-why:empty{min-height:0;margin:0}
+.pkcap{margin:8px 2px 0}.pkcap:empty{display:none}
+.fine.rpt{margin:-2px 4px 8px;color:var(--ink2)}
+.card.hl{animation:hlpulse 2.6s ease-out 1}@keyframes hlpulse{0%{box-shadow:0 0 0 3px rgba(82,174,48,.7),var(--sh)}100%{box-shadow:0 0 0 0 rgba(82,174,48,0),var(--sh)}}
+.card.reached{border:1.5px solid var(--green);background:var(--green-l)}.card.reached .hero-btns .btn{padding-left:6px;padding-right:6px}
+.rrow{width:100%;text-align:left;min-height:var(--tap)}.rrow .redit{margin-left:auto;font-weight:700;color:var(--green-t);min-width:var(--tap);min-height:var(--tap);display:flex;align-items:center;justify-content:flex-end}
+.srb{margin:0 0 6px;border-radius:14px}.srb.focus .opt{box-shadow:inset 0 0 0 2px var(--green)}
+.tiles-s{margin:6px 0 12px}.tiles-s button{min-height:76px;background:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+.srlist .li{width:100%;text-align:left}
 .done-ic{width:72px;height:72px;border-radius:50%;background:var(--green-l);color:var(--green-i);display:flex;align-items:center;justify-content:center;margin:22px auto 6px}
 .sumcard{padding:2px 16px}
 .wn-ic{width:56px;height:56px;border-radius:50%;background:var(--green-l);color:var(--green-i);display:flex;align-items:center;justify-content:center;margin:16px auto 10px}
@@ -1434,7 +1443,7 @@ function __checkAnalytics(){
         S = clone(); S.onboarded = true; S.analyst = {on:true, accepted:true, split:{must:44, ess:31, fun:20, save:5}}; S.billsConfirmed = true; syncSplit(); S.payday.on = true; S.weekly.on = true; S.roundup.on = true; S.ruleGoal = S.goals.find(forint).id; S.roundup.goal = S.ruleGoal;
         const Pt = vHub(), fg = S.goals.filter(forint);
         ok('Persely tab: no rule switches, no Money in section header, one small panel, one Spending row', !/data-sw="(payday|weekly|round)"/.test(Pt) && !/<div class="sec"[^>]*><span>Money in<\/span>/.test(Pt) && (Pt.match(/class="card mgauge"/g) || []).length === 1 && (Pt.match(/data-go="mymoney"/g) || []).length === 1 && /<b>Spending<\/b>/.test(Pt));
-        ok('every forint goal page has its own Payday rule, Round-ups and Weekly transfer switches', fg.length > 0 && fg.every(g => { S._detail = g.id; const h = PAGES.goal.html(); return h.includes(`data-gpay="${g.id}"`) && h.includes(`data-grr="${g.id}"`) && h.includes(`data-gwk="${g.id}"`); }), fg.map(g => g.id));
+        ok('every forint goal page shows a status row for Payday rule, Round-ups and Weekly transfer, each opening the Saving rules sheet (no switches of its own)', fg.length > 0 && fg.every(g => { S._detail = g.id; const h = PAGES.goal.html(); return h.includes('data-saverules="pay"') && h.includes('data-saverules="rr"') && h.includes('data-saverules="wk"') && !/data-gpay|data-grr|data-gwk/.test(h) && /Payday rule → this goal|Payday rule → |Payday rule: off/.test(h); }), fg.map(g => g.id));
         const mi = SHEETS.moneyin();
         ok('Money in sheet: one row for every forint, not shared goal, one payrule row, no switches', fg.every(g => mi.includes(`data-goal="${g.id}"`)) && (mi.match(/data-goal=/g) || []).length === fg.length && (mi.match(/data-sheet="payrule"/g) || []).length === 1 && !/data-sw|data-gpay|data-grr|data-gwk/.test(mi) && !/deadline/i.test(mi));
         const m = moneyIn();
@@ -1443,7 +1452,7 @@ function __checkAnalytics(){
         { const on = moneyInPanel(); ok('Money in panel: the ring is decorative and the three lines are the screen text', /<svg[^>]*aria-hidden="true"/.test(on) && !/aria-label/.test(on) && /Money in each month/.test(on) && /<b class="num">/.test(on)); }
         S.payday.on = false; S.weekly.on = false; S.roundup.on = false; S.goals.forEach(g => { g.weekly = 0; });
         const off = plain(moneyInPanel());
-        ok('Money in panel: all rules off reads Nothing yet and asks for a rule on a goal page', off.includes('Nothing yet') && off.includes("Switch on a rule on a goal's page") && moneyIn().total === 0);
+        ok('Money in panel: all rules off reads Nothing yet and asks for a rule on a goal page', off.includes('Nothing yet') && off.includes("Switch on a saving rule") && moneyIn().total === 0);
         { const keepG = S.goals; S.goals = []; ok('Money in panel: hidden with no goals', moneyInPanel() === ''); S.goals = keepG; }
         S.payday.on = true; S.payday.ask = true; S.goals.forEach(g => { g.date = null; });
         ok('Money in panel: no goal with a date, so no need line; payday asks first is said', (() => { const t = plain(moneyInPanel()); return !/goals need/.test(t) && !/Enough for every goal date/.test(t) && t.includes('Payday rule') && t.includes('payday asks first'); })());
@@ -1546,7 +1555,7 @@ function __checkAnalytics(){
     S = clone(); const ps = S.goals.find(g => g.id === 'ps5'); S.payday.on = true; S.weekly.on = true; S.roundup = {on:true, goal:'ps5'}; S.ruleGoal = 'ps5';
     const gate1 = goalEmpty(ps) === false && removeGoal('ps5') === null && !!goalById('ps5');
     const u0 = monthUse(ymAt(S.months || 0), S), n0 = S.tx.length, tot = gSaved(ps); withdrawFrom(ps, tot); const u1 = monthUse(ymAt(S.months || 0), S);
-    ok('goal with money inside cannot be deleted or edited; after taking it out (own-account row, income and spending unchanged) it can', gate1 && goalEmpty(ps) && S.tx.length === n0 + 1 && u1.income === u0.income && u1.spendTotal === u0.spendTotal && u1.own !== u0.own && goalIsPlain(ps), [u0.own, u1.own]);
+    ok('goal with money inside cannot be deleted until you choose where the money goes (Delete asks); after taking it out (own-account row, income and spending unchanged) it can', gate1 && goalEmpty(ps) && S.tx.length === n0 + 1 && u1.income === u0.income && u1.spendTotal === u0.spendTotal && u1.own !== u0.own && goalIsPlain(ps), [u0.own, u1.own]);
     const r = removeGoal('ps5'), refs = JSON.stringify([S.ruleGoal, S.roundup.goal, S._detail, S._goal, S._out, S.goalRewarded]).includes('ps5');
     ok('delete leaves no orphan reference: the goal, its rules (moved to the next goal) and picks are gone, story, share card, pages and sheets still render', !!r && !goalById('ps5') && !refs && !!goalById(S.ruleGoal) && !!goalById(S.roundup.goal) && S.payday.on && (() => { try{ const t = [storySlides().map(x => x.build ? x.build() : '').join(''), shareCard(), PAGES.goal.html(), PAGES.year.html(), vHub(), SHEETS.payrule(), SHEETS.roundrule(), SHEETS.weeklyrule(), SHEETS.hubsave(), SHEETS.hubout()].join(''); return !/ps5|NaN/.test(t); }catch(e){ return String(e); } })() === true, [S.ruleGoal, S.roundup.goal]);
     S.goals.slice().forEach(g => { if(!goalEmpty(g)) withdrawFrom(g, gSaved(g)); removeGoal(g.id); });
@@ -1560,9 +1569,9 @@ function __checkAnalytics(){
     try{ S = JSON.parse(JSON.stringify(F)); S.streak = 0; z0 = DEMO[2].body(); S.streak = 8; z8 = DEMO[2].body(); } finally { S = sv5; }
     ok('chk-push-zero-streak: no streak number in the push at 0 weeks, worded from 1 week', !/\d+-week|0 week/.test(z0) && /8-week streak/.test(z8), [z0, z8]);
     const sv6 = S, svt = document.createElement('button'); let onb0 = null;
-    try{ S = JSON.parse(JSON.stringify(F)); S.goals = []; S.onboarded = false; S._draft = {name:'Check goal', ic:'star', target:100000, date:'2028-06-01', weekly:0, round:false}; svt.dataset.cgcreate = ''; document.body.appendChild(svt); svt.click(); onb0 = S.onboarded; }
-    catch(e){ onb0 = String(e); } finally { svt.remove(); S = sv6; try{ renderAll(); }catch(e){} }
-    ok('chk-onboarded-any-path: the New + create page marks the user onboarded', onb0 === true, onb0); }
+    try{ S = JSON.parse(JSON.stringify(F)); S.goals = []; S.onboarded = false; startOnb('custom'); O.name = 'Check goal'; O.i = 2; renderOnb(); const cb = $('#onb [data-onbcreate]'); cb.click(); onb0 = S.onboarded; }
+    catch(e){ onb0 = String(e); } finally { svt.remove(); while(stack.length) popPage(true); try{ closeOnb(); }catch(e){} MQ.q = []; hideToast(true); S = sv6; try{ renderAll(); }catch(e){} }
+    ok('chk-onboarded-any-path: creating a goal through the one wizard marks the user onboarded', onb0 === true, onb0); }
   { // Phase 1a: two seeds, no auto pop-up, setup card above the fold, hints counted on screen
     const sv7 = S, cur7 = cur, txt7 = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
     try{
@@ -1599,13 +1608,11 @@ function __checkAnalytics(){
     const errs = [], surfaces = kind => {   // the rendered HTML of Home, Persely tab, goal page, both wizards, More, Transfer, the Junior page and the sheets
       const m = {}; S = fresh(kind); if(S.goals[0]) S._detail = S.goals[0].id;
       const add = (k, f) => { try{ m[k] = f(); }catch(e){ errs.push(kind + '/' + k + ': ' + e); m[k] = ''; } };
-      add('home', vFooldal); add('hub', vHub); add('more', vTovabbiak); add('transfer', vUtalas); add('grad', () => PAGES.grad.html()); add('persely', () => PAGES.persely.html()); add('regular', () => PAGES.rendszeres.html());
+      add('home', vFooldal); add('hub', vHub); add('more', vTovabbiak); add('transfer', vUtalas); add('grad', () => PAGES.grad.html()); add('persely', () => PAGES.persely.html()); add('regular', () => SHEETS.saverules());
       if(S.goals[0]) add('goal', () => PAGES.goal.html());
-      S._draft = {name:'New laptop', ic:'star', target:100000, date:'2028-06-01', weekly:0, round:false, step:1, edit:false};
-      [1, 2, 3].forEach(n => add('wizard' + n, () => { S._draft.step = n; return PAGES.create.html() + PAGES.create.foot() + PAGES.create.title(); }));
       ['goodtoknow', 'whyp', 'how', 'befizet', 'kivesz', 'newgoal'].concat(S.goals.length ? ['hubsave', 'hubout'] : []).forEach(k => add('sheet-' + k, () => SHEETS[k]()));
       add('titles', () => Object.keys(PAGES).map(k => typeof PAGES[k].title === 'function' ? PAGES[k].title() : PAGES[k].title).join(' | '));
-      try{ startOnb('travel'); STEPS.forEach((_, i) => { O.i = i; renderOnb(); m['onb' + (i + 1)] = $('#onb').innerHTML; }); }catch(e){ errs.push(kind + '/onb: ' + e); } finally { try{ closeOnb(); }catch(e){} }
+      try{ startOnb('travel'); STEPS.forEach((_, i) => { O.i = i; renderOnb(); m['onb' + (i + 1)] = m['wizard' + (i + 1)] = $('#onb').innerHTML; }); }catch(e){ errs.push(kind + '/onb: ' + e); } finally { try{ closeOnb(); }catch(e){} }
       S._draft = null; return m;
     };
     try{
@@ -1711,6 +1718,91 @@ function __checkAnalytics(){
     } catch(e){ ok('chk-phase2: the new checks ran without errors', false, String(e && e.stack || e)); }
     finally { hideChip(true); PEND = null; S = sv9; cur = cur9; stack.push(...stk9); demo.locked = lock9; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views9[i])); }
   }
+  { // Phase 3: one goal wizard, saving rules sheet, Edit with money, Goal reached, Keep my 3.0% request (flows A2, A3, A4, B2, C5; decisions D2, D8, D9)
+    const sv10 = S, cur10 = cur, stk10 = stack.splice(0), lock10 = demo.locked, views10 = [...document.querySelectorAll('.view')].map(v => v.classList.contains('on')); demo.locked = false;
+    const pl = h => String(h).replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').replace(/\s+/g, ' '), nt = t => String(t).replace(/\s+/g, ' ').trim(), clk = sel => { const b = $(sel); if(b) b.click(); return !!b; };
+    const reset = kind => { while(stack.length) popPage(true); try{ closeOnb(); }catch(e){} closeSheet(); MQ.q = []; hideChip(true); hideToast(true); S = fresh(kind); SETUP_COLLAPSED = false; renderAll(); };
+    const setf = (id, v) => { const f = $('#' + id); f.value = v; f.dispatchEvent(new Event('input', {bubbles:true})); };
+    try{
+      // one wizard behind every entry: the tile chooser on the tab and New + open the same step 1
+      reset('new'); const tilesN = [...document.querySelectorAll('#v-hub [data-tilepick]')].length; clk('#v-hub [data-tilepick="travel"]'); const bodyA = $('#onb .onb-body').innerHTML, onA = $('#onb').classList.contains('on'), topA = nt($('#onb').textContent);
+      clk('[data-onbback]'); const backTiles = !$('#onb').classList.contains('on') && !!$('#v-hub #setupcard');
+      reset('existing'); clk('#v-hub [data-sheet="newgoal"]'); const sheetTiles = [...document.querySelectorAll('#sheet [data-tilepick]')].length; clk('#sheet [data-tilepick="travel"]'); const bodyB = $('#onb .onb-body').innerHTML, onB = $('#onb').classList.contains('on');
+      const stepOne = (b => /Step 1 of 3/.test(b) && /Your goal/.test(b) && /50 000 Ft/.test(b) && /500 000 Ft/.test(b) && /By when\?/.test(b) && /data-pkmonth/.test(bodyB))(pl(bodyB));
+      clk('[data-onbback]'); const backSheet = !$('#onb').classList.contains('on') && sheetOpen() && /What are you saving for\?/.test($('#sheet').textContent); closeSheet();
+      reset('existing'); startOnb('custom'); const whyT = nt($('#onb .onb-why').textContent), nextOff = $('#onb [data-onbnext]').disabled; clk('[data-onbquit]'); const draftQ = /Save as draft\?/.test($('#sheet').textContent); closeSheet(); closeOnb();
+      reset('existing'); startOnb('travel'); setf('onbName', 'Gym'); pkSet('onb', 2000); const minTxt = nt($('#onb .pkcap').textContent), minOff = $('#onb [data-onbnext]').disabled && /Minimum is 5 000 Ft/.test(nt($('#onb .onb-why').textContent)); pkSet('onb', 600000); const capTxt = nt($('#onb .pkcap').textContent); closeOnb();
+      const oneNoPage = !/data-cgnew|data-cgpreset/.test(SHEETS.newgoal()) && PAGES.create.title === 'Edit goal' && typeof PAGES.create.html === 'function';
+      ok('chk-one-wizard: the tile chooser (Persely tab setup card) and New + (the tile sheet) both open the same step 1 "Your goal" (Name, Amount with chips 50 000 to 500 000 Ft, By when with the month sheet); Back on step 1 returns to the tiles (card or sheet); disabled Next shows its reason; amounts under 5 000 Ft say "Minimum is 5 000 Ft"; above 500 000 Ft "3.0% applies to the first 500 000 Ft"; Not now asks "Save as draft?"; the old New + page is gone (Edit goal keeps its own page)',
+        tilesN === 6 && sheetTiles === 6 && onA && onB && bodyA.replace(/until [^.<]*\./, '') === bodyB.replace(/until [^.<]*\./, '') && stepOne && backTiles && backSheet && whyT === 'Give your goal a name' && nextOff && draftQ && /Minimum is 5 000 Ft/.test(minTxt) && minOff && /3\.0% applies to the first 500 000 Ft/.test(capTxt) && oneNoPage, [tilesN, sheetTiles, onA, onB, bodyA === bodyB, stepOne, backTiles, backSheet, whyT, nextOff, draftQ, minTxt, minOff, capTxt, oneNoPage]);
+
+      // Create goal moves no money, lands on the new goal's page with the goal highlighted
+      reset('existing'); const jb = acc('junior').v, tot0 = total(), tx0 = S.tx.length, n0 = S.goals.length; startOnb('safety'); O.i = 2; renderOnb();
+      const step3 = pl($('#onb').innerHTML), only3 = /Good to know/.test(step3) && /Create goal/.test(step3) && !/First deposit|Weekly reminder/.test(step3) && /moves no money/.test(step3); clk('[data-onbcreate]');
+      const ng = S.goals[S.goals.length - 1], pg = stack[stack.length - 1], noMoney = acc('junior').v === jb && total() === tot0 && S.tx.length === tx0 && S.goals.length === n0 + 1 && ng.saved === 0;
+      const landed = !!pg && pg.dataset.id === 'goal' && S._detail === ng.id && !!pg.querySelector('.card.hl') && !$('#onb').classList.contains('on');
+      ok('chk-create-no-money: "Create goal" (step 3 with Good to know, no first deposit) moves no money (Junior balance, Persely total and transactions unchanged, the goal holds 0 Ft), sets onboarded, and lands on the new goal page with the goal highlighted', only3 && noMoney && landed && S.onboarded, [only3, noMoney, landed, ng && ng.saved]);
+
+      // first goal: Payday rule only at 10%, the lines, matched presets, the two follow-up beats, the system prompt only from Turn on
+      reset('new'); let asked = 0; const rp0 = window.Notification && Notification.requestPermission; if(rp0) Notification.requestPermission = () => { asked++; return Promise.resolve('default'); };
+      startOnb('travel'); const defaults = O.payOn && O.pct === 10 && !O.weeklyOn && !O.roundOn; O.i = 1; renderOnb(); const s2 = pl($('#onb').innerHTML);
+      const lines = /Keeps 20 000 Ft on your account; if money is tight, less or nothing moves/.test(s2) && /A 1 190 Ft coffee moves 20 Ft; we double it/.test(s2);
+      const presetsOk = Object.keys(GOAL_PRESETS).every(k => { startOnb(k); const f = fcCalc(O.target, 0, onbMonthly(), O.date); return f.over; }) && (() => { startOnb('custom'); return fcCalc(O.target, 0, onbMonthly(), O.date).over; })();
+      startOnb('travel'); O.i = 2; renderOnb(); clk('[data-onbcreate]'); const g1 = S.goals[0];
+      const rulesOk = S.payday.on && S.payday.pct === 10 && !S.weekly.on && !S.roundup.on && S.ruleGoal === g1.id && S.onboarded;
+      const q = MQ.q.filter(x => x.k === 'sheet').map(x => x.id), beat1 = q.includes('firstadd') && q.includes('nudge'); const fa = MQ.q.find(x => x.id === 'firstadd').fn(), nu = MQ.q.find(x => x.id === 'nudge').fn(); S._fa = false;
+      const beats = /Start your streak\?/.test(fa) && /Add money now/.test(pl(fa)) && /id="mv"[^>]*value=""/.test(fa) && /data-setv="500"/.test(fa) && /Want a Sunday nudge\?/.test(nu) && /Turn on/.test(nu) && /Not now/.test(nu) && asked === 0;
+      if(rp0) Notification.requestPermission = rp0;
+      ok('chk-first-goal-payday-only: the first goal defaults to the Payday rule only at 10% (Weekly transfer and Round-ups off) with the lines "Keeps 20 000 Ft on your account; if money is tight, less or nothing moves" and "A 1 190 Ft coffee moves 20 Ft; we double it"; every preset and Something else opens with a forecast that reaches the amount by its date; after Create goal come "Start your streak?" (empty amount) and "Want a Sunday nudge?", and no system permission is asked before Turn on',
+        defaults && lines && presetsOk && rulesOk && beat1 && beats, [defaults, lines, presetsOk, rulesOk, q, beats, asked]);
+
+      // re-pointing a rule is announced
+      reset('existing'); S.roundup = {on:true, goal:'holiday'}; S.payday = {...S.payday, on:true}; S.ruleGoal = 'holiday'; startOnb('safety'); O.i = 1; O.roundOn = true; renderOnb(); const s2b = pl($('#onb').innerHTML), want = 'Round-ups now go to Safety net instead of Summer holiday';
+      O.i = 2; renderOnb(); clk('[data-onbcreate]'); const ngg = S.goals[S.goals.length - 1], tt = nt(($('#toast') || {}).textContent || ''), moved = S.roundup.goal === ngg.id && S.roundup.on && S.ruleGoal === 'holiday';
+      sheet(SHEETS.saverules()); clk('[data-srgoal="rr:holiday"]'); const ch = nt(($('#uchip') || {}).textContent || ''), back = S.roundup.goal === 'holiday'; closeSheet(); hideChip(true);
+      ok('chk-rule-repoint-message: with Round-ups already pointing at Summer holiday, the wizard says "Round-ups now go to Safety net instead of Summer holiday" before and after Create goal, only the Round-ups move, and the Saving rules sheet says it when a rule is re-pointed', s2b.includes(want) && moved && tt.includes(want) && back && /Round-ups now go to Summer holiday instead of Safety net/.test(ch), [s2b.includes(want), moved, tt, ch]);
+
+      // Edit with money inside, Save + Undo; delete with money asks where it goes
+      reset('existing'); const ps = goalById('ps5'), sv0 = gSaved(ps); S._detail = 'ps5'; pushPage('goal'); const gp = pl(PAGES.goal.html()), noBlock = !/Take your money out first|Take all .* out/.test(gp) && /Edit goal/.test(gp) && /Delete goal/.test(gp);
+      clk('.page [data-gedit="ps5"]'); const onEdit = stack[stack.length - 1].dataset.id === 'create' && S._draft && S._draft.edit === 'ps5'; setf('cgName', 'Console fund'); S._draft.target = 260000; S._draft.date = '2027-03-01'; S._draft.ic = 'star'; refreshPages(); clk('.page [data-cgsave]');
+      const edited = ps.name === 'Console fund' && ps.target === 260000 && ps.date === '2027-03-01' && ps.ic === 'star' && gSaved(ps) === sv0 && S.tx.every(x => x.note !== 'PS5 + GTA VI'), chip1 = UCH.on && /Console fund saved/.test($('#uchip').textContent); clk('[data-undo]');
+      const undone = ps.name === 'PS5 + GTA VI' && ps.target === 230000 && gSaved(ps) === sv0; hideChip(true);
+      S._del = 'ps5'; sheet(SHEETS.gdel()); const dt = nt($('#sheet').textContent), moveT = dt.includes(`Move ${nt(ft(sv0))} to Junior account and delete`) && dt.includes(`Move ${nt(ft(sv0))} to Summer holiday and delete`);
+      const jb4 = acc('junior').v, jh = gSaved(goalById('holiday')); clk('#sheet [data-gdelok="ps5"][data-dest="junior"]'); const gone = !goalById('ps5') && acc('junior').v === jb4 + sv0, chip2 = UCH.on; clk('[data-undo]'); const back2 = !!goalById('ps5') && gSaved(goalById('ps5')) === sv0 && acc('junior').v === jb4; hideChip(true);
+      S._del = 'ps5'; sheet(SHEETS.gdel()); clk('#sheet [data-gdelok="ps5"][data-dest="holiday"]'); const toGoal = !goalById('ps5') && gSaved(goalById('holiday')) === jh + sv0 && acc('junior').v === jb4; hideChip(true);
+      ok('chk-edit-with-money: a goal with 46 000 Ft inside edits (name, amount, date, icon) in one page with Save and a 10 s Undo that puts it back; there is no "take your money out first" block; Delete with money offers "Move 46 000 Ft to Junior account / another goal and delete" with Undo, and no money is lost either way',
+        noBlock && onEdit && edited && chip1 && undone && moveT && gone && chip2 && back2 && toGoal, [noBlock, onEdit, edited, chip1, undone, moveT, gone, chip2, back2, toGoal]);
+
+      // Goal reached card
+      reset('existing'); const gr = goalById('fest'); gr.saved = 192881; gr.target = 134000; S.ruleGoal = 'fest'; S.payday.on = true; S._detail = 'fest'; const rp = PAGES.goal.html(), rt = pl(rp);
+      const card = /You did it: Festival ticket is fully saved/.test(rt) && /data-outgoal="fest"/.test(rp) && /data-sheet="newgoal"/.test(rp) && /data-keepsaving="fest"/.test(rp) && /Withdraw/.test(rt) && /New goal/.test(rt) && /Keep saving/.test(rt);
+      const capped = /134 000 Ft of 134 000 Ft/.test(rt) && !/192 881 Ft of/.test(rt) && /Reached/.test(rt) && /Reached/.test(pl(vHub())) && !/192 881 Ft of 134 000/.test(pl(vHub()));
+      const stay = S.ruleGoal === 'fest' && S.payday.on && /You did it: Festival ticket/.test(persiSays().text);
+      pushPage('goal'); clk('.page [data-keepsaving="fest"]'); const kept = gr.cont === true && !/You did it/.test(pl(PAGES.goal.html())) && S.ruleGoal === 'fest' && /Reached/.test(pl(PAGES.goal.html())); hideChip(true);
+      ok('chk-goal-reached-card: a reached goal shows "You did it: [goal] is fully saved" with Withdraw, New goal and Keep saving; progress reads "Reached" with the amount capped (no "192 881 Ft of 134 000 Ft"); the rules stay on the goal and Persi says it until the user chooses; Keep saving hides the card and keeps the rules', card && capped && stay && kept, [card, capped, stay, kept]);
+
+      // Recurring transfer merged into Weekly transfer
+      reset('existing'); const tr = vUtalas(), rs = SHEETS.saverules(), pd = PAGES.persely.html();
+      sheet(SHEETS.saverules()); const wkRow = !!$('#sheet [data-srblock="wk"]') && !!$('#sheet [data-srblock="pay"]') && !!$('#sheet [data-srblock="rr"]'); closeSheet();
+      clk('#v-utalas [data-saverules="wk"]'); const opens = sheetOpen() && /Saving rules/.test($('#sheet').textContent) && !!$('#sheet [data-srblock="wk"].focus'); closeSheet();
+      const old = JSON.parse(JSON.stringify(fresh('existing'))); old.persely.auto = true; old.persely.amt = 4000; const sv11 = S; S = old; try{ if(S.persely && S.persely.auto){ S.weekly = {on:true, amt:S.persely.amt || S.weekly.amt || 2000}; S.persely.auto = false; } } finally { /* the load-time migration, same lines as above */ } const mig = S.weekly.on && S.weekly.amt === 4000 && !S.persely.auto; S = sv11;
+      ok('chk-recurring-merged: Transfer > Scheduled and weekly transfers and Persely details open Saving rules > Weekly transfer; there is no separate Recurring transfer page, no Monthly frequency or Frequency picker; Saving rules lists all 3 rules; an old saved recurring transfer becomes the Weekly transfer', /data-saverules="wk"/.test(tr) && !/data-go="rendszeres"/.test(tr) && /data-saverules="wk"/.test(pd) && PAGES.rendszeres === undefined && !/Monthly|Frequency/.test(pl(rs)) && wkRow && opens && mig, [wkRow, opens, mig, PAGES.rendszeres === undefined]);
+
+      // Keep my 3.0%: request, confirm, pending, salary, Graduate; expired
+      reset('existing'); S.juniorDays = 20; renderAll(); const gh = PAGES.grad.foot(), reqBtn = /data-keepreq/.test(gh) && /Request to keep 3\.0%/.test(gh) && !/data-keeprate/.test(gh);
+      pushPage('grad'); clk('.page [data-keepreq]'); const cs = pl($('#sheet').innerHTML), conf = /Request to keep 3\.0%\?/.test(cs) && /500 000 Ft/.test(cs) && /28% tax/.test(cs) && /30 days' notice/.test(cs) && /data-keepok/.test($('#sheet').innerHTML) && !S.keep.pending;
+      clk('#sheet [data-keepok]'); const hubT = pl(vHub()), homeT = pl(vFooldal()), pend = S.keep.pending && !S.bridge && /Waiting for your first salary at OTP · 6 months left/.test(hubT) && /Waiting for your first salary at OTP · 6 months left/.test(homeT) && /^Junior/.test(juniorPill()) && !/Graduate/.test(juniorPill());
+      MQ.q = []; const st0 = S.months; salaryArrives(); hideBanners(); const grad = S.bridge && !S.keep.pending && /^Graduate 3\.0%/.test(juniorPill()); MQ.q = []; hideToast(true);
+      reset('existing'); S.juniorDays = 0; renderAll(); const ex = pl(PAGES.grad.html()), expired = /Your Junior package ended today/.test(ex) && /Request to keep 3\.0%/.test(PAGES.grad.foot());
+      ok('chk-keep-pending: "Request to keep 3.0%" opens a confirm sheet with the conditions; Confirm makes the state pending ("Waiting for your first salary at OTP · 6 months left" on Home and the tab) while the badge stays Junior; the salary arriving (key P) turns it to Graduate 3.0%; at 0 days the page says "Your Junior package ended today"', reqBtn && conf && pend && grad && expired, [reqBtn, conf, pend, grad, expired]);
+
+      // one weekly figure on the wizard, the goal card and the goal page
+      reset('existing'); startOnb('travel'); const wiz = pkMath(O.target, O.date).wk, tgt = O.target, dt1 = O.date; O.i = 1; renderOnb(); const w2 = pl($('#onb').innerHTML).includes(`${nt(ft(wiz))} a week`);
+      O.i = 0; renderOnb(); const w1 = pl($('#onb').innerHTML).includes(`${nt(ft(wiz))} a week`); O.i = 2; renderOnb(); clk('[data-onbcreate]'); const ng2 = S.goals[S.goals.length - 1], pageT = pl(PAGES.goal.html()), cardT = pl(vHub()), fig = nt(ft(weeklyOf(ng2)));
+      ok('chk-forecast-one-figure: the same goal shows ONE weekly amount on the wizard (steps 1 and 2), the goal card and the goal page: weeklyNeed(amount, saved, date) in 100 Ft steps', wiz > 0 && wiz === weeklyNeed(tgt, 0, dt1) && wiz === weeklyOf(ng2) && w1 && w2 && cardT.includes(`about ${fig} a week`) && pageT.includes(`${fig} a week`) && ng2.date === dt1 && ng2.target === tgt, [wiz, fig, w1, w2, cardT.includes(`about ${fig} a week`), pageT.includes(`${fig} a week`)]);
+    } catch(e){ ok('chk-phase3: the new checks ran without errors', false, String(e && e.stack || e)); }
+    finally { hideChip(true); PEND = null; MQ.q = []; hideToast(true); try{ closeOnb(); }catch(e){} while(stack.length) popPage(true); S = sv10; cur = cur10; stack.push(...stk10); demo.locked = lock10; try{ closeSheet(); renderAll(); }catch(e){} document.querySelectorAll('.view').forEach((v, i) => v.classList.toggle('on', views10[i])); }
+  }
   const u = splitUse(); if(F === F && S.months === 0 && S.tx.length === F.tx.length) ok('split use unchanged (Essentials 6 590, Fun 7 890, Saving 4 000)', u.ess === 6590 && u.fun === 7890 && u.save === 4000, u);
   while(stack.length > stack0) popPage(true);
   const bad = out.filter(r => !r.pass);
@@ -1737,7 +1829,7 @@ const seedExisting = () => { const H = demoHistory(); const o = ({
   // health score history: one entry per finished month, 1 = the indicator held that month. Score = 25 points per indicator x share of the last 3 months. Rewards earned / goal offers already used
   scoreHist:[{m:'July',earn:1,safe:1,buf:0,goal:0},{m:'August',earn:0,safe:1,buf:0,goal:0},{m:'September',earn:0,safe:1,buf:0,goal:1},{m:'October',earn:1,safe:1,buf:0,goal:1}], rewards:[], goalRewarded:[],   // txMark: how many transactions existed when this month began; this month = S.tx.slice(0, S.tx.length - S.txMark)
   // weekly streak: any amount once a week keeps it (automatic savings count too); it never changes the rate
-  week:40, streak:8, best:8, savedWeek:false, skips:1, juniorDays:41, remind:true,
+  week:40, streak:8, best:8, savedWeek:false, skips:1, juniorDays:41, remind:true, keep:{pending:false, at:0},
   history:[32,33,34,35,36,37,38,39], skipped:[],
   challenges:{},
   friends:[{n:'Bence',c:'#3B82C4',s:11,g:62},{n:'Lili',c:'#B45FB0',s:6,g:35},{n:'Márk',c:'#D98A1F',s:3,g:71}], friendsOptIn:false, friendsOpen:false,   // hidden until the student taps "Add friends"
@@ -1798,6 +1890,9 @@ if(!S.billSkip) S.billSkip = {};
 if(!S.billSkipWhy) S.billSkipWhy = {};
 if(!S.billsPocket) S.billsPocket = {on:false, bal:0};
 if(!S.demoDay) S.demoDay = 14;
+if(!S.keep) S.keep = {pending:false, at:0};   // Keep my 3.0% request (flow A4): pending until the first salary arrives at OTP
+// the legacy Recurring transfer (Persely details) is the Weekly transfer rule now (D9): old saved state moves over once
+try{ if(S.persely && S.persely.auto){ S.weekly = {on:true, amt:S.persely.amt || S.weekly.amt || 2000}; S.persely.auto = false; } }catch(e){}
 if(!S.bills || !S.bills.length){ try{ refreshBills(S); }catch(e){ S.bills = []; } }
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
 const acc = id => S.accounts.find(a=>a.id===id);
@@ -1888,7 +1983,7 @@ function vUtalas(){
     <button data-toast="qvik request – ${NA}"><span class="c">${I('plane')}</span>New qvik request</button>
   </div>
   <button class="row" data-toast="Request money – ${NA}"><span class="ic">${I('req')}</span><span class="t">Request money easily<small>free | NFC | QR code</small></span><span class="badge">New</span><span class="chev">${I('chev',20)}</span></button>
-  <button class="row" data-go="rendszeres"><span class="ic">${I('sched')}</span><span class="t">Scheduled and weekly transfers</span><span class="chev">${I('chev',20)}</span></button>
+  <button class="row" data-saverules="wk"><span class="ic">${I('sched')}</span><span class="t">Scheduled and weekly transfers</span><span class="chev">${I('chev',20)}</span></button>
   <button class="row" data-tab="tranzakciok"><span class="ic">${I('hist')}</span><span class="t">Previous transfers</span><span class="chev">${I('chev',20)}</span></button>
   <button class="row" data-toast="No active qvik requests"><span class="ic">${I('plane')}</span><span class="t">qvik requests</span><span class="chev">${I('chev',20)}</span></button>`;
 }
@@ -1991,6 +2086,9 @@ const money = (g, v) => isEur(g) ? eur(v) : ft(v);
 const goalById = id => S.goals.find(g => g.id === id);
 const NOGOAL = {id:'', name:'your next goal', ic:'star', saved:0, target:1, pace:0, date:null};   // stands in when every goal is deleted
 const ruleGoal = () => goalById(S.ruleGoal) || S.goals.find(g => !g.shared && !isEur(g)) || S.goals[0] || NOGOAL;
+// the Weekly transfer has its own target goal (Saving rules sheet); until one is chosen it goes where the Payday rule goes
+const weeklyGoal = () => (S.weekly.goal && goalById(S.weekly.goal)) || ruleGoal();
+const weeklyOn = g => !!g && S.weekly.on && weeklyGoal().id === g.id;
 const gSaved = g => g.id==='holiday' ? acc('persely').v : g.shared ? g.members.reduce((a,m) => a + m.amt, 0) : g.saved;
 const gTarget = g => g.id==='holiday' ? S.persely.target : g.target;
 const mine = g => g.shared ? (g.members.find(m => m.me) || {amt:0}).amt : gSaved(g);
@@ -1999,7 +2097,8 @@ const incomeShare = pct => Math.round(S.income.amount * pct / 100);
 function paceOf(g){
   if(g.shared || isEur(g)) return 0;
   let v = g.pace || 0;
-  if(S.ruleGoal === g.id){ if(S.payday.on) v += incomeShare(S.payday.pct); if(S.weekly.on) v += Math.round(S.weekly.amt * 52 / 12); }
+  if(S.payday.on && S.ruleGoal === g.id) v += incomeShare(S.payday.pct);
+  if(weeklyOn(g)) v += Math.round(S.weekly.amt * 52 / 12);
   if(g.weekly) v += Math.round(g.weekly * 52 / 12);
   if(S.roundup.on && S.roundup.goal === g.id) v += ROUND_EST;
   return v;
@@ -2014,6 +2113,10 @@ const userFirst = () => String(S.name || '').trim().split(/\s+/).pop() || 'you';
 const txDate = x => /^\d{1,2} [A-Za-z]+$/.test(x.d || '') && x.ym ? fDate(`${x.ym}-${String(x.day).padStart(2, '0')}`) : x.d;   // a transaction date in the full format ("10 November 2026"); Today and Yesterday stay
 const fDate = s => new Date(s + 'T12:00:00').toLocaleDateString('en-GB',{day:'numeric', month:'long', year:'numeric'});
 const monthsTo = s => Math.max(0, (new Date(s + 'T12:00:00') - demoNow()) / (30.44 * 864e5));
+// N6, one weekly figure: what a goal asks of a week to be there on its date, in 100 Ft steps. The wizard, the goal card and the goal page all show this one number.
+const weeklyNeed = (target, saved, date) => { const left = target - saved; return left <= 0 || !date ? 0 : Math.ceil(left / (Math.max(.5, monthsTo(date)) * 4.345) / 100) * 100; };
+const weeklyOf = g => weeklyNeed(gTarget(g), gSaved(g), g.date);
+const weeklyShown = g => !!g && !g.shared && !isEur(g) && !!g.date && !isExact(g) && toGo(g) > 0;   // an exact day close by has its own Behind text
 const total = () => S.goals.filter(g => !isEur(g)).reduce((a,g) => a + mine(g), 0);
 const eurTotal = () => S.goals.filter(isEur).reduce((a,g) => a + g.saved, 0);
 const r10 = v => v < 100 ? Math.round(v) : Math.round(v / 10) * 10;
@@ -2022,9 +2125,14 @@ const plural = (n, w) => `${n} ${w}${n===1?'':'s'}`;
 // the day the Junior package ends, on the demo clock (placeholder until OTP confirms the end rule)
 const juniorEndLabel = (add = 0) => { const d = new Date(2026, 10 + (S.months || 0) + add, S.demoDay || 14); d.setDate(d.getDate() + (S.juniorDays || 0)); return d.toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'}); };
 // Junior transparency (flow A4, D2): the date is always a concrete day, never "soon". The conditions are placeholders until OTP confirms them.
+// Keep my 3.0% (flow A4, D2): a request, then pending, then Graduate 3.0% when the first salary arrives at OTP. Months left: the request is good for 6 months (CONFIRM WITH OTP)
+const keepPending = () => !!(S.keep && S.keep.pending) && !S.bridge;
+const keepLeft = () => { const n = Math.max(0, 6 - ((S.months || 0) - ((S.keep && S.keep.at) || 0))); return n > 1 ? `${n} months left` : n === 1 ? '1 month left' : 'less than a month left'; };
+function keepSalary(){ if(!keepPending()) return false; S.keep.pending = false; S.bridge = true; return true; }   // the first salary arrived: the badge becomes Graduate 3.0%
 const RATE_COND = () => `On the first ${ft(CAP)} · 28% tax · Without a salary at OTP the rate returns to standard after 30 days' notice`;
 const juniorRow = () => {   // Home, Persely tab (both states): one line, one date
   const d = S.juniorDays || 0, chev = `<span class="chev">${I('chev',20)}</span>`;
+  if(keepPending()) return `<button class="row" data-go="grad"><span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span><span class="t"><b class="u-bk-title">Waiting for your first salary at OTP · ${keepLeft()}</b><small>Junior 3.0% on the first ${ft(CAP)} until ${juniorEndLabel()}</small></span>${chev}</button>`;
   if(S.bridge) return `<button class="row" data-go="grad"><span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span><span class="t"><b class="u-bk-title">3.0% until ${juniorEndLabel(12)}</b><small>On the first ${ft(CAP)}, while your salary comes to OTP</small></span>${chev}</button>`;
   return `<button class="row" data-go="grad">${d > 0 ? `<span class="t24d"><b class="num">${d}</b><small>${d === 1 ? 'day' : 'days'}</small></span>` : `<span class="t24d" style="color:var(--green-i)">${I('sched',26)}</span>`}<span class="t"><b class="u-bk-title">Junior package until ${juniorEndLabel()}</b><small>${d > 0 ? '' : 'Ends today · '}Keep my 3.0% on the first ${ft(CAP)}</small></span>${chev}</button>`;
 };
@@ -2084,7 +2192,7 @@ const forecast = g => { if(isEur(g)) return 'Euro · no Junior rate'; if(g.share
 
 /* ---------- a late goal always gets a fix ----------
    lateFix(g): the smallest weekly top-up (500 Ft steps) that gets the goal there by its date. Applied to the weekly transfer that feeds this goal. */
-function bumpWeekly(g, x){ if(S.weekly.on && S.ruleGoal === g.id) S.weekly.amt += x; else g.weekly = (g.weekly || 0) + x; }
+function bumpWeekly(g, x){ if(weeklyOn(g)) S.weekly.amt += x; else g.weekly = (g.weekly || 0) + x; }
 function lateFix(g){
   if(g.shared || isEur(g) || isTight(g) || !isLate(g)) return 0;
   let x = 0; while(isLate(g) && x < 100000){ bumpWeekly(g, 500); x += 500; }
@@ -2107,8 +2215,10 @@ const behindLabel = f => `New date: ${pkMonthShort(f.date)}${f.x ? ` · +${ft(f.
 const fixLabel = x => `+${ft(x)} a week → on time`;
 // progress shown for a goal: never "0%" when money is in it, and a bar you can see (first step)
 function pctOf(g){ const s = gSaved(g), r = s / gTarget(g) * 100, p = Math.min(100, Math.round(r));
-  const tiny = s > 0 && r < 1;   // under 1%: no percentage, the forint amount and "first step" instead
-  return {p, txt: tiny ? '' : p + '%', tiny, saved:s, w: s > 0 ? Math.max(p, 4) : p, first: s > 0 && r < 2}; }
+  const tiny = s > 0 && r < 1, reached = s > 0 && s >= gTarget(g);   // under 1%: no percentage, the forint amount and "first step" instead. Reached: the word, never "192 881 Ft of 134 000 Ft"
+  return {p, txt: reached ? 'Reached' : tiny ? '' : p + '%', tiny, reached, saved:s, w: s > 0 ? Math.max(p, 4) : p, first: s > 0 && r < 2}; }
+const shownSaved = g => Math.min(gSaved(g), gTarget(g));   // the amount next to "of target" never goes above the target
+const goalReached = g => !!g && !g.shared && gTarget(g) > 0 && gSaved(g) >= gTarget(g);
 
 // the week counts for the streak (once per week)
 function markSaved(){
@@ -2145,15 +2255,28 @@ function withdrawFrom(g, v){   // v in the goal's own currency; returns the fori
 // where the saving rules go when a goal is deleted: the next plain goal, or nowhere (rules off)
 const ruleHeirOf = id => S.goals.find(x => x.id !== id && goalIsPlain(x));
 function goalRulesOf(g){   // which rules point at this goal
-  const r = []; if(S.payday.on && S.ruleGoal === g.id) r.push('payday rule'); if(S.weekly.on && S.ruleGoal === g.id) r.push('weekly transfer'); if(g.weekly) r.push('own weekly transfer'); if(S.roundup.on && S.roundup.goal === g.id) r.push('round-ups'); return r;
+  const r = []; if(S.payday.on && S.ruleGoal === g.id) r.push('payday rule'); if(weeklyOn(g)) r.push('weekly transfer'); if(g.weekly) r.push('own weekly transfer'); if(S.roundup.on && S.roundup.goal === g.id) r.push('round-ups'); return r;
 }
-function removeGoal(id){
-  const g = goalById(id); if(!g || !goalEmpty(g)) return null;
-  const heir = ruleHeirOf(id), moved = [];
-  if(S.ruleGoal === id){
-    if(S.payday.on) moved.push('payday rule'); if(S.weekly.on) moved.push('weekly transfer');
-    if(heir) S.ruleGoal = heir.id; else { S.ruleGoal = ''; S.payday.on = false; S.weekly.on = false; }
+// money out of a goal into another plain forint goal (own money, nothing leaves Persely)
+function takeInto(g, h, v){
+  if(g.id === 'holiday') acc('persely').v -= v; else g.saved -= v;
+  if(h.id === 'holiday') acc('persely').v += v; else h.saved += v;
+}
+// delete a goal. With money inside, dest says where it goes: 'junior' (withdraw) or the id of another plain goal. No dest and money inside: nothing happens (flow B2: "Move 59 000 Ft to ... and delete")
+function removeGoal(id, dest){
+  const g = goalById(id); if(!g) return null;
+  let movedAmt = 0, movedTo = '';
+  if(!goalEmpty(g)){
+    if(g.shared || !dest) return null;
+    if(dest === 'junior'){ movedAmt = gSaved(g); withdrawFrom(g, movedAmt); movedTo = 'your Junior account'; }
+    else { const h = goalById(dest); if(!h || h.id === id || !goalIsPlain(h) || isEur(g)) return null; movedAmt = gSaved(g); takeInto(g, h, movedAmt); movedTo = h.name; }
   }
+  const dg = dest && dest !== 'junior' ? goalById(dest) : null, heir = dg && goalIsPlain(dg) && dg.id !== id ? dg : ruleHeirOf(id), moved = [], wk = weeklyOn(g);
+  if(S.ruleGoal === id){
+    if(S.payday.on) moved.push('payday rule'); if(wk) moved.push('weekly transfer');
+    if(heir) S.ruleGoal = heir.id; else { S.ruleGoal = ''; S.payday.on = false; if(wk) S.weekly.on = false; }
+  }
+  if(S.weekly.goal === id){ if(S.weekly.on && S.ruleGoal !== id && !moved.includes('weekly transfer')) moved.push('weekly transfer'); if(heir) S.weekly.goal = heir.id; else { S.weekly.goal = ''; S.weekly.on = false; } }
   if(S.roundup.goal === id){ if(S.roundup.on) moved.push('round-ups'); if(heir) S.roundup.goal = heir.id; else { S.roundup.on = false; S.roundup.goal = ''; } }
   S.goals = S.goals.filter(x => x.id !== id);
   if(id === 'holiday') S.accounts = S.accounts.filter(a => a.id !== 'persely' || a.v !== 0);   // its empty Persely account goes with it
@@ -2161,7 +2284,7 @@ function removeGoal(id){
   ['_detail','_goal','_out'].forEach(k => { if(S[k] === id) S[k] = ''; });
   if(S._offer === id) S._offer = null;
   syncSplit();
-  return {name:g.name, moved, heir:heir ? heir.name : ''};
+  return {name:g.name, moved, heir:heir ? heir.name : '', amt:movedAmt, to:movedTo};
 }
 // the Persely account of the holiday goal comes back when the demo brings that goal back
 function healGoalAccounts(){ if(S.goals.some(g => g.id === 'holiday') && !acc('persely')){ const a = fresh('existing').accounts.find(x => x.id === 'persely'); if(a){ a.v = 0; S.accounts.splice(Math.min(1, S.accounts.length), 0, a); } } }
@@ -2197,6 +2320,7 @@ const hintHTML = key => { const h = hintOn(key) && HINTS.find(x => x[0] === key)
 function persiSays(){
   const g = ruleGoal(), pct = Math.min(100, Math.round(gSaved(g) / gTarget(g) * 100));
   if(!S.onboarded) return {mood:'happy', text:"Hi, I'm Persi. Let's pick a goal."};
+  const rg = S.goals.find(x => goalReached(x) && !x.cont); if(rg) return {mood:'proud', text:`You did it: ${rg.name} is fully saved.`};   // a reached goal waits for Withdraw, New goal or Keep saving
   const bf = bfNow(); if(bf.on) return {mood:'concerned', text:`${bf.text}.`};   // late bills only
   if(S.analyst.on && S.bfDone) return {mood:'proud', text:'Bills paid. Fun is back on.'};
   if(!S.savedWeek && S.streak > 0) return {mood:'concerned', text:'Any amount by Sunday keeps your streak.'};
@@ -2552,18 +2676,25 @@ function analysisGauge(m){
 function moneyIn(){
   const gs = S.goals.filter(g => !g.shared && !isEur(g)); let pay = 0, wk = 0, rnd = 0;
   const rows = gs.map(g => {
-    const own = S.ruleGoal === g.id, p = own && S.payday.on ? incomeShare(S.payday.pct) : 0, w = (own && S.weekly.on ? Math.round(S.weekly.amt * 52 / 12) : 0) + (g.weekly ? Math.round(g.weekly * 52 / 12) : 0), r = S.roundup.on && S.roundup.goal === g.id ? ROUND_EST : 0;
+    const own = S.ruleGoal === g.id, p = own && S.payday.on ? incomeShare(S.payday.pct) : 0, w = (weeklyOn(g) ? Math.round(S.weekly.amt * 52 / 12) : 0) + (g.weekly ? Math.round(g.weekly * 52 / 12) : 0), r = S.roundup.on && S.roundup.goal === g.id ? ROUND_EST : 0;
     pay += p; wk += w; rnd += r; return {g, pay:p, wk:w, rnd:r, total:p + w + r};
   });
   const dated = gs.filter(g => g.date && toGo(g) > 0 && daysTo(g) > 0), need = Math.ceil(dated.reduce((a, g) => a + toGo(g) / Math.max(1, Math.round(daysTo(g) / 30.4)), 0) / 100) * 100;   // a goal whose date is today or past is left out: no monthly amount can catch it up
   const late = gs.filter(g => g.date && toGo(g) > 0 && daysTo(g) <= 0);   // behind or due today: named on the panel, left out of need
   return {pay, wk, rnd, total:pay + wk + rnd, need, late, dated:dated.length, ask:!!(S.payday.on && S.payday.ask), rows};
 }
+// the Persely tab block: all 3 saving rules with their goal and status; Edit opens the Saving rules sheet (D9)
+function savingRulesBlock(){
+  const gn = id => { const x = goalById(id); return x ? esc(x.name) : ''; };
+  const rows = [['pay', 'money', 'Payday rule', S.payday.on, `${S.payday.pct}% of each salary`, S.ruleGoal], ['wk', 'sched', 'Weekly transfer', S.weekly.on, `${ft(S.weekly.amt)} every Monday`, weeklyGoal().id], ['rr', 'limit', 'Round-ups', S.roundup.on, 'A 1 190 Ft coffee moves 20 Ft', S.roundup.goal]];
+  return `<div class="sec"><span>Saving rules</span><a data-saverules="" aria-label="Edit saving rules">Edit</a></div>
+  <div class="card lst srlist">${rows.map(([k, ic, n, on, sub, to]) => `<button class="li" data-saverules="${k}"><span class="ic">${I(ic)}</span><span class="t"><b>${n}</b><small>${on ? `${sub}${gn(to) ? ' → ' + gn(to) : ''}` : 'Off'}</small></span><span class="pill ${on ? 'ok' : ''}">${on ? 'On' : 'Off'}</span></button>`).join('')}</div>`;
+}
 function moneyInPanel(){
   if(!S.goals.length) return '';
   const m = moneyIn(), R = 104, C = 2 * Math.PI * R, arc = C * .75, p = m.need ? Math.min(1, m.total / m.need) : (m.total ? 1 : 0);
   const nm = [m.pay ? 'Payday rule' : '', m.wk ? 'Weekly transfer' : '', m.rnd ? 'Round-ups' : ''].filter(Boolean).map((n, i) => i ? n.toLowerCase() : n), names = nm.length > 1 ? nm.slice(0, -1).join(', ') + ' and ' + nm[nm.length - 1] : nm[0] || '';
-  const l3 = !m.total ? "Switch on a rule on a goal's page" : (m.dated ? (m.total >= m.need ? (m.late.length ? `Enough for goals with a date ahead. ${m.late.length > 1 ? m.late.length + ' goals are' : esc(m.late[0].name) + ' is'} behind.` : 'Enough for every goal date') : `Your goals need about ${ft(m.need)}`) : names) + (m.ask ? ' · payday asks first' : '');
+  const l3 = !m.total ? "Switch on a saving rule" : (m.dated ? (m.total >= m.need ? (m.late.length ? `Enough for goals with a date ahead. ${m.late.length > 1 ? m.late.length + ' goals are' : esc(m.late[0].name) + ' is'} behind.` : 'Enough for every goal date') : `Your goals need about ${ft(m.need)}`) : names) + (m.ask ? ' · payday asks first' : '');
   return `${hintHTML('auto')}<button class="card mgauge" data-sheet="moneyin" data-tour="auto">
     <span class="mg-ring"><svg viewBox="0 0 250 250" style="transform:rotate(135deg)" aria-hidden="true"><circle cx="125" cy="125" r="${R}" fill="none" stroke="#E3E6EC" stroke-width="24" stroke-linecap="round" stroke-dasharray="${arc} ${C}"/>${p > 0 ? `<circle cx="125" cy="125" r="${R}" fill="none" stroke="#52AE30" stroke-width="24" stroke-linecap="round" stroke-dasharray="${arc * p} ${C}"/>` : ''}</svg></span>
     <span class="t"><small>Money in each month</small><b class="num">${m.total ? ft(m.total) : 'Nothing yet'}</b><small>${l3}</small></span>
@@ -2600,6 +2731,7 @@ function setupCard(){   // the 500 000 Ft cap and the end date in the line below
   return `<div class="card setupcard" id="setupcard"><h2>What are you saving for?</h2>
     <!-- CONFIRM WITH OTP -->
     <div class="k">3.0% a year on up to 500 000 Ft with your Junior account until ${juniorEndLabel()}</div>
+    ${S.draft ? `<button class="row" data-onbresume><span class="ic">${I('star')}</span><span class="t">Continue your draft<small>${esc(S.draft.name || 'Your goal')}, ${ft(S.draft.target)}</small></span><span class="chev">${I('chev',20)}</span></button>` : ''}
     <div class="wn-grid three">${Object.entries(GOAL_PRESETS).map(([k,g]) => `<button data-tilepick="${k}">${I(g.ic,24)}${g.label}</button>`).join('')}<button data-tilepick="custom">${I('plus',24)}Something else</button></div>
     <button class="later" data-setuplater>Not now</button></div>`;
 }
@@ -2662,9 +2794,12 @@ function vHub(){
   ${S.goals.map(g=>{ const s=gSaved(g), t=gTarget(g), pc=pctOf(g), fx=lateFix(g), bf=behindFix(g);
     const attr = `data-goal="${g.id}"`;
     const right = g.shared ? `<span class="avs">${g.members.map(m=>avatar(m,24)).join('')}</span>` : pc.txt ? `<b class="u-c-gt">${pc.txt}</b>` : '';
-    const sub = pc.first && !g.shared ? `${money(g,s)} in · first step · ${forecast(g)}` : `${money(g,s)} of ${money(g,t)} · ${forecast(g)}`;
+    const wkTxt = weeklyShown(g) && !fx && !bf ? ` · about ${ft(weeklyOf(g))} a week` : '';   // N6: the same weekly figure as the wizard and the goal page
+    const sub = pc.first && !g.shared ? `${money(g,s)} in · first step · ${forecast(g)}${wkTxt}` : `${money(g, Math.min(s, t))} of ${money(g,t)} · ${forecast(g)}${wkTxt}`;
     return `<div class="gwrap ${fx || bf ? 'fx' : ''}"><button class="card goal" ${attr}><div class="u-rowc"><span class="gic">${I(g.shared ? 'user' : isEur(g) ? 'euro' : g.ic,22)}</span><span class="u-fx0"><b class="u-bk-m">${esc(g.name)}</b><span class="num u-k-sm">${sub}</span></span>${right}</div><div class="prog" style="margin:10px 0 0"><i style="width:${pc.w}%"></i></div></button>${fx ? `<button class="gfix" data-latefix="${g.id}">${fixLabel(fx)}</button>` : bf ? `<button class="gfix" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}</div>`; }).join('')}
   ${S.goals.length ? '' : `<div class="card"><b class="u-bk-m">No goals yet</b><div class="k" style="margin:4px 0 12px">Set a goal and Persely shows you the month you get there.</div><button class="btn" data-sheet="newgoal">Set a goal</button></div>`}
+
+  ${S.goals.length ? savingRulesBlock() : ''}
 
   ${NEW_PERSELY_IA ? analysisRow() : splitCard() + billsBlock()}
 
@@ -2691,7 +2826,7 @@ function nextWeek(){
   S.week++; S.savedWeek = false; S.juniorDays = Math.max(0, S.juniorDays - 7);
   if(S.weekly.on){
     const amt = Math.min(S.weekly.amt, Math.max(0, acc('junior').v - (S.payday.floor ? 20000 : 0)));
-    if(amt > 0){ depositTo(ruleGoal(), amt, 'junior', 'Weekly transfer'); note = `New week. ${ft(amt)} moved on Monday, so this week is done.`; }
+    if(amt > 0){ depositTo(weeklyGoal(), amt, 'junior', 'Weekly transfer'); note = `New week. ${ft(amt)} moved on Monday, so this week is done.`; }
   }
   S.goals.filter(g => g.weekly).forEach(g => { if(acc('junior').v >= g.weekly){ depositTo(g, g.weekly, 'junior', 'Weekly transfer'); note = 'New week. Your Monday transfers ran, so this week is done.'; } });
   renderAll(); toast(note);
@@ -2711,9 +2846,9 @@ function monthStep(quiet){
   const ran = S.payday.on || S.weekly.on || S.roundup.on || S.goals.some(x => x.weekly);
   for(let i = 0; i < 4; i++){ S.week++; if(ran){ S.streak++; S.best = Math.max(S.best, S.streak); S.history.push(S.week); } else S.streak = 0; }
   S.savedWeek = ran; S.monthSaved = 0; S.juniorDays = Math.max(0, S.juniorDays - 30);
-  acc('junior').v += inc; S.tx.unshift({...stamp(), d:'Today', n:'SALARY', s:'Incoming transfer', a:inc, ic:'money'});
+  acc('junior').v += inc; S.tx.unshift({...stamp(), d:'Today', n:'SALARY', s:'Incoming transfer', a:inc, ic:'money'}); keepSalary();
   if(S.payday.on){ const v = incomeShare(S.payday.pct); depositTo(g, v, 'junior', `Payday rule: ${S.payday.pct}%`); moved += v; }
-  if(S.weekly.on){ const v = S.weekly.amt * 4; depositTo(g, v, 'junior', 'Weekly transfers (4)'); moved += v; }
+  if(S.weekly.on){ const v = S.weekly.amt * 4; depositTo(weeklyGoal(), v, 'junior', 'Weekly transfers (4)'); moved += v; }
   S.goals.filter(x => x.weekly).forEach(x => { depositTo(x, x.weekly * 4, 'junior', 'Weekly transfers (4)'); moved += x.weekly * 4; });
   { const vi = S.months % 12, ev = ESS_VAR[vi], fv = FUN_VAR[vi], card = MONTH_CARD + ev + fv;   // months differ a little, so the fast-forward and the year look real (month 1 is the reference month)
     acc('junior').v -= card; S.tx.unshift({...stamp(), d:'Today', n:`CARD PAYMENTS (${MONTH_TX})`, s:'Shops, food, transport', a:-card, ic:'cart', parts:{ess:36900 + ev, fun:27000 + fv, cats:{...spreadCats(36900 + ev, 'ess'), ...spreadCats(27000 + fv, 'fun')}}}); }
@@ -2782,13 +2917,21 @@ function nekedCards(compact){
 }
 
 let nekTab = 0;
-// edit and delete live on the goal page: open only when the balance is 0, otherwise one line says what to do first
+// edit and delete live on the goal page. Edit works with money inside (D8); delete with money asks where it goes. Only a shared Persely with other people's money has to be emptied first.
 function goalManageHTML(g){
-  if(!goalEmpty(g)){
-    const out = !g.shared && gSaved(g) > 0;
-    return `<div class="card u-mt6" role="group" aria-label="Edit or delete this goal"><div class="k" style="font-size:var(--fs-m);line-height:1.45;color:var(--ink2)">${g.shared ? 'Edit or delete works when everyone has taken their money out.' : 'Take your money out first to edit or delete this goal.'}</div>${out ? `<button class="btn w u-mt12" data-outall="${g.id}" aria-label="Take all ${money(g, gSaved(g))} out of ${esc(g.name)}">Take all ${money(g, gSaved(g))} out</button>` : ''}</div>`;
-  }
+  if(g.shared && !goalEmpty(g)) return `<div class="card u-mt6" role="group" aria-label="Edit or delete this goal"><div class="k" style="font-size:var(--fs-m);line-height:1.45;color:var(--ink2)">Edit or delete works when everyone has taken their money out.</div></div>`;
   return `<div class="card u-mt6" role="group" aria-label="Edit or delete this goal"><div class="hero-btns u-m0">${goalIsPlain(g) ? `<button class="btn w" data-gedit="${g.id}" aria-label="Edit ${esc(g.name)}">Edit goal</button>` : ''}<button class="btn w" data-gdel="${g.id}" aria-label="Delete ${esc(g.name)}" style="color:var(--orange-t)">Delete goal</button></div></div>`;
+}
+// status rows on a goal page: where each saving rule goes now. The Saving rules sheet is the one place to change them (D9)
+function ruleRowsHTML(g){
+  const nm = id => { const x = goalById(id); return x ? esc(x.name) : ''; };
+  const row = (key, ic, name, here, on, to, sub) => `<button class="li rrow" data-saverules="${key}" aria-label="${name}: ${here ? 'goes to this goal' : on && to ? 'goes to ' + to : 'off'}. Edit"><span class="ic">${I(ic)}</span><span class="t"><b>${name}${here ? ' → this goal' : on && to ? ' → ' + to : ': off'}</b><small>${sub}</small></span><span class="redit">Edit</span></button>`;
+  const wkHere = weeklyOn(g) || !!g.weekly, wkAmt = g.weekly || S.weekly.amt;
+  return `<div class="sec"><span>Saving rules</span></div><div class="card lst">
+    ${row('pay', 'money', 'Payday rule', S.payday.on && S.ruleGoal === g.id, S.payday.on, nm(S.ruleGoal), `${S.payday.pct}% of each salary`)}
+    ${row('rr', 'limit', 'Round-ups', S.roundup.on && S.roundup.goal === g.id, S.roundup.on, nm(S.roundup.goal), 'A 1 190 Ft coffee moves 20 Ft; we double it')}
+    ${row('wk', 'sched', 'Weekly transfer', wkHere, S.weekly.on, nm(weeklyGoal().id), `${ft(wkAmt)} every Monday`)}
+  </div>`;
 }
 const PAGES = {
   // one Persely: balance, forecast against its date, its rate, the rules that feed it, members (shared) and activity
@@ -2796,11 +2939,13 @@ const PAGES = {
     const g = goalById(S._detail); if(!g) return '';
     const s = gSaved(g), t = gTarget(g), pc = pctOf(g), m = gMonths(g), late = isLate(g), fx = lateFix(g), tight = isTight(g), bf = behindFix(g), lump = tight ? lumpOf(g) : 0, fc = forecastText(g);
     const sw = swBtn;
-    let html = `<div class="card u-mt6">${g.shared ? `<span class="pill ok">Shared Persely · ${plural(g.members.length,'member')}</span>` : ''}
-      <div class="hero-v num" style="margin-top:${g.shared?8:0}px">${money(g,s)} <small class="k u-fs-14b">of ${money(g,t)}</small></div>
+    const rch = goalReached(g);
+    let html = `${rch && !g.cont ? `<div class="card u-mt6 reached" role="group" aria-label="Goal reached"><b class="u-fs-m">You did it: ${esc(g.name)} is fully saved</b><div class="k u-mt4-b12">${gSaved(g) > t ? `${money(g, gSaved(g) - t)} more is in it. ` : ''}Your saving rules stay on this goal until you choose.</div>
+        <div class="hero-btns u-m0"><button class="btn w" data-outgoal="${g.id}">Withdraw</button><button class="btn w" data-sheet="newgoal">New goal</button><button class="btn" data-keepsaving="${g.id}">Keep saving</button></div></div>` : ''}<div class="card ${rch && !g.cont ? '' : 'u-mt6'} ${S._hl === g.id ? 'hl' : ''}">${S._hl === g.id ? '<span class="pill ok">New goal</span>' : ''}${g.shared ? `<span class="pill ok">Shared Persely · ${plural(g.members.length,'member')}</span>` : ''}
+      <div class="hero-v num" style="margin-top:${g.shared || S._hl === g.id ? 8 : 0}px">${money(g, Math.min(s, t))} <small class="k u-fs-14b">of ${money(g,t)}</small></div>
       <div class="prog" style="margin:8px 0 6px;height:10px"><i style="width:${pc.w}%"></i></div>
-      <div style="display:flex;justify-content:space-between;gap:8px" class="k"><span>${pc.tiny ? `First step · ${money(g, s)} in` : `${pc.first ? 'First step · ' : ''}${pc.txt} saved`}</span><span>${tight ? dueTxt(g) + ' · ' : 'Goal date: '}${g.date ? fDate(g.date) : '—'}</span></div>
-      ${!g.shared && !isEur(g) ? `<div class="note" style="margin:12px 0 0;${late ? 'background:#FFF1E6' : ''}">${tight ? (daysTo(g) < 0 ? `<b>Goal date passed: ${ft(toGo(g))} to go.</b> Nothing is lost. Your ${ft(s)} is still yours and still earns interest. Pick a date that fits.` : `<b>Behind: ${ft(toGo(g))} to go by ${daysTo(g) === 1 ? 'tomorrow' : daysTo(g) === 0 ? 'today' : 'the date'}.</b> At about ${ft(Math.round(paceOf(g)/100)*100)} a month this date is out of reach. Moving it is fine, most goals shift.`) : m === 0 ? '<b>Goal reached.</b> Take it out or start a new goal.' : m < 0 ? 'Add a rule below to see when you get there.' : `At your pace (about ${ft(Math.round(paceOf(g)/100)*100)} a month) you get there ${fc.far && fc.n <= 1 ? `<b>${fc.when}</b>` : `in <b>${inMonths(m)}</b>`}${late ? ', <b>after your goal date</b>.' : fc.far ? `, well before your goal date (${fc.dateTxt}).` : '.'}`}</div>${late && (fx || bf || lump) ? `${fx ? `<button class="btn" data-latefix="${g.id}">${fixLabel(fx)}</button>` : ''}${!fx && bf ? `<button class="btn" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}${!fx && lump ? `<button class="btn w" data-behindlump="${g.id}">Add ${ft(lump)} from Junior</button>` : ''}${S.analyst.on && S.analyst.accepted ? '' : '<button class="btn ghost" data-sheet="analyst">Or see what the analyst suggests</button>'}` : ''}` : ''}
+      <div style="display:flex;justify-content:space-between;gap:8px" class="k"><span>${pc.reached ? 'Reached' : pc.tiny ? `First step · ${money(g, s)} in` : `${pc.first ? 'First step · ' : ''}${pc.txt} saved`}</span><span>${tight ? dueTxt(g) + ' · ' : 'Goal date: '}${g.date ? fDate(g.date) : '—'}</span></div>
+      ${!g.shared && !isEur(g) ? `<div class="note" style="margin:12px 0 0;${late ? 'background:#FFF1E6' : ''}">${tight ? (daysTo(g) < 0 ? `<b>Goal date passed: ${ft(toGo(g))} to go.</b> Nothing is lost. Your ${ft(s)} is still yours and still earns interest. Pick a date that fits.` : `<b>Behind: ${ft(toGo(g))} to go by ${daysTo(g) === 1 ? 'tomorrow' : daysTo(g) === 0 ? 'today' : 'the date'}.</b> At about ${ft(Math.round(paceOf(g)/100)*100)} a month this date is out of reach. Moving it is fine, most goals shift.`) : m === 0 ? (g.cont ? '<b>Reached.</b> Your rules keep adding here. Raise the amount with Edit goal if you want a bigger goal.' : 'Your goal is reached. Choose what to do above.') : m < 0 ? 'Add a rule below to see when you get there.' : `At your pace (about ${ft(Math.round(paceOf(g)/100)*100)} a month) you get there ${fc.far && fc.n <= 1 ? `<b>${fc.when}</b>` : `in <b>${inMonths(m)}</b>`}${late ? ', <b>after your goal date</b>.' : fc.far ? `, well before your goal date (${fc.dateTxt}).` : '.'}`}${weeklyShown(g) ? `<div class="k u-mt4-b12 wkfig">${money(g, t)} by ${pkMonthShort(g.date)} needs about <b>${ft(weeklyOf(g))} a week</b>.</div>` : ''}</div>${late && (fx || bf || lump) ? `${fx ? `<button class="btn" data-latefix="${g.id}">${fixLabel(fx)}</button>` : ''}${!fx && bf ? `<button class="btn" data-behindfix="${g.id}">${behindLabel(bf)}</button>` : ''}${!fx && lump ? `<button class="btn w" data-behindlump="${g.id}">Add ${ft(lump)} from Junior</button>` : ''}${S.analyst.on && S.analyst.accepted ? '' : '<button class="btn ghost" data-sheet="analyst">Or see what the analyst suggests</button>'}` : ''}` : ''}
       ${isEur(g) ? `<div class="note" style="margin:12px 0 0">Buy euros bit by bit instead of all at once before the trip. Demo rate: 1 € = ${EUR_RATE} Ft.</div>` : ''}
       <div class="hero-btns" style="margin:14px 0 0"><button class="btn" data-pickgoal="${g.id}">Add money</button><button class="btn w" data-outgoal="${g.id}">Withdraw</button></div></div>`;
     html += goalManageHTML(g);
@@ -2810,51 +2955,32 @@ const PAGES = {
         ${g.members.length < 5 ? `<button class="btn w" style="margin:6px 0 4px" data-invite>Invite a friend</button>` : ''}</div>`;
     } else if(!isEur(g)){
       html += `<div class="card lst"><div class="li"><span class="ic">${I('rate')}</span><span class="t"><b>${(S.verified||S.bridge) ? 'Junior rate 3.0% on the first 500 000 Ft' : 'Standard rate 0.01%'}</b><small>About ${ft(yearNet(s))} a year after tax on ${ft(s)}${(S.verified||S.bridge) ? `, until ${juniorEndLabel()}` : ''}</small></span></div></div>
-        <div class="sec"><span>Money in</span></div>
-        <div class="card lst">
-          <div class="li sw"><button class="li-main" data-sheet="payrule"><span class="ic">${I('money')}</span><span class="t"><b>Payday rule</b><small>${S.payday.pct}% of each salary${S.payday.on && S.ruleGoal !== g.id ? ` · now goes to ${esc(ruleGoal().name)}` : ''}</small></span></button>${sw(S.payday.on && S.ruleGoal === g.id, `data-gpay="${g.id}"`, 'Payday rule')}</div>
-          <div class="li sw"><button class="li-main" data-sheet="roundrule"><span class="ic">${I('limit')}</span><span class="t"><b>Round-ups</b><small>Next 100 Ft, ×2 · about ${ft(ROUND_EST)} a month</small></span></button>${sw(S.roundup.on && S.roundup.goal === g.id, `data-grr="${g.id}"`, 'Round-ups')}</div>
-          <div class="li sw"><button class="li-main" data-sheet="weeklyrule"><span class="ic">${I('sched')}</span><span class="t"><b>Weekly transfer</b><small>${g.weekly ? `${ft(g.weekly)} every Monday` : (S.weekly.on && S.ruleGoal === g.id) ? `${ft(S.weekly.amt)} every Monday` : 'Switch on to add 2 000 Ft every Monday'}</small></span></button>${sw(!!g.weekly || (S.weekly.on && S.ruleGoal === g.id), `data-gwk="${g.id}"`, 'Weekly transfer')}</div>
-        </div>`;
+        ${ruleRowsHTML(g)}`;
     }
     const acts = S.tx.filter(x => x.note === g.name).slice(0, 5);
     if(acts.length) html += `<div class="sec"><span>Activity</span></div><div class="card lst">${acts.map(x=>`<div class="li"><span class="t"><b>${esc(x.s)}</b><small>${txDate(x)}</small></span><b class="num ${x.a>0?'':'pos'}">${x.a>0?'−':'+'}${isEur(g) && x.n==='CURRENCY EXCHANGE' ? ft(Math.abs(x.a)) : ft(Math.abs(x.a))}</b></div>`).join('')}</div>`;
     return html + `<p class="fine" style="text-align:center;margin:14px 0 4px">Withdraw any time, free of charge.</p>`; }},
-  // create a goal in 3 steps with a live projection (from the team handoff)
-  create:{title:()=> S._draft && S._draft.edit ? 'Edit goal' : 'New goal', html:()=>{
-    const d = S._draft, steps = `<div class="onb-step u-mt6">Step ${d.step} of 3</div>`;
-    if(d.step === 1) return `${steps}<h2 class="u-mt4-b12">What are you saving for?</h2>
-      <div class="flabel">Name</div><div class="fld"><span class="t"><input id="cgName" maxlength="30" value="${esc(d.name)}" placeholder="e.g. New laptop" autocomplete="off" enterkeyhint="done" aria-label="Goal name"></span></div>
-      ${d.edit ? `<div class="flabel">Icon</div><div class="chips u-mb6" role="group" aria-label="Goal icon">${GOAL_ICONS.map(k => `<button class="chip cgic ${d.ic === k ? 'on' : ''}" data-cgic="${k}" aria-pressed="${d.ic === k}" aria-label="Icon ${k}" style="min-width:var(--tap)">${I(k, 22)}</button>`).join('')}</div>` : ''}
+  // Edit goal: the one edit for name, icon, amount and date, also with money inside (D8). Creating a goal is the wizard (startOnb), not a page.
+  create:{title:'Edit goal', html:()=>{
+    const d = S._draft; if(!d) return '';
+    return `<div class="flabel u-mt6">Name</div><div class="fld"><span class="t"><input id="cgName" maxlength="30" value="${esc(d.name)}" placeholder="e.g. New laptop" autocomplete="off" enterkeyhint="done" aria-label="Goal name"></span></div>
+      <div class="flabel">Icon</div><div class="chips u-mb6" role="group" aria-label="Goal icon">${GOAL_ICONS.map(k => `<button class="chip cgic ${d.ic === k ? 'on' : ''}" data-cgic="${k}" aria-pressed="${d.ic === k}" aria-label="Icon ${k}" style="min-width:var(--tap)">${I(k, 22)}</button>`).join('')}</div>
       <div class="flabel">Amount</div>${amountPicker('cg')}
-      ${monthPicker('cg')}`;
-    if(d.step === 2) return `${steps}<h2 class="u-mt4-b12">How should money get in?</h2>
-      <div class="flabel">Weekly transfer, every Monday</div><div class="chips u-mb6">${[...new Set([0,1000,2000,5000,d.weekly])].sort((a,b)=>a-b).map(v=>`<button class="chip ${d.weekly===v?'on':''}" data-cgwk="${v}">${v ? ft(v) : 'None'}</button>`).join('')}</div>
-      <button class="opt slim ${d.round?'on':''}" data-cground><span class="t"><b>Round-ups</b><small>Next 100 Ft, ×2 · about ${ft(ROUND_EST)} a month${S.roundup.on ? ` (moves them from ${esc((goalById(S.roundup.goal)||ruleGoal()).name)})` : ''}</small></span><span class="tg ${d.round?'on':''}"></span></button>`;
-    const mo = monthsTo(d.date), monthly = d.weekly * 52 / 12 + (d.round ? ROUND_EST : 0), proj = Math.round(monthly * mo), pc = Math.min(100, Math.round(proj / d.target * 100)), short = d.target - proj;
-    const extra = short > 0 ? Math.ceil(short / Math.max(1, mo * 4.345) / 500) * 500 : 0, fc = fcCalc(d.target, 0, monthly, d.date);
-    return `${steps}<h2 class="u-mt4-b12">${d.edit ? 'Check and save' : 'Check and create'}</h2>
-      <div class="card sumcard">${[['Name', esc(d.name)], ['Goal', ft(d.target)], ['By', fDate(d.date)], ['Weekly transfer', d.weekly ? `${ft(d.weekly)} every Monday` : 'None'], ['Round-ups', d.round ? 'Next 100 Ft, ×2' : 'Off']].map(([k,v])=>`<div class="sr"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
-      ${gtkCard()}
-      <div class="card"><b class="u-bk-m14">${monthly ? (fc.over ? fc.text : `With these rules: about ${ft(Math.round(proj/1000)*1000)} by ${fDate(d.date)}`) : 'No rules yet. Add a weekly transfer or round-ups to see a forecast.'}</b>
-        ${monthly ? `<div class="prog" style="margin:10px 0 6px;height:10px"><i style="width:${pc}%"></i></div><div class="k">${fc.over ? 'On time' : `${pc}% of your goal · ${short > 0 ? `about ${ft(Math.round(short/1000)*1000)} short` : 'on time'}`}</div>` : ''}
-        ${extra ? `<button class="btn w u-mt12" data-cgboost="${d.weekly + extra}">Make it ${ft(d.weekly + extra)} a week</button>` : ''}</div>
-      <p class="fine" style="margin:0 2px">Earns ${(S.verified||S.bridge) ? `3.0% a year on the first ${ft(CAP)}, until ${juniorEndLabel()}` : '0.01% (standard rate)'}.</p>`; },
-    foot:()=>{ const d = S._draft; if(!d) return '';
-      return d.step < 3 ? `<div class="hero-btns u-m0">${d.step > 1 ? '<button class="btn w" data-cgstep="-1">Back</button>' : ''}<button class="btn" data-cgstep="1" ${d.step === 1 && !cleanName(d.name) ? 'disabled' : ''}>Next</button></div>`
-        : `<div class="hero-btns u-m0"><button class="btn w" data-cgstep="-1">Back</button>${d.edit ? '<button class="btn" data-cgsave>Save changes</button>' : '<button class="btn" data-cgcreate>Create goal</button>'}</div>`; }},
+      ${monthPicker('cg')}
+      <div class="fine u-note-t6">Your money stays where it is. Changing the amount or the date only moves the forecast.</div>`; },
+    foot:()=>{ const d = S._draft; if(!d) return ''; const why = cgGate(); return `<div class="onb-why fine" role="status">${why}</div><button class="btn" data-cgsave ${why ? 'disabled' : ''}>Save changes</button>`; }},
   // graduation bridge: the retention moment, the 3.0% rate continues if the salary comes to OTP
   grad:{title:'Your 3.0% rate', html:()=>{ const pr = S.payday, no = (S.accounts.find(a => a.id === 'junior') || {}).no || '';
     return `<div class="u-pig-row">${pig('proud',110)}</div>
-    <div class="card" style="padding:20px 18px"><h2 style="margin:0 0 8px;font-size:1.375rem;line-height:1.25">${S.bridge ? `Your 3.0% continues until ${juniorEndLabel(12)}` : `Junior package until ${juniorEndLabel()}`}</h2>
+    <div class="card" style="padding:20px 18px"><h2 style="margin:0 0 8px;font-size:1.375rem;line-height:1.25">${S.bridge ? `Your 3.0% continues until ${juniorEndLabel(12)}` : keepPending() ? 'Waiting for your first salary at OTP' : S.juniorDays ? `Junior package until ${juniorEndLabel()}` : 'Your Junior package ended today'}</h2>
       <!-- CONFIRM WITH OTP -->
       <p class="gcond">${RATE_COND()}</p>
-      <div style="font-size:var(--fs-m);line-height:1.5;color:var(--ink2)">${S.bridge ? 'For 12 months after graduation, while your salary comes to OTP.' : `${S.juniorDays ? `That is in ${plural(S.juniorDays, 'day')}.` : `${esc(userFirst())}, your Junior package ends today.`} Have your first salary paid into OTP and <b>keep my 3.0% for 12 more months.</b>`}</div></div>
+      <div style="font-size:var(--fs-m);line-height:1.5;color:var(--ink2)">${S.bridge ? 'For 12 months after graduation, while your salary comes to OTP.' : keepPending() ? `${keepLeft()}. When it arrives your 3.0% continues until ${juniorEndLabel(12)}. Until then you stay on Junior 3.0%.` : `${S.juniorDays ? `That is in ${plural(S.juniorDays, 'day')}.` : `Your Junior package ended today, ${esc(userFirst())}.`} Have your first salary paid into OTP and <b>request to keep 3.0% for 12 more months.</b>`}</div></div>
     <div class="sec"><span>How it works</span></div>
     <div class="card lst">${[['1','Give your employer your OTP account number',`<span class="num">${esc(no)}</span><button class="btn sm w gcopy" data-copyacc>Copy account number</button>`],['2','Your first salary arrives at OTP','Within 6 months of graduating'],['3','Your goals keep 3.0% for 12 months',`On the first ${ft(CAP)}, until ${juniorEndLabel(12)}`]].map(([n,t,x])=>`<div class="li" style="align-items:flex-start"><span class="stepn">${n}</span><span class="t"><b>${t}</b><small>${x}</small></span></div>`).join('')}</div>
     <div class="card u-card-bul"><ul class="bul sm"><li>Your goals, streak and friends stay as they are</li></ul></div>
     ${pr.on && pr.pct < 20 ? `<div class="note"><b>Tip:</b> most people earn more after 24. Saving ${pr.pct+5}% instead of ${pr.pct}% is about ${ft(incomeShare(5))} more a month. <a class="link" data-raise>Raise to ${pr.pct+5}%</a></div>` : ''}`; },
-    foot:()=> S.bridge ? '' : `<button class="btn" data-keeprate>Keep my 3.0%</button>`},
+    foot:()=> S.bridge ? '' : keepPending() ? `<button class="btn ghost" data-keepcancel>Cancel request</button>` : `<button class="btn" data-keepreq>Request to keep 3.0%</button>`},
   year:{title:'Your year in Persely', html:()=>yearHTML(), foot:()=> yearMonths().length ? `<button class="btn" data-yearstory>See your year story</button>` : ''},
   kartyaim:{title:'My cards', html:()=>vKartyaim().replace('<div class="tabtitle">My cards</div>','')},
   szamlaim:{title:'My accounts', html:()=>S.accounts.map(a=>`<div class="card"><b class="u-fs-m">${a.n}</b><div class="u-k-xs">${a.no}</div>
@@ -2869,17 +2995,9 @@ const PAGES = {
       <button class="btn" data-sheet="befizet">Add money</button>
       <button class="btn w u-mt12" data-sheet="kivesz">Withdraw</button></div>
     <div class="sec"><span>Automatic transfer</span></div>
-    <button class="row" data-go="rendszeres"><span class="t">Weekly transfer<small class="g">${p.auto?`${p.freq}, ${ft(p.amt)}`:'Off'}</small></span><span style="color:var(--blue-i);display:flex">${I('info',20)}</span><span class="chev">${I('chev',20)}</span></button>
+    <button class="row" data-saverules="wk"><span class="t">Weekly transfer<small class="g">${S.weekly.on ? `Every Monday, ${ft(S.weekly.amt)}` : 'Off'}</small></span><span style="color:var(--blue-i);display:flex">${I('info',20)}</span><span class="chev">${I('chev',20)}</span></button>
     <div class="sec"><span>Other actions</span></div>
     <button class="row" data-tab="tranzakciok"><span class="ic">${I('list')}</span><span class="t">Related transactions</span><span class="chev">${I('chev',20)}</span></button></div>`;}},
-  rendszeres:{title:'Weekly transfer', foot:()=>`<button class="btn" data-savereg>${S.persely.auto?'Save':'Next'}</button>`, html:()=>{
-    const p=S.persely;
-    return `<div class="card u-p18"><div style="display:flex;align-items:center;justify-content:space-between"><span>Weekly transfer</span><button class="tg ${p.auto?'on':''}" data-autotoggle aria-label="Weekly transfer"></button></div>
-      <p style="margin:14px 0 0;font-size:var(--fs-s);color:var(--muted-t);line-height:1.5">Choose how much and how often you want to put money aside automatically. It moves from your current account to your Persely.</p></div>
-    ${p.auto?`<button class="fld" data-cycle="freq"><span class="t"><label>Frequency</label><b>${p.freq}</b></span><span class="u-c-g">${I('chev',20)}</span></button>
-    <button class="fld" data-cycle="day"><span class="t"><label>Date</label><b>${p.day}</b></span><span class="u-c-g">${I('chev',20)}</span></button>
-    <div class="note">From the chosen date, the weekly transfer will put aside this amount: <b class="num">${ft(p.amt)}</b></div>
-    <div class="fld"><span class="t"><label>Amount</label><input id="regamt" inputmode="numeric" value="${p.amt}"></span><b>Ft</b></div>`:''}`;}},
   megtakaritas:{title:'Savings options', html:()=>`
     <h3 style="margin:10px 0 6px;font-size:1rem">Start saving!</h3><div style="font-size:0.875rem;color:var(--ink2)">Save online, even for several goals at once!</div>
     <div class="chips"><span class="chip">Persely</span><span class="chip">Car prize deposit</span><span class="chip">Fixed deposit</span></div>
@@ -2990,7 +3108,7 @@ const sheetShell = html => `<div class="sclose-w"><button class="sclose" data-cl
 function sheet(html){ hideToast(true); if(!sheetOpen()) SHEET_OPENER = document.activeElement; const sh = $('#sheet'); sh.innerHTML = sheetShell(html);
   const h = sh.querySelector('h2'); sh.setAttribute('aria-label', h ? h.textContent.trim() : 'Dialog'); $('#back').classList.add('on'); try{ sh.focus({preventScroll:true}); }catch(e){}
   if(typeof mountPig === 'function') mountPig(); }
-function closeSheet(){ const was = sheetOpen(); $('#back').classList.remove('on'); if(was && SHEET_OPENER && document.contains(SHEET_OPENER) && SHEET_OPENER.focus){ try{ SHEET_OPENER.focus({preventScroll:true}); }catch(e){} } SHEET_OPENER = null; if(window.__stAway) stReturn(); if(typeof mountPig === 'function') mountPig(); if(was || MQ.q.length) setTimeout(mqPump, 280); }
+function closeSheet(){ const was = sheetOpen(); S._fa = false; $('#back').classList.remove('on'); if(was && SHEET_OPENER && document.contains(SHEET_OPENER) && SHEET_OPENER.focus){ try{ SHEET_OPENER.focus({preventScroll:true}); }catch(e){} } SHEET_OPENER = null; if(window.__stAway) stReturn(); if(typeof mountPig === 'function') mountPig(); if(was || MQ.q.length) setTimeout(mqPump, 280); }
 function qSheet(fn, id, late){ if(id) MQ.q = MQ.q.filter(x => x.id !== id); MQ.q.push({k:'sheet', fn, id, late}); mqPump(); }   // late: only after the toast
 function mqDrop(id){ MQ.q = MQ.q.filter(x => x.id !== id); }
 function toast(m, o){ if(sheetOpen()){ sheetNote(m); return; } MQ.q = MQ.q.filter(x => x.k !== 'toast'); MQ.q.push({k:'toast', m, o}); mqPump(); }
@@ -3111,7 +3229,7 @@ const SHEETS = {
   // add money: goal, amount and the account it comes from are all visible before confirming
   hubsave:()=>{ if(!S.goals.some(g=>g.id===S._goal)) S._goal = S.goals[0].id; S._from = S._from || 'junior';
     const g = goalById(S._goal), e = isEur(g), v = S._amt || '';
-    return `<h2>Add money</h2>
+    return `${S._fa ? `<h2>Start your streak?</h2><div class="u-sheet-sub2">Add money now. Any amount counts for this week.</div>` : '<h2>Add money</h2>'}
     <div class="flabel">To</div>
     <div class="chips u-mb4">${S.goals.map(x=>`<button class="chip ${S._goal===x.id?'on':''}" data-pickgoal="${x.id}">${esc(x.name)}</button>`).join('')}</div>
     <div class="flabel">Amount</div>
@@ -3123,10 +3241,15 @@ const SHEETS = {
     <button class="btn" data-hubsave>Add money</button>`; },
   // withdraw: the fear "my money is locked" is answered right here
   gdel:()=>{ const g = goalById(S._del); if(!g) return '<h2>Delete goal</h2><p class="fine">This goal is already gone.</p>';
-    const rules = goalRulesOf(g), heir = ruleHeirOf(g.id);
-    return `<h2>Delete ${esc(g.name)}?</h2>
-    <div class="note u-mb8">This removes <b>${esc(g.name)}</b>, its target and its date from your Persely, Home and your story. It cannot be undone after the 10 second Undo chip goes. Your transactions stay.</div>
-    ${rules.length ? `<div class="fine u-note-b14">${rules.length ? `Your ${rules.join(' and ')} ${heir ? `will go to ${esc(heir.name)} instead.` : 'will be switched off.'}` : ''}</div>` : ''}
+    const rules = goalRulesOf(g), heir = ruleHeirOf(g.id), amt = gSaved(g), others = S.goals.filter(x => x.id !== g.id && goalIsPlain(x) && !isEur(g));
+    const note = `<div class="note u-mb8">This removes <b>${esc(g.name)}</b>, its target and its date from your Persely, Home and your story. Your transactions stay. You have 10 seconds to undo it.</div>`;
+    const rl = rules.length ? `<div class="fine u-note-b14">Your ${rules.join(' and ')} ${heir ? `will go to ${esc(heir.name)} instead.` : 'will be switched off.'}</div>` : '';
+    if(amt > 0) return `<h2>Delete ${esc(g.name)}?</h2>${note}${rl}
+      <div class="fine u-note-b14">${money(g, amt)} is saved in this goal. Choose where it goes first.</div>
+      <button class="btn" data-gdelok="${g.id}" data-dest="junior" style="background:var(--orange-t);color:#fff">Move ${money(g, amt)} to Junior account and delete</button>
+      ${others.map(x => `<button class="btn w" data-gdelok="${g.id}" data-dest="${x.id}">Move ${money(g, amt)} to ${esc(x.name)} and delete</button>`).join('')}
+      <button class="btn ghost" data-closesheet>Keep goal</button>`;
+    return `<h2>Delete ${esc(g.name)}?</h2>${note}${rl}
     <button class="btn" data-gdelok="${g.id}" style="background:var(--orange-t);color:#fff">Delete ${esc(g.name)}</button>
     <button class="btn ghost" data-closesheet>Keep goal</button>`; },
   outallc:()=>{ const g = goalById(S._outall); if(!g || gSaved(g) <= 0) return '<h2>Withdraw all</h2><div class="fine">There is nothing to take out.</div>';
@@ -3169,7 +3292,8 @@ const SHEETS = {
     return `<h2>Money in each month</h2>
     <div class="card lst">${m.rows.map(r => `<button class="li" data-goal="${r.g.id}"><span class="t"><b>${esc(r.g.name)}</b><small>${sub(r)}</small></span><b class="num">${ft(r.total)}</b><span class="chev">${I('chev', 18)}</span></button>`).join('')}
       <button class="li" data-sheet="payrule"><span class="t"><b>Payday rule settings</b><small>${p.on ? `${p.pct}% of each salary · ${p.ask ? 'asks first' : 'automatic'}` : 'Off'}</small></span><span class="chev">${I('chev', 18)}</span></button></div>
-    <div class="fine" style="text-align:center;margin:6px 0 12px">Each goal has its own rules. Open a goal to change them.</div>
+    <button class="row" data-saverules=""><span class="ic">${I('sched')}</span><span class="t">Saving rules<small>Payday rule, Weekly transfer and Round-ups in one place</small></span><span class="chev">${I('chev',18)}</span></button>
+    <div class="fine" style="text-align:center;margin:6px 0 12px">Each rule goes to one goal. Change them in Saving rules.</div>
     <button class="btn ghost" data-closesheet>Close</button>`; },
   payrule:()=>{ const p = S.payday;
     return `<h2>Payday rule</h2><div class="fine u-sheet-sub">A share of each payment of 10 000 Ft or more: salary, scholarship, money from family.</div>
@@ -3239,7 +3363,7 @@ const SHEETS = {
     const stp = (k, val, lo, hi, cap) => `<div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:6px"><button class="chip sq" data-splitstep="${k}:-5" ${val <= lo ? 'disabled' : ''} aria-label="Less ${bucketName(k)}">−</button><span style="min-width:92px;text-align:center"><b class="num" style="font-size:1rem">${val}%</b> <small class="k">${cap}</small></span><button class="chip sq" data-splitstep="${k}:5" ${val >= hi ? 'disabled' : ''} aria-label="More ${bucketName(k)}">+</button></div>`;
     const funMax = Math.max(0, Math.floor((by.fun.pct + by.ess.pct) / 5) * 5);
     return `<h2>My split</h2><div class="fine" style="text-align:center;margin:-8px 0 8px"><b>${v.base}</b></div>
-    <div class="card" style="padding:4px 16px">${blk('must', 'locked bills, at their usual amounts')}${blk('ess', 'what is left, with other payments')}${blk('fun', 'your choice: a share of the base', stp('fun', d.fun, 0, funMax, 'of the base'))}${blk('save', `${saveNote(v)}`, stp('save', d.rule, 5, 20, 'of your salary'))}</div>
+    <div class="card" style="padding:4px 16px">${blk('must', 'locked bills, at their usual amounts')}${blk('ess', 'what is left, with other payments')}${blk('fun', 'your choice: a share of the base', stp('fun', d.fun, 0, funMax, 'of the base'))}${blk('save', `${saveNote(v)}`, `<div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="link lnk44" data-saverules="pay" aria-label="Linked to your payday rule, ${d.rule}% of your salary. Edit">Linked to your payday rule · Edit</button></div>`)}</div>
     <div class="fine u-note-b14">The four add up to 100%. Fun is your choice; Everyday essentials is what is left. Saving here is the payday rule${v.plan.weekly || v.plan.round ? ' plus your weekly transfer and round-ups' : ''}: the % on its row is the share of your salary, and Saving is ${bPct(v, 'save') || ft(by.save.amt)} of the base. Changing it here changes the payday rule too.</div>
     ${(() => { const inv = Math.min(d.inv !== undefined ? d.inv : (S.analyst.invest || 0), by.save.amt); return `<div class="card" style="padding:12px 16px"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b style="display:flex;align-items:center;gap:7px"><span class="dotc" style="background:#7A6FD8"></span>Of Saving, for investing</b><span class="k num">${ft(by.save.amt - inv)} stays in Persely</span></div>
       <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:6px"><button class="chip sq" data-splitinv="-1000" ${inv <= 0 ? 'disabled' : ''} aria-label="Less for investing">−</button><b class="num" style="min-width:92px;text-align:center;font-size:1rem">${ft(inv)}</b><button class="chip sq" data-splitinv="1000" ${inv + 1000 > by.save.amt ? 'disabled' : ''} aria-label="More for investing">+</button></div>
@@ -3286,12 +3410,41 @@ const SHEETS = {
     <div class="sec"><span>People you may know</span></div>
     ${SUGGEST.map(p=>{ const added = S.friends.some(f=>f.n===p.n);
       return `<div class="row" style="padding:10px 14px"><span class="fav" style="background:${avBg(p.c)}">${p.n[0]}</span><span class="t">${p.n}<small>OTP customer · in your contacts</small></span>${added ? `<span style="color:var(--green-t);font-weight:700;font-size:var(--fs-s)">Added</span>` : `<button class="btn sm" data-addfriend="${p.n}">Add</button>`}</div>`; }).join('')}`,
+  // the tile chooser as a sheet (New +, Set a goal, the Home card's tab): the same six tiles as the setup card, then the one wizard
   newgoal:()=>{ const hasShared = S.goals.some(g=>g.shared), hasEur = S.goals.some(isEur);
-    return `<h2>New goal</h2><div class="u-sheet-sub2">Up to 5 Perselys.</div>
+    return `<h2>What are you saving for?</h2><div class="u-sheet-sub2">Up to 5 Perselys.</div>
+    <!-- CONFIRM WITH OTP -->
+    <div class="fine u-sheet-sub">3.0% a year on up to ${ft(CAP)} with your Junior account until ${juniorEndLabel()}</div>
+    ${S.draft ? `<button class="row" data-onbresume><span class="ic">${I('star')}</span><span class="t">Continue your draft<small>${esc(S.draft.name || 'Your goal')}, ${ft(S.draft.target)}</small></span><span class="chev">${I('chev',20)}</span></button>` : ''}
+    <div class="wn-grid three tiles-s">${Object.entries(GOAL_PRESETS).map(([k,g]) => `<button data-tilepick="${k}">${I(g.ic,24)}${g.label}</button>`).join('')}<button data-tilepick="custom">${I('plus',24)}Something else</button></div>
     ${hasShared ? '' : `<button class="row" data-sheet="newshared"><span class="ic">${I('user')}</span><span class="t">Shared Persely<small>Save together with friends or flatmates</small></span><span class="chev">${I('chev',20)}</span></button>`}
-    ${hasEur ? '' : `<button class="row" data-neweur><span class="ic">${I('euro')}</span><span class="t">Euro Persely<small>For Erasmus and travel. No Junior rate</small></span><span class="chev">${I('plus',20)}</span></button>`}
-    <button class="row" data-cgnew><span class="ic">${I('plus')}</span><span class="t">Your own goal<small>Name, amount, date and a forecast</small></span><span class="chev">${I('chev',20)}</span></button>
-    ${[['Erasmus in Lisbon','plane',150000],['Driving licence','car',350000],['Emergency fund','lock',200000]].filter(([n])=>!S.goals.some(g=>g.name===n)).map(([n,ic,t])=>`<button class="row" data-cgpreset="${n}|${ic}|${t}"><span class="ic">${I(ic)}</span><span class="t">${n}<small>Target: ${ft(t)}</small></span><span class="chev">${I('chev',20)}</span></button>`).join('')}`; },
+    ${hasEur ? '' : `<button class="row" data-neweur><span class="ic">${I('euro')}</span><span class="t">Euro Persely<small>For Erasmus and travel. No Junior rate</small></span><span class="chev">${I('plus',20)}</span></button>`}`; },
+  // Saving rules (D9): the master for all three rules. Switch, amount and target goal on one sheet; goal pages only show status
+  saverules:()=>{
+    const gs = S.goals.filter(g => !g.shared && !isEur(g)), f = S._srf || '';
+    const chips = (key, cur) => `<div class="flabel">Goes to</div><div class="chips u-mb8" role="group" aria-label="Goes to">${gs.map(g => `<button class="chip ${cur === g.id ? 'on' : ''}" data-srgoal="${key}:${g.id}" aria-pressed="${cur === g.id}">${esc(g.name)}</button>`).join('')}</div>`;
+    const blk = (key, title, sub, on, body) => `<div class="srb ${f === key ? 'focus' : ''}" data-srblock="${key}"><button class="opt slim ${on ? 'on' : ''}" data-srtog="${key}" aria-pressed="${on}"><span class="t"><b>${title}</b><small>${sub}</small></span><span class="tg ${on ? 'on' : ''}"></span></button>${on ? `<div class="subopts">${body}</div>` : ''}</div>`;
+    const wks = [...new Set([1000, 2000, 3000, 5000, S.weekly.amt])].sort((a, b) => a - b);
+    return `<h2>Saving rules</h2><div class="fine u-sheet-sub">Three ways money moves into your goals. Each goes to one goal. A change saves at once.</div>
+    ${gs.length ? `${blk('pay', 'Payday rule', 'A share of each salary or scholarship. We ask first.', S.payday.on,
+        `<div class="chips eq u-m0">${[5, 10, 15, 20].map(x => `<button class="chip ${S.payday.pct === x ? 'on' : ''}" data-srpct="${x}" aria-pressed="${S.payday.pct === x}">${x}%</button>`).join('')}</div>
+         <div class="fine u-mt4-b12">Keeps ${ft(20000)} on your account; if money is tight, less or nothing moves. About ${ft(incomeShare(S.payday.pct))} from a ${ft(S.income.amount)} salary.</div>${chips('pay', S.ruleGoal)}
+         <button class="link lnk44" data-sheet="payrule">Ask first and keep 20 000 Ft settings ${I('chev', 16)}</button>`)}
+      ${blk('wk', 'Weekly transfer', 'The same amount every Monday. Counts for your streak.', S.weekly.on,
+        `<div class="chips eq u-m0">${wks.map(x => `<button class="chip ${S.weekly.amt === x ? 'on' : ''}" data-srwk="${x}" aria-pressed="${S.weekly.amt === x}">${ft(x)}</button>`).join('')}</div>
+         <div class="fine u-mt4-b12">About ${ft(Math.round(S.weekly.amt * 52 / 12))} a month.</div>${chips('wk', weeklyGoal().id)}`)}
+      ${blk('rr', 'Round-ups', 'A 1 190 Ft coffee moves 20 Ft; we double it', S.roundup.on, chips('rr', S.roundup.goal))}`
+      : '<div class="note">Create a goal first. Then choose how money gets in.</div>'}
+    <button class="btn ghost" data-closesheet>Close</button>`; },
+  keepconfirm:()=>`<h2>Request to keep 3.0%?</h2>
+    <!-- CONFIRM WITH OTP -->
+    <div class="card u-card-bul"><ul class="bul sm"><li>3.0% a year on the first ${ft(CAP)}, 28% tax on the interest</li><li>Your first salary has to arrive at OTP within 6 months</li><li>Then your goals keep 3.0% until ${juniorEndLabel(12)}</li><li>Without a salary at OTP the rate returns to standard after 30 days' notice</li></ul></div>
+    <button class="btn" data-keepok>Confirm</button><button class="btn ghost" data-closesheet>Not now</button>`,
+  draftq:()=>`<h2>Save as draft?</h2><div class="u-sheet-sub2">We keep your name, amount and date. Nothing moves.</div>
+    <button class="btn" data-onbdraft="1">Save draft</button><button class="btn ghost" data-onbdraft="0">Discard</button>`,
+  // soft reminder pre-prompt (flow A3): the system permission is only asked from Turn on
+  nudge:()=>`<h2>Want a Sunday nudge?</h2><div class="u-sheet-sub2">One reminder on Sunday at 18:00, only if your week is still open. Change it any time.</div>
+    <button class="btn" data-nudgeon>Turn on</button><button class="btn ghost" data-nudgeoff>Not now</button>`,
   month:()=>pkMonthSheet(),
   goodtoknow:()=>`<h2>Good to know</h2>${gtkHTML()}
     <button class="row" data-sheet="how"><span class="t">How Persely works</span><span class="chev">${I('chev',20)}</span></button>`,
@@ -3388,16 +3541,6 @@ document.addEventListener('click', e=>{
   if(d.act1){ if(discTab===0){ S.disc.activated.push(d.act1); renderAll(); toast('Discount activated'); } return; }
   if('actall' in d){ S.disc.activated = DISC.map(x=>x.id); renderAll(); toast('All discounts activated'); return; }
   if(d.nektab){ nekTab=+d.nektab; refreshPages(); return; }
-  if('autotoggle' in d){ S.persely.auto=!S.persely.auto; renderAll(); return; }
-  if(d.cycle){
-    const opts = d.cycle==='freq' ? ['Monthly','Weekly','Daily'] : ['On the 1st of the month','On the 10th of the month','On payday'];
-    const k = d.cycle==='freq'?'freq':'day'; S.persely[k] = opts[(opts.indexOf(S.persely[k])+1)%opts.length]; renderAll(); return;
-  }
-  if('savereg' in d){
-    if(S.persely.auto){ const v=parseInt(($('#regamt')?.value||'').replace(/\D/g,'')); if(v) S.persely.amt=v; renderAll(); popPage(); toast('Weekly transfer saved'); }
-    else { S.persely.auto=true; renderAll(); }
-    return;
-  }
   if('reset' in d){ closeOnb(); closeWhatsNew(); S=fresh(); renderAll(); tab('fooldal'); showSplash(1100); return; }
   if('pushon' in d){ enablePush(); return; }
   if('pushtest' in d){ testPush(); return; }
@@ -3422,19 +3565,7 @@ document.addEventListener('click', e=>{
     if(S.weekly.on && S.ruleGoal === g.id){ S.weekly.on = false; }
     else g.weekly = g.weekly ? 0 : 2000;
     renderAll(); undoable(before, g.weekly || (S.weekly.on && S.ruleGoal === g.id) ? `${ft(g.weekly || S.weekly.amt)} every Monday → ${g.name}` : 'Weekly transfer off'); return; }
-  // create a goal: 3 steps with a live projection
-  if(d.cgpreset !== undefined || 'cgnew' in d){
-    const custom = d.cgpreset === undefined, [n, ic, t] = custom ? [] : d.cgpreset.split('|'), c = customGoal();
-    S._draft = custom ? {step:1, name:'', ic:c.ic, target:c.target, typeAmt:0, date:c.date, weekly:2000, round:true, focusName:true}
-      : {step:1, name:n, ic, target:+t, typeAmt:+t, date:pkIdxDate(pkNow() + 10), weekly:2000, round:true};
-    closeSheet(); pushPage('create');
-    if(custom){ const f = $('#cgName'); if(f){ S._draft.focusName = false; f.focus({preventScroll:true}); } }
-    return; }
-  if(d.cgstep){ keepCgName(); const dr = S._draft;
-    if(dr.step === 1 && !cleanName(dr.name)){ toast('Give your goal a name'); return; }
-    if(dr.step === 1 && dr.target < PK_MIN) pkSet('cg', PK_MIN);
-    dr.step = Math.max(1, Math.min(3, dr.step + (+d.cgstep))); refreshPages(); return; }
-  // amount and month pickers (shared by onboarding and New Persely)
+  // amount and month pickers (shared by the wizard and Edit goal)
   if(d.pkamt){ const k = pkKind(t); pkSet(k, +d.pkamt); return; }
   if(d.pkdate){ const k = pkKind(t); pkObj(k).date = d.pkdate; pkSync(k); return; }
   if('pkmonth' in d){ const k = pkKind(t), o = pkObj(k), now = pkNow(), idx = Math.min(pkLast(), Math.max(now + 1, pkDateIdx(o.date)));
@@ -3443,15 +3574,6 @@ document.addEventListener('click', e=>{
     PKM.year = Math.min(y1, Math.max(y0, d.pkystep ? PKM.year + (+d.pkystep) : +d.pkyear)); pkSheetRender(d.pkystep ? [`[data-pkystep="${d.pkystep}"]:not(:disabled)`, `[data-pkystep="${-d.pkystep}"]`] : `[data-pkyear="${PKM.year}"]`); return; }
   if(d.pkmo){ PKM.sel = pkIdxDate(+d.pkmo); pkSheetRender(`[data-pkmo="${d.pkmo}"]`); return; }
   if('pkdone' in d){ pkObj(PKM.k).date = PKM.sel; closeSheet(); pkSync(PKM.k); const b = document.querySelector(`[data-pk="${PKM.k}"] [data-pkmonth]`); if(b) b.focus({preventScroll:true}); return; }
-  if(d.cgwk !== undefined && d.cgwk !== ''){ S._draft.weekly = +d.cgwk; refreshPages(); return; }
-  if('cground' in d){ S._draft.round = !S._draft.round; refreshPages(); return; }
-  if(d.cgboost){ S._draft.weekly = +d.cgboost; refreshPages(); toast(`Weekly transfer set to ${ft(+d.cgboost)}`); return; }
-  if('cgcreate' in d){
-    if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
-    const before = snap(), dr = S._draft, g = {id:'g'+Date.now(), name:cleanName(dr.name), ic:dr.ic || 'star', saved:0, target:dr.target, pace:0, date:dr.date, weekly:dr.weekly};
-    S.goals.push(g); S.onboarded = true; if(dr.round) S.roundup = {on:true, goal:g.id};
-    S._draft = null; popPage(true); renderAll(); S._detail = g.id; pushPage('goal');
-    undoable(before, `${g.name} created.${g.weekly ? ' First transfer next Monday.' : ''}`); return; }
   if(d.pickgoal){ keepAmt(); if(S._goal !== d.pickgoal) S._amt = 0; S._goal = d.pickgoal; sheet(SHEETS.hubsave()); return; }
   if(d.hubfrom){ keepAmt(); S._from = d.hubfrom; sheet(SHEETS.hubsave()); return; }
   if('hubsave' in d){
@@ -3484,24 +3606,23 @@ document.addEventListener('click', e=>{
   if(d.outall){ const g = goalById(d.outall); if(!g || g.shared || gSaved(g) <= 0) return; S._outall = g.id; sheet(SHEETS.outallc()); return; }
   if(d.outallok){ const g = goalById(d.outallok); if(!g || g.shared || gSaved(g) <= 0){ closeSheet(); return; } const before = snap(), huf = withdrawFrom(g, gSaved(g));
     closeSheet(); renderAll(); undoable(before, `${ft(huf)} is on your Junior account. ${g.name} is empty, so you can edit or delete it`); return; }
-  if(d.gedit){ const g = goalById(d.gedit); if(!goalEmpty(g) || !goalIsPlain(g)) return;
-    const wk = (S.weekly.on && S.ruleGoal === g.id) ? S.weekly.amt : (g.weekly || 0);
-    S._draft = {step:1, edit:g.id, name:g.name, ic:g.ic || 'star', target:gTarget(g), typeAmt:0, date:g.date || pkIdxDate(pkNow() + 10), weekly:wk, round:S.roundup.on && S.roundup.goal === g.id};
+  if(d.gedit){ const g = goalById(d.gedit); if(!g || !goalIsPlain(g)) return;   // one edit for name, amount, date and icon, even with money inside (D8)
+    S._draft = {edit:g.id, name:g.name, ic:g.ic || 'star', target:gTarget(g), saved:gSaved(g), typeAmt:0, date:g.date || pkIdxDate(pkNow() + 10)};
     pushPage('create'); return; }
-  if(d.gdel){ if(!goalEmpty(goalById(d.gdel))) return; S._del = d.gdel; sheet(SHEETS.gdel()); return; }
-  if(d.gdelok){ const g = goalById(d.gdelok); if(!g || !goalEmpty(g)) { closeSheet(); return; } const before = snap(), name = g.name, inPage = stack.some(el => el.dataset.id === 'goal'), r = removeGoal(g.id);
+  if(d.gdel){ const g = goalById(d.gdel); if(!g || (g.shared && !goalEmpty(g))) return; S._del = d.gdel; sheet(SHEETS.gdel()); return; }
+  if(d.gdelok){ const g = goalById(d.gdelok); if(!g){ closeSheet(); return; } const before = snap(), name = g.name, inPage = stack.some(el => el.dataset.id === 'goal'), r = removeGoal(g.id, d.dest || '');
+    if(!r){ closeSheet(); return; }
     S._del = null; closeSheet(); if(inPage) popPage(true); renderAll();
-    undoable(before, `${name} deleted.${r.moved.length ? (r.heir ? ` Your ${r.moved.join(' and ')} now go to ${r.heir}.` : ` Your ${r.moved.join(' and ')} are off.`) : ''}`); return; }
+    undoable(before, `${name} deleted.${r.amt ? ` ${money(g, r.amt)} moved to ${r.to}.` : ''}${r.moved.length ? (r.heir ? ` Your ${r.moved.join(' and ')} now go to ${r.heir}.` : ` Your ${r.moved.join(' and ')} are off.`) : ''}`); return; }
   if(d.cgic){ keepCgName(); S._draft.ic = d.cgic; refreshPages(); const b = document.querySelector(`[data-cgic="${d.cgic}"]`); if(b) b.focus({preventScroll:true}); return; }
-  if('cgsave' in d){ keepCgName(); const dr = S._draft, g = dr && goalById(dr.edit); if(!g || !goalEmpty(g)){ toast('Take your money out first'); return; }
-    if(!cleanName(dr.name)){ toast('Give your goal a name'); return; }
+  if('cgsave' in d){ keepCgName(); const dr = S._draft, g = dr && goalById(dr.edit); if(!g) return;
+    const why = cgGate(); if(why){ gateSync(); return; }
     const before = snap(), old = g.name, nm = cleanName(dr.name);
     g.name = nm; g.ic = dr.ic || g.ic; g.date = dr.date;
     if(g.id === 'holiday'){ S.persely.name = nm; S.persely.target = dr.target; const a = acc('persely'); if(a){ a.n = 'Persely – ' + nm; a.h = 'Goal: ' + ft(dr.target); } } else g.target = dr.target;
     if(old !== nm) S.tx.forEach(x => { if(x.note === old) x.note = nm; });
-    if(S.weekly.on && S.ruleGoal === g.id){ if(dr.weekly) S.weekly.amt = dr.weekly; else S.weekly.on = false; g.weekly = 0; } else g.weekly = dr.weekly || 0;
-    if(dr.round){ S.roundup = {on:true, goal:g.id}; } else if(S.roundup.goal === g.id) S.roundup.on = false;
-    syncSplit(); S._draft = null; popPage(true); renderAll(); undoable(before, `${nm} saved`); return; }
+    S._draft = null; popPage(true); renderAll(); undoable(before, `${nm} saved`); return; }
+  if(d.keepsaving){ const g = goalById(d.keepsaving); if(!g) return; const before = snap(); g.cont = true; renderAll(); undoable(before, `${g.name}: your rules keep saving here`); return; }
   if(d.sharedgoal){ S._shared = d.sharedgoal; sheet(SHEETS.sharedgoal()); return; }
   if(d.shgoal){ S._shGoal = +d.shgoal; keepShName(); sheet(SHEETS.newshared()); restoreShName(); return; }
   if(d.shfirst){ S._shFirst = +d.shfirst; keepShName(); sheet(SHEETS.newshared()); restoreShName(); return; }
@@ -3599,9 +3720,11 @@ document.addEventListener('click', e=>{
   if(d.rrgoal){ S.roundup.goal = d.rrgoal; sheet(SHEETS.roundrule()); return; }
   if('rron' in d){ const before = UNDO.base || snap(); UNDO.base = null; S.roundup.on = true; closeSheet(); renderAll(); undoable(before, `Round-ups on: they go to ${(goalById(S.roundup.goal)||ruleGoal()).name}`); return; }
   if('rroff' in d){ const before = UNDO.base || snap(); UNDO.base = null; S.roundup.on = false; closeSheet(); renderAll(); undoable(before, 'Round-ups off'); return; }
-  if('keeprate' in d){ S.bridge = true; renderAll(); popPage(); tab('hub'); toast('Done. Your 3.0% continues for 12 months once your salary arrives at OTP');
+  if('keepreq' in d){ sheet(SHEETS.keepconfirm()); return; }
+  if('keepok' in d){ closeSheet(); S.keep = {pending:true, at:S.months || 0}; renderAll(); tab('hub'); toast('Request sent. Waiting for your first salary at OTP');
     if(S._ffRest){ const r = S._ffRest; S._ffRest = 0; setTimeout(() => fastForward(r, 'year'), 1400); }   // the year jump carries on after the Junior moment
     return; }
+  if('keepcancel' in d){ S.keep = {pending:false, at:0}; renderAll(); toast('Request cancelled. Your Junior package ends on the date shown'); return; }
   if('yearstory' in d){ S._yearStory = true; openStory(); return; }
   if('ffdone' in d){ closeSheet(); tab('fooldal'); if(S._rw){ notify({title:'Persi · Persely', persi:true, body:`Reward earned: ${S._rw.rew.title}. ${S._rw.rew.why}.`, url:'hub'}); qSheet(() => SHEETS.reward(), 'reward'); } return; }
   if('ffgrad' in d){ closeSheet(); tab('hub'); pushPage('grad'); return; }
@@ -3632,35 +3755,55 @@ document.addEventListener('click', e=>{
   /* update pop-up + onboarding */
   if(d.wnpick){ S.updateSeen = true; save(); closeWhatsNew(); startOnb(d.wnpick); return; }
   if('wnlater' in d){ S.updateSeen = true; save(); closeWhatsNew(); toast('You can set it up any time in the Persely tab'); return; }
-  if('onbstart' in d){ startOnb('travel'); return; }
-  if(d.tilepick){ startOnb(d.tilepick); return; }
+  /* saving rules sheet (master): switch, amount and goal, each change saves at once with a 10 s Undo */
+  if('saverules' in d){ S._srf = d.saverules || ''; sheet(SHEETS.saverules()); const b = $(`#sheet [data-srblock="${S._srf}"]`); if(b) b.scrollIntoView({block:'nearest'}); return; }
+  if(d.srtog || d.srpct || d.srwk || d.srgoal){
+    const gs = S.goals.filter(g => !g.shared && !isEur(g)); if(!gs.length) return;
+    const before = snap(), nm = id => (goalById(id) || {name:''}).name; let msg = '';
+    if(d.srtog === 'pay'){ S.payday.on = !S.payday.on; if(!goalById(S.ruleGoal)) S.ruleGoal = gs[0].id; syncSplit(); msg = S.payday.on ? `Payday rule on: ${S.payday.pct}% of each salary to ${nm(S.ruleGoal)}` : 'Payday rule off'; }
+    else if(d.srtog === 'wk'){ S.weekly.on = !S.weekly.on; if(!S.weekly.goal || !goalById(S.weekly.goal)) S.weekly.goal = weeklyGoal().id; msg = S.weekly.on ? `${ft(S.weekly.amt)} every Monday to ${nm(S.weekly.goal)}` : 'Weekly transfer off'; }
+    else if(d.srtog === 'rr'){ S.roundup.on = !S.roundup.on; if(!goalById(S.roundup.goal)) S.roundup.goal = ruleGoal().id; msg = S.roundup.on ? `Round-ups on: they go to ${nm(S.roundup.goal)}` : 'Round-ups off'; }
+    else if(d.srpct){ S.payday.pct = +d.srpct; syncSplit(); msg = `Payday rule: ${S.payday.pct}% of each salary`; }
+    else if(d.srwk){ S.weekly.amt = +d.srwk; msg = `Weekly transfer: ${ft(S.weekly.amt)} every Monday`; }
+    else if(d.srgoal){ const [k, id] = d.srgoal.split(':'), old = k === 'pay' ? S.ruleGoal : k === 'wk' ? weeklyGoal().id : S.roundup.goal;
+      if(k === 'pay') S.ruleGoal = id; else if(k === 'wk') S.weekly.goal = id; else S.roundup.goal = id;
+      msg = `${k === 'pay' ? 'Payday rule now goes' : k === 'wk' ? 'Weekly transfer now goes' : 'Round-ups now go'} to ${nm(id)}${old && old !== id && nm(old) ? ' instead of ' + nm(old) : ''}`; }
+    const st = $('#sheet').scrollTop; renderAll(); sheet(SHEETS.saverules()); $('#sheet').scrollTop = st; undoable(before, msg); return; }
+  if('onbstart' in d){ sheet(SHEETS.newgoal()); return; }
+  if(d.tilepick){ if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; } if(sheetOpen()) closeSheet(); startOnb(d.tilepick); return; }
+  if('onbresume' in d){ if(!S.draft) return; if(sheetOpen()) closeSheet(); startOnb(S.draft.key, true); return; }
   if('setuplater' in d){ SETUP_COLLAPSED = true; renderView('hub'); return; }
   if('setupopen' in d){ SETUP_COLLAPSED = false; renderView('hub'); return; }
   if('onbnext' in d){
-    if(STEPS[O.i] === 'goal'){ keepOnbName(); if(!cleanName(O.name)){ toast('Give your goal a name'); return; } if(O.target < PK_MIN) pkSet('onb', PK_MIN); }
-    O.i = Math.min(STEPS.length - 1, O.i + 1); renderOnb(); return;
+    if(STEPS[O.i] === 'goal'){ keepOnbName(); const r = onbGate(); if(r){ gateSync(); return; } }
+    O.i = Math.min(STEPS.length - 1, O.i + 1); renderOnb(); const sc = $('#onb .onb-body'); if(sc) sc.scrollTop = 0; return;
   }
-  if('onbback' in d){ keepOnbName(); O.i = Math.max(0, O.i - 1); renderOnb(); return; }
-  if('onbquit' in d){ closeOnb(); renderAll(); toast('You can set it up any time in the Persely tab'); return; }
+  if('onbback' in d){ keepOnbName();
+    if(O.i > 0){ O.i--; renderOnb(); return; }
+    closeOnb(); if(S.goals.length) sheet(SHEETS.newgoal()); else { SETUP_COLLAPSED = false; tab('hub'); } return; }   // step 1: the Back arrow returns to the tiles
+  if('onbquit' in d){ keepOnbName(); sheet(SHEETS.draftq()); return; }
+  if('onbdraft' in d){
+    if(d.onbdraft === '1'){ S.draft = {key:O.key, ic:O.ic, name:cleanName(O.name), target:O.target, typeAmt:O.typeAmt, date:O.date, payOn:O.payOn, pct:O.pct, weeklyOn:O.weeklyOn, weekly:O.weekly, roundOn:O.roundOn}; closeSheet(); closeOnb(); renderAll(); toast('Draft saved. Pick it up from the Persely tab'); }
+    else { S.draft = null; closeSheet(); closeOnb(); renderAll(); toast('You can set it up any time in the Persely tab'); }
+    return; }
   if('onbpay' in d && !d.onbpay){ O.payOn = !O.payOn; renderOnb(); return; }
   if('onbwk' in d && !d.onbwk){ O.weeklyOn = !O.weeklyOn; renderOnb(); return; }
   if('onbrr' in d){ O.roundOn = !O.roundOn; renderOnb(); return; }
   if(d.onbpct){ O.pct = +d.onbpct; renderOnb(); return; }
   if(d.onbweekly){ O.weekly = +d.onbweekly; O.weeklyOn = true; renderOnb(); return; }
   if(d.onbboost){ O.weeklyOn = true; O.weekly = +d.onbboost; renderOnb(); toast(`Weekly transfer set to ${ft(O.weekly)}`); return; }
-  if(d.onbfirst !== undefined){ O.first = +d.onbfirst; renderOnb(); return; }
-  if('onbchange' in d){ const ids = S.accounts.filter(x => x.id !== 'persely').map(x => x.id); O.from = ids[(ids.indexOf(O.from) + 1) % ids.length]; renderOnb(); return; }
-  if('onbremind' in d){ O.remind = !O.remind; renderOnb(); return; }
   if('onbcreate' in d){
-    if(O.first && acc(O.from).v < O.first){ toast('Not enough money on this account'); return; }
-    applyOnb(); const g = goalById('onb'); if(O.first) depositTo(g, O.first, O.from);
-    S.remind = O.remind;
-    if(O.remind && PUSH.supported && (PUSH.standalone || !PUSH.ios) && PUSH.perm === 'default') enablePush();
-    closeOnb(); renderAll();
-    toast(`${g.name} created${O.first ? `. ${ft(O.first)} is in` : ''}`);
-    if(O.first && pig3d) setTimeout(() => pig3d.celebrate(), 400);   // the first coin drops in
+    if(S.goals.length >= 5){ toast('You can have up to 5 Perselys'); return; }
+    const r = applyOnb(), g = r.g;
+    closeOnb(); renderAll(); S._detail = g.id; S._hl = g.id; pushPage('goal'); setTimeout(() => { if(S._hl === g.id) S._hl = ''; }, 3200);   // the new goal's page, the goal highlighted
+    toast(`${g.name} created. No money has moved.${r.notes.length ? ' ' + r.notes.join('. ') + '.' : ''}`);
+    if(r.first){   // first goal only: "Start your streak?" with an empty amount, then the soft reminder question
+      qSheet(() => { if(!goalById(g.id)) return ''; S._goal = g.id; S._amt = 0; S._fa = true; return SHEETS.hubsave(); }, 'firstadd', true);
+      qSheet(() => SHEETS.nudge(), 'nudge', true); }
     return;
   }
+  if('nudgeon' in d){ S.remind = true; closeSheet(); enablePush(); return; }   // the system permission is asked here and nowhere else
+  if('nudgeoff' in d){ S.remind = false; closeSheet(); toast('No reminder. You can turn it on from the streak card'); return; }
 });
 /* goal step pickers: slider drag and keys, typed amount, swipe-down on the month sheet */
 let PKD = null;
@@ -3706,7 +3849,7 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('focusout', e => {
   const t = e.target; if(!t.classList || !t.classList.contains('pkamt')) return;
-  const k = pkKind(t); if(pkObj(k).target < PK_MIN){ pkSet(k, PK_MIN); }
+  const k = pkKind(t); if(typeof gateSync === 'function') gateSync();   // below the minimum: the line says so and Next waits (no silent change)
 });
 document.addEventListener('input', e => { const t = e.target; if(t && t.id === 'mv' && /\D/.test(t.value)) t.value = t.value.replace(/\D/g, ''); });   // Add money: digits only
 const amt = () => parseFloat((($('#mv') && $('#mv').value) || '').replace(/[^\d.]/g,'')) || 0;
@@ -3723,9 +3866,9 @@ function askInline(text, ok){ const c = $('#cfm'); if(!c){ ok(); return; } PEND 
 function cfmBack(){ PEND = null; const c = $('#cfm'); if(c) c.innerHTML = ''; const b = $('#sheet .pbtn'); if(b) b.style.display = ''; }
 document.addEventListener('input', e => { const t = e.target; if(!t || !t.closest || !t.closest('#sheet')) return; if(t.id) ferrClear(t.id); if(PEND) cfmBack(); });
 const keepOnbName = () => { if($('#onbName')) O.name = $('#onbName').value; };
-document.addEventListener('input', e => {   // New goal: Next stays off until the name has a letter in it
+document.addEventListener('input', e => {   // Edit goal: Save waits until the name has a letter in it, and says why
   if(e.target.id !== 'cgName' || !S._draft) return;
-  S._draft.name = e.target.value; const b = e.target.closest('.page').querySelector('[data-cgstep="1"]'); if(b) b.disabled = !cleanName(S._draft.name);
+  S._draft.name = e.target.value; gateSync();
 });
 const keepCgName = () => { if($('#cgName') && S._draft) S._draft.name = $('#cgName').value; };
 let shNameKeep = '';
@@ -4073,7 +4216,7 @@ function mountPig(){ if(pig3d) pig3d.mount(); }
    Pop-up: one question ("What are you saving for?"). Then: goal with a date → how money gets in
    (with a live projection) → summary with an optional first deposit and one Create goal button. No tour: Persi shows a hint per block instead. */
 const cleanName = s => String(s || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 30);   // custom names are typed by the user: no markup, one line, 30 characters
-const customGoal = () => ({ic:'star', name:'', target:100000, date:pkIdxDate(pkNow() + 12)});   // "Something else": own name, 100 000 Ft, 12 months ahead
+const customGoal = () => ({ic:'star', name:'', target:100000, date:presetDate(100000)});   // "Something else": own name, 100 000 Ft, a date the default rules reach
 const GOAL_PRESETS = {
   home:{label:'Own home', ic:'home', name:'First home fund', target:500000, date:'2029-06-01'},
   travel:{label:'Travel', ic:'plane', name:'Erasmus in Lisbon', target:150000, date:'2027-09-01'},
@@ -4104,13 +4247,13 @@ const pkMonthShort = s => new Date(s + 'T12:00:00').toLocaleDateString('en-GB', 
 const pkIn = n => n <= 0 ? 'this month' : n === 1 ? 'next month' : n < 24 ? `in ${n} months` : `in ${Math.floor(n / 12)} years${n % 12 ? ` ${n % 12} month${n % 12 > 1 ? 's' : ''}` : ''}`;
 const pkInS = n => n >= 60 && n % 12 ? `in about ${Math.round(n / 12)} years` : pkIn(n);   // short form for the date row: long spans do not wrap on a 360 px screen
 // what the amount and date ask of a week: the same maths as the forecast on the next step
-function pkMath(target, date){
-  const m = Math.max(.5, monthsTo(date)), wk = Math.ceil(target / (m * 4.345) / 100) * 100, cap = incomeShare(10) * 12 / 52 + 5000;   // payday rule + 5 000 Ft a week
+function pkMath(target, date, saved = 0){
+  const m = Math.max(.5, monthsTo(date)), wk = weeklyNeed(target, saved, date), cap = incomeShare(10) * 12 / 52 + 5000;   // payday rule + 5 000 Ft a week
   return {m, wk, hard: wk > cap};
 }
 function pkRealHTML(o){
   if(!o.target) return 'Type how much you need.';
-  const r = pkMath(o.target, o.date);
+  const r = pkMath(o.target, o.date, o.saved || 0);
   return `${ft(o.target)} by ${pkMonthShort(o.date)} ≈ <b class="${r.hard ? 'late' : ''}">${ft(r.wk)} a week</b>${r.hard ? `<div class="fine">That is a lot for a week. A later date or a smaller amount makes it easier.</div>` : ''}`;
 }
 const pkStackHTML = v => `<span class="pkstack ${v >= 500000 ? 'strap' : ''}" style="--L:${pkLayers(v)}" aria-hidden="true">${Array.from({length: pkLayers(v)}, (_, i) => `<i class="${i < 2 ? 'c' : 'n'}" style="--k:${i}"></i>`).join('')}<s></s></span>`;
@@ -4120,11 +4263,14 @@ function pkStackSync(st, v){
   for(let i = cur.length - 1; i >= L; i--){ const e = cur[i]; if(red) e.remove(); else { e.classList.remove('drop'); e.classList.add('off'); setTimeout(() => e.remove(), 160); } }
   st.style.setProperty('--L', L); st.classList.toggle('strap', v >= 500000);
 }
+// the line above the chips: the Minimum, or what 3.0% covers when the goal is bigger than the cap (A3)
+const pkCapHTML = v => v > 0 && v < PK_MIN ? `<b class="late">Minimum is ${ft(PK_MIN)}</b>` : v > CAP ? `3.0% applies to the first ${ft(CAP)}` : '';
 function amountPicker(k){
-  const o = pkObj(k), v = o.target, chips = [...new Set([o.typeAmt, 50000, 150000, 300000, 1000000].filter(Boolean))].sort((a, b) => a - b).slice(0, 5);
+  const o = pkObj(k), v = o.target, chips = [...new Set([o.typeAmt, 50000, 150000, 300000, 500000].filter(Boolean))].sort((a, b) => a - b).slice(0, 5);
   return `<div class="card pk" data-pk="${k}">
     <div class="pkrow"><div class="pkfld"><input class="pkamt" inputmode="numeric" pattern="[0-9 ]*" enterkeyhint="done" autocomplete="off" maxlength="11" value="${v ? pkSpace(v) : ''}" aria-label="Amount you need, in forints. Type it, or use the slider"><span>Ft</span></div>${pkStackHTML(v)}</div>
     <div class="pksl" role="slider" tabindex="0" aria-label="Amount you need" aria-valuemin="${PK_MIN}" aria-valuemax="${PK_MAX}" aria-valuenow="${Math.min(PK_MAX, Math.max(PK_MIN, v))}" aria-valuetext="${pkSpace(v)} forints" style="--p:${(pkPos(v) * 100).toFixed(2)}%"><div class="pkin"><i class="pkfill"></i><b class="pkthumb"></b></div></div>
+    <div class="fine pkcap" data-pk="${k}" role="status">${pkCapHTML(v)}</div>
     <div class="chips pkchips">${chips.map(c => `<button class="chip ${v === c ? 'on' : ''}" data-pkamt="${c}" aria-pressed="${v === c}" aria-label="${pkSpace(c)} forints${c === o.typeAmt ? ', suggested for this goal' : ''}">${pkShort(c)}</button>`).join('')}</div></div>`;
 }
 function monthPicker(k){
@@ -4133,7 +4279,7 @@ function monthPicker(k){
   return `<div class="pkd" data-pk="${k}">
     <button class="fld" data-pkmonth aria-haspopup="dialog" aria-label="By when? ${pkMonthName(o.date)}, ${pkIn(n)}. Change month"><span class="t"><span class="pkl">By when?</span><b>${pkMonthName(o.date)}</b> <span class="pks">· ${pkInS(n)}</span></span><span class="chev">${I('chev', 20)}</span></button>
     <div class="chips pkchips pkdc">${quick.map(([l, v]) => `<button class="chip ${o.date === v ? 'on' : ''}" data-pkdate="${v}" aria-pressed="${o.date === v}">${l}</button>`).join('')}</div></div>
-    <div class="note pkreal ${o.target && pkMath(o.target, o.date).hard ? 'hard' : ''}" data-pk="${k}" role="status">${pkRealHTML(o)}</div>`;
+    <div class="note pkreal ${o.target && pkMath(o.target, o.date, o.saved || 0).hard ? 'hard' : ''}" data-pk="${k}" role="status">${pkRealHTML(o)}</div>`;
 }
 // update everything that shows the amount or the date, without redrawing (so the keypad stays open and a drag is not interrupted)
 function pkSync(k, from){
@@ -4145,22 +4291,24 @@ function pkSync(k, from){
       sl.setAttribute('aria-valuenow', Math.min(PK_MAX, Math.max(PK_MIN, v))); sl.setAttribute('aria-valuetext', `${pkSpace(v)} forints`);
       pkStackSync(r.querySelector('.pkstack'), v);
       r.querySelectorAll('[data-pkamt]').forEach(b => { const on = +b.dataset.pkamt === v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+    } else if(r.classList.contains('pkcap')){
+      r.innerHTML = pkCapHTML(v);
     } else if(r.classList.contains('pkd')){
       const n = pkDateIdx(o.date) - pkNow(), f = r.querySelector('.fld');
       f.querySelector('b').textContent = pkMonthName(o.date); f.querySelector('.pks').textContent = `· ${pkInS(n)}`;
       f.setAttribute('aria-label', `By when? ${pkMonthName(o.date)}, ${pkIn(n)}. Change month`);
       r.querySelectorAll('[data-pkdate]').forEach(b => { const on = b.dataset.pkdate === o.date; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
     } else if(r.classList.contains('pkreal')){
-      r.innerHTML = pkRealHTML(o); r.classList.toggle('hard', !!(v && pkMath(v, o.date).hard));
+      r.innerHTML = pkRealHTML(o); r.classList.toggle('hard', !!(v && pkMath(v, o.date, o.saved || 0).hard));
     }
   });
 }
-function pkSet(k, v, from){ pkObj(k).target = v; pkSync(k, from); }
+function pkSet(k, v, from){ pkObj(k).target = v; pkSync(k, from); if(typeof gateSync === 'function') gateSync(); }
 // month sheet: tentative choice until Done; tapping outside or swiping down closes without changing
 let PKM = {k:'onb', year:0, sel:''};
 // years: a stepper (‹ 2031 ›) plus a scrolling row of quick years (the next 8, then every 5th year), up to PK_YEARS from now
 function pkMonthSheet(){
-  const o = pkObj(PKM.k), now = pkNow(), last = pkLast(), y0 = Math.floor(now / 12), y1 = Math.floor(last / 12), r = pkMath(o.target, PKM.sel), n = pkDateIdx(PKM.sel) - now;
+  const o = pkObj(PKM.k), now = pkNow(), last = pkLast(), y0 = Math.floor(now / 12), y1 = Math.floor(last / 12), r = pkMath(o.target, PKM.sel, o.saved || 0), n = pkDateIdx(PKM.sel) - now;
   const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], full = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const years = [...new Set([...Array.from({length: 8}, (_, i) => y0 + i), ...Array.from({length: y1 - y0 + 1}, (_, i) => y0 + i).filter(y => y % 5 === 0 && y > y0 + 7)])].filter(y => y <= y1);
   return `<div class="pkm"><h2>By when?</h2>
@@ -4228,18 +4376,39 @@ function closeWhatsNew(){ const w = $('#wn'); w.classList.remove('on'); w.innerH
 // The automatic what's-new pop-up is retired (flow A2): nothing opens at launch, Home shows after the splash. The tile chooser is the setup card on the Persely tab.
 // showWhatsNew() / closeWhatsNew() stay in the file but nothing calls showWhatsNew any more.
 function launchFlow(){ /* no pop-up */ }
-function startOnb(key){
-  const custom = key === 'custom', g = custom ? customGoal() : (GOAL_PRESETS[key] || GOAL_PRESETS.travel);
-  Object.assign(O, {i: 0, key, ic:g.ic, name:g.name, target:g.target, typeAmt:custom ? 0 : g.target, date:g.date, focusName:custom,
-    payOn:true, pct:10, weeklyOn:false, weekly:2000, roundOn:true, first:1000, from:'junior', deposited:0, remind:true, coinShown:false});
+// preset dates are matched to the default rules (the Payday rule at 10%), so the forecast never opens with a shortfall (N6). One extra month: the goal date is the 1st, today is mid month.
+const presetDate = target => { const d = demoNow(), i0 = d.getFullYear() * 12 + d.getMonth(), m = Math.max(3, Math.ceil(target / Math.max(1, incomeShare(10)))) + 1; return pkIdxDate(Math.min(i0 + m, pkLast())); };
+// the ONE wizard (flow A3): every entry (tile chooser on the Persely tab, New +, the Home card) starts it here: Your goal, How should money get in?, Check and create
+function startOnb(key, resume){
+  const custom = key === 'custom', g = custom ? customGoal() : (GOAL_PRESETS[key] || GOAL_PRESETS.travel), first = !S.goals.length;
+  if(resume && S.draft) Object.assign(O, S.draft, {i:0, first, focusName:false});
+  else Object.assign(O, {i:0, key, ic:g.ic, name:g.name, target:g.target, typeAmt:custom ? 0 : g.target, date:presetDate(g.target), focusName:custom, first,
+    payOn:first, pct:first ? 10 : (S.payday.pct || 10), weeklyOn:false, weekly:first ? 2000 : (S.weekly.amt || 2000), roundOn:false});   // the first goal: Payday rule only, at 10%. Weekly transfer and Round-ups are off
   tab('hub'); $('#onb').classList.add('on'); renderOnb();
 }
 function closeOnb(){ const o = $('#onb'); o.classList.remove('on'); o.innerHTML = ''; mountPig(); }
+// why the button waits (A3): shown as a line above it, never a silent grey button
+const onbGate = () => O.i !== 0 ? '' : !cleanName(O.name) ? 'Give your goal a name' : !O.target ? 'Type how much you need' : O.target < PK_MIN ? `Minimum is ${ft(PK_MIN)}` : '';
+const cgGate = () => { const d = S._draft; return !d ? '' : !cleanName(d.name) ? 'Give your goal a name' : !d.target ? 'Type how much you need' : d.target < PK_MIN ? `Minimum is ${ft(PK_MIN)}` : ''; };
+function gateSync(){
+  if($('#onb').classList.contains('on') && STEPS[O.i] === 'goal'){ const r = onbGate(), b = $('#onb [data-onbnext]'), w = $('#onb .onb-why'); if(b) b.disabled = !!r; if(w) w.textContent = r; }
+  const sv = document.querySelector('.page [data-cgsave]'); if(sv && S._draft){ const r = cgGate(), w = sv.closest('.foot').querySelector('.onb-why'); sv.disabled = !!r; if(w) w.textContent = r; }
+}
+// a rule that already points at another goal: say where it goes now (A3, D9)
+const repointLine = (k, on) => {
+  if(!on) return '';
+  const nm = cleanName(O.name) || 'this goal';
+  const old = k === 'pay' ? (S.payday.on ? goalById(S.ruleGoal) : null) : k === 'wk' ? (S.weekly.on ? weeklyGoal() : null) : (S.roundup.on ? goalById(S.roundup.goal) : null);
+  if(!old || old.id === NOGOAL.id) return '';
+  return `<div class="fine rpt" role="status">${k === 'pay' ? 'Payday rule now goes' : k === 'wk' ? 'Weekly transfer now goes' : 'Round-ups now go'} to ${esc(nm)} instead of ${esc(old.name)}</div>`;
+};
+const onbHave = () => Math.round(onbMonthly() * 12 / 52 / 100) * 100;   // what the chosen rules add in a week, in the same 100 Ft steps as the weekly figure
 function renderOnb(){
   const i = O.i, step = STEPS[i], n = STEPS.length;
   const bars = STEPS.map((_,k) => `<i class="${k<=i?'on':''}"></i>`).join('');
   const tg = (on, attr, title, sub, extra='') => `<button class="opt slim ${on?'on':''}" ${attr}><span class="t"><b>${title}</b><small>${sub}</small></span><span class="tg ${on?'on':''}"></span></button>${on && extra ? `<div class="subopts">${extra}</div>` : ''}`;
-  let body = '', foot = `<button class="btn" data-onbnext ${step === 'goal' && !cleanName(O.name) ? 'disabled' : ''}>Next</button>`;
+  const why = step === 'goal' ? onbGate() : '';
+  let body = '', foot = `<div class="onb-why fine" role="status">${why}</div><button class="btn" data-onbnext ${why ? 'disabled' : ''}>Next</button>`;
   if(step === 'goal'){
     body = `<div class="onb-step">Step 1 of ${n}</div><h2>Your goal</h2><p class="lead">It earns 3.0% a year on the first ${ft(CAP)} until ${juniorEndLabel()}. You can change it later.</p>
       <div class="flabel">Name</div>
@@ -4250,51 +4419,53 @@ function renderOnb(){
   } else if(step === 'how'){
     const m = monthsTo(O.date), proj = Math.round(onbMonthly() * m), p = Math.min(100, Math.round(proj / O.target * 100)), short = O.target - proj;
     const fc = fcCalc(O.target, 0, onbMonthly(), O.date), weeks = Math.max(1, m * 4.345), extra = short > 0 ? Math.ceil(short / weeks / 500) * 500 : 0;
+    const wks = [...new Set([1000, 2000, 3000, 5000, O.weekly])].sort((a, b) => a - b);
     body = `<div class="onb-step">Step 2 of ${n}</div><h2>How should money get in?</h2><p class="lead">Switch on what suits you. Change it any time.</p>
       ${tg(O.payOn, 'data-onbpay', 'Payday rule <span class="rec">Recommended</span>', 'A share of each salary or scholarship. We ask first.',
-        `<div class="chips eq u-m0">${[5,10,15,20].map(x=>`<button class="chip ${O.pct===x?'on':''}" data-onbpct="${x}">${x}%</button>`).join('')}</div>`)}
+        `<div class="chips eq u-m0">${[5,10,15,20].map(x=>`<button class="chip ${O.pct===x?'on':''}" data-onbpct="${x}">${x}%</button>`).join('')}</div><div class="fine u-mt4-b12">Keeps ${ft(20000)} on your account; if money is tight, less or nothing moves</div>`)}${repointLine('pay', O.payOn)}
       ${tg(O.weeklyOn, 'data-onbwk', 'Weekly transfer', 'The same amount every Monday.',
-        `<div class="chips eq u-m0">${[1000,2000,3000,5000].map(x=>`<button class="chip ${O.weekly===x?'on':''}" data-onbweekly="${x}">${ft(x)}</button>`).join('')}</div>`)}
-      ${tg(O.roundOn, 'data-onbrr', 'Round-ups', `Card payments rounded up to 100 Ft, ×2. About ${ft(ROUND_EST)} a month.`)}
+        `<div class="chips eq u-m0">${wks.map(x=>`<button class="chip ${O.weekly===x?'on':''}" data-onbweekly="${x}">${ft(x)}</button>`).join('')}</div>`)}${repointLine('wk', O.weeklyOn)}
+      <!-- the round-up amount is an example, not a promise about this user's spending -->
+      ${tg(O.roundOn, 'data-onbrr', 'Round-ups', 'A 1 190 Ft coffee moves 20 Ft; we double it')}${repointLine('rr', O.roundOn)}
       <div class="card" style="padding:14px 16px;margin-top:6px">
         <b class="u-bk-m14">${onbMonthly() ? (fc.over ? fc.text : `About ${ft(Math.round(proj/1000)*1000)} by ${fDate(O.date)}`) : 'Switch something on to see your forecast'}</b>
         ${onbMonthly() ? `<div class="prog" style="margin:10px 0 6px"><i style="width:${p}%"></i></div><div class="k">${fc.over ? 'On time' : `${p}% of ${ft(O.target)} · ${short > 0 ? `about ${ft(Math.round(short/1000)*1000)} short` : 'on time'}`}</div>` : ''}
+        <div class="k u-mt4-b12">${ft(O.target)} by ${pkMonthShort(O.date)} needs about <b>${ft(weeklyNeed(O.target, 0, O.date))} a week</b>${onbMonthly() ? ` · your rules add about ${ft(onbHave())} a week` : ''}</div>
         ${short > 0 && onbMonthly() ? `<button class="btn w u-mt12" data-onbboost="${(O.weeklyOn ? O.weekly : 0) + extra}">Add ${ft(extra)} a week to make it</button>` : ''}
       </div>`;
   } else {
-    const a = acc(O.from), short = O.first > a.v;
-    const rules = [O.payOn && `${O.pct}% of each salary (asks first)`, O.weeklyOn && `${ft(O.weekly)} weekly`, O.roundOn && 'round-ups'].filter(Boolean).join(', ') || 'You add money yourself';
+    const rules = [O.payOn && `${O.pct}% of each salary (asks first)`, O.weeklyOn && `${ft(O.weekly)} every Monday`, O.roundOn && 'round-ups'].filter(Boolean).join(', ') || 'You add money yourself';
     const rows = [['Goal', `${esc(O.name)}, ${ft(O.target)}`], ['By', fDate(O.date)], ['Rate', (S.verified || S.bridge) ? `3.0% on the first ${ft(CAP)}, until ${juniorEndLabel()}` : '0.01% standard rate'], ['Money in', rules]];
     body = `<div class="onb-step">Step 3 of ${n}</div><h2>Check and create</h2>
       <div class="card sumcard">${rows.map(([k,v])=>`<div class="sr"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
       ${gtkCard()}
-      <div class="flabel">First deposit <span class="k">(optional)</span></div>
-      <div class="chips u-m0">${[0,500,1000,2000,5000].map(v=>`<button class="chip ${O.first===v?'on':''}" data-onbfirst="${v}">${v ? ft(v) : 'None'}</button>`).join('')}</div>
-      <div class="fine u-mt4-b12">${O.first ? `From ${a.n} · <span class="num">${ft(a.v)}</span> available · <button class="link lnk44" data-onbchange>change</button><br>Free, and you can withdraw it any time. It starts your streak this week.` : 'You can add money any time. A first deposit starts your streak this week.'}</div>
-      ${short ? '<div class="warn">Not enough money on this account. Choose a smaller amount or change the account.</div>' : ''}
-      <button class="opt slim ${O.remind?'on':''}" data-onbremind><span class="ic">${I('bell',22)}</span><span class="t"><b>Weekly reminder</b><small>Sunday 18:00, only if the week is still open</small></span><span class="tg ${O.remind?'on':''}"></span></button>${O.remind ? remindRow().replace('class="rem"', 'class="rem rem-o"') : ''}`;
-    foot = `<button class="btn" data-onbcreate ${short ? 'disabled' : ''}>Create goal</button>`;
+      <div class="fine u-mt4-b12">Creating the goal moves no money. You choose when to add the first amount.</div>`;
+    foot = `<button class="btn" data-onbcreate>Create goal</button>`;
   }
-  $('#onb').innerHTML = `<div class="onb-top">${i>0 ?`<button class="onb-back" data-onbback aria-label="Back">${I('back',22)}</button>`:''}<div class="onb-bars">${bars}</div><button class="onb-skip" data-onbquit>Not now</button></div>
+  $('#onb').innerHTML = `<div class="onb-top"><button class="onb-back" data-onbback aria-label="${i > 0 ? 'Back' : 'Back to goal types'}">${I('back',22)}</button><div class="onb-bars" role="progressbar" aria-label="New goal, step ${i + 1} of ${n}" aria-valuemin="1" aria-valuemax="${n}" aria-valuenow="${i + 1}">${bars}</div><button class="onb-skip" data-onbquit>Not now</button></div>
     <div class="onb-body">${body}</div><div class="onb-foot">${foot}</div>`;
   if(step === 'goal'){
     const nm = $('#onbName');
-    nm.addEventListener('input', e => { O.name = e.target.value; const b = $('#onb [data-onbnext]'); if(b) b.disabled = !cleanName(O.name); });
+    nm.addEventListener('input', e => { O.name = e.target.value; gateSync(); });
     nm.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); nm.blur(); } });
     if(O.focusName){ O.focusName = false; nm.focus({preventScroll:true}); }   // custom goal: the keypad opens on the empty name
   }
   mountPig();
 }
-// save what the user chose: the new goal comes first and the rules point at it
+// create the goal from what the user chose. It moves NO money. The first goal gets its rules; a later goal only takes over the rules it switched on (and says so)
 function applyOnb(){
-  if(!goalById('onb')){
-    S.goals.unshift({id:'onb', name:cleanName(O.name) || 'My goal', ic:O.ic || (GOAL_PRESETS[O.key] || GOAL_PRESETS.travel).ic, saved:0, target:O.target, pace:0, date:O.date});
-  }
-  S.ruleGoal = 'onb';
-  S.payday = {on:O.payOn, pct:O.pct, ask:true, floor:true};
-  S.weekly = {on:O.weeklyOn, amt:O.weekly};
-  S.roundup = {on:O.roundOn, goal:'onb'};
-  S.onboarded = true; S.updateSeen = true; save();
+  const first = !S.goals.length, name = cleanName(O.name) || 'My goal', id = 'g' + Date.now() + 'n' + S.goals.length, notes = [];
+  const g = {id, name, ic:O.ic || (GOAL_PRESETS[O.key] || GOAL_PRESETS.travel).ic, saved:0, target:O.target, pace:0, date:O.date};
+  const oldP = S.payday.on ? goalById(S.ruleGoal) : null, oldW = S.weekly.on ? weeklyGoal() : null, oldR = S.roundup.on ? goalById(S.roundup.goal) : null;
+  S.goals.push(g);
+  if(O.payOn){ if(oldP) notes.push(`Payday rule now goes to ${name} instead of ${oldP.name}`); S.payday = {...S.payday, on:true, pct:O.pct}; S.ruleGoal = id; }
+  else if(first){ S.payday = {...S.payday, on:false, pct:O.pct}; S.ruleGoal = id; }
+  if(O.weeklyOn){ if(oldW && oldW.id !== NOGOAL.id) notes.push(`Weekly transfer now goes to ${name} instead of ${oldW.name}`); S.weekly = {...S.weekly, on:true, amt:O.weekly, goal:id}; }
+  else if(first){ S.weekly = {...S.weekly, on:false, goal:id}; }
+  if(O.roundOn){ if(oldR) notes.push(`Round-ups now go to ${name} instead of ${oldR.name}`); S.roundup = {on:true, goal:id}; }
+  else if(first){ S.roundup = {on:false, goal:id}; }
+  S.onboarded = true; S.updateSeen = true; S.draft = null; syncSplit(); save();
+  return {g, notes, first};
 }
 
 /* ================= weekly challenges: concrete, tied to the user's own spending ================= */
@@ -4840,6 +5011,7 @@ function notify(n){
 function salaryArrives(){
   const inc = S.income.amount; acc('junior').v += inc;
   S.tx.unshift({...stamp(), d:'Today', n:'SALARY', s:'Incoming transfer', a:inc, ic:'money'});
+  if(keepSalary()) setTimeout(() => notify({title:'Persely', persi:true, body:`Your first salary is at OTP. You are now Graduate 3.0% on the first ${ft(CAP)} until ${juniorEndLabel(12)}.`, url:'grad'}), 4500);
   const g = ruleGoal(), share = incomeShare(S.payday.pct);
   if((S.payday.on && S.payday.ask) || paydayBills()){   // with bills open the sheet is "Bills first": salary, bills, saving rule, left for Fun
     renderAll();
